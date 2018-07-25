@@ -9,11 +9,11 @@ namespace OpenH2.Core.Representations
     {
         public TagNode TreeRoot { get; set; }
 
-        internal SceneMetadata Metadata { get; set; }
+        public SceneMetadata Metadata { get; set; }
 
         
 
-        public bool HasValidSignature => Metadata.CalculatedSignature == Metadata.StoredSignature;
+        //public bool HasValidSignature => Metadata.CalculatedSignature == Metadata.StoredSignature;
 
         public string Name => this.Metadata.Name;
 

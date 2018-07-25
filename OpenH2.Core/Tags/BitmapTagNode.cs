@@ -4,7 +4,7 @@ namespace OpenH2.Core.Tags
 {
     public class BitmapTagNode : TagNode
     {
-        public Span<byte> Data { get; set; }
+        public Memory<byte> Data { get; set; }
 
         public bool Swizzled {get;set;}
 
