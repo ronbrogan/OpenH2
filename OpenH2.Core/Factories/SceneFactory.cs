@@ -20,24 +20,22 @@ namespace OpenH2.Core.Factories
 
             fileStream.Read(data, 0, (int)fileStream.Length);
 
-            var header = new Span<byte>(data, 0, 2048);
+            var memory = new Memory<byte>(data);
 
-            // get header span from fileStream, pass to GetMetadata method
-            var meta = this.GetMetadata(header);
+            var headerData = memory.Slice(0, 2048).Span;
 
-
-
+            var head = this.GetMetadata(headerData);
 
             var scene = new Scene();
-            scene.Metadata = meta;
+            scene.RawData = memory;
+            scene.Header = head;
             
-
             return scene;
         }
 
-        private SceneMetadata GetMetadata(Span<byte> data)
+        private SceneHeader GetMetadata(Span<byte> data)
         {
-            var factory = new MetadataFactory();
+            var factory = new HeaderFactory();
             return factory.Create(data);
         }
 

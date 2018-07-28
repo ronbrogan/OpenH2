@@ -4,7 +4,7 @@ using System.Text;
 
 namespace OpenH2.Core.Representations
 {
-    public class SceneMetadata
+    public class SceneHeader
     {
         public string FileHead { get; set; }
         public int Version { get; set; }

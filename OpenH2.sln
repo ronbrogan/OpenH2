@@ -5,7 +5,7 @@ VisualStudioVersion = 15.0.27703.2000
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OpenH2.Core", "OpenH2.Core\OpenH2.Core.csproj", "{16A95F0B-F26C-4E38-B6F4-E74E351DE580}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OpenH2.Core.Tests", "OpenH2.Core.Tests\OpenH2.Core.Tests.csproj", "{9EAEBA4C-6905-4CEC-ADAD-FAAA6CE91D8D}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OpenH2.Core.Tests", "OpenH2.Core.Tests\OpenH2.Core.Tests.csproj", "{9EAEBA4C-6905-4CEC-ADAD-FAAA6CE91D8D}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

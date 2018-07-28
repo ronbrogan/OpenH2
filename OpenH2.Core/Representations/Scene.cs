@@ -1,4 +1,5 @@
 using System;
+using OpenH2.Core.Extensions;
 using OpenH2.Core.Tags;
 
 namespace OpenH2.Core.Representations
@@ -7,19 +8,31 @@ namespace OpenH2.Core.Representations
     /// This class is the in-memory representation of a .map file
     public class Scene
     {
+        public Memory<byte> RawData { get; set; }
+
         public TagNode TreeRoot { get; set; }
 
-        public SceneMetadata Metadata { get; set; }
+        public SceneHeader Header { get; set; }
 
-        
-
-        //public bool HasValidSignature => Metadata.CalculatedSignature == Metadata.StoredSignature;
-
-        public string Name => this.Metadata.Name;
+        public string Name => this.Header.Name;
 
         internal Scene()
         {
 
         }
+
+        public int CalculateSignature()
+        {
+            var sig = 0;
+            var span = RawData.Span;
+
+            for(var i = 2048; i < RawData.Length; i+=4)
+            {
+                sig ^= span.IntFromSlice(i);
+            }
+
+            return sig;
+        }
+
     }
 }
