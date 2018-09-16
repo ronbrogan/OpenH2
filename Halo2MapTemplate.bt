@@ -1,0 +1,53 @@
+//------------------------------------------------
+//--- 010 Editor v8.0.1 Binary Template
+//
+//      File: 
+//   Authors: 
+//   Version: 
+//   Purpose: 
+//  Category: 
+// File Mask: 
+//  ID Bytes: 
+//   History: 
+//------------------------------------------------
+struct MAP
+{
+    struct HEAD {
+        char head[4];
+        int version;
+        int filesize;
+        int zero1;
+        int indexOffset;
+        int metaStart;
+        char unkn1[8];
+        char mapOrigin[32];
+        char unkn2[236];
+        char build[32];
+        char unkn3[20];
+        int unkn4;
+        int offsetToStrangeStrings;
+        int unkn5;
+        int offsetToSomething;
+        int scriptRefCount;
+        int sizeOfScriptRef;
+        int offsetToScriptRefIndex;
+        int offsetToScriptRefStrings;
+        char unkn6[36];
+        char mapName[32];
+        int zero2;
+        char scenarioPath[256];
+        int unkn7;
+        int fileCount;
+        int fileTableOffset;
+        int fileTableSize;
+        int filesIndex;
+        int unkn8;
+        int unkn9;
+        int unkn10;
+        int unkn11;
+        int unkn12;
+        int signature;
+    } head;
+
+
+} map;

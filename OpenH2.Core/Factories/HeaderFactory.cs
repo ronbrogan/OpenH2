@@ -48,22 +48,22 @@ namespace OpenH2.Core.Factories
 
         private int GetFilesIndex(Span<byte> data)
         {
-            return data.IntFromSlice(748);
+            return data.IntFromSlice(728);
         }
 
         private int GetFileTableSize(Span<byte> data)
         {
-            return data.IntFromSlice(744);
+            return data.IntFromSlice(724);
         }
 
         private int GetFileTableOffset(Span<byte> data)
         {
-            return data.IntFromSlice(740);
+            return data.IntFromSlice(720);
         }
 
         private int GetFileCount(Span<byte> data)
         {
-            return data.IntFromSlice(736);
+            return data.IntFromSlice(716);
         }
 
         public string GetScenarioPath(Span<byte> data)

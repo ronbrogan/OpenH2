@@ -17,7 +17,7 @@ namespace OpenH2.Core.Extensions
                     break;
                 }
 
-                builder.Append(Convert.ToChar(data[current]));
+                builder.Append((char)data[current]);
                 current++;
             }
 
