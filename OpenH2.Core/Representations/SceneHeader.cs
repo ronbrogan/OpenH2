@@ -1,4 +1,5 @@
-﻿using System;
+﻿using OpenH2.Core.Offsets;
+using System;
 using System.Collections.Generic;
 using System.Text;
 
@@ -11,8 +12,8 @@ namespace OpenH2.Core.Representations
         public int TotalBytes { get; set; }
         // This property is apparently always zero
         public int Zero => 0;
-        public int IndexOffset { get; set; }
-        public int MetaOffset { get; set; }
+        public NormalOffset IndexOffset { get; set; }
+        public PrimaryOffset MetaOffset { get; set; }
 
         // 2 dwords of unknown
 

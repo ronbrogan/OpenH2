@@ -20,8 +20,10 @@ namespace OpenH2.Core.Tests
             Assert.Equal("ascension", scene.Name);
             Assert.Equal(8, scene.Header.Version);
             Assert.Equal(16059904, scene.Header.TotalBytes);
-            Assert.Equal(14503424, scene.Header.IndexOffset);
-            Assert.Equal(245760, scene.Header.MetaOffset);
+            Assert.Equal(14503424, scene.Header.IndexOffset.Value);
+            Assert.Equal(245760, scene.Header.MetaOffset.OriginalValue);
+            Assert.Equal(14503424, scene.PrimaryMagic);
+            Assert.Equal(-6468096, scene.SecondaryMagic);
         }
 
         [Fact]

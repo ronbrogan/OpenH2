@@ -25,6 +25,10 @@ namespace OpenH2.Core.Representations
 
         public string Name => this.Header.Name;
 
+        public int PrimaryMagic { get; set; }
+
+        public int SecondaryMagic { get; set; }
+
 
         internal Scene()
         {

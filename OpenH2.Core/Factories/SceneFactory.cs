@@ -1,4 +1,5 @@
 using OpenH2.Core.Extensions;
+using OpenH2.Core.Offsets;
 using OpenH2.Core.Representations;
 using System;
 using System.Collections.Generic;
@@ -26,23 +27,26 @@ namespace OpenH2.Core.Factories
 
             var headerData = memory.Slice(0, 2048).Span;
 
-            var head = this.GetMetadata(headerData);
-
             var scene = new Scene();
             scene.RawData = memory;
+
+            var head = this.GetMetadata(scene, headerData);
+
             scene.Header = head;
             scene.Files = GetFiles(memory.Span.Slice(head.FileTableOffset, head.FileTableSize));
-            scene.IndexHeader = GetIndexHeader(head, memory);
+            scene.IndexHeader = GetIndexHeader(scene, memory);
+            scene.PrimaryMagic = CalculatePrimaryMagic(scene.IndexHeader);
             scene.TagList = GetTagList(scene.IndexHeader, memory);
-            scene.ObjectList = GetObjectIndexList(scene.IndexHeader, memory);
+            scene.ObjectList = GetObjectIndexList(scene, memory);
+            scene.SecondaryMagic = CalculateSecondaryMagic(scene.Header, scene.ObjectList.First());
 
             return scene;
         }
 
-        private SceneHeader GetMetadata(Span<byte> data)
+        private SceneHeader GetMetadata(Scene scene, Span<byte> data)
         {
             var factory = new HeaderFactory();
-            return factory.Create(data);
+            return factory.Create(scene, data);
         }
 
         private List<string> GetFiles(Span<byte> data)
@@ -64,16 +68,17 @@ namespace OpenH2.Core.Factories
             return files;
         }
 
-        public IndexHeader GetIndexHeader(SceneHeader header, Memory<byte> scene)
+        public IndexHeader GetIndexHeader(Scene scene, Memory<byte> sceneData)
         {
-            var span = scene.Slice(header.IndexOffset, 32).Span;
+            var header = scene.Header;
+            var span = sceneData.Slice(header.IndexOffset.Value, IndexHeader.Length).Span;
 
             var index = new IndexHeader();
 
-            index.Offset = header.IndexOffset;
+            index.FileRawOffset = header.IndexOffset;
             index.PrimaryMagicConstant = span.IntFromSlice(0);
             index.TagListCount = span.IntFromSlice(4);
-            index.ObjectIndexOffset = span.IntFromSlice(8);
+            index.ObjectIndexOffset = new PrimaryOffset(scene, span.IntFromSlice(8));
             index.ScenarioID = span.IntFromSlice(12);
             index.TagIDStart = span.IntFromSlice(16);
             index.Unknown1 = span.IntFromSlice(20);
@@ -83,14 +88,14 @@ namespace OpenH2.Core.Factories
             return index;
         }
 
-        public List<TagListEntry> GetTagList(IndexHeader indexHeader, Memory<byte> scene)
+        public List<TagListEntry> GetTagList(IndexHeader index, Memory<byte> scene)
         {
-            var span = scene.Slice(indexHeader.Offset + 32, indexHeader.TagListCount * 12).Span;
+            var span = scene.Slice(index.FileRawOffset.Value + IndexHeader.Length, index.TagListCount * 12).Span;
 
             var list = new List<TagListEntry>();
             var nullVal = new string(new byte[] { 0xFF, 0xFF, 0xFF, 0xFF }.Select(b => (char)b).ToArray());
 
-            for(var i = 0; i < indexHeader.TagListCount; i++)
+            for(var i = 0; i < index.TagListCount; i++)
             {
                 var entry = new TagListEntry();
                 var entryBase = i * 12;
@@ -109,32 +114,43 @@ namespace OpenH2.Core.Factories
             return list;
         }
 
-        public List<ObjectIndexEntry> GetObjectIndexList(IndexHeader header, Memory<byte> scene)
+        public List<ObjectIndexEntry> GetObjectIndexList(Scene scene, Memory<byte> sceneBytes)
         {
-            var span = scene.Slice(header.Offset + header.ObjectIndexOffset, header.ObjectCount * 16).Span;
+            var index = scene.IndexHeader;
+            var listBytes = sceneBytes.Slice(index.ObjectIndexOffset.Value, index.ObjectCount * ObjectIndexEntry.Size).Span;
             var nullObjTag = new string(new byte[] { 0xFF, 0xFF, 0xFF, 0xFF }.Select(b => (char)b).ToArray());
 
             var list = new List<ObjectIndexEntry>();
 
-            for(var i = 0; i < header.ObjectCount; i++)
+            for(var i = 0; i < index.ObjectCount; i++)
             {
                 var entryBase = i * 16;
 
-                var tag = span.StringFromSlice(entryBase, 4).Reverse();
+                var tag = listBytes.StringFromSlice(entryBase, 4).Reverse();
 
                 //if (tag == nullObjTag)
                 //    continue;
 
                 var entry = new ObjectIndexEntry();
                 entry.Tag = tag;
-                entry.ID = (uint)span.IntFromSlice(entryBase + 4);
-                entry.Offset = span.IntFromSlice(entryBase + 8);
-                entry.MetaSize = span.IntFromSlice(entryBase + 12);
+                entry.ID = (uint)listBytes.IntFromSlice(entryBase + 4);
+                entry.Offset = new SecondaryOffset(scene, listBytes.IntFromSlice(entryBase + 8));
+                entry.MetaSize = listBytes.IntFromSlice(entryBase + 12);
 
                 list.Add(entry);
             }
 
             return list;
+        }
+
+        public int CalculatePrimaryMagic(IndexHeader index)
+        {
+            return index.FileRawOffset.Value - index.PrimaryMagicConstant + IndexHeader.Length;
+        }
+
+        public int CalculateSecondaryMagic(SceneHeader header, ObjectIndexEntry firstObj)
+        {
+            return firstObj.Offset.OriginalValue - header.MetaOffset.Value;
         }
     }
 }

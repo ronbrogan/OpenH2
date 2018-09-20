@@ -1,4 +1,5 @@
 ﻿using OpenH2.Core.Extensions;
+using OpenH2.Core.Offsets;
 using OpenH2.Core.Representations;
 using System;
 using System.Collections.Generic;
@@ -8,15 +9,15 @@ namespace OpenH2.Core.Factories
 {
     public class HeaderFactory
     {
-        public SceneHeader Create(Span<byte> data)
+        public SceneHeader Create(Scene scene, Span<byte> data)
         {
             var head = new SceneHeader();
 
             head.FileHead = GetFileHeadValue(data);
             head.Version = GetVersion(data);
             head.TotalBytes = GetTotalSize(data);
-            head.IndexOffset = GetIndexOffset(data);
-            head.MetaOffset = GetMetaOffset(data);
+            head.IndexOffset = new NormalOffset(GetIndexOffset(data));
+            head.MetaOffset = new PrimaryOffset(scene, GetMetaOffset(data));
             head.MapOrigin = GetOrigin(data);
             head.Build = GetBuild(data);
             head.OffsetToUnknownSection = GetUnknownSection(data);
