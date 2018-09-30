@@ -1,11 +1,10 @@
-using System;
-using System.Collections.Generic;
 using OpenH2.Core.Extensions;
 using OpenH2.Core.Tags;
+using System;
+using System.Collections.Generic;
 
 namespace OpenH2.Core.Representations
 {
-
     /// This class is the in-memory representation of a .map file
     public class Scene
     {
@@ -29,10 +28,8 @@ namespace OpenH2.Core.Representations
 
         public int SecondaryMagic { get; set; }
 
-
         internal Scene()
         {
-
         }
 
         public int CalculateSignature()
@@ -42,11 +39,10 @@ namespace OpenH2.Core.Representations
 
             for(var i = 2048; i < RawData.Length; i+=4)
             {
-                sig ^= span.IntFromSlice(i);
+                sig ^= span.ReadInt32At(i);
             }
 
             return sig;
         }
-
     }
 }

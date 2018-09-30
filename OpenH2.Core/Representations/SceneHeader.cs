@@ -1,7 +1,4 @@
 ﻿using OpenH2.Core.Offsets;
-using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace OpenH2.Core.Representations
 {
@@ -10,8 +7,10 @@ namespace OpenH2.Core.Representations
         public string FileHead { get; set; }
         public int Version { get; set; }
         public int TotalBytes { get; set; }
+
         // This property is apparently always zero
         public int Zero => 0;
+
         public NormalOffset IndexOffset { get; set; }
         public PrimaryOffset MetaOffset { get; set; }
 
@@ -35,9 +34,9 @@ namespace OpenH2.Core.Representations
         public int SizeOfScriptReference { get; set; }
         public int OffsetToScriptReferenceIndex { get; set; }
         public int OffsetToScriptReferenceStrings { get; set; }
-        
+
         // 36 bytes of unknown
-        
+
         public string Name { get; set; }
         public int Zero2 => 0;
 
@@ -51,7 +50,6 @@ namespace OpenH2.Core.Representations
         public int FileTableOffset { get; set; }
         public int FileTableSize { get; set; }
         public int FilesIndex { get; set; }
-        
 
         //public int CalculatedSignature { get; set; }
 
@@ -60,5 +58,11 @@ namespace OpenH2.Core.Representations
         // 1320 bytes of zero
 
         public string Footer { get; set; }
+
+        public static class Layout
+        {
+            public static int Offset => 0;
+            public static int Length => 2048;
+        }
     }
 }

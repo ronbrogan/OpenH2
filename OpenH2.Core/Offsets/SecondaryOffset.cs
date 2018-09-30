@@ -1,7 +1,4 @@
 ﻿using OpenH2.Core.Representations;
-using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace OpenH2.Core.Offsets
 {
@@ -16,7 +13,7 @@ namespace OpenH2.Core.Offsets
             this.scene = scene;
         }
 
-        public int Value => this.offset + this.scene.SecondaryMagic;
+        public int Value => this.offset - this.scene.SecondaryMagic;
 
         public int OriginalValue => this.offset;
     }

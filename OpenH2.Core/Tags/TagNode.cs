@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 
 namespace OpenH2.Core.Tags
@@ -9,8 +8,6 @@ namespace OpenH2.Core.Tags
 
         public TagNode()
         {
-
         }
-
     }
 }

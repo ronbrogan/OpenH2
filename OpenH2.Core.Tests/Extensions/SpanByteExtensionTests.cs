@@ -1,15 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using OpenH2.Core.Extensions;
+using System;
 using System.Linq;
-using System.Text;
 using Xunit;
-using OpenH2.Core.Extensions;
 
 namespace OpenH2.Core.Tests.Extensions
 {
     public class SpanByteExtensionTests
     {
-
         [Fact]
         public void Byte_array_to_string_with_null_terminator()
         {
@@ -59,7 +56,7 @@ namespace OpenH2.Core.Tests.Extensions
 
             var span = new Span<byte>(data);
 
-            var result = span.IntFromSlice(0);
+            var result = span.ReadInt32At(0);
 
             Assert.Equal(16059904, result);
         }

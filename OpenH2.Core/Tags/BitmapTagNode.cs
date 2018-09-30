@@ -10,7 +10,7 @@ namespace OpenH2.Core.Tags
 
         // Mip maps stored as child bitmap tag nodes?
         public bool MipMapped { get; set; }
-        
+
         public int LevelOfDetail { get; set; }
     }
 }

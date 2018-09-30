@@ -1,10 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace OpenH2.Core.Offsets
+﻿namespace OpenH2.Core.Offsets
 {
-    interface IOffset
+    internal interface IOffset
     {
         int Value { get; }
         int OriginalValue { get; }
