@@ -18,5 +18,19 @@ namespace OpenH2.Core.Extensions
             stream.Read(bytes, 0, (int)stream.Length);
             return new Memory<byte>(bytes);
         }
+
+        public static void WriteInt32(this Stream stream, int value)
+        {
+            stream.WriteByte((byte)value);
+            stream.WriteByte((byte)(value >> 8));
+            stream.WriteByte((byte)(value >> 16));
+            stream.WriteByte((byte)(value >> 24));
+        }
+
+        public static void WriteInt16(this Stream stream, int value)
+        {
+            stream.WriteByte((byte)value);
+            stream.WriteByte((byte)(value >> 8));
+        }
     }
 }

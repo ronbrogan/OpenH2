@@ -9,7 +9,14 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Iconic.Zlib.Netstandard" Version="1.0.0" />
     <PackageReference Include="System.Memory" Version="4.5.1" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="System.Buffers">
+      <HintPath>C:\Program Files\dotnet\sdk\NuGetFallbackFolder\microsoft.netcore.app\2.1.0\ref\netcoreapp2.1\System.Buffers.dll</HintPath>
+    </Reference>
   </ItemGroup>
 
 </Project>

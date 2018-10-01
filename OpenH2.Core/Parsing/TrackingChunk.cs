@@ -19,6 +19,8 @@ namespace OpenH2.Core.Parsing
             this.start = start;
             this.length = length;
             this.logUsage = usageCallback;
+
+            this.logUsage(start, length, null);
         }
 
         public Span<byte> TrackedSlice(int offset, int length, string label = null)

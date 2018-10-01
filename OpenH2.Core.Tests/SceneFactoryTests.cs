@@ -1,4 +1,6 @@
 using OpenH2.Core.Factories;
+using OpenH2.Core.Tags;
+using System;
 using System.Diagnostics;
 using System.IO;
 using Xunit;
@@ -38,10 +40,7 @@ namespace OpenH2.Core.Tests
             Assert.Equal(14503424, scene.PrimaryMagic);
             Assert.Equal(6468096, scene.SecondaryMagic);
 
-            // TODO: Investigate FileCount in header - the value is the same as the Object Count in the IndexHeader
-            // and doesn't actually match the number of file strings in the section
-            //Assert.Equal(scene.Header.FileCount, scene.Files.Count);
-            Assert.Equal(scene.IndexHeader.ObjectCount, scene.ObjectList.Count);
+            Assert.Equal(scene.IndexHeader.ObjectCount, scene.ObjectIndex.Count);
 
             output.WriteLine($"Scene parsing took: {sw.ElapsedMilliseconds}ms and covered: {coverage.PercentCovered.ToString("0.00")}%");
         }
@@ -61,5 +60,7 @@ namespace OpenH2.Core.Tests
 
             Assert.Equal(scene.Header.StoredSignature, sig);
         }
+
+        
     }
 }

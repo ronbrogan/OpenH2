@@ -1,4 +1,5 @@
 using OpenH2.Core.Extensions;
+using OpenH2.Core.Representations.Meta;
 using OpenH2.Core.Tags;
 using System;
 using System.Collections.Generic;
@@ -14,13 +15,15 @@ namespace OpenH2.Core.Representations
 
         public SceneHeader Header { get; set; }
 
-        public List<string> Files { get; set; }
-
         public IndexHeader IndexHeader { get; set; }
 
         public List<TagListEntry> TagList { get; set; }
 
-        public List<ObjectIndexEntry> ObjectList { get; set; }
+        public List<ObjectIndexEntry> ObjectIndex { get; set; }
+
+        public Dictionary<uint, BaseMeta> ObjectMeta { get; set; }
+
+        public List<TagNode> Tags { get; set; }
 
         public string Name => this.Header.Name;
 

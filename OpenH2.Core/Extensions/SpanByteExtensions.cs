@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Buffers;
 using System.Text;
 
 namespace OpenH2.Core.Extensions
@@ -27,6 +28,44 @@ namespace OpenH2.Core.Extensions
         public static string ReadStringFrom(this Span<byte> data, int offset, int length)
         {
             return data.Slice(offset, length).ToStringFromNullTerminated();
+        }
+
+        public static string ReadStringStarting(this Span<byte> data, int offset)
+        {
+            var builder = new StringBuilder(32);
+
+            var current = offset;
+            while (true)
+            {
+                if (data[current] == 0b0)
+                {
+                    break;
+                }
+
+                builder.Append((char)data[current]);
+                current++;
+            }
+
+            return builder.ToString();
+        }
+
+        public static short ReadInt16At(this Span<byte> data, int offset)
+        {
+            var bytes = data.Slice(offset, 2);
+
+            short value = 0;
+            var shift = 0;
+
+            foreach (short b in bytes)
+            {
+                // Shift bits into correct position and add into value
+                value = (short)(value | (b << (shift * 8)));
+
+                shift++;
+            }
+
+            return value;
+            
         }
 
         public static int ReadInt32At(this Span<byte> data, int offset)
