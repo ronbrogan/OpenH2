@@ -1,11 +1,13 @@
 ﻿using System;
-using System.Buffers;
+using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 using System.Text;
 
 namespace OpenH2.Core.Extensions
 {
     public static class SpanByteExtensions
     {
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static string ToStringFromNullTerminated(this Span<byte> data)
         {
             var builder = new StringBuilder(data.Length);
@@ -25,11 +27,13 @@ namespace OpenH2.Core.Extensions
             return builder.ToString();
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static string ReadStringFrom(this Span<byte> data, int offset, int length)
         {
             return data.Slice(offset, length).ToStringFromNullTerminated();
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static string ReadStringStarting(this Span<byte> data, int offset)
         {
             var builder = new StringBuilder(32);
@@ -49,6 +53,7 @@ namespace OpenH2.Core.Extensions
             return builder.ToString();
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static short ReadInt16At(this Span<byte> data, int offset)
         {
             var bytes = data.Slice(offset, 2);
@@ -68,6 +73,7 @@ namespace OpenH2.Core.Extensions
             
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static int ReadInt32At(this Span<byte> data, int offset)
         {
             var bytes = data.Slice(offset, 4);
@@ -86,6 +92,7 @@ namespace OpenH2.Core.Extensions
             return value;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static uint ReadUInt32At(this Span<byte> data, int offset)
         {
             var bytes = data.Slice(offset, 4);
@@ -102,6 +109,26 @@ namespace OpenH2.Core.Extensions
             }
 
             return value;
+        }
+
+        private static UInt32ToSingle floatConverter = new UInt32ToSingle();
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static float ReadFloatAt(this Span<byte> data, int offset)
+        {
+            floatConverter.UInt32 = data.ReadUInt32At(offset);
+
+            return floatConverter.Single;
+        }
+
+        [StructLayout(LayoutKind.Explicit)]
+        private struct UInt32ToSingle
+        {
+            [FieldOffset(0)]
+            public uint UInt32;
+
+            [FieldOffset(0)]
+            public float Single;
         }
     }
 }

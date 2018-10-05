@@ -1,0 +1,60 @@
+//------------------------------------------------
+//--- 010 Editor v7.0.2 Binary Template
+//
+//      File: 
+//   Authors: 
+//   Version: 
+//   Purpose: 
+//  Category: 
+// File Mask: 
+//  ID Bytes: 
+//   History: 
+//------------------------------------------------
+struct BitmHeader {
+    short type;
+    short format;
+    short usage;
+    short formatFlags;
+    float fadeFactor;
+    float sharpenAmount;
+    float bumpHeight;
+    short spriteBudgetSize;
+    short sprideBudgetCount;
+    short colorPlateWidth;
+    short colorPlateHeight;
+    int compressedColorPlateData;
+    int unused[3];
+    float blurFilterSize;
+    float alphaBias;
+    short mipMapCount;
+    short spriteUsage;
+    short spriteSpacing;
+    short unused2;
+    int unknown;
+    int unknown2;
+    int unknown3;
+    int unknown4;
+    int unknown5;
+} header;
+
+
+struct Texture {
+    char tag[4];
+    short width;
+    short height;
+    short depth;
+    short type;
+    short format;
+    short flags;
+    short regx;
+    short regy;
+    short mipMapCount;
+    short pixelOffset;
+    int zero;
+    int offsets[6];
+    int sizes[6];
+    int ID;
+    int unknown[3];
+    
+    int unknown2[2];
+} texture;

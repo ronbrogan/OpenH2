@@ -1,11 +1,12 @@
 ﻿using OpenH2.Core.Enums.Texture;
+using OpenH2.Core.Offsets;
 using System;
 using System.Collections.Generic;
 using System.Text;
 
 namespace OpenH2.Core.Representations.Meta
 {
-    public class BitmMeta : BaseMeta
+    public class BitmapMeta : BaseMeta
     {
         public TextureType TextureType { get; set; }
 
@@ -37,8 +38,17 @@ namespace OpenH2.Core.Representations.Meta
 
         public short PixelOffset { get; set; }
 
-        public BitmLevelOfDetail[] LevelsOfDetail { get; set; }
+        public BitmapLevelOfDetail[] LevelsOfDetail { get; set; }
 
         public uint ID { get; set; }
+
+        public override string Name { get; set; }
+
+        public class BitmapLevelOfDetail
+        {
+            public NormalOffset Offset { get; set; }
+
+            public uint Size { get; set; }
+        }
     }
 }

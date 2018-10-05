@@ -1,0 +1,181 @@
+//------------------------------------------------
+//--- 010 Editor v7.0.2 Binary Template
+//
+//      File: 
+//   Authors: 
+//   Version: 
+//   Purpose: 
+//  Category: 
+// File Mask: 
+//  ID Bytes: 
+//   History: 
+//------------------------------------------------
+local int magic <hidden=true>;
+magic = 21249716;
+
+string secondaryOffsetRead(int offset)
+{
+    string s;
+	SPrintf(s, "%u (%u)", (offset - magic), offset);
+	return s;
+}
+
+
+struct Header {
+    int modelNameId;
+    int unknown1;
+    int unknown2;
+    int unused1[2];
+    int boundingBoxCount;
+    int boundingBoxOffset <read=secondaryOffsetRead>;
+    int lodCount;
+    int lodOffset <read=secondaryOffsetRead>;
+    int partCount;
+    int partOffset <read=secondaryOffsetRead>;
+    int unCount;
+    int unOffset <read=secondaryOffsetRead>;
+    int unCount2;
+    int unOffset2 <read=secondaryOffsetRead>;
+    int zero1[3];
+    int markerCount;
+    int markerOffset <read=secondaryOffsetRead>;
+    int zero2[4]; // Found another count/offset and inconsistent objects in sample
+    int shaderCount;
+    int shaderOffset <read=secondaryOffsetRead>;
+    int unknown3[7];
+};
+
+struct BoundingBox {
+    float MinX;
+    float MaxX;
+    float MinY;
+    float MaxY;
+    float MinZ;
+    float MaxZ;
+    float MinU;
+    float MaxU;
+    float MinV;
+    float MaxV;
+    float Unknown1;
+    float Unknown2;
+    float Unknown3;
+    float Unknown4;
+};
+
+
+struct LevelOfDetail {
+    int partName;
+    int unknown1;
+    int one;
+    int secondaryOffsetToPermutation;
+};
+
+struct LodPermutation {
+    int permutationName;
+    short lowestPieceIndex;
+    short lowPieceIndex;
+    short mediumLowPieceIndex;
+    short mediumHighPieceIndex;
+    short highPieceIndex;
+    short highestPieceIndex;
+};
+
+struct Part {
+    uint type;
+    ushort vertexCount;
+    ushort unknown1;
+    int unknown2;
+    int unknown3;
+    int unknown4;
+    ushort boneType;
+    ushort unknown5;
+    int unknown6;
+    int unused1[2];
+    int unknown7;
+    int unknown8;
+    int unknown9;
+    int unused2[2];
+    uint rawOffset;
+    uint rawSize;
+    uint rawHeaderSize;
+    uint rawDataSize;
+    struct Resource {
+        int unknown1;
+        int unknown2;
+        uint size;
+        uint offset;
+    } resource;
+    int unknown10;
+};
+
+struct Bone {
+    int boneName;
+    short parentIndex;
+    short firstChildIndex;
+    short nextSiblingIndex;
+    short unknown1;
+    float x;
+    float y;
+    float z;
+    float yaw;
+    float pitch;
+    float roll;
+    float unknown2;
+    float unknown3;
+    float unknown4;
+    float unknown5;
+    float unknown6;
+    float unknown7;
+    float unknown8;
+    float unknown9;
+    float unknown10;
+    float unknown11;
+    float unknown12;
+    float singleBoneX;
+    float singleBoneY;
+    float singleBoneZ;
+    float distanceFromParent;
+    int padding[8];
+};
+
+struct Marker {
+    int markerName;
+    int unknown[7];
+    struct Coordinates {
+        int unknown1;
+        float y;
+        float x;
+        float z;
+        float yaw;
+        float pitch;
+        float roll;
+        int unknown2;
+        int unknown3;
+    } coords;
+    int unknown2;
+    float unknown3;
+    float unknown4;
+    float unknown5;
+    int unknown6[3];
+};
+
+struct Shader {
+    char unknownTag[4];
+    int unknownId;
+    char shad[4];
+    uint shadId;
+    int unknown1;
+    float unknown2;
+    int unused[2];
+};
+
+Header head;
+BoundingBox boundingBox;
+LevelOfDetail lods[head.lodCount];
+LodPermutation permutations[head.lodCount];
+Part parts[head.partCount];
+Bone bones[head.partCount];
+int un1Value;
+int un2Values[3];
+Marker markers[head.markerCount];
+Shader shaders[head.shaderCount];

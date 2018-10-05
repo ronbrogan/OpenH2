@@ -5,7 +5,7 @@ namespace OpenH2.Core.Tags
 {
     public class BitmapTagNode : TagNode
     {
-        public BitmMeta Meta { get; set; }
+        public BitmapMeta Meta { get; set; }
 
         public Memory<byte>[] Levels { get; set; }
     }

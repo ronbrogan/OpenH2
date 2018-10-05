@@ -7,7 +7,7 @@ namespace OpenH2.Core.Utilities
 {
     public static class BitmUtils
     {
-        public static byte[] GetTextureHeader(BitmMeta bitmMeta, int dataSize)
+        public static byte[] GetTextureHeader(BitmapMeta bitmMeta, int dataSize)
         {
             var ddsHeader = new DdsHeader(
                 bitmMeta.TextureFormat,

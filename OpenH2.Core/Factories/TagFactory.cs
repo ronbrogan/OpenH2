@@ -16,7 +16,7 @@ namespace OpenH2.Core.Factories
         private delegate TagNode ProcessMeta(BaseMeta meta, TrackingReader reader);
         private static Dictionary<Type, ProcessMeta> Processors = new Dictionary<Type, ProcessMeta>
         {
-            { typeof(BitmMeta),  ProcessBitmMeta }
+            { typeof(BitmapMeta),  ProcessBitmMeta }
         };
 
         public static TagNode CreateTag(BaseMeta meta, TrackingReader reader)
@@ -31,7 +31,7 @@ namespace OpenH2.Core.Factories
 
         private static BitmapTagNode ProcessBitmMeta(BaseMeta meta, TrackingReader reader)
         {
-            var bitmMeta = (BitmMeta)meta;
+            var bitmMeta = (BitmapMeta)meta;
 
             var node = new BitmapTagNode();
 
