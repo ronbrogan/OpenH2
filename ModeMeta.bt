@@ -12,12 +12,23 @@
 //------------------------------------------------
 local int magic <hidden=true>;
 magic = 21249716;
+//magic = 21410452;
 
 string secondaryOffsetRead(int offset)
 {
     string s;
-	SPrintf(s, "%u (%u)", (offset - magic), offset);
+	SPrintf(s, "%u (%u)", secondaryOffsetGet(offset), offset);
 	return s;
+}
+
+int secondaryOffsetGet(int offset)
+{
+    return offset - magic;
+}
+
+void seekTo(int offset)
+{
+    FSeek(secondaryOffsetGet(offset));
 }
 
 
@@ -66,8 +77,8 @@ struct BoundingBox {
 struct LevelOfDetail {
     int partName;
     int unknown1;
-    int one;
-    int secondaryOffsetToPermutation;
+    int permutationCount;
+    int permutationsOffset <read=secondaryOffsetRead>;
 };
 
 struct LodPermutation {
@@ -170,12 +181,16 @@ struct Shader {
 };
 
 Header head;
-BoundingBox boundingBox;
+seekTo(head.boundingBoxOffset);
+BoundingBox boundingBox[head.boundingBoxCount];
+seekTo(head.lodOffset);
 LevelOfDetail lods[head.lodCount];
+// Technically we should use the count/offset from the lod for perms
 LodPermutation permutations[head.lodCount];
+seekTo(head.partOffset);
 Part parts[head.partCount];
 Bone bones[head.partCount];
-int un1Value;
-int un2Values[3];
+seekTo(head.markerOffset);
 Marker markers[head.markerCount];
+seekTo(head.shaderOffset);
 Shader shaders[head.shaderCount];

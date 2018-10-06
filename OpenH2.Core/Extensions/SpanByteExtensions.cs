@@ -93,6 +93,15 @@ namespace OpenH2.Core.Extensions
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static ushort ReadUInt16At(this Span<byte> data, int offset)
+        {
+            ushort value = data[offset];
+            value = (ushort)(value | (data[offset + 1] << 8));
+
+            return value;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static uint ReadUInt32At(this Span<byte> data, int offset)
         {
             var bytes = data.Slice(offset, 4);

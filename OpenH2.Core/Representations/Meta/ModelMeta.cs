@@ -49,8 +49,10 @@ namespace OpenH2.Core.Representations.Meta
         public class LevelOfDetail
         {
             public int PartNameId { get; set; }
-            public int Unknown { get; set; } // In Observed example, this unknown is always 1
-            public int OffsetToPermutations { get; set; }
+            public int PermutationCount { get; set; }
+            public MetaOffset PermutationsOffset { get; set; }
+
+            public Permutation[] Permutations { get; set; }
 
             public static int Length => 16;
         }
