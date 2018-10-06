@@ -56,16 +56,10 @@ namespace OpenH2.Core.Factories
                 using (var decompress = new ZlibStream(inputStream, CompressionMode.Decompress))
                 using (var outputStream = new MemoryStream((int)inputStream.Length))
                 {
+                    BitmUtils.WriteTextureHeader(bitmMeta, outputStream);
                     decompress.CopyTo(outputStream);
-                    outputStream.Seek(0, SeekOrigin.Begin);
-                    var header = BitmUtils.GetTextureHeader(bitmMeta, (int)outputStream.Length);
 
-                    var output = new byte[DdsHeader.Length + outputStream.Length];
-
-                    header.CopyTo(output, 0);
-                    outputStream.Read(output, DdsHeader.Length, (int)outputStream.Length);
-
-                    node.Levels[i] = new Memory<byte>(output);
+                    node.Levels[i] = new Memory<byte>(outputStream.GetBuffer()).Slice(0, (int)outputStream.Length);
                 }
             }
 

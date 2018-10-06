@@ -2,12 +2,13 @@
 using OpenH2.Core.Formats;
 using OpenH2.Core.Representations.Meta;
 using System.Collections.Generic;
+using System.IO;
 
 namespace OpenH2.Core.Utilities
 {
     public static class BitmUtils
     {
-        public static byte[] GetTextureHeader(BitmapMeta bitmMeta, int dataSize)
+        public static void WriteTextureHeader(BitmapMeta bitmMeta, Stream destination)
         {
             var ddsHeader = new DdsHeader(
                 bitmMeta.TextureFormat,
@@ -19,11 +20,7 @@ namespace OpenH2.Core.Utilities
                 null,
                 null);
 
-            var bytes = new byte[128];
-
-            ddsHeader.HeaderData.Read(bytes, 0, 128);
-
-            return bytes;
+            ddsHeader.HeaderData.CopyTo(destination);
         }
     }
 }
