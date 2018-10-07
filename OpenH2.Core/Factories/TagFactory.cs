@@ -1,6 +1,4 @@
-﻿using Ionic.Zlib;
-using OpenH2.Core.Enums;
-using OpenH2.Core.Formats;
+﻿using OpenH2.Core.Enums;
 using OpenH2.Core.Parsing;
 using OpenH2.Core.Representations.Meta;
 using OpenH2.Core.Tags;
@@ -8,6 +6,7 @@ using OpenH2.Core.Utilities;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.IO.Compression;
 
 namespace OpenH2.Core.Factories
 {
@@ -52,8 +51,9 @@ namespace OpenH2.Core.Factories
 
                 var data = reader.Chunk(lod.Offset.Value, (int)lod.Size, "Bitmap");
 
-                using (var inputStream = new MemoryStream(data.Span.ToArray()))
-                using (var decompress = new ZlibStream(inputStream, CompressionMode.Decompress))
+                // Need to offset 2 bytes into data to bypass zlib header for compatibility with DeflateStream
+                using (var inputStream = new MemoryStream(data.Span.Slice(2).ToArray()))
+                using (var decompress = new DeflateStream(inputStream, CompressionMode.Decompress))
                 using (var outputStream = new MemoryStream((int)inputStream.Length))
                 {
                     BitmUtils.WriteTextureHeader(bitmMeta, outputStream);
