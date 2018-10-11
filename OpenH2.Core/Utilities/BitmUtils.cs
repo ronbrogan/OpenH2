@@ -1,7 +1,5 @@
-﻿using OpenH2.Core.Enums.Texture;
-using OpenH2.Core.Formats;
-using OpenH2.Core.Representations.Meta;
-using System.Collections.Generic;
+﻿using OpenH2.Core.Formats;
+using OpenH2.Core.Meta;
 using System.IO;
 
 namespace OpenH2.Core.Utilities

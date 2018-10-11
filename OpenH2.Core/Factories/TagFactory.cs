@@ -1,12 +1,9 @@
-﻿using OpenH2.Core.Enums;
+﻿using OpenH2.Core.Meta;
 using OpenH2.Core.Parsing;
-using OpenH2.Core.Representations.Meta;
 using OpenH2.Core.Tags;
-using OpenH2.Core.Utilities;
+using OpenH2.Core.Tags.Processors;
 using System;
 using System.Collections.Generic;
-using System.IO;
-using System.IO.Compression;
 
 namespace OpenH2.Core.Factories
 {
@@ -15,7 +12,8 @@ namespace OpenH2.Core.Factories
         private delegate TagNode ProcessMeta(BaseMeta meta, TrackingReader reader);
         private static Dictionary<Type, ProcessMeta> Processors = new Dictionary<Type, ProcessMeta>
         {
-            { typeof(BitmapMeta),  ProcessBitmMeta }
+            { typeof(BitmapMeta),   BitmapTagProcessor.ProcessBitmapMeta },
+            { typeof(ModelMeta),    ModelTagProcessor.ProcessModelMeta }
         };
 
         public static TagNode CreateTag(BaseMeta meta, TrackingReader reader)
@@ -26,44 +24,6 @@ namespace OpenH2.Core.Factories
                 return null;
 
             return Processors[metaType](meta, reader);
-        }
-
-        private static BitmapTagNode ProcessBitmMeta(BaseMeta meta, TrackingReader reader)
-        {
-            var bitmMeta = (BitmapMeta)meta;
-
-            var node = new BitmapTagNode();
-
-            node.Meta = bitmMeta;
-            node.Levels = new Memory<byte>[bitmMeta.LevelsOfDetail.Length];
-
-            // Decompress and synthesize texture headers
-            for(var i = 0; i < bitmMeta.LevelsOfDetail.Length; i++)
-            {
-                var lod = bitmMeta.LevelsOfDetail[i];
-
-                if (lod.Offset.Value == 0 || lod.Offset.Value == int.MaxValue || lod.Size == 0)
-                    continue;
-
-                // TODO: Implement shared map retrieval
-                if (lod.Offset.Location != DataFile.Local)
-                    continue;
-
-                var data = reader.Chunk(lod.Offset.Value, (int)lod.Size, "Bitmap");
-
-                // Need to offset 2 bytes into data to bypass zlib header for compatibility with DeflateStream
-                using (var inputStream = new MemoryStream(data.Span.Slice(2).ToArray()))
-                using (var decompress = new DeflateStream(inputStream, CompressionMode.Decompress))
-                using (var outputStream = new MemoryStream((int)inputStream.Length))
-                {
-                    BitmUtils.WriteTextureHeader(bitmMeta, outputStream);
-                    decompress.CopyTo(outputStream);
-
-                    node.Levels[i] = new Memory<byte>(outputStream.GetBuffer()).Slice(0, (int)outputStream.Length);
-                }
-            }
-
-            return node;
         }
     }
 }

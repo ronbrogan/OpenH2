@@ -1,10 +1,7 @@
 ﻿using OpenH2.Core.Enums.Texture;
 using OpenH2.Core.Offsets;
-using System;
-using System.Collections.Generic;
-using System.Text;
 
-namespace OpenH2.Core.Representations.Meta
+namespace OpenH2.Core.Meta
 {
     public class BitmapMeta : BaseMeta
     {

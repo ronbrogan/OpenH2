@@ -2,10 +2,9 @@
 using OpenH2.Core.Offsets;
 using OpenH2.Core.Parsing;
 using OpenH2.Core.Representations;
-using OpenH2.Core.Representations.Meta;
 using System;
 
-namespace OpenH2.Core.Processors.Meta
+namespace OpenH2.Core.Meta.Processors
 {
     public static class ModelMetaProcessor
     {

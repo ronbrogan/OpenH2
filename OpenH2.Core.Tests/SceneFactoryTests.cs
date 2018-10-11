@@ -1,6 +1,4 @@
 using OpenH2.Core.Factories;
-using OpenH2.Core.Tags;
-using System;
 using System.Diagnostics;
 using System.IO;
 using Xunit;

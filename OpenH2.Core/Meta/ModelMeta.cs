@@ -1,7 +1,6 @@
 ﻿using OpenH2.Core.Offsets;
-using System.Runtime.InteropServices;
 
-namespace OpenH2.Core.Representations.Meta
+namespace OpenH2.Core.Meta
 {
     public class ModelMeta : BaseMeta
     {

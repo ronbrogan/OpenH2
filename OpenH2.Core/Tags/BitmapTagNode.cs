@@ -1,4 +1,4 @@
-using OpenH2.Core.Representations.Meta;
+using OpenH2.Core.Meta;
 using System;
 
 namespace OpenH2.Core.Tags

@@ -1,0 +1,112 @@
+//------------------------------------------------
+//--- 010 Editor v7.0.2 Binary Template
+//
+//      File: 
+//   Authors: 
+//   Version: 
+//   Purpose: 
+//  Category: 
+// File Mask: 
+//  ID Bytes: 
+//   History: 
+//------------------------------------------------
+
+local int vertexCount <hidden=true>;
+// antenna
+//vertexCount = 186;
+//large boulder
+vertexCount = 88;
+
+struct Header {
+    char tag[4];
+    uint resourceSize;
+    uint shaderChunks;
+    uint zero1;
+    uint unkChunks;
+    uint zero2;
+    uint unkChunks2;
+    uint zero3[3];
+    uint indiciesChunks;
+    uint zero4[5];
+    uint special3;
+    uint zero5[10];
+    uint boneChunks;
+    uint zero6[2];
+};
+
+struct ShaderResource {
+    char tag[4];
+    uint data[18 * header.shaderChunks];
+};
+
+struct UnknownResource {
+    char tag[4];
+
+    struct InternalUnknownResource {
+        ushort zero;
+        ushort indicies;
+        int pad;
+    } data[header.unkChunks];
+};
+
+struct IndiciesResource {
+    char tag[4];
+    ushort value[header.indiciesChunks];
+};
+
+struct VertexHeader {
+    char tag[4];
+    uint val1;
+    int pad[7];
+    uint val2;
+    int pad2[7];
+    uint val3;
+    int pad3[7];
+};
+
+struct Vec3 {
+    float x;
+    float y;
+    float z;
+};
+
+struct Vec2 {
+    float u;
+    float v;
+};
+
+struct VertexData {
+    char tag[4];
+    Vec3 coord[vertexCount];
+};
+
+struct TextureData {
+    char tag[4];
+    Vec2 coord[vertexCount];
+};
+
+struct TBNData {
+    char tag[4];
+    struct TBN {
+        Vec3 normal;
+        Vec3 tan;
+        Vec3 bitan;
+    } tbn[vertexCount];
+};
+
+struct WHWHWH {
+    char tag[4];
+    struct internalData {
+        byte dat[41];
+    } datas [vertexCount];
+};
+
+Header header;
+ShaderResource resource;
+UnknownResource unknown;
+IndiciesResource indicies;
+VertexHeader verticiesHeader;
+VertexData verticies;
+TextureData textureUvs;
+TBNData tbns;
+//WHWHWH wuw;

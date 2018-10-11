@@ -1,5 +1,5 @@
 using OpenH2.Core.Extensions;
-using OpenH2.Core.Representations.Meta;
+using OpenH2.Core.Meta;
 using OpenH2.Core.Tags;
 using System;
 using System.Collections.Generic;

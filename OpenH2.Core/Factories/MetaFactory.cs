@@ -1,7 +1,7 @@
-﻿using OpenH2.Core.Parsing;
-using OpenH2.Core.Processors.Meta;
+﻿using OpenH2.Core.Meta;
+using OpenH2.Core.Meta.Processors;
+using OpenH2.Core.Parsing;
 using OpenH2.Core.Representations;
-using OpenH2.Core.Representations.Meta;
 using System.Collections.Generic;
 
 namespace OpenH2.Core.Factories
@@ -11,7 +11,7 @@ namespace OpenH2.Core.Factories
         private delegate BaseMeta ProcessMeta(string name, ObjectIndexEntry entry, TrackingChunk chunk);
         private static readonly Dictionary<string, ProcessMeta> ProcessMap = new Dictionary<string, ProcessMeta>
         {
-            { "bitm", BitmMetaProcessor.ProcessBitm },
+            { "bitm", BitmapMetaProcessor.ProcessBitm },
             { "mode", ModelMetaProcessor.ProcessModel }
         };
 
