@@ -6,6 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
+using OpenH2.Core.Meta;
 
 namespace OpenH2.ModelDumper
 {
@@ -37,6 +38,29 @@ namespace OpenH2.ModelDumper
             }
 
             var processed = 0;
+
+            foreach(var meta in scene.ObjectMeta.Values)
+            {
+                var bspMeta = meta as BspMeta;
+
+                if (bspMeta == null)
+                    continue;
+
+                var writePath = Path.Combine(outPath, Path.GetDirectoryName(bspMeta.Name));
+                if (Directory.Exists(writePath) == false)
+                {
+                    Directory.CreateDirectory(writePath);
+                }
+
+                var writeName = $"{Path.GetFileName(bspMeta.Name)}";
+                var writePathAndName = Path.Combine(writePath, writeName);
+
+                Console.WriteLine($"Writing {writeName} to {writePath}");
+
+                File.WriteAllBytes(writePathAndName + ".bsp", bspMeta.RawMeta);
+
+                processed++;
+            }
 
             foreach (var tag in scene.Tags)
             {

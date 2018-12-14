@@ -2,6 +2,8 @@
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Text;
+using OpenH2.Core.Offsets;
+using OpenH2.Core.Representations;
 
 namespace OpenH2.Core.Extensions
 {
@@ -118,6 +120,11 @@ namespace OpenH2.Core.Extensions
             }
 
             return value;
+        }
+
+        public static CountAndOffset ReadMetaCaoAt(this Span<byte> data, int offset, ObjectIndexEntry index)
+        {
+            return new CountAndOffset(data.ReadInt32At(offset), new MetaOffset(index, data.ReadInt32At(offset + 4)));
         }
 
         private static UInt32ToSingle floatConverter = new UInt32ToSingle();

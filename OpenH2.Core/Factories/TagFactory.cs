@@ -13,7 +13,8 @@ namespace OpenH2.Core.Factories
         private static Dictionary<Type, ProcessMeta> Processors = new Dictionary<Type, ProcessMeta>
         {
             { typeof(BitmapMeta),   BitmapTagProcessor.ProcessBitmapMeta },
-            { typeof(ModelMeta),    ModelTagProcessor.ProcessModelMeta }
+            { typeof(ModelMeta),    ModelTagProcessor.ProcessModelMeta },
+            { typeof(BspMeta),      BspTagProcessor.ProcessBspMeta }
         };
 
         public static TagNode CreateTag(BaseMeta meta, TrackingReader reader)

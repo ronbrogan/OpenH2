@@ -1,6 +1,7 @@
 ﻿using OpenH2.Core.Representations;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Text;
 
 namespace OpenH2.Core.Offsets
@@ -10,6 +11,7 @@ namespace OpenH2.Core.Offsets
     /// Because we do not have the context of the whole file while parsing 
     /// the meta, we can use the secondary as a local offset.
     /// </summary>
+    [DebuggerDisplay("{Value}")]
     public class MetaOffset : IOffset
     {
         public MetaOffset(ObjectIndexEntry indexEntry, int offsetValue)

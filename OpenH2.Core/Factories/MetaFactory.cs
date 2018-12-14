@@ -12,7 +12,8 @@ namespace OpenH2.Core.Factories
         private static readonly Dictionary<string, ProcessMeta> ProcessMap = new Dictionary<string, ProcessMeta>
         {
             { "bitm", BitmapMetaProcessor.ProcessBitm },
-            { "mode", ModelMetaProcessor.ProcessModel }
+            { "mode", ModelMetaProcessor.ProcessModel },
+            { "sbsp", BspMetaProcessor.ProcessBsp }
         };
 
         public static BaseMeta GetMeta(string name, ObjectIndexEntry index, TrackingChunk chunk)

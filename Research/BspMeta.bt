@@ -1,0 +1,853 @@
+//------------------------------------------------
+//--- 010 Editor v7.0.2 Binary Template
+//
+//      File: 
+//   Authors: 
+//   Version: 
+//   Purpose: 
+//  Category: 
+// File Mask: 
+//  ID Bytes: 
+//   History: 
+//------------------------------------------------
+
+local int metaStart <hidden=true> = 14976540;
+local int metaLength <hidden=true> = 1049988;
+
+local int internalSecondaryStart <hidden=true> = 21444636;
+local int internalSecondaryEnd <hidden=true> = 22494624;
+
+
+local int internalSecondaryMagic <hidden=true>;
+internalSecondaryMagic = 21444636;
+
+
+string secondaryOffsetRead(int value)
+{
+    string s;
+    int internal = (value < internalSecondaryEnd && value > internalSecondaryStart);
+	SPrintf(s, "%u (%s)", value - 6468096, (internal ? "MAKE INTERNAL" : value) );
+	return s;
+}
+
+string internalSecondaryOffsetRead(int value)
+{
+    string s;
+	SPrintf(s, "%u", value - internalSecondaryMagic);
+	return s;
+}
+
+typedef int InternalOffset <read=internalSecondaryOffsetRead, fgcolor=0xFF4400>;
+
+struct CollisionBsp {
+    short plane;
+    short backChild;
+    short unknown;
+    short frontChild;
+    int unknown2[2];
+
+    int longsCount;
+    InternalOffset longsOffset;
+
+    float iPlane;
+    float jPlane;
+    float kPlane;
+    float dPlane;
+
+    float unknown5;
+    float unknown6;
+};
+
+struct OffsetSection {
+    int size1;
+    InternalOffset offset1;
+    int size2;    
+    InternalOffset offset2; // int 127 x 14 = 56 bytes
+    int size3;
+    InternalOffset offset3;
+    int size4;
+    InternalOffset offset4;
+
+    int zero[10];
+
+    int size5;
+    InternalOffset offset5;
+    int size6;    
+    InternalOffset offset6;
+    int size7;
+    InternalOffset offset7; // shader, 53 in series
+    int size8;
+    InternalOffset offset8; // 0xFF x 32
+
+    int zero2[8];
+
+    int size9;
+    InternalOffset offset9; // ref to ascension string
+    int size10;    
+    InternalOffset offset10; // filc tag ref - lol no, cliffs
+
+    int zero3[6];
+
+    int size11;
+    InternalOffset offset11; // scen tag ref
+    int size12;    
+    InternalOffset offset12; // antenna machine ref
+
+    int zero4[11];
+
+    int size13;
+    InternalOffset offset13;
+    int size14;    
+    InternalOffset offset14;
+    int size15;
+    InternalOffset offset15;
+    int size16;
+    InternalOffset offset16;
+    int size17;
+    InternalOffset offset17;
+
+    int zero5[28];
+    int size18;
+    InternalOffset offset18;
+
+    int unknown0;
+    int ff0;
+
+    int size19;
+    InternalOffset offset19;
+
+    int zero6;
+    float unknownFloats[6];
+    int zero7[6];
+
+    int size20;
+    InternalOffset offset20;
+
+    int size21;
+    InternalOffset offset21;
+
+    int size22;
+    InternalOffset offset22;
+
+    int size23;
+    InternalOffset offset23;
+};
+
+struct ShaderReference {
+    char tag[4];
+    int ffs;
+    int value;
+    char oldTag[4];
+    int value2;
+};
+
+struct UnknownLongsObj {
+    short val1;
+    short val2;
+    int key;
+};
+
+
+     
+struct Object1 {
+    int val1;
+    int val2;
+
+};
+     
+struct Object2 {
+    byte bytes[1];
+
+};
+     
+struct Object3 {
+    int val1;
+    int val2;
+    int val3;
+    int val4;
+    int val5;
+    int val6;
+    int val7;
+    int val8;
+    int val9;
+
+};
+     
+struct Object4 {
+    int val1;
+    int val2;
+    int val3;
+    int val4;
+    int val5;
+    int val6;
+
+};
+     
+struct Object5 {
+    int val1;
+    short shortVal;
+
+};
+     
+struct Object6 {
+    int val1;
+    int val2;
+    int val3;
+    int val4;
+    int val5;
+    int val6;
+    int val7;
+    int val8;
+    int val9;
+    int val10;
+    int val11;
+    int val12;
+    int val13;
+    int val14;
+    int size1; // items are 4 bytes
+    InternalOffset offset1; 
+    int val17;
+    int val18;
+    int val19;
+    int val20;
+    int val21;
+    float val22;
+    float val23;
+    float val24;
+    float val25;
+    float val26;
+    float val27;
+    int val28;
+    int val29;
+    int val30;
+    int val31;
+    int val32;
+    int val33;
+    int size2; // items are 8 bytes long
+    InternalOffset offset2;
+    int size3;
+    InternalOffset offset3;
+    int val38;
+    int size4; // items are 2 bytes
+    InternalOffset offset4;
+    int val41;
+    int val42;
+    int size5; // number of bytes
+    InternalOffset offset5 ;
+
+};
+     
+struct ShaderRef {
+    char tag[4];
+    int ffs1;
+    char tag2[4];
+    int val4;
+    int val5;
+    int val6;
+    int val7;
+    int val8;
+
+};
+     
+struct Object8 {
+    short shortVal;
+
+};
+     
+struct Object9 {
+    int val1;
+    int val2;
+    int val3;
+    int val4;
+    int val5;
+    int val6;
+    int val7;
+    int val8;
+    int val9;
+    int val10;
+    int val11;
+    int val12;
+    int val13;
+    int val14;
+    int val15;
+    int val16;
+    int val17;
+    int val18;
+    int val19;
+    int val20;
+    int val21;
+    int val22;
+    int val23;
+    int val24;
+    int val25;
+
+};
+     
+struct Object10 {
+    int val1;
+    int val2;
+    int val3;
+    int val4;
+    int val5;
+    int val6;
+    int val7;
+    int val8;
+    int val9;
+    int val10;
+    int val11;
+    int val12;
+    int val13;
+    int val14;
+    int val15;
+    int val16;
+    int val17;
+    int val18;
+
+};
+     
+struct Object11 {
+    int val1;
+    int val2;
+    int val3;
+    int val4;
+    int val5;
+
+};
+     
+struct Object12 {
+    int val1;
+    int val2;
+    int val3;
+    int val4;
+    int val5;
+    int val6;
+    int val7;
+    int val8;
+    int val9;
+    int val10;
+    float val11;
+    float val12;
+    float val13;
+    float val14;
+    float val15;
+    float val16;
+    int val17;
+    int val18;
+    int val19;
+    int val20;
+    int val21;
+    int val22;
+    int val23;
+    int val24;
+    int val25;
+    int val26;
+
+};
+     
+struct Object13 {
+    int val1;
+    int val2;
+    int val3;
+    int val4;
+    int val5;
+    int val6;
+    int size1;
+    InternalOffset offset1;
+    int val9;
+    int val10;
+    int val11;
+    int val12;
+    int val13;
+    int val14;
+    int size2;
+    InternalOffset offset2;
+    int val17;
+    int val18;
+    int val19;
+    int val20;
+    int val21;
+    int val22;
+    int val23;
+    int val24;
+    int val25;
+    float val26;
+    float val27;
+    float val28;
+    int size3;
+    InternalOffset offset3;
+    int size4;
+    InternalOffset offset4;
+    int size5;
+    InternalOffset offset5;
+    int size6;
+    InternalOffset offset6;
+    int size7;
+    InternalOffset offset7;
+    int size8;
+    InternalOffset offset8;
+    int size9;
+    InternalOffset offset9;
+    int size10;
+    InternalOffset offset10;
+    int size11;
+    InternalOffset offset11;
+    int size12;
+    InternalOffset offset12;
+    int size13;
+    InternalOffset offset13;
+
+};
+     
+struct Object14 {
+    float val1;
+    float val2;
+    float val3;
+    float val4;
+    float val5;
+    float val6;
+    float val7;
+    float val8;
+    float val9;
+    float val10;
+    float val11;
+    float val12;
+    float val13;
+    float val14;
+    float val15;
+    float val16;
+    float val17;
+    float val18;
+    float val19;
+    float val20;
+    int val21;
+    float val22;
+
+};
+     
+struct Object15 {
+    int val1;
+    int size1;
+    InternalOffset offset1;
+    int size2;
+    InternalOffset offset2;
+    int val6; // I think these should be shorts
+    int val7;
+    int val8;
+    int val9;
+    int val10;
+    int val11;
+    int val12;
+    int val13;
+    int val14;
+    int val15;
+    int val16;
+    int val17;
+    int val18;
+    int val19;
+
+};
+     
+struct Object16 {
+    int val1;
+    int size1;
+    InternalOffset offset1;
+    int size2;
+    InternalOffset offset2;
+    int val6; // I think these should be shorts
+    int val7;
+    int val8;
+    int val9;
+    int val10;
+    int val11;
+    int val12;
+    int val13;
+    int val14;
+    int val15;
+    int val16;
+    int val17;
+    int val18;
+    int val19;
+
+};
+     
+struct Object17 {
+    int val1;
+    int val2;
+    int val3;
+    float val4;
+    float val5;
+
+};
+     
+struct Object18 {
+    int zero[16];
+    int size1;
+    InternalOffset offset1;
+    int size2;
+    InternalOffset offset2;
+    int size3;
+    InternalOffset offset3;
+
+    int zero2[10];
+
+    int size4;
+    InternalOffset offset4;
+    int size5;
+    InternalOffset offset5;
+
+    int zero3[14];
+
+    int size6;
+    InternalOffset offset6;
+    int size7;
+    InternalOffset offset7;
+    
+    int zero4[14];
+
+    int size8;
+    InternalOffset offset8;
+    int size9;
+    InternalOffset offset9;
+
+    int zero5[14];
+
+    int size10;
+    InternalOffset offset10;
+    int size11;
+    InternalOffset offset11;
+
+    int zero6[14];
+
+    int size12;
+    InternalOffset offset12;
+    int size13;
+    InternalOffset offset13;
+
+    int zero7[14];
+
+    int size14;
+    InternalOffset offset14;
+    int size15;
+    InternalOffset offset15;
+
+    int zero8[14];
+
+    int size16;
+    InternalOffset offset16;
+    int size17;
+    InternalOffset offset17;
+
+    int zero9[25];
+
+    int unknown;
+    int size18;
+    InternalOffset offset18;
+    int size19;
+    InternalOffset offset19;
+
+    int zero10[2];
+};
+
+struct Object18_Internal18 {
+    ushort unknown2;
+    ushort unknown3;
+    int zero2;
+    float val1;
+    float val2;
+    float val3;
+    float val4;
+    float val5;
+    float val6;
+};
+     
+struct Object20 {
+    int val1;
+    int val2;
+    int val3;
+    int val4;
+
+};
+     
+struct Object21 {
+    int val1;
+    float val2;
+    float val3;
+    int val4;
+    int val5;
+    int val6;
+    int val7;
+    int size1;
+    InternalOffset offset1;
+    int size2;
+    InternalOffset offset2;
+    int val12;
+    int val13;
+    int val14;
+    int val15;
+    int val16;
+    int val17;
+    int val18;
+    int val19;
+    int val20;
+
+};
+     
+struct Object22 {
+    int val1;
+    int val2;
+    float val3;
+    float val4;
+    float val5;
+    float val6;
+    float val7;
+    float val8;
+    float val9;
+    float val10;
+    float val11;
+    float val12;
+    float val13;
+    float val14;
+    float val15;
+    float val16;
+    float val17;
+    float val18;
+    float val19;
+    float val20;
+    float val21;
+    float val22;
+    int val23;
+
+};
+     
+struct Object23 {
+    float val1;
+    float val2;
+    float val3;
+    int val4;
+    int val5;
+    int val6;
+    int val7;
+    int val8;
+    int size1;
+    InternalOffset offset1;
+    int val11;
+    int val12;
+    int val13;
+    int val14;
+    int val15;
+    int val16;
+    int val17;
+    int val18;
+
+};
+
+struct RawDataInfo {
+    int size1;
+    InternalOffset offset1;
+    int size2;
+    InternalOffset offset2;
+    int size3;
+    InternalOffset offset3;
+    int size4;
+    InternalOffset offset4;
+    int size5;
+    InternalOffset offset5;
+    int size6;
+    InternalOffset offset6;
+    int size7;
+    InternalOffset offset7;
+    int size8;
+    InternalOffset offset8;
+};
+
+struct RawObj1 {
+    ushort raw2index;
+    ushort next;
+    ushort unknown1;
+    ushort unknown2;
+};
+
+struct RawObj2 {
+    float x;
+    float y;
+    float z;
+    float w;
+};
+
+struct RawObj3 {
+    short flag;
+    short val2;
+};
+
+struct RawObj4 {
+    ushort index1;
+    ushort index2;
+};
+
+string shortUncompress(short value)
+{
+    string s;
+    float uncompressed = (value + 32768) / 65535.0f;
+    SPrintf(s, "%f", uncompressed);
+    return s;
+}
+
+struct RawObj5 {
+    float x;
+    float y;
+    float z;
+    ushort prev;
+    ushort next;
+};
+
+struct Face {
+    short val1;
+    short FirstEdge;
+    char flags;
+    char val3;
+    short val4;
+};
+
+struct HalfEdgeStructure {
+    short Vertex0;
+    short Vertex1;
+    short NextEdge;
+    short PrevEdge;
+    short Face0;
+    short Face1;
+};
+
+struct Vertex {
+    float x;
+    float y;
+    float z;
+    int edge;
+};
+
+
+int import[2];
+int checksum;
+int shaderCount;
+InternalOffset shaderOffset;
+int RawInfoCount;
+InternalOffset RawInfoOffset;
+CollisionBsp coll;
+OffsetSection offsets;
+
+
+FSeek(shaderOffset - internalSecondaryMagic);
+ShaderReference shaders[shaderCount];
+
+FSeek(RawInfoOffset - internalSecondaryMagic);
+RawDataInfo rawInfo[RawInfoCount];
+
+
+
+// Read Raw
+FSeek(rawInfo[0].offset1 - internalSecondaryMagic);
+RawObj1 raw1[rawInfo[0].size1];
+
+FSeek(rawInfo[0].offset2 - internalSecondaryMagic);
+RawObj2 raw2[rawInfo[0].size2];
+
+FSeek(rawInfo[0].offset3 - internalSecondaryMagic);
+RawObj3 raw3[rawInfo[0].size3];
+
+FSeek(rawInfo[0].offset4 - internalSecondaryMagic);
+RawObj4 raw4[rawInfo[0].size4];
+
+FSeek(rawInfo[0].offset5 - internalSecondaryMagic);
+RawObj5 raw5[rawInfo[0].size5];
+
+FSeek(rawInfo[0].offset6 - internalSecondaryMagic);
+Face faces[rawInfo[0].size6];
+
+FSeek(rawInfo[0].offset7 - internalSecondaryMagic);
+HalfEdgeStructure halfEdge[rawInfo[0].size7];
+
+FSeek(rawInfo[0].offset8 - internalSecondaryMagic);
+Vertex verticies[rawInfo[0].size8];
+
+
+// Some sort of indices?
+FSeek(coll.longsOffset - internalSecondaryMagic);
+UnknownLongsObj longs[coll.longsCount];
+
+
+FSeek(offsets.offset1 - internalSecondaryMagic);
+Object1 object1s[offsets.size1];
+     
+FSeek(offsets.offset2 - internalSecondaryMagic);
+Object2 object2s[offsets.size2];
+     
+FSeek(offsets.offset3 - internalSecondaryMagic);
+Object3 object3s[offsets.size3];
+     
+FSeek(offsets.offset4 - internalSecondaryMagic);
+Object4 object4s[offsets.size4];
+     
+FSeek(offsets.offset5 - internalSecondaryMagic);
+Object5 object5s[offsets.size5];
+     
+FSeek(offsets.offset6 - internalSecondaryMagic);
+Object6 object6s[offsets.size6];
+     
+FSeek(offsets.offset7 - internalSecondaryMagic);
+ShaderRef shaders2[offsets.size7];
+     
+FSeek(offsets.offset8 - internalSecondaryMagic);
+Object8 object8s[offsets.size8];
+     
+FSeek(offsets.offset9 - internalSecondaryMagic);
+Object9 object9s[offsets.size9];
+     
+FSeek(offsets.offset10 - internalSecondaryMagic);
+Object10 object10s[offsets.size10];
+     
+FSeek(offsets.offset11 - internalSecondaryMagic);
+Object11 object11s[offsets.size11];
+     
+FSeek(offsets.offset12 - internalSecondaryMagic);
+Object12 object12s[offsets.size12];
+     
+FSeek(offsets.offset13 - internalSecondaryMagic);
+Object13 object13s[offsets.size13];
+     
+FSeek(offsets.offset14 - internalSecondaryMagic);
+Object14 object14s[offsets.size14];
+     
+FSeek(offsets.offset15 - internalSecondaryMagic);
+Object15 object15s[offsets.size15];
+     
+FSeek(offsets.offset16 - internalSecondaryMagic);
+Object16 object16s[offsets.size16];
+     
+FSeek(offsets.offset17 - internalSecondaryMagic);
+Object17 object17s[offsets.size17];
+     
+FSeek(offsets.offset18 - internalSecondaryMagic);
+Object18 object18s[offsets.size18];
+
+local int i <hidden=true>;
+for( i = 0; i < offsets.size18; i++)
+{
+    FSeek(object18s[i].offset18 - internalSecondaryMagic);
+    Object18_Internal18 internal[object18s[i].size18];
+}
+
+
+     
+FSeek(offsets.offset19 - internalSecondaryMagic);
+byte object19[offsets.size19];
+     
+FSeek(offsets.offset20 - internalSecondaryMagic);
+Object20 object20s[offsets.size20];
+     
+FSeek(offsets.offset21 - internalSecondaryMagic);
+Object21 object21s[offsets.size21];
+     
+FSeek(offsets.offset22 - internalSecondaryMagic);
+Object22 object22s[offsets.size22];
+
+FSeek(offsets.offset23 - internalSecondaryMagic);
+Object23 object23s[offsets.size23];

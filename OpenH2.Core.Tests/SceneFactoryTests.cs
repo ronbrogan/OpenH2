@@ -18,7 +18,7 @@ namespace OpenH2.Core.Tests
         [Fact]
         public void Load_scene_from_file()
         {
-            var mapStream = new FileStream("ascension.map", FileMode.Open, FileAccess.Read, FileShare.Read);
+            var mapStream = new FileStream(@"D:\Halo 2 Vista Original Maps\ascension.map", FileMode.Open, FileAccess.Read, FileShare.Read);
 
             var factory = new SceneFactory();
 

@@ -8,6 +8,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using OpenH2.Core.Enums;
 
 namespace OpenH2.Core.Factories
 {
@@ -20,6 +21,13 @@ namespace OpenH2.Core.Factories
             return this.InternalFromFile(reader);
         }
 
+        public Scene FromFileWithoutTags(Stream fileStream)
+        {
+            var reader = new TrackingReader(fileStream.ToMemory());
+
+            return this.InternalFromFile(reader, SceneReadOptions.SkipTagBuilding);
+        }
+
         public Scene FromFile(Stream fileStream, out CoverageReport coverage)
         {
             var reader = new TrackingReader(fileStream.ToMemory());
@@ -29,14 +37,18 @@ namespace OpenH2.Core.Factories
             return scene;
         }
 
-        private Scene InternalFromFile(TrackingReader reader)
+        private Scene InternalFromFile(TrackingReader reader, SceneReadOptions readOptions = SceneReadOptions.Default)
         {
             var scene = new Scene();
             scene.RawData = reader.Memory;
 
             this.ExtractMetadata(scene, reader);
-            this.BuildTags(scene, reader);
 
+            if(readOptions.HasFlag(SceneReadOptions.SkipTagBuilding) == false)
+            {
+                this.BuildTags(scene, reader);
+            }
+            
             return scene;
         }
 

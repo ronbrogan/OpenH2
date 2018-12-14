@@ -1,6 +1,6 @@
 ﻿namespace OpenH2.Core.Offsets
 {
-    internal interface IOffset
+    public interface IOffset
     {
         int Value { get; }
         int OriginalValue { get; }
