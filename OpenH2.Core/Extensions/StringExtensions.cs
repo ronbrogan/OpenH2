@@ -10,5 +10,10 @@ namespace OpenH2.Core.Extensions
             Array.Reverse(c);
             return new string(c);
         }
+
+        public static bool IsSignificant(this string s)
+        {
+            return !string.IsNullOrWhiteSpace(s);
+        }
     }
 }

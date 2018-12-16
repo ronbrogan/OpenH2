@@ -65,7 +65,7 @@ namespace OpenH2.Core.Factories
 
         private void BuildTags(Scene scene, TrackingReader reader)
         {
-            scene.TagList = GetTagList(scene.IndexHeader, reader);
+            scene.TagTree = GetTagList(scene.IndexHeader, reader);
             scene.Tags = new List<TagNode>();
 
             foreach(var meta in scene.ObjectMeta.Values)
@@ -154,30 +154,29 @@ namespace OpenH2.Core.Factories
             return index;
         }
 
-        public List<TagListEntry> GetTagList(IndexHeader index, TrackingReader reader)
+        public TagTree GetTagList(IndexHeader index, TrackingReader reader)
         {
-            var span = reader.Chunk(index.FileRawOffset.Value + IndexHeader.Length, index.TagListCount * 12, "TagList").Span;
+            var span = reader.Chunk(index.FileRawOffset.Value + IndexHeader.Length, index.TagListCount * 12, "TagTree").Span;
 
-            var list = new List<TagListEntry>();
+            var tree = new TagTree();
             var nullVal = new string(new byte[] { 0xFF, 0xFF, 0xFF, 0xFF }.Select(b => (char)b).ToArray());
 
             for (var i = 0; i < index.TagListCount; i++)
             {
-                var entry = new TagListEntry();
                 var entryBase = i * 12;
 
-                entry.Class = span.ReadStringFrom(entryBase, 4).Reverse();
-                entry.ParentClass = span.ReadStringFrom(entryBase + 4, 4).Reverse();
-                if (entry.ParentClass == nullVal)
-                    entry.ParentClass = null;
-                entry.GrandparentClass = span.ReadStringFrom(entryBase + 8, 4).Reverse();
-                if (entry.GrandparentClass == nullVal)
-                    entry.GrandparentClass = null;
+                var c = span.ReadStringFrom(entryBase, 4).Reverse();
+                var p = span.ReadStringFrom(entryBase + 4, 4).Reverse();
+                if (p == nullVal)
+                    p = null;
+                var gp = span.ReadStringFrom(entryBase + 8, 4).Reverse();
+                if (gp == nullVal)
+                    gp = null;
 
-                list.Add(entry);
+                tree.Add(c, p, gp);
             }
 
-            return list;
+            return tree;
         }
 
         public List<ObjectIndexEntry> GetObjectIndexList(Scene scene, TrackingReader reader)

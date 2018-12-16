@@ -17,7 +17,7 @@ namespace OpenH2.Core.Representations
 
         public IndexHeader IndexHeader { get; set; }
 
-        public List<TagListEntry> TagList { get; set; }
+        public TagTree TagTree { get; set; }
 
         public List<ObjectIndexEntry> ObjectIndex { get; set; }
 

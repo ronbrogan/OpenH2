@@ -40,6 +40,8 @@ namespace OpenH2.Core.Tests
 
             Assert.Equal(scene.IndexHeader.ObjectCount, scene.ObjectIndex.Count);
 
+            scene.TagTree.Print(s => Debug.WriteLine(s));
+
             output.WriteLine($"Scene parsing took: {sw.ElapsedMilliseconds}ms and covered: {coverage.PercentCovered.ToString("0.00")}%");
         }
 

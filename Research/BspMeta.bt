@@ -39,7 +39,7 @@ string internalSecondaryOffsetRead(int value)
 
 typedef int InternalOffset <read=internalSecondaryOffsetRead, fgcolor=0xFF4400>;
 
-struct CollisionBsp {
+struct Meta {
     short plane;
     short backChild;
     short unknown;
@@ -49,13 +49,12 @@ struct CollisionBsp {
     int longsCount;
     InternalOffset longsOffset;
 
-    float iPlane;
-    float jPlane;
-    float kPlane;
-    float dPlane;
-
-    float unknown5;
-    float unknown6;
+    float xMin;
+    float xMax;
+    float yMin;
+    float yMax;
+    float zMin;
+    float zMax;
 };
 
 struct OffsetSection {
@@ -150,9 +149,9 @@ struct UnknownLongsObj {
 
      
 struct Object1 {
-    int val1;
-    int val2;
-
+    short val1;
+    short val2;
+    int val3;
 };
      
 struct Object2 {
@@ -173,7 +172,7 @@ struct Object3 {
 
 };
      
-struct Object4 {
+struct Fog {
     int val1;
     int val2;
     int val3;
@@ -314,7 +313,7 @@ struct Object11 {
 
 };
      
-struct Object12 {
+struct Marker {
     int val1;
     int val2;
     int val3;
@@ -663,8 +662,9 @@ struct RawDataInfo {
 struct RawObj1 {
     ushort raw2index;
     ushort next;
+    byte pad;
     ushort unknown1;
-    ushort unknown2;
+    byte pad2;
 };
 
 struct RawObj2 {
@@ -731,7 +731,7 @@ int shaderCount;
 InternalOffset shaderOffset;
 int RawInfoCount;
 InternalOffset RawInfoOffset;
-CollisionBsp coll;
+Meta meta;
 OffsetSection offsets;
 
 
@@ -770,8 +770,8 @@ Vertex verticies[rawInfo[0].size8];
 
 
 // Some sort of indices?
-FSeek(coll.longsOffset - internalSecondaryMagic);
-UnknownLongsObj longs[coll.longsCount];
+FSeek(meta.longsOffset - internalSecondaryMagic);
+UnknownLongsObj longs[meta.longsCount];
 
 
 FSeek(offsets.offset1 - internalSecondaryMagic);
