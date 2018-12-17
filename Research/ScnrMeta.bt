@@ -1,0 +1,646 @@
+//------------------------------------------------
+//--- 010 Editor v7.0.2 Binary Template
+//
+//      File: 
+//   Authors: 
+//   Version: 
+//   Purpose: 
+//  Category: 
+// File Mask: 
+//  ID Bytes: 
+//   History: 
+//------------------------------------------------
+local int internalSecondaryStart <hidden=true> = 21217280;
+local int internalSecondaryEnd <hidden=true> = 21249416;
+
+
+local int internalSecondaryMagic <hidden=true>;
+internalSecondaryMagic = 21217280;
+
+string internalSecondaryOffsetRead(int value)
+{
+    string s;
+	SPrintf(s, "%u", value - internalSecondaryMagic);
+	return s;
+}
+
+typedef int InternalOffset <read=internalSecondaryOffsetRead, fgcolor=0xFF4400>;
+
+
+struct TagIdPair
+{
+    char tag[4];
+    ushort idA;
+    ushort idB;
+};
+
+struct Cao
+{
+    int count;
+    InternalOffset offset;
+};
+
+struct Vec3
+{
+    float x;
+    float y;
+    float z;
+};
+
+
+struct Header 
+{
+    char tag[4];
+    int unknown;
+
+    int skyCount;
+    InternalOffset skyOffset;
+
+    short unknown;
+    short pad[27];
+
+    int count1;
+    InternalOffset offset1;
+
+    int count2;
+    InternalOffset offset2;
+
+    int sceneryCount;
+    InternalOffset sceneryOffset;
+
+    int pad2[14];
+
+    int itemCount;
+    InternalOffset itemOffset;
+
+    int count5;
+    InternalOffset offset5;
+
+    int count6;
+    InternalOffset offset6;
+
+    int machineCount;
+    InternalOffset machineOffset;
+
+    int pad3[8];
+
+    int count8;
+    InternalOffset offset8;
+    int ssceCount;
+    InternalOffset ssceOffset;
+    int count10;
+    InternalOffset offset10;
+    int lightCount;
+    InternalOffset lightOffset;
+    
+    int pad4[2];
+
+    int count12;
+    InternalOffset offset12;
+    int count13;
+    InternalOffset offset13;
+
+    int pad5[2];
+
+    int count14;
+    InternalOffset offset14;
+
+    int itemCollectionCount;
+    InternalOffset itemCollectionOffset;
+    int startingEquipmentCount;
+    InternalOffset startingEquipmentOffset;
+
+    int pad6[4];
+
+    int decalCount;
+    InternalOffset decalOffset;
+    
+    int pad7[26];
+
+    int debugCount;
+    InternalOffset debugOffset;
+
+    int pad8[8];
+
+    int count19;
+    InternalOffset offset19;
+
+    FSkip(48);
+
+    int terrainCount;
+    InternalOffset terrainOffset;
+    int count21;
+    InternalOffset offset21;
+
+    FSkip(16);
+
+    int count22;
+    InternalOffset offset22;
+    int count23;
+    InternalOffset offset23;
+
+    FSkip(16);
+
+    int count24;
+    InternalOffset offset24;
+    int count25;
+    InternalOffset offset25;
+
+    FSkip(48);
+
+    int count26;
+    InternalOffset offset26;
+
+    FSkip(128);
+
+    int count27;
+    InternalOffset offset27;
+
+    char sky[4];
+    int skyId;
+
+    int count28;
+    InternalOffset offset28;
+    int count29;
+    InternalOffset offset29;
+
+    char gldf[4];
+    int gldfId;
+
+    FSkip(8);
+
+    int count30;
+    InternalOffset offset30;
+
+    FSkip(56);
+    
+    int count31;
+    InternalOffset offset31;
+    FSkip(8);
+    int count32;
+    InternalOffset offset32;
+
+    FSkip(56);
+    
+    int count33;
+    InternalOffset offset33;
+};
+
+struct Sky
+{
+    char tag[4];
+    int skyId;
+};
+
+struct Scenery
+{
+    char tag[4];
+    int id;
+    int unknown[8];
+};
+
+struct Item
+{
+    char tag[4];
+    int id;
+    int unknown[8];
+};
+
+struct Object6
+{
+    short flags;
+    short unknown;
+    int unknown2;
+    
+    float val0;
+    float val1;
+    float val2;
+    float val3;
+    float val4;
+    float val5;
+
+    int unknown5[10];
+};
+
+struct Machine
+{
+    char tag[4];
+    int id;
+    int unknown[8];
+};
+
+struct Object8 // size 80
+{
+    short id;
+    short unknown;
+    int unknown2;
+    
+    float x;
+    float y;
+    float z;
+
+    int zero[5];
+    float w;
+
+    short zero2;
+    short val1;
+    short zero3;
+    short val2;
+    int zero4[2];
+
+    int unknown3[5];
+};
+
+struct Ssce
+{
+    char tag[4];
+    int id;
+    int unknown[8];
+};
+
+struct Object10
+{
+    short id;
+    short unknown;
+    int unknown2;
+    
+    float x;
+    float y;
+    float z;
+
+    int data[14];
+
+    float i;
+    float j;
+    float k;
+
+    float l;
+    float m;
+    float n;
+    float o;
+};
+
+struct Light
+{
+    char tag[4];
+    int id;
+    int unknown[8];
+};
+
+struct Object12
+{
+    float x;
+    float y;
+    float z;
+    float w;
+
+    int zero;
+    int oc;
+    int zero2[7];
+};
+
+struct Object13 // size 68
+{
+    short id;
+    short unknown;
+    short unknown2;
+    short zero;
+    int zero2;
+    
+    float val;
+    int zero3[4];
+    
+    float x;
+    float y;
+    float z;
+    float w;
+    
+    float i;
+    float j;
+    float k;
+    float l;
+
+    int index;
+};
+
+struct Object14 // size 32
+{
+    float x;
+    float y;
+    float z;
+    float w;
+    short idA;
+    short idB;
+    int zero[3];
+};
+
+struct ItemCollection //size 144
+{
+    int zero;
+    int oc;
+    int zero2;
+    int threeC;
+    int zero3[12];
+
+    float x;
+    float y;
+    float z;
+    float w;
+
+    int zero4[2];
+
+    char itmc[4];
+    int id;
+    
+    int zero5[12];
+};
+
+struct StartingEquipment // size 156
+{
+    int grenades;
+    int spawns;
+
+    int zero2[13];
+
+    TagIdPair primary;
+    TagIdPair secondary;
+    TagIdPair unused1;
+    TagIdPair unused2;
+    TagIdPair unused3;
+    TagIdPair unused4;
+
+    int zero3[12];
+};
+
+struct Decal
+{
+    char deca[4];
+    short idA;
+    short idB;
+};
+
+struct Object19
+{
+    int data[32];
+};
+
+struct Terrain // size 68
+{
+    int zero[4];
+    TagIdPair sbsp;
+    TagIdPair lightmap;
+
+    int unknown[9];
+};
+
+struct Object21 // size 152
+{
+    int count;
+    InternalOffset offset;
+
+    FSeek(offset - internalSecondaryMagic);
+    TagIdPair tags[count];
+};
+
+struct Object22
+{
+    short index;
+};
+
+struct Object23
+{
+    short id;
+    short baba[9];
+};
+
+struct AmbientSound
+{
+    local int start <hidden=true> = FTell();
+    string name; // max 32
+
+    FSeek(start + 32);
+    TagIdPair tag;
+    
+    int unknown[15];
+};
+
+struct SoundEnvironment // size 72
+{
+    local int start <hidden=true> = FTell();
+    string name; // max 32
+
+    FSeek(start + 32);
+    TagIdPair tag;
+
+    int unknown[8];
+};
+
+struct Object26 // size 192
+{
+    TagIdPair sbsp;
+    
+    Cao cao0;
+    Cao cao1;
+    int something;
+    Cao cao2;
+    Cao cao3;
+    Cao cao4;
+    
+
+    FSeek(cao0.offset - internalSecondaryMagic);
+    int item0s[cao0.count];
+
+    FSeek(cao1.offset - internalSecondaryMagic);
+    int item1s[cao1.count];
+
+    FSeek(cao2.offset - internalSecondaryMagic);
+    Vec3 item2s[cao2.count];
+
+    FSeek(cao3.offset - internalSecondaryMagic);
+    int item3s[cao3.count];
+
+    FSeek(cao4.offset - internalSecondaryMagic);
+    int item4s[cao4.count];
+};
+
+struct SpecialSpawns // size 816
+{
+    FSkip(8);
+    float objectiveRespawnZ;
+    FSkip(60);
+
+    Cao unknownCao;
+    Cao ctfRespawnCao;
+    Cao initialSpawnCao;
+
+    struct SpawnData
+    {
+        short val1;
+        short val2;
+        int val3;
+        int val4;
+        int val5;
+        
+        float data[8];
+    };
+
+    FSeek(ctfRespawnCao.offset - internalSecondaryMagic);
+    SpawnData ctfRespawns[ctfRespawnCao.count];
+
+
+    FSeek(initialSpawnCao.offset - internalSecondaryMagic);
+    SpawnData initialSpawns[initialSpawnCao.count];
+};
+
+struct ObstaclePlacement
+{
+    short idA;
+    short idB;
+    int value;
+    
+    float data[6];
+    int unknown[11];
+};
+
+struct ObstaclePallete
+{
+    TagIdPair tag;
+    int zer[8];
+};
+
+struct Object32
+{
+    TagIdPair unic;
+    int zero[2];
+    Cao cao;
+    
+    struct MainMenuData
+    {
+        int id;
+        TagIdPair bitm;
+        
+        local int start <hidden=true> = FTell();
+        local int i <hidden=true> = 0;
+        for(i = 0; i < 9; i++)
+        {
+            FSeek(start + 64 * i);
+            struct Title
+            {
+                wstring title;
+            } title;
+        }
+
+        for(i = 0; i < 9; i++)
+        {
+            FSeek(start + 576 + i * 256);
+            struct Description
+            {
+                wstring desc;
+            } desc;
+        }
+           
+    };
+
+    FSeek(cao.offset - internalSecondaryMagic);
+    MainMenuData mainMenu;
+};
+
+
+
+struct Object33 
+{
+    ushort a;
+    ushort b;
+};
+
+
+Header header;
+
+FSeek(header.skyOffset - internalSecondaryMagic);
+Sky skies[header.skyCount];
+
+FSeek(header.sceneryOffset - internalSecondaryMagic);
+Scenery scenery[header.sceneryCount];
+
+FSeek(header.itemOffset - internalSecondaryMagic);
+Item items[header.itemCount];
+
+FSeek(header.offset6 - internalSecondaryMagic);
+Object6 Object6s[header.count6];
+
+FSeek(header.machineOffset - internalSecondaryMagic);
+Machine machines[header.machineCount];
+
+FSeek(header.offset8 - internalSecondaryMagic);
+Object8 Object8s[header.count8];
+
+FSeek(header.ssceOffset - internalSecondaryMagic);
+Ssce ssces[header.ssceCount];
+
+FSeek(header.offset10 - internalSecondaryMagic);
+Object10 Object10s[header.count10];
+
+FSeek(header.lightOffset - internalSecondaryMagic);
+Light lights[header.lightCount];
+
+FSeek(header.offset12 - internalSecondaryMagic);
+Object12 Object12s[header.count12];
+
+FSeek(header.offset13 - internalSecondaryMagic);
+Object13 Object13s[header.count13];
+
+FSeek(header.offset14 - internalSecondaryMagic);
+Object14 Object14s[header.count14];
+
+FSeek(header.itemCollectionOffset - internalSecondaryMagic);
+ItemCollection itemCollections[header.itemCollectionCount];
+
+FSeek(header.startingEquipmentOffset - internalSecondaryMagic);
+StartingEquipment StartingEquipments[header.startingEquipmentCount];
+
+FSeek(header.decalOffset - internalSecondaryMagic);
+Decal decals[header.decalCount];
+
+FSeek(header.debugOffset - internalSecondaryMagic);
+byte debugData[header.debugCount];
+
+FSeek(header.offset19 - internalSecondaryMagic);
+Object19 Object19s[header.count19];
+
+FSeek(header.terrainOffset - internalSecondaryMagic);
+Terrain Terrains[header.terrainCount];
+
+FSeek(header.offset21 - internalSecondaryMagic);
+Object21 Object21s[header.count21];
+
+FSeek(header.offset22 - internalSecondaryMagic);
+Object22 Object22s[header.count22];
+
+FSeek(header.offset23 - internalSecondaryMagic);
+Object23 Object23s[header.count23];
+
+FSeek(header.offset24 - internalSecondaryMagic);
+AmbientSound Object24s[header.count24];
+
+FSeek(header.offset25 - internalSecondaryMagic);
+SoundEnvironment Object25s[header.count25];
+
+FSeek(header.offset26 - internalSecondaryMagic);
+Object26 Object26s[header.count26];
+
+FSeek(header.offset27 - internalSecondaryMagic);
+SpecialSpawns SpecialSpawnss[header.count27];
+
+FSeek(header.offset28 - internalSecondaryMagic);
+ObstaclePlacement
+Object28s[header.count28];
+
+FSeek(header.offset29 - internalSecondaryMagic);
+ObstaclePallete Object29s[header.count29];
+
+
+FSeek(header.offset32 - internalSecondaryMagic);
+Object32 Object32s[header.count32];
+
+FSeek(header.offset33 - internalSecondaryMagic);
+Object33 Object33s[header.count33];

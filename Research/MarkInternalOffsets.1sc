@@ -1,0 +1,26 @@
+//------------------------------------------------
+//--- 010 Editor v7.0.2 Script File
+//
+//      File: 
+//   Authors: 
+//   Version: 
+//   Purpose: 
+//  Category: 
+//   History: 
+//------------------------------------------------
+
+local int value = 0;
+local int lower = 21217280;
+local int upper = 21249416;
+
+while(!FEof())
+{
+    FSkip(4);
+    value = ReadInt();
+
+    if(value >= lower && value <= upper)
+    {
+        AddBookmark(FTell(), "internal offset", "INT", 1);
+    }
+
+}

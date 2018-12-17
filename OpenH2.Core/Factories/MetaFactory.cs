@@ -13,7 +13,8 @@ namespace OpenH2.Core.Factories
         {
             { "bitm", BitmapMetaProcessor.ProcessBitm },
             { "mode", ModelMetaProcessor.ProcessModel },
-            { "sbsp", BspMetaProcessor.ProcessBsp }
+            { "sbsp", BspMetaProcessor.ProcessBsp },
+            { "scnr", ScenarioMetaProcessor.ProcessScenario }
         };
 
         public static BaseMeta GetMeta(string name, ObjectIndexEntry index, TrackingChunk chunk)
