@@ -1,10 +1,15 @@
-﻿using OpenH2.Core.Enums.Texture;
+﻿using System;
+using OpenH2.Core.Enums.Texture;
 using OpenH2.Core.Offsets;
 
-namespace OpenH2.Core.Meta
+namespace OpenH2.Core.Tags
 {
-    public class BitmapMeta : BaseMeta
+    public class BitmapTag : BaseTag
     {
+        public BitmapTag(uint id) : base(id)
+        {
+        }
+
         public TextureType TextureType { get; set; }
 
         public TextureFormat TextureFormat { get; set; }
@@ -46,6 +51,8 @@ namespace OpenH2.Core.Meta
             public NormalOffset Offset { get; set; }
 
             public uint Size { get; set; }
+
+            public Memory<byte> Data { get; set; } = Memory<byte>.Empty;
         }
     }
 }

@@ -1,51 +1,61 @@
-﻿using OpenH2.Core.Enums;
-using OpenH2.Core.Meta;
+﻿using System;
+using OpenH2.Core.Enums.Texture;
+using OpenH2.Core.Extensions;
+using OpenH2.Core.Offsets;
 using OpenH2.Core.Parsing;
-using OpenH2.Core.Utilities;
-using System;
-using System.IO;
-using System.IO.Compression;
+using OpenH2.Core.Representations;
 
 namespace OpenH2.Core.Tags.Processors
 {
     public static class BitmapTagProcessor
     {
-        public static BitmapTagNode ProcessBitmapMeta(BaseMeta meta, TrackingReader reader)
+        public static BitmapTag ProcessBitm(uint id, string name, TagIndexEntry index, TrackingChunk chunk, TrackingReader sceneReader)
         {
-            var bitmMeta = (BitmapMeta)meta;
-
-            var node = new BitmapTagNode();
-
-            node.Meta = bitmMeta;
-            node.Levels = new Memory<byte>[bitmMeta.LevelsOfDetail.Length];
-
-            // Decompress and synthesize texture headers
-            for (var i = 0; i < bitmMeta.LevelsOfDetail.Length; i++)
+            var span = chunk.Span;
+            var tag = new BitmapTag(id)
             {
-                var lod = bitmMeta.LevelsOfDetail[i];
+                Name = name,
+                TextureType = (TextureType)span.ReadInt16At(0),
+                TextureFormat = (TextureFormat)span.ReadInt16At(2),
+                TextureUsage = (TextureUsage)span.ReadInt16At(4),
+                MipMapCount = span.ReadInt16At(52),
 
-                if (lod.Offset.Value == 0 || lod.Offset.Value == int.MaxValue || lod.Size == 0)
-                    continue;
+                Tag = span.ReadStringFrom(80, 4),
+                Width = span.ReadInt16At(84),
+                Height = span.ReadInt16At(86),
+                Depth = span.ReadInt16At(88),
+                Type = span.ReadInt16At(90),
+                Format = span.ReadInt16At(92),
+                Properties = (TextureProperties)span.ReadInt16At(94),
+                RegX = span.ReadInt16At(96),
+                RegY = span.ReadInt16At(98),
+                MipMapCount2 = span.ReadInt16At(100),
+                PixelOffset = span.ReadInt16At(102),
 
-                // TODO: Implement shared map retrieval
-                if (lod.Offset.Location != DataFile.Local)
-                    continue;
+                LevelsOfDetail = new BitmapTag.BitmapLevelOfDetail[6]
+            };
 
-                var data = reader.Chunk(lod.Offset.Value, (int)lod.Size, "Bitmap");
+            var offsetsStart = 108;
+            var sizesStart = 132;
 
-                // Need to offset 2 bytes into data to bypass zlib header for compatibility with DeflateStream
-                using (var inputStream = new MemoryStream(data.Span.Slice(2).ToArray()))
-                using (var decompress = new DeflateStream(inputStream, CompressionMode.Decompress))
-                using (var outputStream = new MemoryStream((int)inputStream.Length))
+            for (int i = 0; i < 6; i++)
+            {
+                var lod = new BitmapTag.BitmapLevelOfDetail();
+
+                lod.Offset = new NormalOffset((int)span.ReadUInt32At(offsetsStart + (i * 4)));
+                lod.Size = span.ReadUInt32At(sizesStart + (i * 4));
+
+                if (lod.Offset.Location == Enums.DataFile.Local && lod.Offset.Value != 0 && lod.Offset.Value != int.MaxValue && lod.Size != 0)
                 {
-                    BitmUtils.WriteTextureHeader(bitmMeta, outputStream);
-                    decompress.CopyTo(outputStream);
-
-                    node.Levels[i] = new Memory<byte>(outputStream.GetBuffer()).Slice(0, (int)outputStream.Length);
+                    lod.Data = sceneReader.Chunk(lod.Offset.Value, (int)lod.Size, "Bitmap").AsMemory();
                 }
+
+                tag.LevelsOfDetail[i] = lod;
             }
 
-            return node;
+            tag.ID = span.ReadUInt32At(156);
+
+            return tag;
         }
     }
 }

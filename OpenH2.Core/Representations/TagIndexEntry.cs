@@ -2,7 +2,7 @@
 
 namespace OpenH2.Core.Representations
 {
-    public class ObjectIndexEntry
+    public class TagIndexEntry
     {
         public string Tag { get; set; }
         public uint ID { get; set; }

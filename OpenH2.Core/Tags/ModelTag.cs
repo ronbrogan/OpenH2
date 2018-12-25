@@ -1,9 +1,14 @@
-﻿using OpenH2.Core.Offsets;
+﻿using System;
+using OpenH2.Core.Offsets;
 
-namespace OpenH2.Core.Meta
+namespace OpenH2.Core.Tags
 {
-    public class ModelMeta : BaseMeta
+    public class ModelTag : BaseTag
     {
+        public ModelTag(uint id) : base(id)
+        {
+        }
+
         public override string Name { get; set; }
 
         public int NameId { get; set; }
@@ -76,6 +81,7 @@ namespace OpenH2.Core.Meta
             public ushort BoneCount { get; set; }
             public uint DataOffset { get; set; }
             public uint DataSize { get; set; }
+            public Memory<byte> Data { get; set; }
             public uint DataHeaderSize { get; set; }
             public uint DataBodySize { get; set; }
             public uint ResourceSize { get; set; }

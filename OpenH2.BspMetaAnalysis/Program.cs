@@ -1,8 +1,9 @@
 ﻿using OpenH2.Core.Factories;
-using OpenH2.Core.Tags;
 using System.IO;
 using System.Linq;
 using System.Text;
+using OpenH2.Translation;
+using OpenH2.Translation.TagData;
 
 namespace OpenH2.BspMetaAnalysis
 {
@@ -24,13 +25,15 @@ namespace OpenH2.BspMetaAnalysis
 
             var ascension = metas["ascension"];
 
-            var bsp = (BspNode)ascension.Tags.First(t => t.GetType() == typeof(BspNode));
+            var translator = new TagTranslator(ascension);
+
+            var bsp = translator.GetAll<BspTagData>().First();
 
             var obj = CreatObjFileForBsp(bsp);
             File.WriteAllText("D:\\bsp.obj", obj);
         }
 
-        public static string CreatObjFileForBsp(BspNode mesh)
+        public static string CreatObjFileForBsp(BspTagData mesh)
         {
             var sb = new StringBuilder();
 

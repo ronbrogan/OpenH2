@@ -5,14 +5,14 @@ using OpenH2.Core.Extensions;
 using OpenH2.Core.Parsing;
 using OpenH2.Core.Representations;
 
-namespace OpenH2.Core.Meta.Processors
+namespace OpenH2.Core.Tags.Processors
 {
-    public static class ScenarioMetaProcessor
+    public static class ScenarioTagProcessor
     {
-        public static ScenarioMeta ProcessScenario(string name, ObjectIndexEntry index, TrackingChunk chunk)
+        public static ScenarioTag ProcessScenario(uint id, string name, TagIndexEntry index, TrackingChunk chunk, TrackingReader sceneReader)
         {
             var data = chunk.Span;
-            var meta = new ScenarioMeta
+            var meta = new ScenarioTag(id)
             {
                 Name = name,
                 RawMeta = data.ToArray()
@@ -24,7 +24,7 @@ namespace OpenH2.Core.Meta.Processors
             return meta;
         }
 
-        private static uint[] GetSkyboxIds(Span<byte> data, ObjectIndexEntry index)
+        private static uint[] GetSkyboxIds(Span<byte> data, TagIndexEntry index)
         {
             var skyboxCao = data.ReadMetaCaoAt(8, index);
             var skyboxSectionLength = 8;
@@ -40,18 +40,18 @@ namespace OpenH2.Core.Meta.Processors
             return skyboxes;
         }
 
-        private static ScenarioMeta.Terrain[] GetTerrains(Span<byte> data, ObjectIndexEntry index)
+        private static ScenarioTag.Terrain[] GetTerrains(Span<byte> data, TagIndexEntry index)
         {
             var cao = data.ReadMetaCaoAt(528, index);
             var terrainLength = 68;
 
-            var terrains = new ScenarioMeta.Terrain[cao.Count];
+            var terrains = new ScenarioTag.Terrain[cao.Count];
 
             for (var i = 0; i < cao.Count; i++)
             {
                 var span = data.Slice(cao.Offset.Value + i * terrainLength, terrainLength);
 
-                var terrain = new ScenarioMeta.Terrain()
+                var terrain = new ScenarioTag.Terrain()
                 {
                     BspId = span.ReadUInt32At(20),
                     LightmapId = span.ReadUInt32At(28),

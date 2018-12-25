@@ -2,11 +2,13 @@
 using OpenH2.Core.Representations;
 using OpenH2.Core.Tags;
 using OpenH2.Core.Types;
+using OpenH2.Translation;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Text;
-using OpenH2.Core.Meta;
+using OpenH2.Translation.TagData;
 
 namespace OpenH2.ModelDumper
 {
@@ -39,9 +41,9 @@ namespace OpenH2.ModelDumper
 
             var processed = 0;
 
-            foreach(var meta in scene.ObjectMeta.Values)
+            foreach(var meta in scene.Tags.Values)
             {
-                var bspMeta = meta as BspMeta;
+                var bspMeta = meta as BspTag;
 
                 if (bspMeta == null)
                     continue;
@@ -62,27 +64,26 @@ namespace OpenH2.ModelDumper
                 processed++;
             }
 
-            foreach (var tag in scene.Tags)
+            var translator = new TagTranslator(scene);
+
+            var models = translator.GetAll<ModelTagData>();
+
+            foreach (var modelTag in models)
             {
-                var modelTag = tag as ModelTagNode;
-
-                if (modelTag == null)
-                    continue;
-
-                var writePath = Path.Combine(outPath, Path.GetDirectoryName(modelTag.Meta.Name));
+                var writePath = Path.Combine(outPath, Path.GetDirectoryName(modelTag.Name));
                 if (Directory.Exists(writePath) == false)
                 {
                     Directory.CreateDirectory(writePath);
                 }
 
-                for(var i = 0; i < modelTag.RawPartData.Length; i++)
+                for(var i = 0; i < modelTag.Parts.Length; i++)
                 {
-                    var writeName = $"{Path.GetFileName(modelTag.Meta.Name)}.{i}";
+                    var writeName = $"{Path.GetFileName(modelTag.Name)}.{i}";
                     var writePathAndName = Path.Combine(writePath, writeName);
 
                     Console.WriteLine($"Writing {writeName} to {writePath}");
 
-                    File.WriteAllBytes(writePathAndName + ".model", modelTag.RawPartData[i].ToArray());
+                    //File.WriteAllBytes(writePathAndName + ".model", modelTag.Parts[i].RawData);
                     File.WriteAllText(writePathAndName + ".obj", CreatObjFileForMesh(modelTag.Parts[0]));
 
                     processed++;

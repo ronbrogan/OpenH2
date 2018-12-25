@@ -33,5 +33,10 @@ namespace OpenH2.Core.Parsing
         }
 
         public int Length => this.length;
+
+        public Memory<byte> AsMemory()
+        {
+            return new Memory<byte>(this.Span.ToArray());
+        }
     }
 }

@@ -15,7 +15,9 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Core", "Core", "{F8FDF358-B
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OpenH2.ModelDumper", "OpenH2.ModelDumper\OpenH2.ModelDumper.csproj", "{5B4DF6BA-3185-4C16-8541-8DF45307CE97}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OpenH2.BspMetaAnalysis", "OpenH2.BspMetaAnalysis\OpenH2.BspMetaAnalysis.csproj", "{65D18C27-0FCF-40D4-8286-AFCE46EAFE59}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OpenH2.BspMetaAnalysis", "OpenH2.BspMetaAnalysis\OpenH2.BspMetaAnalysis.csproj", "{65D18C27-0FCF-40D4-8286-AFCE46EAFE59}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OpenH2.Translation", "OpenH2.Translation\OpenH2.Translation.csproj", "{832581A1-10FD-4CDF-8030-0C3780E000B6}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -43,6 +45,10 @@ Global
 		{65D18C27-0FCF-40D4-8286-AFCE46EAFE59}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{65D18C27-0FCF-40D4-8286-AFCE46EAFE59}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{65D18C27-0FCF-40D4-8286-AFCE46EAFE59}.Release|Any CPU.Build.0 = Release|Any CPU
+		{832581A1-10FD-4CDF-8030-0C3780E000B6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{832581A1-10FD-4CDF-8030-0C3780E000B6}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{832581A1-10FD-4CDF-8030-0C3780E000B6}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{832581A1-10FD-4CDF-8030-0C3780E000B6}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -53,6 +59,7 @@ Global
 		{F592868D-7E27-4845-9795-FF3ABA32E023} = {D955C66F-CF2B-4A63-A95F-F8D3F98253DF}
 		{5B4DF6BA-3185-4C16-8541-8DF45307CE97} = {D955C66F-CF2B-4A63-A95F-F8D3F98253DF}
 		{65D18C27-0FCF-40D4-8286-AFCE46EAFE59} = {D955C66F-CF2B-4A63-A95F-F8D3F98253DF}
+		{832581A1-10FD-4CDF-8030-0C3780E000B6} = {F8FDF358-B807-4FC4-AB33-13D15FB1B906}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {D941C8C9-2B2C-47A1-82CB-B045206BA267}

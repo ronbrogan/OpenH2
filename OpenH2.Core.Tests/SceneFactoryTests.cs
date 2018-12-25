@@ -2,7 +2,7 @@ using OpenH2.Core.Factories;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using OpenH2.Core.Meta;
+using OpenH2.Core.Tags;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -40,13 +40,11 @@ namespace OpenH2.Core.Tests
             Assert.Equal(14503424, scene.PrimaryMagic);
             Assert.Equal(6468096, scene.SecondaryMagic);
 
-            Assert.Equal(scene.IndexHeader.ObjectCount, scene.ObjectIndex.Count);
+            Assert.Equal(scene.IndexHeader.ObjectCount, scene.TagIndex.Count);
 
-            scene.TagTree.Print(s => Debug.WriteLine(s));
+            var scnr = scene.Tags.Values.First(v => v.GetType() == typeof(ScenarioTag)) as ScenarioTag;
 
-            var scnr = scene.ObjectMeta.Values.First(v => v.GetType() == typeof(ScenarioMeta)) as ScenarioMeta;
-
-            File.WriteAllBytes("D:\\scnr.meta", scnr.RawMeta);
+            File.WriteAllBytes("D:\\scnr.tag", scnr.RawMeta);
 
             output.WriteLine($"Scene parsing took: {sw.ElapsedMilliseconds}ms and covered: {coverage.PercentCovered.ToString("0.00")}%");
         }

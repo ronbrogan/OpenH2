@@ -7,14 +7,14 @@ using System.Text;
 namespace OpenH2.Core.Offsets
 {
     /// <summary>
-    /// This offset type represents a secondary offset within a meta block. 
+    /// This offset type represents a secondary offset within a tag block. 
     /// Because we do not have the context of the whole file while parsing 
-    /// the meta, we can use the secondary as a local offset.
+    /// the tag, we can use the secondary as a local offset.
     /// </summary>
     [DebuggerDisplay("{Value}")]
     public class MetaOffset : IOffset
     {
-        public MetaOffset(ObjectIndexEntry indexEntry, int offsetValue)
+        public MetaOffset(TagIndexEntry indexEntry, int offsetValue)
         {
             this.OriginalValue = offsetValue;
 

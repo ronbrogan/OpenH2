@@ -1,5 +1,5 @@
+using OpenH2.Core.Enums;
 using OpenH2.Core.Extensions;
-using OpenH2.Core.Meta;
 using OpenH2.Core.Offsets;
 using OpenH2.Core.Parsing;
 using OpenH2.Core.Representations;
@@ -8,7 +8,6 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using OpenH2.Core.Enums;
 
 namespace OpenH2.Core.Factories
 {
@@ -21,13 +20,6 @@ namespace OpenH2.Core.Factories
             return this.InternalFromFile(reader);
         }
 
-        public Scene FromFileWithoutTags(Stream fileStream)
-        {
-            var reader = new TrackingReader(fileStream.ToMemory());
-
-            return this.InternalFromFile(reader, SceneReadOptions.SkipTagBuilding);
-        }
-
         public Scene FromFile(Stream fileStream, out CoverageReport coverage)
         {
             var reader = new TrackingReader(fileStream.ToMemory());
@@ -37,17 +29,12 @@ namespace OpenH2.Core.Factories
             return scene;
         }
 
-        private Scene InternalFromFile(TrackingReader reader, SceneReadOptions readOptions = SceneReadOptions.Default)
+        private Scene InternalFromFile(TrackingReader reader)
         {
             var scene = new Scene();
             scene.RawData = reader.Memory;
 
             this.ExtractMetadata(scene, reader);
-
-            if(readOptions.HasFlag(SceneReadOptions.SkipTagBuilding) == false)
-            {
-                this.BuildTags(scene, reader);
-            }
             
             return scene;
         }
@@ -57,33 +44,16 @@ namespace OpenH2.Core.Factories
             scene.Header = GetSceneHeader(scene, reader);
             scene.IndexHeader = GetIndexHeader(scene, reader);
             scene.PrimaryMagic = CalculatePrimaryMagic(scene.IndexHeader);
-            scene.ObjectIndex = GetObjectIndexList(scene, reader);
-            scene.SecondaryMagic = CalculateSecondaryMagic(scene.Header, scene.ObjectIndex.First());
+            scene.TagIndex = GetObjectIndexList(scene, reader);
+            scene.SecondaryMagic = CalculateSecondaryMagic(scene.Header, scene.TagIndex.First());
 
-            scene.ObjectMeta = GetObjectMetas(scene, reader);
+            scene.Tags = GetTags(scene, reader);
         }
 
-        private void BuildTags(Scene scene, TrackingReader reader)
+        private Dictionary<uint, BaseTag> GetTags(Scene scene, TrackingReader reader)
         {
-            scene.TagTree = GetTagList(scene.IndexHeader, reader);
-            scene.Tags = new List<TagNode>();
-
-            foreach(var meta in scene.ObjectMeta.Values)
-            {
-                if (meta == null)
-                    continue;
-
-                var tag = TagFactory.CreateTag(meta, reader);
-
-                if (tag != null)
-                    scene.Tags.Add(tag);
-            }
-        }
-
-        private Dictionary<uint, BaseMeta> GetObjectMetas(Scene scene, TrackingReader reader)
-        {
-            var dict = new Dictionary<uint, BaseMeta>();
-            var index = scene.ObjectIndex;
+            var dict = new Dictionary<uint, BaseTag>();
+            var index = scene.TagIndex;
 
             var fileIndex = reader.Chunk(scene.Header.FilesIndex, scene.Header.FileCount * 4, "FileIndex").Span;
             var fileTable = reader.Chunk(scene.Header.FileTableOffset, scene.Header.FileTableSize, "FileTable").Span;
@@ -93,13 +63,13 @@ namespace OpenH2.Core.Factories
                 if (item.MetaSize == 0 || item.Offset.OriginalValue == 0)
                     continue;
 
-                var chunk = reader.Chunk(item.Offset.Value, item.MetaSize, "Meta");
+                var chunk = reader.Chunk(item.Offset.Value, item.MetaSize, "Tag");
 
                 var nameIndex = (short)(item.ID & 0x0000FFFF);
                 var nameStart = fileIndex.ReadInt32At(4 * nameIndex);
                 var name = fileTable.ReadStringStarting(nameStart);
 
-                dict[item.ID] = MetaFactory.GetMeta(name, item, chunk);
+                dict[item.ID] = TagFactory.CreateTag(item.ID, name, item, chunk, reader);
             }
 
             return dict;
@@ -179,13 +149,13 @@ namespace OpenH2.Core.Factories
             return tree;
         }
 
-        public List<ObjectIndexEntry> GetObjectIndexList(Scene scene, TrackingReader reader)
+        public List<TagIndexEntry> GetObjectIndexList(Scene scene, TrackingReader reader)
         {
             var index = scene.IndexHeader;
-            var listBytes = reader.Chunk(index.ObjectIndexOffset.Value, index.ObjectCount * ObjectIndexEntry.Size, "ObjectIndexList").Span;
+            var listBytes = reader.Chunk(index.ObjectIndexOffset.Value, index.ObjectCount * TagIndexEntry.Size, "ObjectIndexList").Span;
             var nullObjTag = new string(new byte[] { 0xFF, 0xFF, 0xFF, 0xFF }.Select(b => (char)b).ToArray());
 
-            var list = new List<ObjectIndexEntry>();
+            var list = new List<TagIndexEntry>();
 
             for (var i = 0; i < index.ObjectCount; i++)
             {
@@ -196,7 +166,7 @@ namespace OpenH2.Core.Factories
                 //if (tag == nullObjTag)
                 //    continue;
 
-                var entry = new ObjectIndexEntry();
+                var entry = new TagIndexEntry();
                 entry.Tag = tag;
                 entry.ID = listBytes.ReadUInt32At(entryBase + 4);
                 entry.Offset = new SecondaryOffset(scene, listBytes.ReadInt32At(entryBase + 8));
@@ -213,7 +183,7 @@ namespace OpenH2.Core.Factories
             return index.FileRawOffset.Value - index.PrimaryMagicConstant + IndexHeader.Length;
         }
 
-        public int CalculateSecondaryMagic(SceneHeader header, ObjectIndexEntry firstObj)
+        public int CalculateSecondaryMagic(SceneHeader header, TagIndexEntry firstObj)
         {
             return firstObj.Offset.OriginalValue - header.MetaOffset.Value;
         }

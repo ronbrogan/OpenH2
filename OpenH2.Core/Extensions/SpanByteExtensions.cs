@@ -122,7 +122,7 @@ namespace OpenH2.Core.Extensions
             return value;
         }
 
-        public static CountAndOffset ReadMetaCaoAt(this Span<byte> data, int offset, ObjectIndexEntry index)
+        public static CountAndOffset ReadMetaCaoAt(this Span<byte> data, int offset, TagIndexEntry index)
         {
             return new CountAndOffset(data.ReadInt32At(offset), new MetaOffset(index, data.ReadInt32At(offset + 4)));
         }

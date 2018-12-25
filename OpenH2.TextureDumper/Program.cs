@@ -1,8 +1,9 @@
 ﻿using OpenH2.Core.Factories;
 using OpenH2.Core.Representations;
-using OpenH2.Core.Tags;
+using OpenH2.Translation;
 using System;
 using System.IO;
+using OpenH2.Translation.TagData;
 
 namespace OpenH2.TextureDumper
 {
@@ -33,17 +34,17 @@ namespace OpenH2.TextureDumper
                 scene = factory.FromFile(map);
             }
 
+
+            var translator = new TagTranslator(scene);
+
+            var bitmaps = translator.GetAll<BitmapTagData>();
+
             var processed = 0;
 
-            foreach(var tag in scene.Tags)
+            foreach(var bitmTag in bitmaps)
             {
-                var bitmTag = tag as BitmapTagNode;
-
-                if (bitmTag == null)
-                    continue;
-
-                var writePath = Path.Combine(outPath, Path.GetDirectoryName(bitmTag.Meta.Name));
-                var writeName = Path.GetFileName(bitmTag.Meta.Name) + ".dds";
+                var writePath = Path.Combine(outPath, Path.GetDirectoryName(bitmTag.Name));
+                var writeName = Path.GetFileName(bitmTag.Name) + ".dds";
 
                 if(Directory.Exists(writePath) == false)
                 {

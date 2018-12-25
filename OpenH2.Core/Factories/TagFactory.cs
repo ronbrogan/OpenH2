@@ -1,30 +1,28 @@
-﻿using OpenH2.Core.Meta;
-using OpenH2.Core.Parsing;
-using OpenH2.Core.Tags;
+﻿using OpenH2.Core.Tags;
 using OpenH2.Core.Tags.Processors;
-using System;
+using OpenH2.Core.Parsing;
+using OpenH2.Core.Representations;
 using System.Collections.Generic;
 
 namespace OpenH2.Core.Factories
 {
     public static class TagFactory
     {
-        private delegate TagNode ProcessMeta(BaseMeta meta, TrackingReader reader);
-        private static Dictionary<Type, ProcessMeta> Processors = new Dictionary<Type, ProcessMeta>
+        private delegate BaseTag ProcessMeta(uint id, string name, TagIndexEntry entry, TrackingChunk chunk, TrackingReader sceneReader);
+        private static readonly Dictionary<string, ProcessMeta> ProcessMap = new Dictionary<string, ProcessMeta>
         {
-            { typeof(BitmapMeta),   BitmapTagProcessor.ProcessBitmapMeta },
-            { typeof(ModelMeta),    ModelTagProcessor.ProcessModelMeta },
-            { typeof(BspMeta),      BspTagProcessor.ProcessBspMeta }
+            { "bitm", BitmapTagProcessor.ProcessBitm },
+            { "mode", ModelTagProcessor.ProcessModel },
+            { "sbsp", BspTagProcessor.ProcessBsp },
+            { "scnr", ScenarioTagProcessor.ProcessScenario }
         };
 
-        public static TagNode CreateTag(BaseMeta meta, TrackingReader reader)
+        public static BaseTag CreateTag(uint id, string name, TagIndexEntry index, TrackingChunk chunk, TrackingReader sceneReader)
         {
-            var metaType = meta.GetType();
-
-            if (Processors.ContainsKey(metaType) == false)
+            if (ProcessMap.ContainsKey(index.Tag) == false)
                 return null;
 
-            return Processors[metaType](meta, reader);
+            return ProcessMap[index.Tag](id, name, index, chunk, sceneReader);
         }
     }
 }

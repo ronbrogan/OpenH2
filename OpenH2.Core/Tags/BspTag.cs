@@ -1,10 +1,14 @@
 ﻿using OpenH2.Core.Offsets;
 using System.Collections.Generic;
 
-namespace OpenH2.Core.Meta
+namespace OpenH2.Core.Tags
 {
-    public class BspMeta : BaseMeta
+    public class BspTag : BaseTag
     {
+        public BspTag(uint id) : base(id)
+        {
+        }
+
         public override string Name { get; set; }
 
         public BspHeader Header { get; set; }
