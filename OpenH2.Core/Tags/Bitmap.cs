@@ -4,9 +4,9 @@ using OpenH2.Core.Offsets;
 
 namespace OpenH2.Core.Tags
 {
-    public class BitmapTag : BaseTag
+    public class Bitmap : BaseTag
     {
-        public BitmapTag(uint id) : base(id)
+        public Bitmap(uint id) : base(id)
         {
         }
 

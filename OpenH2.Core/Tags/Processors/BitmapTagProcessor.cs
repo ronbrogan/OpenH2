@@ -9,10 +9,10 @@ namespace OpenH2.Core.Tags.Processors
 {
     public static class BitmapTagProcessor
     {
-        public static BitmapTag ProcessBitm(uint id, string name, TagIndexEntry index, TrackingChunk chunk, TrackingReader sceneReader)
+        public static Bitmap ProcessBitm(uint id, string name, TagIndexEntry index, TrackingChunk chunk, TrackingReader sceneReader)
         {
             var span = chunk.Span;
-            var tag = new BitmapTag(id)
+            var tag = new Bitmap(id)
             {
                 Name = name,
                 TextureType = (TextureType)span.ReadInt16At(0),
@@ -32,7 +32,7 @@ namespace OpenH2.Core.Tags.Processors
                 MipMapCount2 = span.ReadInt16At(100),
                 PixelOffset = span.ReadInt16At(102),
 
-                LevelsOfDetail = new BitmapTag.BitmapLevelOfDetail[6]
+                LevelsOfDetail = new Bitmap.BitmapLevelOfDetail[6]
             };
 
             var offsetsStart = 108;
@@ -40,7 +40,7 @@ namespace OpenH2.Core.Tags.Processors
 
             for (int i = 0; i < 6; i++)
             {
-                var lod = new BitmapTag.BitmapLevelOfDetail();
+                var lod = new Bitmap.BitmapLevelOfDetail();
 
                 lod.Offset = new NormalOffset((int)span.ReadUInt32At(offsetsStart + (i * 4)));
                 lod.Size = span.ReadUInt32At(sizesStart + (i * 4));

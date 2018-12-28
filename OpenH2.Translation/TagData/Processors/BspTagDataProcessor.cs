@@ -11,10 +11,10 @@ namespace OpenH2.Translation.TagData.Processors
     {
         public static BspTagData ProcessTag(BaseTag tag)
         {
-            var bsp = tag as BspTag;
+            var bsp = tag as Bsp;
 
             if (bsp == null)
-                throw new ArgumentException("Tag must be a BspTag", nameof(tag));
+                throw new ArgumentException("Tag must be a Bsp", nameof(tag));
 
             var tagData = new BspTagData(bsp);
 

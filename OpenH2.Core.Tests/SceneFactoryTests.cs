@@ -42,7 +42,7 @@ namespace OpenH2.Core.Tests
 
             Assert.Equal(scene.IndexHeader.ObjectCount, scene.TagIndex.Count);
 
-            var scnr = scene.Tags.Values.First(v => v.GetType() == typeof(ScenarioTag)) as ScenarioTag;
+            var scnr = scene.Tags.Values.First(v => v.GetType() == typeof(Scenario)) as Scenario;
 
             File.WriteAllBytes("D:\\scnr.tag", scnr.RawMeta);
 

@@ -5,7 +5,7 @@ namespace OpenH2.Translation.TagData
 {
     public class BitmapTagData : BaseTagData
     {
-        public BitmapTagData(BitmapTag tag) : base(tag)
+        public BitmapTagData(Bitmap tag) : base(tag)
         {
             Levels = new Memory<byte>[tag.LevelsOfDetail.Length];
             Name = tag.Name;

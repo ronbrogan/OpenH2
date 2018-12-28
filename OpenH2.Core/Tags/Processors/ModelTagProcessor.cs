@@ -8,10 +8,10 @@ namespace OpenH2.Core.Tags.Processors
 {
     public static class ModelTagProcessor
     {
-        public static ModelTag ProcessModel(uint id, string name, TagIndexEntry index, TrackingChunk chunk, TrackingReader sceneReader)
+        public static Model ProcessModel(uint id, string name, TagIndexEntry index, TrackingChunk chunk, TrackingReader sceneReader)
         {
             var span = chunk.Span;
-            var tag = new ModelTag(id)
+            var tag = new Model(id)
             {
                 Name = name,
                 NameId = span.ReadInt32At(0),
@@ -37,19 +37,19 @@ namespace OpenH2.Core.Tags.Processors
             return tag;
         }
 
-        private static ModelTag.BoundingBox[] GetBoundingBoxes(
+        private static Model.BoundingBox[] GetBoundingBoxes(
             Span<byte> data, 
             int count, 
             MetaOffset offset)
         {
-            var result = new ModelTag.BoundingBox[count];
-            var objLength = ModelTag.BoundingBox.Length;
+            var result = new Model.BoundingBox[count];
+            var objLength = Model.BoundingBox.Length;
 
             for (var i = 0; i < count; i++)
             {
                 var span = data.Slice(offset.Value + (i * objLength), objLength);
 
-                var obj = new ModelTag.BoundingBox()
+                var obj = new Model.BoundingBox()
                 {
                     MinX = span.ReadFloatAt(0),
                     MaxX = span.ReadFloatAt(4),
@@ -69,20 +69,20 @@ namespace OpenH2.Core.Tags.Processors
             return result;
         }
 
-        private static ModelTag.LevelOfDetail[] GetLevelOfDetails(
+        private static Model.LevelOfDetail[] GetLevelOfDetails(
             Span<byte> data, 
             int count, 
             MetaOffset offset, 
             TagIndexEntry index)
         {
-            var result = new ModelTag.LevelOfDetail[count];
-            var objLength = ModelTag.LevelOfDetail.Length;
+            var result = new Model.LevelOfDetail[count];
+            var objLength = Model.LevelOfDetail.Length;
 
             for (var i = 0; i < count; i++)
             {
                 var span = data.Slice(offset.Value + (i * objLength), objLength);
 
-                var obj = new ModelTag.LevelOfDetail()
+                var obj = new Model.LevelOfDetail()
                 {
                     PartNameId = span.ReadInt32At(0),
                     PermutationCount = span.ReadInt32At(8),
@@ -97,16 +97,16 @@ namespace OpenH2.Core.Tags.Processors
             return result;
         }
 
-        private static ModelTag.Permutation[] GetPermutations(Span<byte> data, int count, MetaOffset offset)
+        private static Model.Permutation[] GetPermutations(Span<byte> data, int count, MetaOffset offset)
         {
-            var result = new ModelTag.Permutation[count];
-            var objLength = ModelTag.Permutation.Length;
+            var result = new Model.Permutation[count];
+            var objLength = Model.Permutation.Length;
 
             for (var i = 0; i < count; i++)
             {
                 var span = data.Slice(offset.Value + (i * objLength), objLength);
 
-                var obj = new ModelTag.Permutation()
+                var obj = new Model.Permutation()
                 {
                     PermutationNameId = span.ReadInt32At(0),
                     LowestPieceIndex = span.ReadInt16At(4),
@@ -123,16 +123,16 @@ namespace OpenH2.Core.Tags.Processors
             return result;
         }
 
-        private static ModelTag.Part[] GetParts(Span<byte> data, int count, MetaOffset offset, TrackingReader sceneReader)
+        private static Model.Part[] GetParts(Span<byte> data, int count, MetaOffset offset, TrackingReader sceneReader)
         {
-            var result = new ModelTag.Part[count];
-            var objLength = ModelTag.Part.Length;
+            var result = new Model.Part[count];
+            var objLength = Model.Part.Length;
 
             for (var i = 0; i < count; i++)
             {
                 var span = data.Slice(offset.Value + (i * objLength), objLength);
 
-                var obj = new ModelTag.Part()
+                var obj = new Model.Part()
                 {
                     Type = span.ReadUInt32At(0),
                     VertexCount = span.ReadUInt16At(4),
@@ -154,17 +154,17 @@ namespace OpenH2.Core.Tags.Processors
         }
 
         /// <param name="offset">This offset is the offset of the preceeding Parts section</param>
-        private static ModelTag.Bone[] GetBones(Span<byte> data, int count, MetaOffset offset)
+        private static Model.Bone[] GetBones(Span<byte> data, int count, MetaOffset offset)
         {
-            var result = new ModelTag.Bone[count];
-            var boneSectionStart = offset.Value + (count * ModelTag.Part.Length);
-            var objLength = ModelTag.Bone.Length;
+            var result = new Model.Bone[count];
+            var boneSectionStart = offset.Value + (count * Model.Part.Length);
+            var objLength = Model.Bone.Length;
 
             for (var i = 0; i < count; i++)
             {
                 var span = data.Slice(boneSectionStart + (i * objLength), objLength);
 
-                var obj = new ModelTag.Bone()
+                var obj = new Model.Bone()
                 {
                     BoneNameId = span.ReadInt32At(0),
                     ParentIndex = span.ReadInt16At(4),
@@ -188,16 +188,16 @@ namespace OpenH2.Core.Tags.Processors
             return result;
         }
 
-        private static ModelTag.Marker[] GetMarkers(Span<byte> data, int count, MetaOffset offset)
+        private static Model.Marker[] GetMarkers(Span<byte> data, int count, MetaOffset offset)
         {
-            var result = new ModelTag.Marker[count];
-            var objLength = ModelTag.Marker.Length;
+            var result = new Model.Marker[count];
+            var objLength = Model.Marker.Length;
 
             for (var i = 0; i < count; i++)
             {
                 var span = data.Slice(offset.Value + (i * objLength), objLength);
 
-                var obj = new ModelTag.Marker()
+                var obj = new Model.Marker()
                 {
                     MarkerNameId = span.ReadInt32At(0),
                     X = span.ReadFloatAt(36),
@@ -214,16 +214,16 @@ namespace OpenH2.Core.Tags.Processors
             return result;
         }
 
-        private static ModelTag.Shader[] GetShaders(Span<byte> data, int count, MetaOffset offset)
+        private static Model.Shader[] GetShaders(Span<byte> data, int count, MetaOffset offset)
         {
-            var result = new ModelTag.Shader[count];
-            var objLength = ModelTag.Shader.Length;
+            var result = new Model.Shader[count];
+            var objLength = Model.Shader.Length;
 
             for (var i = 0; i < count; i++)
             {
                 var span = data.Slice(offset.Value + (i * objLength), objLength);
 
-                var obj = new ModelTag.Shader()
+                var obj = new Model.Shader()
                 {
                     ShaderId = span.ReadUInt32At(12)
                 };

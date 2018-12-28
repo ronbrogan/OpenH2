@@ -6,7 +6,7 @@ namespace OpenH2.Translation.TagData
 {
     public class ModelTagData : BaseTagData
     {
-        public ModelTagData(ModelTag tag) : base(tag)
+        public ModelTagData(Model tag) : base(tag)
         {
             Name = tag.Name;
         }

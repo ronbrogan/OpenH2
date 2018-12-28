@@ -1,0 +1,13 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>netcoreapp2.1</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\OpenH2.Core\OpenH2.Core.csproj" />
+    <ProjectReference Include="..\OpenH2.Rendering\OpenH2.Rendering.csproj" />
+  </ItemGroup>
+
+</Project>

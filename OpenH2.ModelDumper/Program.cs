@@ -43,7 +43,7 @@ namespace OpenH2.ModelDumper
 
             foreach(var meta in scene.Tags.Values)
             {
-                var bspMeta = meta as BspTag;
+                var bspMeta = meta as Bsp;
 
                 if (bspMeta == null)
                     continue;

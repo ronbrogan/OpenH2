@@ -1,0 +1,16 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="OpenTK.NetStandard" Version="1.0.7-prerelease" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\OpenH2.Core\OpenH2.Core.csproj" />
+    <ProjectReference Include="..\OpenH2.Foundation\OpenH2.Foundation.csproj" />
+  </ItemGroup>
+
+</Project>

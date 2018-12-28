@@ -9,10 +9,10 @@ namespace OpenH2.Core.Tags.Processors
 {
     public static class ScenarioTagProcessor
     {
-        public static ScenarioTag ProcessScenario(uint id, string name, TagIndexEntry index, TrackingChunk chunk, TrackingReader sceneReader)
+        public static Scenario ProcessScenario(uint id, string name, TagIndexEntry index, TrackingChunk chunk, TrackingReader sceneReader)
         {
             var data = chunk.Span;
-            var meta = new ScenarioTag(id)
+            var meta = new Scenario(id)
             {
                 Name = name,
                 RawMeta = data.ToArray()
@@ -40,18 +40,18 @@ namespace OpenH2.Core.Tags.Processors
             return skyboxes;
         }
 
-        private static ScenarioTag.Terrain[] GetTerrains(Span<byte> data, TagIndexEntry index)
+        private static Scenario.Terrain[] GetTerrains(Span<byte> data, TagIndexEntry index)
         {
             var cao = data.ReadMetaCaoAt(528, index);
             var terrainLength = 68;
 
-            var terrains = new ScenarioTag.Terrain[cao.Count];
+            var terrains = new Scenario.Terrain[cao.Count];
 
             for (var i = 0; i < cao.Count; i++)
             {
                 var span = data.Slice(cao.Offset.Value + i * terrainLength, terrainLength);
 
-                var terrain = new ScenarioTag.Terrain()
+                var terrain = new Scenario.Terrain()
                 {
                     BspId = span.ReadUInt32At(20),
                     LightmapId = span.ReadUInt32At(28),

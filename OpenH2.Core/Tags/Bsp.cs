@@ -3,9 +3,9 @@ using System.Collections.Generic;
 
 namespace OpenH2.Core.Tags
 {
-    public class BspTag : BaseTag
+    public class Bsp : BaseTag
     {
-        public BspTag(uint id) : base(id)
+        public Bsp(uint id) : base(id)
         {
         }
 

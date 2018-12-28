@@ -9,10 +9,10 @@ namespace OpenH2.Core.Tags.Processors
 {
     public static class BspTagProcessor
     {
-        public static BspTag ProcessBsp(uint id, string name, TagIndexEntry index, TrackingChunk chunk, TrackingReader sceneReader)
+        public static Bsp ProcessBsp(uint id, string name, TagIndexEntry index, TrackingChunk chunk, TrackingReader sceneReader)
         {
             var data = chunk.Span;
-            var meta = new BspTag(id)
+            var meta = new Bsp(id)
             {
                 Name = name,
                 RawMeta = data.ToArray()
@@ -24,9 +24,9 @@ namespace OpenH2.Core.Tags.Processors
             return meta;
         }
 
-        private static BspTag.BspHeader GetHeader(Span<byte> data, TagIndexEntry index)
+        private static Bsp.BspHeader GetHeader(Span<byte> data, TagIndexEntry index)
         {
-            var header = new BspTag.BspHeader()
+            var header = new Bsp.BspHeader()
             {
                 Checksum = data.ReadInt32At(8),
                 ShaderLocation = data.ReadMetaCaoAt(12, index),
@@ -41,13 +41,13 @@ namespace OpenH2.Core.Tags.Processors
             return header;
         }
 
-        private static List<BspTag.RawBlock> GetRawBlocks(Span<byte> data, BspTag.BspHeader header)
+        private static List<Bsp.RawBlock> GetRawBlocks(Span<byte> data, Bsp.BspHeader header)
         {
-            var rawBlocks = new List<BspTag.RawBlock>();
+            var rawBlocks = new List<Bsp.RawBlock>();
 
             foreach(var rawSection in header.RawBlocks)
             {
-                var raws = new BspTag.RawBlock();
+                var raws = new Bsp.RawBlock();
 
                 raws.RawObject1s = GetRawObject1s(data, rawSection.RawObject1Cao);
                 raws.RawObject2s = GetRawObject2s(data, rawSection.RawObject2Cao);
@@ -64,17 +64,17 @@ namespace OpenH2.Core.Tags.Processors
             return rawBlocks;
         }
 
-        private static List<BspTag.RawObject1> GetRawObject1s(Span<byte> data, CountAndOffset cao)
+        private static List<Bsp.RawObject1> GetRawObject1s(Span<byte> data, CountAndOffset cao)
         {
-            var span = data.Slice(cao.Offset.Value, cao.Count * BspTag.RawObject1.Length);
+            var span = data.Slice(cao.Offset.Value, cao.Count * Bsp.RawObject1.Length);
 
-            var raws = new List<BspTag.RawObject1>(cao.Count);
+            var raws = new List<Bsp.RawObject1>(cao.Count);
 
             for (var i = 0; i < cao.Count; i++)
             {
-                var offset = i * BspTag.RawObject1.Length;
+                var offset = i * Bsp.RawObject1.Length;
 
-                var raw = new BspTag.RawObject1()
+                var raw = new Bsp.RawObject1()
                 {
                     val1 = span.ReadUInt16At(0 + offset),
                     val2 = span.ReadUInt16At(2 + offset),
@@ -88,17 +88,17 @@ namespace OpenH2.Core.Tags.Processors
             return raws;
         }
 
-        private static List<BspTag.RawObject2> GetRawObject2s(Span<byte> data, CountAndOffset cao)
+        private static List<Bsp.RawObject2> GetRawObject2s(Span<byte> data, CountAndOffset cao)
         {
-            var span = data.Slice(cao.Offset.Value, cao.Count * BspTag.RawObject2.Length);
+            var span = data.Slice(cao.Offset.Value, cao.Count * Bsp.RawObject2.Length);
 
-            var raws = new List<BspTag.RawObject2>(cao.Count);
+            var raws = new List<Bsp.RawObject2>(cao.Count);
 
             for (var i = 0; i < cao.Count; i++)
             {
-                var offset = i * BspTag.RawObject2.Length;
+                var offset = i * Bsp.RawObject2.Length;
 
-                var raw = new BspTag.RawObject2()
+                var raw = new Bsp.RawObject2()
                 {
                     x = span.ReadFloatAt(0 + offset),
                     y = span.ReadFloatAt(4 + offset),
@@ -112,17 +112,17 @@ namespace OpenH2.Core.Tags.Processors
             return raws;
         }
 
-        private static List<BspTag.RawObject3> GetRawObject3s(Span<byte> data, CountAndOffset cao)
+        private static List<Bsp.RawObject3> GetRawObject3s(Span<byte> data, CountAndOffset cao)
         {
-            var span = data.Slice(cao.Offset.Value, cao.Count * BspTag.RawObject3.Length);
+            var span = data.Slice(cao.Offset.Value, cao.Count * Bsp.RawObject3.Length);
 
-            var raws = new List<BspTag.RawObject3>(cao.Count);
+            var raws = new List<Bsp.RawObject3>(cao.Count);
 
             for (var i = 0; i < cao.Count; i++)
             {
-                var offset = i * BspTag.RawObject3.Length;
+                var offset = i * Bsp.RawObject3.Length;
 
-                var raw = new BspTag.RawObject3()
+                var raw = new Bsp.RawObject3()
                 {
                     val1 = span.ReadUInt16At(0 + offset),
                     val2 = span.ReadUInt16At(2 + offset),
@@ -134,17 +134,17 @@ namespace OpenH2.Core.Tags.Processors
             return raws;
         }
 
-        private static List<BspTag.RawObject4> GetRawObject4s(Span<byte> data, CountAndOffset cao)
+        private static List<Bsp.RawObject4> GetRawObject4s(Span<byte> data, CountAndOffset cao)
         {
-            var span = data.Slice(cao.Offset.Value, cao.Count * BspTag.RawObject4.Length);
+            var span = data.Slice(cao.Offset.Value, cao.Count * Bsp.RawObject4.Length);
 
-            var raws = new List<BspTag.RawObject4>(cao.Count);
+            var raws = new List<Bsp.RawObject4>(cao.Count);
 
             for (var i = 0; i < cao.Count; i++)
             {
-                var offset = i * BspTag.RawObject4.Length;
+                var offset = i * Bsp.RawObject4.Length;
 
-                var raw = new BspTag.RawObject4()
+                var raw = new Bsp.RawObject4()
                 {
                     val1 = span.ReadUInt16At(0 + offset),
                     val2 = span.ReadUInt16At(2 + offset),
@@ -156,17 +156,17 @@ namespace OpenH2.Core.Tags.Processors
             return raws;
         }
 
-        private static List<BspTag.RawObject5> GetRawObject5s(Span<byte> data, CountAndOffset cao)
+        private static List<Bsp.RawObject5> GetRawObject5s(Span<byte> data, CountAndOffset cao)
         {
-            var span = data.Slice(cao.Offset.Value, cao.Count * BspTag.RawObject5.Length);
+            var span = data.Slice(cao.Offset.Value, cao.Count * Bsp.RawObject5.Length);
 
-            var raws = new List<BspTag.RawObject5>(cao.Count);
+            var raws = new List<Bsp.RawObject5>(cao.Count);
 
             for (var i = 0; i < cao.Count; i++)
             {
-                var offset = i * BspTag.RawObject5.Length;
+                var offset = i * Bsp.RawObject5.Length;
 
-                var raw = new BspTag.RawObject5()
+                var raw = new Bsp.RawObject5()
                 {
                     x = span.ReadFloatAt(0 + offset),
                     y = span.ReadFloatAt(4 + offset),
@@ -181,17 +181,17 @@ namespace OpenH2.Core.Tags.Processors
             return raws;
         }
 
-        private static List<BspTag.Face> GetFaces(Span<byte> data, CountAndOffset cao)
+        private static List<Bsp.Face> GetFaces(Span<byte> data, CountAndOffset cao)
         {
-            var span = data.Slice(cao.Offset.Value, cao.Count * BspTag.Face.Length);
+            var span = data.Slice(cao.Offset.Value, cao.Count * Bsp.Face.Length);
 
-            var raws = new List<BspTag.Face>(cao.Count);
+            var raws = new List<Bsp.Face>(cao.Count);
 
             for (var i = 0; i < cao.Count; i++)
             {
-                var offset = i * BspTag.Face.Length;
+                var offset = i * Bsp.Face.Length;
 
-                var raw = new BspTag.Face()
+                var raw = new Bsp.Face()
                 {
                     val1 = span.ReadUInt16At(0 + offset),
                     FirstEdge = span.ReadUInt16At(2 + offset),
@@ -205,17 +205,17 @@ namespace OpenH2.Core.Tags.Processors
             return raws;
         }
 
-        private static List<BspTag.HalfEdgeContainer> GetHalfEdgeStructure(Span<byte> data, CountAndOffset cao)
+        private static List<Bsp.HalfEdgeContainer> GetHalfEdgeStructure(Span<byte> data, CountAndOffset cao)
         {
-            var span = data.Slice(cao.Offset.Value, cao.Count * BspTag.HalfEdgeContainer.Length);
+            var span = data.Slice(cao.Offset.Value, cao.Count * Bsp.HalfEdgeContainer.Length);
 
-            var raws = new List<BspTag.HalfEdgeContainer>(cao.Count);
+            var raws = new List<Bsp.HalfEdgeContainer>(cao.Count);
 
             for (var i = 0; i < cao.Count; i++)
             {
-                var offset = i * BspTag.HalfEdgeContainer.Length;
+                var offset = i * Bsp.HalfEdgeContainer.Length;
 
-                var raw = new BspTag.HalfEdgeContainer()
+                var raw = new Bsp.HalfEdgeContainer()
                 {
                     Vertex0 = span.ReadUInt16At(0 + offset),
                     Vertex1 = span.ReadUInt16At(2 + offset),
@@ -230,17 +230,17 @@ namespace OpenH2.Core.Tags.Processors
 
             return raws;
         }
-        private static List<BspTag.Vertex> GetVerticies(Span<byte> data, CountAndOffset cao)
+        private static List<Bsp.Vertex> GetVerticies(Span<byte> data, CountAndOffset cao)
         {
-            var span = data.Slice(cao.Offset.Value, cao.Count * BspTag.Vertex.Length);
+            var span = data.Slice(cao.Offset.Value, cao.Count * Bsp.Vertex.Length);
 
-            var raws = new List<BspTag.Vertex>(cao.Count);
+            var raws = new List<Bsp.Vertex>(cao.Count);
 
             for (var i = 0; i < cao.Count; i++)
             {
-                var offset = i * BspTag.Vertex.Length;
+                var offset = i * Bsp.Vertex.Length;
 
-                var raw = new BspTag.Vertex()
+                var raw = new Bsp.Vertex()
                 {
                     x = span.ReadFloatAt(0 + offset),
                     y = span.ReadFloatAt(4 + offset),
@@ -254,11 +254,11 @@ namespace OpenH2.Core.Tags.Processors
             return raws;
         }
 
-        private static BspTag.MiscBlockCaos ReadMiscBlocks(Span<byte> data, TagIndexEntry index)
+        private static Bsp.MiscBlockCaos ReadMiscBlocks(Span<byte> data, TagIndexEntry index)
         {
             var caosData = data.Slice(76, 496);
 
-            return new BspTag.MiscBlockCaos()
+            return new Bsp.MiscBlockCaos()
             {
                 MiscObject1Cao = caosData.ReadMetaCaoAt(0, index),
                 MiscObject2Cao = caosData.ReadMetaCaoAt(8, index),
@@ -293,19 +293,19 @@ namespace OpenH2.Core.Tags.Processors
             };
         }
 
-        private static List<BspTag.ShaderInfo> ReadShaders(Span<byte> data, BspTag.BspHeader header)
+        private static List<Bsp.ShaderInfo> ReadShaders(Span<byte> data, Bsp.BspHeader header)
         {
             var cao = header.ShaderLocation;
 
-            var shaders = new List<BspTag.ShaderInfo>(cao.Count);
+            var shaders = new List<Bsp.ShaderInfo>(cao.Count);
 
             for (var i = 0; i < cao.Count; i++)
             {
                 var shaderData = data.Slice(
-                    cao.Offset.Value + i * BspTag.ShaderInfo.Length,
-                    BspTag.ShaderInfo.Length);
+                    cao.Offset.Value + i * Bsp.ShaderInfo.Length,
+                    Bsp.ShaderInfo.Length);
 
-                shaders.Add(new BspTag.ShaderInfo
+                shaders.Add(new Bsp.ShaderInfo
                 {
                     Tag = shaderData.ReadStringFrom(0, 4),
                     Unknown = shaderData.ReadInt32At(4),
@@ -318,21 +318,21 @@ namespace OpenH2.Core.Tags.Processors
             return shaders;
         }
 
-        private static List<BspTag.RawBlockCaos> ReadRawBlocks(
+        private static List<Bsp.RawBlockCaos> ReadRawBlocks(
             Span<byte> data,
-            BspTag.BspHeader header,
+            Bsp.BspHeader header,
             TagIndexEntry index)
         {
             var cao = header.RawBlockLocation;
-            var rawBlocks = new List<BspTag.RawBlockCaos>(cao.Count);
+            var rawBlocks = new List<Bsp.RawBlockCaos>(cao.Count);
 
             for (int i = 0; i < cao.Count; i++)
             {
                 var blockData = data.Slice(
-                    cao.Offset.Value + i * BspTag.RawBlockCaos.Length,
-                    BspTag.RawBlockCaos.Length);
+                    cao.Offset.Value + i * Bsp.RawBlockCaos.Length,
+                    Bsp.RawBlockCaos.Length);
 
-                rawBlocks.Add(new BspTag.RawBlockCaos()
+                rawBlocks.Add(new Bsp.RawBlockCaos()
                 {
                     RawObject1Cao = blockData.ReadMetaCaoAt(0, index),
                     RawObject2Cao = blockData.ReadMetaCaoAt(8, index),

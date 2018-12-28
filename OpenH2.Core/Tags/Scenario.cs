@@ -1,8 +1,8 @@
 ﻿namespace OpenH2.Core.Tags
 {
-    public class ScenarioTag : BaseTag
+    public class Scenario : BaseTag
     {
-        public ScenarioTag(uint id) : base(id)
+        public Scenario(uint id) : base(id)
         {
         }
 
@@ -19,7 +19,7 @@
         public class Terrain
         {
             public uint BspId { get; set; }
-            public BspTag Bsp { get; set; }
+            public Bsp Bsp { get; set; }
 
             // TODO implement lightmap tag
             public uint LightmapId { get; set; }

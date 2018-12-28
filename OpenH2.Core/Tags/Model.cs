@@ -3,9 +3,9 @@ using OpenH2.Core.Offsets;
 
 namespace OpenH2.Core.Tags
 {
-    public class ModelTag : BaseTag
+    public class Model : BaseTag
     {
-        public ModelTag(uint id) : base(id)
+        public Model(uint id) : base(id)
         {
         }
 

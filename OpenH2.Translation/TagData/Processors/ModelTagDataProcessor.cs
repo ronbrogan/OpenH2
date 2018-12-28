@@ -10,10 +10,10 @@ namespace OpenH2.Translation.TagData.Processors
     {
         public static ModelTagData ProcessTag(BaseTag tag)
         {
-            var model = tag as ModelTag;
+            var model = tag as Model;
 
             if (model == null)
-                throw new ArgumentException("Tag must be a ModelTag", nameof(tag));
+                throw new ArgumentException("Tag must be a Model", nameof(tag));
 
             var tagData = new ModelTagData(model)
             {
@@ -31,7 +31,7 @@ namespace OpenH2.Translation.TagData.Processors
             return tagData;
         }
 
-        private static Mesh GetMeshFromPart(ModelTag.Part part)
+        private static Mesh GetMeshFromPart(Model.Part part)
         {
             var mesh = new Mesh();
 

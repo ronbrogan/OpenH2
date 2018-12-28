@@ -5,7 +5,7 @@ namespace OpenH2.Translation.TagData
 {
     public class BspTagData : BaseTagData
     {
-        public BspTagData(BspTag tag) : base(tag)
+        public BspTagData(Bsp tag) : base(tag)
         {
         }
 

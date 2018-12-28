@@ -12,10 +12,10 @@ namespace OpenH2.Translation.TagData.Processors
     {
         public static BitmapTagData ProcessTag(BaseTag tag)
         {
-            var bitmap = tag as BitmapTag;
+            var bitmap = tag as Bitmap;
 
             if (bitmap == null)
-                throw new ArgumentException("Tag must be a BitmapTag", nameof(tag));
+                throw new ArgumentException("Tag must be a Bitmap", nameof(tag));
             
             var tagData = new BitmapTagData(bitmap);
 
