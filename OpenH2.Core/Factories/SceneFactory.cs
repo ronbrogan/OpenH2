@@ -163,14 +163,19 @@ namespace OpenH2.Core.Factories
 
                 var tag = listBytes.ReadStringFrom(entryBase, 4).Reverse();
 
-                //if (tag == nullObjTag)
-                //    continue;
+                if (tag == nullObjTag)
+                    continue;
 
-                var entry = new TagIndexEntry();
-                entry.Tag = tag;
-                entry.ID = listBytes.ReadUInt32At(entryBase + 4);
-                entry.Offset = new SecondaryOffset(scene, listBytes.ReadInt32At(entryBase + 8));
-                entry.MetaSize = listBytes.ReadInt32At(entryBase + 12);
+                var entry = new TagIndexEntry
+                {
+                    Tag = tag,
+                    ID = listBytes.ReadUInt32At(entryBase + 4),
+                    Offset = new SecondaryOffset(scene, listBytes.ReadInt32At(entryBase + 8)),
+                    MetaSize = listBytes.ReadInt32At(entryBase + 12)
+                };
+
+                if (entry.MetaSize == 0)
+                    continue;
 
                 list.Add(entry);
             }

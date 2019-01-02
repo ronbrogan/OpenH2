@@ -1,0 +1,40 @@
+﻿<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="clr-namespace:OpenH2.ScenarioExplorer.ViewModels"
+        xmlns:ctrls="clr-namespace:OpenH2.Avalonia;assembly=OpenH2.Avalonia"
+        Title="ScenarioExplorer"
+        MinWidth="900"
+        MinHeight="500">
+  <Window.Styles>
+      <Style Selector="TreeView">
+        <Setter Property="BorderBrush" Value="Blue" />
+        <Setter Property="BorderThickness" Value="1" />
+      </Style>
+  </Window.Styles>
+  <Grid Name="mainGrid">
+    <Grid.ColumnDefinitions>
+      <ColumnDefinition Width="200" />
+      <ColumnDefinition Width="520" />
+      <ColumnDefinition Width="*" />
+    </Grid.ColumnDefinitions>
+    <Grid.RowDefinitions>
+      <RowDefinition Height="25" />
+      <RowDefinition Height="*"/>
+      <RowDefinition Height="25"/>
+    </Grid.RowDefinitions>
+
+    <Menu Grid.ColumnSpan="4" Grid.Row="0" Padding="3" Items="{Binding MenuItems}" Name="mainMenu"></Menu>
+    
+    <TreeView Grid.Column="0" Grid.Row="1" Items="{Binding Path=LoadedScenario.TreeRoots}" SelectedItem="{Binding SelectedEntry}">
+      <TreeView.ItemTemplate>
+        <TreeDataTemplate ItemsSource="{Binding Children}">
+          <StackPanel Orientation="Horizontal">
+            <TextBlock Text="{Binding Description}"></TextBlock>
+          </StackPanel>
+        </TreeDataTemplate>
+      </TreeView.ItemTemplate>
+    </TreeView>
+    <ctrls:HexViewer Grid.Column="1" Grid.Row="1" Data="{Binding CurrentTag.Data}"></ctrls:HexViewer>
+    <Panel Grid.Column="3" Grid.Row="1"></Panel>
+  </Grid>
+</Window>
