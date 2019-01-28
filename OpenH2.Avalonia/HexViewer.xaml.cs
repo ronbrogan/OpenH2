@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
 using System.Text;
 using Avalonia;
@@ -12,11 +13,35 @@ namespace OpenH2.Avalonia
 {
     public class HexViewer : UserControl
     {
-        public static readonly DirectProperty<HexViewer, byte[]> DataProperty =
-            AvaloniaProperty.RegisterDirect<HexViewer, byte[]>(nameof(Data), h => h.Data, (h,v) => h.Data = v);
+        public static readonly DirectProperty<HexViewer, Memory<byte>> DataProperty =
+            AvaloniaProperty.RegisterDirect<HexViewer, Memory<byte>>(nameof(Data), h => h.Data, (h,v) => h.Data = v);
 
-        private byte[] _data;
-        private byte[] Data { get => _data; set => UpdateData(value); }
+        public static readonly DirectProperty<HexViewer, ObservableCollection<HexViewerSpan>> FormattedSpansProperty =
+            AvaloniaProperty.RegisterDirect<HexViewer, ObservableCollection<HexViewerSpan>>(nameof(FormattedSpans), h => h.FormattedSpans, (h, v) => h.FormattedSpans = v);
+
+        private Memory<byte> _data;
+        private Memory<byte> Data
+        {
+            get => _data;
+            set
+            {
+                SetAndRaise(DataProperty, ref _data, value);
+                UpdateData();
+            }
+        }
+
+        private ObservableCollection<HexViewerSpan> _formattedSpans;
+        private ObservableCollection<HexViewerSpan> FormattedSpans
+        {
+            get => _formattedSpans;
+            set
+            {
+                SetAndRaise(FormattedSpansProperty, ref _formattedSpans, value);
+                UpdateData();
+            }
+        }
+
+        private int LineSize { get; set; } = 12;
 
         private TextBlock AddressBox { get; set; }
         private TextBlock HexBox { get; set; }
@@ -27,6 +52,8 @@ namespace OpenH2.Avalonia
         public HexViewer()
         {
             this.InitializeComponent();
+
+            this.FormattedSpans = new ObservableCollection<HexViewerSpan>();
 
             AddressBox = this.FindControl<TextBlock>("addressBox");
             HexBox = this.FindControl<TextBlock>("hexBox");
@@ -46,41 +73,58 @@ namespace OpenH2.Avalonia
             AvaloniaXamlLoader.Load(this);
         }
 
-        private void UpdateData(byte[] value)
+        private void UpdateData()
         {
-            SetAndRaise(DataProperty, ref _data, value);
-
-            if (_data == null)
+            if (_data.IsEmpty)
                 return;
 
-            Memory<byte> data = value;
-            var span = data.Span;
-
-            var chunkSize = 12;
+            var span = this._data.Span;
 
             var hexBuilder = new StringBuilder();
             var asciiBuilder = new StringBuilder();
             var addressBuilder = new StringBuilder();
 
-            for(var i = 0; i < value.Length / chunkSize; i++)
+            for(var i = 0; i < span.Length / LineSize; i++)
             {
-                var chunk = span.Slice(chunkSize * i, chunkSize);
+                var chunk = span.Slice(LineSize * i, LineSize);
 
                 ToHexString(chunk, hexBuilder);
                 ToAsciiString(chunk, asciiBuilder);
-                addressBuilder.AppendLine((i * chunkSize).ToString().PadLeft(7, '0'));
+                addressBuilder.AppendLine((i * LineSize).ToString().PadLeft(7, '0'));
             }
 
             HexBox.Text = hexBuilder.ToString();
             AsciiBox.Text = asciiBuilder.ToString();
             AddressBox.Text = addressBuilder.ToString();
 
-            var a = new FormattedTextStyleSpan(0, 12, Brushes.Blue);
-
-            HexBox.FormattedText.Spans = new List<FormattedTextStyleSpan>()
+            if(this.FormattedSpans != null)
             {
-                a
-            };
+                var spans = this.FormattedSpans
+                    .Select(GetFormattedSpan)
+                    .ToList();
+
+                HexBox.FormattedText.Spans = spans;
+            }
+        }
+
+        private FormattedTextStyleSpan GetFormattedSpan(HexViewerSpan span)
+        {
+            var start = calculateTextExpansion(span.start);
+            var length = calculateTextExpansion(span.start + span.length) - start;
+
+            return new FormattedTextStyleSpan(start, length, span.brush);
+
+            int calculateTextExpansion(int input)
+            {
+                // Each byte is two hex chars and one space
+                var basis = input * 3;
+
+                var gaps = input / 4;
+
+                var crs = input / LineSize;
+
+                return basis + gaps + crs;
+            }
         }
 
         private static void ToHexString(Span<byte> data, StringBuilder builder)

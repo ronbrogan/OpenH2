@@ -11,9 +11,11 @@ namespace OpenH2.ScenarioExplorer.ViewModels
     [AddINotifyPropertyChangedInterface]
     public class ScenarioViewModel
     {
-        public List<TagViewModel> Tags { get; set; } = new List<TagViewModel>();
+        public List<TagViewModel> Tags { get; set; }
 
         public Dictionary<uint, TagViewModel> TagLookup = new Dictionary<uint, TagViewModel>();
+
+        public HashSet<uint> PostprocessedTags = new HashSet<uint>();
 
         public TagTreeEntryViewModel[] TreeRoots { get; set; }
 
@@ -23,7 +25,9 @@ namespace OpenH2.ScenarioExplorer.ViewModels
         {
             var sceneData = scene.RawData.Span;
 
-            foreach(var tagEntry in scene.TagIndex)
+            this.Tags = new List<TagViewModel>(scene.TagIndex.Count);
+
+            foreach (var tagEntry in scene.TagIndex)
             {
                 var vm = new TagViewModel(tagEntry.ID, tagEntry.Tag)
                 {
@@ -67,11 +71,12 @@ namespace OpenH2.ScenarioExplorer.ViewModels
             }
         }
 
+        // Read each int32 in the tag data, see if it is a tag ID
         private void PopulateChildren(TagTreeEntryViewModel tagEntry)
         {
             var tag = this.TagLookup[tagEntry.Id];
 
-            var span = ((Memory<byte>)tag.Data).Span;
+            var span = tag.Data.Span;
             var addedChildren = new HashSet<TagViewModel>();
 
             for (var i = 0; i < tag.Data.Length; i += 4)
@@ -98,5 +103,20 @@ namespace OpenH2.ScenarioExplorer.ViewModels
                 })
                 .ToArray();
         }
+
+        public TagViewModel GetTagViewModel(uint tagId)
+        {
+            var tag = this.TagLookup[tagId];
+
+            if(this.PostprocessedTags.Contains(tagId) == false)
+            {
+                tag.GeneratePointsOfInterest();
+                this.PostprocessedTags.Add(tagId);
+            }
+
+            return tag;
+        }
+
+
     }
 }

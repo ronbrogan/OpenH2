@@ -14,7 +14,9 @@
   <Grid Name="mainGrid">
     <Grid.ColumnDefinitions>
       <ColumnDefinition Width="200" />
-      <ColumnDefinition Width="520" />
+      <ColumnDefinition Width="Auto" />
+      <ColumnDefinition MinWidth="520" />
+      <ColumnDefinition Width="Auto" />
       <ColumnDefinition Width="*" />
     </Grid.ColumnDefinitions>
     <Grid.RowDefinitions>
@@ -24,6 +26,20 @@
     </Grid.RowDefinitions>
 
     <Menu Grid.ColumnSpan="4" Grid.Row="0" Padding="3" Items="{Binding MenuItems}" Name="mainMenu"></Menu>
+
+    <GridSplitter Grid.Row="1" 
+                  Grid.Column="1"
+                  HorizontalAlignment="Center"
+                  VerticalAlignment="Stretch"
+                  Background="Gray"
+                  Width="5"/>
+
+    <GridSplitter Grid.Row="1"
+                  Grid.Column="3"
+                  HorizontalAlignment="Center"
+                  VerticalAlignment="Stretch"
+                  Background="Gray"
+                  Width="5"/>
     
     <TreeView Grid.Column="0" Grid.Row="1" Items="{Binding Path=LoadedScenario.TreeRoots}" SelectedItem="{Binding SelectedEntry}">
       <TreeView.ItemTemplate>
@@ -34,7 +50,10 @@
         </TreeDataTemplate>
       </TreeView.ItemTemplate>
     </TreeView>
-    <ctrls:HexViewer Grid.Column="1" Grid.Row="1" Data="{Binding CurrentTag.Data}"></ctrls:HexViewer>
-    <Panel Grid.Column="3" Grid.Row="1"></Panel>
+    <ctrls:HexViewer Grid.Column="2" Grid.Row="1" Data="{Binding CurrentTag.Data}" FormattedSpans="{Binding CurrentTag.FormattedSpans}"></ctrls:HexViewer>
+    <Panel Grid.Column="4" Grid.Row="1">
+      
+      
+    </Panel>
   </Grid>
 </Window>
