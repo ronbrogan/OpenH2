@@ -28,7 +28,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\OpenH2.Avalonia\OpenH2.Avalonia.csproj" />
+    <ProjectReference Include="..\OpenH2.Avalonia\OpenH2.AvaloniaControls.csproj" />
     <ProjectReference Include="..\OpenH2.Core\OpenH2.Core.csproj" />
   </ItemGroup>
 

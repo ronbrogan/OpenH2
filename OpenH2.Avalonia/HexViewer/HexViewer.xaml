@@ -1,0 +1,71 @@
+﻿<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             Design.Width="520"
+             Design.Height="100" 
+             MinWidth="520"
+             MinHeight="96"
+             HorizontalAlignment="Left">
+
+  <Grid Name="mainGrid">
+    <Grid.RowDefinitions>
+      <RowDefinition Height="40"></RowDefinition>
+      <RowDefinition Height="*"></RowDefinition>
+      <RowDefinition Height="34"></RowDefinition>
+    </Grid.RowDefinitions>
+    
+    <StackPanel Orientation="Horizontal" Grid.Row="0" Background="LightGray">
+      <TextBlock Text="Highlight Size" Margin="10"></TextBlock>
+      <DropDown Items="{Binding HighlightSizes}" 
+                SelectedItem="{Binding HighlightSize}" 
+                Name="highlightSizeDropdown" 
+                MinWidth="50"
+                Height="26"
+                Background="White">
+        <DropDown.ItemTemplate>
+          <DataTemplate>
+            <TextBlock Text="{Binding}"></TextBlock>
+          </DataTemplate>
+        </DropDown.ItemTemplate>
+      </DropDown>
+      <TextBlock Text="Highlight Color" Margin="10"></TextBlock>
+      <DropDown Items="{Binding Colors}" 
+                SelectedItem="{Binding HighlightColor}" 
+                MinWidth="50"
+                Height="26"
+                Background="White">
+        <DropDown.ItemTemplate>
+          <DataTemplate>
+            <StackPanel Orientation="Horizontal">
+              <Rectangle Fill="{Binding Brush}"  Width="16" Height="16" Stroke="Black" Margin="3"></Rectangle>
+              <TextBlock Text="{Binding Name}" Margin="3 0 0 0"></TextBlock>
+            </StackPanel>
+          </DataTemplate>
+        </DropDown.ItemTemplate>
+      </DropDown>
+    </StackPanel>
+    <ScrollViewer Grid.Row="1" Name="scroller">
+      <Grid>
+        <Grid.ColumnDefinitions>
+          <ColumnDefinition Width="80" />
+          <ColumnDefinition Width="320" />
+          <ColumnDefinition Width="120" />
+        </Grid.ColumnDefinitions>
+
+        <Panel Grid.Column="0">
+          <TextBlock Name="addressBox" IsEnabled="true"></TextBlock>
+        </Panel>
+        <Panel Grid.Column="1">
+          <TextBlock  Name="hexBox" IsEnabled="true" ></TextBlock>
+        </Panel>
+        <Panel Grid.Column="2">
+          <TextBlock Name="asciiBox"></TextBlock>
+        </Panel>
+      </Grid>
+    </ScrollViewer>
+    <StackPanel Orientation="Horizontal" Grid.Row="2" Background="LightGray">
+      <TextBlock Text="Goto" Margin="10" />
+      <TextBox MinWidth="80" TextWrapping="NoWrap" AcceptsReturn="False" Name="gotoBox" Height="26" />
+      <Button Margin="6 0 6 0" Name="exportButton" Height="26">Export</Button>
+    </StackPanel>
+  </Grid>
+</UserControl>

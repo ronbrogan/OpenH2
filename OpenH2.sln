@@ -27,9 +27,9 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Engine", "Engine", "{368A54
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OpenH2.Engine", "OpenH2.Engine\OpenH2.Engine.csproj", "{7828DCB7-7693-431A-B759-5F3410EA759D}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OpenH2.ScenarioExplorer", "OpenH2.ScenarioExplorer\OpenH2.ScenarioExplorer.csproj", "{286CA99C-A233-4F86-BA35-57720BA24758}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OpenH2.ScenarioExplorer", "OpenH2.ScenarioExplorer\OpenH2.ScenarioExplorer.csproj", "{286CA99C-A233-4F86-BA35-57720BA24758}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OpenH2.Avalonia", "OpenH2.Avalonia\OpenH2.Avalonia.csproj", "{0B79EE83-E45A-427B-A0A8-5C1C262C83DC}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OpenH2.AvaloniaControls", "OpenH2.Avalonia\OpenH2.AvaloniaControls.csproj", "{0B79EE83-E45A-427B-A0A8-5C1C262C83DC}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

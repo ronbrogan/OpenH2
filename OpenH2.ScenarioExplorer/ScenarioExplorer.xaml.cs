@@ -1,18 +1,15 @@
 ﻿using Avalonia;
 using Avalonia.Controls;
-using Avalonia.Interactivity;
 using Avalonia.Markup.Xaml;
 using OpenH2.Core.Extensions;
 using OpenH2.Core.Factories;
 using OpenH2.ScenarioExplorer.ViewModels;
 using PropertyChanged;
+using ReactiveUI;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
-using System.Windows.Input;
-using ReactiveUI;
 
 namespace OpenH2.ScenarioExplorer
 {

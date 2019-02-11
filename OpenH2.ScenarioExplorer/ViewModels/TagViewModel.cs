@@ -1,10 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using Avalonia.Media;
-using OpenH2.Avalonia;
+﻿using Avalonia.Media;
+using OpenH2.AvaloniaControls.HexViewer;
 using OpenH2.Core.Extensions;
 using PropertyChanged;
+using System;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.Linq;
 
 namespace OpenH2.ScenarioExplorer.ViewModels
 {
@@ -23,7 +24,7 @@ namespace OpenH2.ScenarioExplorer.ViewModels
 
         public Memory<byte> Data { get; set; }
 
-        public ObservableCollection<HexViewerSpan> FormattedSpans { get; set; } = new ObservableCollection<HexViewerSpan>();
+        public ObservableCollection<HexViewerFeature> Features { get; set; } = new ObservableCollection<HexViewerFeature>();
 
         public int InternalOffsetStart { get; set; }
 
@@ -46,20 +47,43 @@ namespace OpenH2.ScenarioExplorer.ViewModels
 
                 if(val > this.InternalOffsetStart && val < this.InternalOffsetEnd)
                 {
-                    var cao = new CaoViewModel()
+                    var cao = new CaoViewModel(i-4)
                     {
                         Offset = val - InternalOffsetStart,
                         Count = span.ReadInt32At(i - 4)
                     };
 
                     this.Caos.Add(cao);
-                    this.FormattedSpans.Add(new HexViewerSpan(i - 4, 8, Brushes.Goldenrod));
-                    this.FormattedSpans.Add(new HexViewerSpan(cao.Offset, cao.Count, Brushes.OliveDrab));
                 }
 
             }
 
+            if(this.Caos.Count == 0)
+            {
+                return;
+            }
 
+            var firstOffset = this.Caos.Select(c => c.Offset).Min();
+            var headerCaos = this.Caos.Where(c => c.Origin < firstOffset).OrderBy(c => c.Offset).ToList();
+
+            for(var i = 0; i < headerCaos.Count(); i++)
+            {
+                var currentCao = headerCaos[i];
+                var nextCaoStart = i+1 == headerCaos.Count() ? this.Data.Length : headerCaos[i + 1].Offset;
+
+                var gap = nextCaoStart - currentCao.Offset;
+
+                currentCao.ItemSize = gap / currentCao.ItemSize;
+            }
+
+
+            foreach(var cao in this.Caos)
+            {
+                this.Features.Add(new HexViewerFeature(cao.Origin, 8, Brushes.Goldenrod));
+                var chunkFeature = new HexViewerFeature(cao.Offset, cao.Count * cao.ItemSize, Brushes.OliveDrab);
+
+                this.Features.Add(chunkFeature);
+            }
         }
     }
 }

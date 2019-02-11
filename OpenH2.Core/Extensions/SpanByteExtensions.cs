@@ -32,7 +32,9 @@ namespace OpenH2.Core.Extensions
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static string ReadStringFrom(this Span<byte> data, int offset, int length)
         {
-            return data.Slice(offset, length).ToStringFromNullTerminated();
+            var len = Math.Min(length, data.Length - offset);
+
+            return data.Slice(offset, len).ToStringFromNullTerminated();
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -58,6 +60,11 @@ namespace OpenH2.Core.Extensions
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static short ReadInt16At(this Span<byte> data, int offset)
         {
+            if(offset + 2 > data.Length)
+            {
+                return 0;
+            }
+
             var bytes = data.Slice(offset, 2);
 
             short value = 0;
@@ -78,6 +85,11 @@ namespace OpenH2.Core.Extensions
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static int ReadInt32At(this Span<byte> data, int offset)
         {
+            if (offset + 4 > data.Length)
+            {
+                return 0;
+            }
+
             var bytes = data.Slice(offset, 4);
 
             var value = 0;
@@ -97,6 +109,11 @@ namespace OpenH2.Core.Extensions
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static ushort ReadUInt16At(this Span<byte> data, int offset)
         {
+            if (offset + 2 > data.Length)
+            {
+                return 0;
+            }
+
             ushort value = data[offset];
             value = (ushort)(value | (data[offset + 1] << 8));
 
@@ -106,6 +123,11 @@ namespace OpenH2.Core.Extensions
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static uint ReadUInt32At(this Span<byte> data, int offset)
         {
+            if (offset + 4 > data.Length)
+            {
+                return 0;
+            }
+
             var bytes = data.Slice(offset, 4);
 
             uint value = 0;

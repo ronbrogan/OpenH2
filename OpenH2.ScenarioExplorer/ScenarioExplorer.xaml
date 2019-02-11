@@ -1,21 +1,16 @@
 ﻿<Window xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:vm="clr-namespace:OpenH2.ScenarioExplorer.ViewModels"
-        xmlns:ctrls="clr-namespace:OpenH2.Avalonia;assembly=OpenH2.Avalonia"
-        Title="ScenarioExplorer"
+        xmlns:ctrls="clr-namespace:OpenH2.AvaloniaControls;assembly=OpenH2.AvaloniaControls"
+        Title="Scenario Explorer"
         MinWidth="900"
         MinHeight="500">
-  <Window.Styles>
-      <Style Selector="TreeView">
-        <Setter Property="BorderBrush" Value="Blue" />
-        <Setter Property="BorderThickness" Value="1" />
-      </Style>
-  </Window.Styles>
+
   <Grid Name="mainGrid">
     <Grid.ColumnDefinitions>
       <ColumnDefinition Width="200" />
       <ColumnDefinition Width="Auto" />
-      <ColumnDefinition MinWidth="520" />
+      <ColumnDefinition Width="520" MinWidth="520" />
       <ColumnDefinition Width="Auto" />
       <ColumnDefinition Width="*" />
     </Grid.ColumnDefinitions>
@@ -27,12 +22,13 @@
 
     <Menu Grid.ColumnSpan="4" Grid.Row="0" Padding="3" Items="{Binding MenuItems}" Name="mainMenu"></Menu>
 
-    <GridSplitter Grid.Row="1" 
+    <GridSplitter Grid.Row="1"
                   Grid.Column="1"
                   HorizontalAlignment="Center"
                   VerticalAlignment="Stretch"
                   Background="Gray"
-                  Width="5"/>
+                  Width="5">
+    </GridSplitter>
 
     <GridSplitter Grid.Row="1"
                   Grid.Column="3"
@@ -50,10 +46,46 @@
         </TreeDataTemplate>
       </TreeView.ItemTemplate>
     </TreeView>
-    <ctrls:HexViewer Grid.Column="2" Grid.Row="1" Data="{Binding CurrentTag.Data}" FormattedSpans="{Binding CurrentTag.FormattedSpans}"></ctrls:HexViewer>
+    <ctrls:HexViewer.HexViewer Grid.Column="2" Grid.Row="1" 
+                     Data="{Binding CurrentTag.Data}" 
+                     Features="{Binding CurrentTag.Features}"
+                     SelectedOffset="{Binding SelectedOffset}"></ctrls:HexViewer.HexViewer>
     <Panel Grid.Column="4" Grid.Row="1">
-      
-      
+      <TabControl>
+        <TabItem Header="Offset">
+          <StackPanel Orientation="Vertical" DataContext="{Binding SelectedOffsetData}" Margin="15">
+            <StackPanel Orientation="Horizontal" >
+              <TextBlock Text="Byte: "></TextBlock>
+              <TextBlock Text="{Binding Byte}"></TextBlock>
+            </StackPanel>
+            <StackPanel Orientation="Horizontal" >
+              <TextBlock Text="Short: "></TextBlock>
+              <TextBlock Text="{Binding Short}"></TextBlock>
+            </StackPanel>
+            <StackPanel Orientation="Horizontal" >
+              <TextBlock Text="UShort: "></TextBlock>
+              <TextBlock Text="{Binding UShort}"></TextBlock>
+            </StackPanel>
+            <StackPanel Orientation="Horizontal" >
+              <TextBlock Text="Int: "></TextBlock>
+              <TextBlock Text="{Binding Int}"></TextBlock>
+            </StackPanel>
+            <StackPanel Orientation="Horizontal" >
+              <TextBlock Text="UInt: "></TextBlock>
+              <TextBlock Text="{Binding UInt}"></TextBlock>
+            </StackPanel>
+            <StackPanel Orientation="Horizontal" >
+              <TextBlock Text="Float: "></TextBlock>
+              <TextBlock Text="{Binding Float}"></TextBlock>
+            </StackPanel>
+            <StackPanel Orientation="Horizontal" >
+              <TextBlock Text="String: "></TextBlock>
+              <TextBlock Text="{Binding String}"></TextBlock>
+            </StackPanel>
+          </StackPanel>
+        </TabItem>
+        <TabItem Header="Object"></TabItem>
+      </TabControl>
     </Panel>
   </Grid>
 </Window>
