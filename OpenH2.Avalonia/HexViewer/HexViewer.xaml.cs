@@ -8,6 +8,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
 using Avalonia.Metadata;
@@ -46,7 +47,7 @@ namespace OpenH2.AvaloniaControls.HexViewer
             get => _features;
             set
             {
-                SetAndRaise(FeaturesProperty, ref _features, value);
+                //SetAndRaise(FeaturesProperty, ref _features, value);
                 UpdateData();
             }
         }
@@ -85,6 +86,10 @@ namespace OpenH2.AvaloniaControls.HexViewer
 
         private HexViewerViewModel DataVM { get; set; }
 
+        private int lastScrollRangeSize = -1;
+        private double lastScrollFeatureUpdate = 0;
+
+
         public HexViewer()
         {
             this.InitializeComponent();
@@ -99,6 +104,16 @@ namespace OpenH2.AvaloniaControls.HexViewer
             this.HexBox = this.FindControl<TextBlock>("hexBox");
             this.AsciiBox = this.FindControl<TextBlock>("asciiBox");
             this.ExportButton = this.FindControl<Button>("exportButton");
+
+            this.Scroller.ObservableForProperty(s => s.Offset).Subscribe(o =>
+            {
+                //a.start < b.end && b.start < a.end
+                if (o.Value.Y < lastScrollFeatureUpdate-(lastScrollRangeSize / 4d)
+                    || o.Value.Y > lastScrollFeatureUpdate+(lastScrollRangeSize / 2d))
+                {
+                    UpdateHexBox();
+                }
+            });
 
             Boxes = new[] { AddressBox, HexBox, AsciiBox };
 
@@ -149,11 +164,24 @@ namespace OpenH2.AvaloniaControls.HexViewer
 
         private void UpdateHexBox()
         {
+            HexBox.FormattedText.Spans = GetNearbySpans();
+
+            HexBox.InvalidateVisual();
+        }
+
+        private List<FormattedTextStyleSpan> GetNearbySpans()
+        {
+            var (rangeStart, rangeEnd) = GetApproximateScrollerVisibleChars();
+
             var hexSpans = new List<FormattedTextStyleSpan>();
 
             if (this.Features != null)
             {
+                //a.start < b.end && b.start < a.end
+
                 hexSpans.AddRange(this.Features
+                    .Where(f => OffsetToCursor(f.Start) < rangeEnd 
+                                && rangeStart <= OffsetToCursor(f.Start + f.Length))
                     .Select(GetFormattedSpan)
                     .ToList());
             }
@@ -163,9 +191,24 @@ namespace OpenH2.AvaloniaControls.HexViewer
 
             hexSpans.Add(new FormattedTextStyleSpan(start, length, this.DataVM.HighlightColor.Brush));
 
-            HexBox.FormattedText.Spans = hexSpans;
+            return hexSpans;
+        }
 
-            HexBox.InvalidateVisual();
+        private (int, int) GetApproximateScrollerVisibleChars()
+        {
+            var offset = this.Scroller.Offset;
+
+            var topLeft = this.HexBox.FormattedText.HitTestPoint(new Point(0, offset.Y));
+            var bottomRight = this.HexBox.FormattedText.HitTestPoint(
+                new Point(this.HexBox.Bounds.Right, offset.Y + this.Scroller.Bounds.Bottom));
+
+            var size = bottomRight.TextPosition - topLeft.TextPosition;
+
+            lastScrollFeatureUpdate = offset.Y;
+            lastScrollRangeSize = size ;
+
+
+            return (topLeft.TextPosition - size, bottomRight.TextPosition + size);
         }
 
         private void HexBox_PointerPressed(object sender, global::Avalonia.Input.PointerPressedEventArgs e)
@@ -179,14 +222,17 @@ namespace OpenH2.AvaloniaControls.HexViewer
             this.SelectedOffset = CursorToOffset(pos);
             this.SelectedFeature = null;
 
-            foreach (var feature in _features)
+            for(var i = _features.Count - 1; i > 0; i--)
             {
+                var feature = _features[i];
+
                 var start = OffsetToCursor(feature.Start);
                 var end = OffsetToCursor(feature.Start + feature.Length);
 
                 if (pos >= start && pos < end)
                 {
                     this.SelectedFeature = feature;
+                    return;
                 }
             }
         }
@@ -367,6 +413,7 @@ namespace OpenH2.AvaloniaControls.HexViewer
         /// </summary>
         /// <param name="input"></param>
         /// <returns></returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static int OffsetToCursor(int input)
         {
             // Each byte is two hex chars and one space
@@ -382,6 +429,7 @@ namespace OpenH2.AvaloniaControls.HexViewer
         /// </summary>
         /// <param name="input"></param>
         /// <returns></returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static int CursorToOffset(int input)
         {
             var gaps = input / 13;
