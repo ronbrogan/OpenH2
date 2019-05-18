@@ -188,9 +188,11 @@ struct Object5 {
 
 };
      
-struct Object6 {
-    int val1;
-    int val2;
+struct Cluster {
+    ushort verts;
+    ushort tris;
+    ushort parts;
+    ushort shadowTris;
     int val3;
     int val4;
     int val5;
@@ -202,14 +204,14 @@ struct Object6 {
     int val11;
     int val12;
     int val13;
-    int val14;
+    int resourceDataSectionSize;
     int size1; // items are 4 bytes
-    InternalOffset offset1; 
+    InternalOffset resources; 
     int val17;
     int val18;
     int val19;
-    int val20;
-    int val21;
+    uint clusterDataCount;
+    InternalOffset clusterDataOffset;
     float val22;
     float val23;
     float val24;
@@ -223,12 +225,12 @@ struct Object6 {
     int val32;
     int val33;
     int size2; // items are 8 bytes long
-    InternalOffset offset2;
+    InternalOffset predictedResources;
     int size3;
-    InternalOffset offset3;
+    InternalOffset portals;
     int val38;
     int size4; // items are 2 bytes
-    InternalOffset offset4;
+    InternalOffset instancedGeomInd;
     int val41;
     int val42;
     int size5; // number of bytes
@@ -784,13 +786,13 @@ FSeek(offsets.offset3 - internalSecondaryMagic);
 Object3 object3s[offsets.size3];
      
 FSeek(offsets.offset4 - internalSecondaryMagic);
-Object4 object4s[offsets.size4];
+Fog fogss[offsets.size4];
      
 FSeek(offsets.offset5 - internalSecondaryMagic);
 Object5 object5s[offsets.size5];
      
 FSeek(offsets.offset6 - internalSecondaryMagic);
-Object6 object6s[offsets.size6];
+Cluster clusters[offsets.size6];
      
 FSeek(offsets.offset7 - internalSecondaryMagic);
 ShaderRef shaders2[offsets.size7];
@@ -808,7 +810,7 @@ FSeek(offsets.offset11 - internalSecondaryMagic);
 Object11 object11s[offsets.size11];
      
 FSeek(offsets.offset12 - internalSecondaryMagic);
-Object12 object12s[offsets.size12];
+Marker markers[offsets.size12];
      
 FSeek(offsets.offset13 - internalSecondaryMagic);
 Object13 object13s[offsets.size13];

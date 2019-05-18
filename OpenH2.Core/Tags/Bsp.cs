@@ -1,4 +1,5 @@
-﻿using OpenH2.Core.Offsets;
+﻿using System;
+using OpenH2.Core.Offsets;
 using System.Collections.Generic;
 
 namespace OpenH2.Core.Tags
@@ -14,6 +15,7 @@ namespace OpenH2.Core.Tags
         public BspHeader Header { get; set; }
         public List<RawBlock> RawBlocks { get; internal set; }
 
+        public List<RenderChunk> RenderChunks { get; internal set; }
 
         public byte[] RawMeta { get; set; }
         
@@ -36,7 +38,7 @@ namespace OpenH2.Core.Tags
             public CountAndOffset MiscObject3Cao { get; set; }
             public CountAndOffset MiscObject4Cao { get; set; }
             public CountAndOffset MiscObject5Cao { get; set; }
-            public CountAndOffset MiscObject6Cao { get; set; }
+            public CountAndOffset RenderChunkCao { get; set; }
             public CountAndOffset MiscObject7Cao { get; set; }
             public CountAndOffset MiscObject8Cao { get; set; }
             public CountAndOffset MiscObject9Cao { get; set; }
@@ -171,6 +173,34 @@ namespace OpenH2.Core.Tags
             public int edge;
 
             public static int Length => 16;
+        }
+
+        public class RenderChunk
+        {
+            public ushort VertexCount;
+            public ushort TriangleCount;
+
+            // Cao offset: 56/60
+            public ChunkData[] ChunkDatas;
+
+            public static int Length => 176;
+
+            public class ChunkData
+            {
+                public ChunkDataType Type;
+                public int Size;
+                public int Offset;
+
+                public static int Length => 16;
+
+                [Flags]
+                public enum ChunkDataType : byte
+                {
+                    One = 1,
+                    Two = 2,
+                    Three = 4
+                }
+            }
         }
     }
 }

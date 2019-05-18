@@ -25,7 +25,10 @@ namespace OpenH2.ScenarioExplorer.ViewModels
             {
                 selectedEntry = value;
 
-                CurrentTag = LoadedScenario.GetTagViewModel(selectedEntry.Id);
+                if (selectedEntry != null)
+                {
+                    CurrentTag = LoadedScenario.GetTagViewModel(selectedEntry.Id);
+                }
             }
         }
 

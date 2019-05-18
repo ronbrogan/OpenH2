@@ -10,7 +10,9 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Avalonia.Metadata;
 
+[assembly: XmlnsDefinition("https://github.com/ronbrogan/openh2/avaloniacontrols", "OpenH2.AvaloniaControls.HexViewer")]
 namespace OpenH2.AvaloniaControls.HexViewer
 {
     public class HexViewer : UserControl

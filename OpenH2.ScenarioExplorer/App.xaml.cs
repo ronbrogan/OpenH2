@@ -2,7 +2,7 @@
 using Avalonia;
 using Avalonia.Logging.Serilog;
 using Avalonia.Markup.Xaml;
-using Avalonia.Platform;
+using OpenH2.AvaloniaControls.HexViewer;
 
 namespace OpenH2.ScenarioExplorer
 {
@@ -11,6 +11,8 @@ namespace OpenH2.ScenarioExplorer
         [STAThread]
         static void Main(string[] args)
         {
+            var hexViewer = typeof(HexViewer);
+
             BuildAvaloniaApp().Start<ScenarioExplorer>();
         }
 

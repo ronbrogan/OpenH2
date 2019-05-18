@@ -3,6 +3,7 @@ using OpenH2.Core.Offsets;
 using OpenH2.Core.Parsing;
 using OpenH2.Core.Representations;
 using System;
+using System.Text;
 
 namespace OpenH2.Core.Tags.Processors
 {
@@ -137,15 +138,26 @@ namespace OpenH2.Core.Tags.Processors
                     Type = span.ReadUInt32At(0),
                     VertexCount = span.ReadUInt16At(4),
                     BoneCount = span.ReadUInt16At(20),
-                    Data = sceneReader.Slice(
-                        (int)span.ReadUInt32At(56), 
-                        (int)span.ReadUInt32At(60)).ToArray(),
+                    
                     DataHeaderSize = span.ReadUInt32At(64),
                     DataBodySize = span.ReadUInt32At(68),
                     ResourceSize = span.ReadUInt32At(80),
                     ResouceOffset = span.ReadUInt32At(84),
                     
                 };
+
+                var dataOffset = new NormalOffset((int)span.ReadUInt32At(56));
+
+                if(dataOffset.Location == Enums.DataFile.Local)
+                {
+                    obj.Data = sceneReader.Slice(
+                        (int)span.ReadUInt32At(56),
+                        (int)span.ReadUInt32At(60)).ToArray();
+                }
+                else
+                {
+                    obj.Data = Encoding.ASCII.GetBytes($"ERROR: Non-local data: {dataOffset.Location.ToString()} file at {dataOffset.Value}");
+                }
 
                 result[i] = obj;
             }

@@ -37,6 +37,12 @@ namespace OpenH2.Translation.TagData.Processors
 
             var data = part.Data.Span;
 
+            // HACK: Once we get data from shared files, this can be removed
+            if(data.ReadStringFrom(0, 5) == "ERROR")
+            {
+                return mesh;
+            }
+
             mesh.ShaderCount = data.ReadUInt32At(8);
             mesh.UnknownCount = data.ReadUInt32At(16);
             mesh.IndiciesCount = data.ReadUInt32At(40);

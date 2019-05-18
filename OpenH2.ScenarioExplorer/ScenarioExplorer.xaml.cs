@@ -44,7 +44,7 @@ namespace OpenH2.ScenarioExplorer
                 Title = "Open .map"
             };
 
-            var result = await open.ShowAsync();
+            var result = await open.ShowAsync(this);
 
             if (result.Any() && result[0].IsSignificant() && File.Exists(result[0]))
             {

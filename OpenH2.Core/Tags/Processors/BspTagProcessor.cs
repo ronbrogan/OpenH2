@@ -21,7 +21,59 @@ namespace OpenH2.Core.Tags.Processors
             meta.Header = GetHeader(data, index);
             meta.RawBlocks = GetRawBlocks(data, meta.Header);
 
+            meta.RenderChunks = GetRenderChunks(data, meta.Header, index);
+
             return meta;
+        }
+
+        private static List<Bsp.RenderChunk> GetRenderChunks(in Span<byte> data, Bsp.BspHeader header, TagIndexEntry index)
+        {
+            var cao = header.MiscBlocks.RenderChunkCao;
+            var span = data.Slice(cao.Offset.Value, cao.Count * Bsp.RenderChunk.Length);
+
+            var chunks = new List<Bsp.RenderChunk>(cao.Count);
+
+            for (var i = 0; i < cao.Count; i++)
+            {
+                var offset = i * Bsp.RenderChunk.Length;
+
+                var chunk = new Bsp.RenderChunk()
+                {
+                    VertexCount = span.ReadUInt16At(0 + offset),
+                    TriangleCount = span.ReadUInt16At(2 + offset),
+                };
+
+                var chunkCao = span.ReadMetaCaoAt(56, index);
+
+                chunk.ChunkDatas = GetRenderChunkDatas(data, chunkCao).ToArray();
+
+                chunks.Add(chunk);
+            }
+
+            return chunks;
+        }
+
+        private static List<Bsp.RenderChunk.ChunkData> GetRenderChunkDatas(Span<byte> data, CountAndOffset cao)
+        {
+            var span = data.Slice(cao.Offset.Value, cao.Count * Bsp.RenderChunk.ChunkData.Length);
+
+            var datas = new List<Bsp.RenderChunk.ChunkData>(cao.Count);
+
+            for (var i = 0; i < cao.Count; i++)
+            {
+                var offset = i * Bsp.RenderChunk.ChunkData.Length;
+
+                var chunkData = new Bsp.RenderChunk.ChunkData()
+                {
+                    Type = (Bsp.RenderChunk.ChunkData.ChunkDataType)span[0],
+                    Size = span.ReadInt32At(8 + offset),
+                    Offset = span.ReadInt32At(12 + offset),
+                };
+
+                datas.Add(chunkData);
+            }
+
+            return datas;
         }
 
         private static Bsp.BspHeader GetHeader(Span<byte> data, TagIndexEntry index)
@@ -230,6 +282,7 @@ namespace OpenH2.Core.Tags.Processors
 
             return raws;
         }
+
         private static List<Bsp.Vertex> GetVerticies(Span<byte> data, CountAndOffset cao)
         {
             var span = data.Slice(cao.Offset.Value, cao.Count * Bsp.Vertex.Length);
@@ -266,7 +319,7 @@ namespace OpenH2.Core.Tags.Processors
                 MiscObject4Cao = caosData.ReadMetaCaoAt(24, index),
                 // 5 cao gap
                 MiscObject5Cao = caosData.ReadMetaCaoAt(72, index),
-                MiscObject6Cao = caosData.ReadMetaCaoAt(80, index),
+                RenderChunkCao = caosData.ReadMetaCaoAt(80, index),
                 MiscObject7Cao = caosData.ReadMetaCaoAt(88, index),
                 MiscObject8Cao = caosData.ReadMetaCaoAt(96, index),
                 // 4 cao gap

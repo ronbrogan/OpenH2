@@ -13,7 +13,7 @@ namespace OpenH2.BspMetaAnalysis
         {
             var mapNames = new string[]
             {
-                @"D:\Halo 2 Vista Original Maps\ascension.map"
+                @"D:\Halo 2 Vista Original Maps\03a_oldmombasa.map"
             };
 
             var metas = mapNames.Select(s =>
@@ -23,14 +23,19 @@ namespace OpenH2.BspMetaAnalysis
                     return fac.FromFile(fs);
             }).ToDictionary(s => s.Header.Name, s => s);
 
-            var ascension = metas["ascension"];
+            var ascension = metas["03a_oldmombasa"];
 
             var translator = new TagTranslator(ascension);
 
-            var bsp = translator.GetAll<BspTagData>().First();
+            var bsps = translator.GetAll<BspTagData>().ToList();
 
-            var obj = CreatObjFileForBsp(bsp);
-            File.WriteAllText("D:\\bsp.obj", obj);
+            for(var i = 0; i < bsps.Count(); i++)
+            {
+                var bsp = bsps[i];
+
+                var obj = CreatObjFileForBsp(bsp);
+                File.WriteAllText($"D:\\bsp_{i}.obj", obj);
+            }
         }
 
         public static string CreatObjFileForBsp(BspTagData mesh)
