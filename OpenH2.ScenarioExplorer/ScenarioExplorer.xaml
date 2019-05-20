@@ -47,10 +47,20 @@
         </TreeDataTemplate>
       </TreeView.ItemTemplate>
     </TreeView>
-    <ctrls:HexViewer Grid.Column="2" Grid.Row="1"
-                     Data="{Binding CurrentTag.Data}"
-                     Features="{Binding CurrentTag.Features}"
-                     SelectedOffset="{Binding SelectedOffset}"></ctrls:HexViewer>
+    <Grid Grid.Column="2" Grid.Row="1">
+      <Grid.RowDefinitions>
+        <RowDefinition Height="*"/>
+        <RowDefinition Height="25"/>
+      </Grid.RowDefinitions>
+
+      <ctrls:HexViewer Grid.Row="0"
+          IsDisabled="{Binding DisableHexViewer}"
+          Data="{Binding CurrentTag.Data}"
+          Features="{Binding CurrentTag.Features}"
+          SelectedOffset="{Binding SelectedOffset}"></ctrls:HexViewer>
+      <CheckBox Grid.Row="1" IsChecked="{Binding DisableHexViewer}">Disable Hex Viewer</CheckBox>
+    </Grid>
+    
     <Panel Grid.Column="4" Grid.Row="1">
       <TabControl>
         <TabItem Header="Offset">
@@ -85,7 +95,14 @@
             </StackPanel>
           </StackPanel>
         </TabItem>
-        <TabItem Header="Object"></TabItem>
+        <TabItem Header="Object">
+          
+            <TextBox Text="{Binding CurrentTag.OriginalTagJson}" IsReadOnly="True" 
+                     
+              ScrollViewer.HorizontalScrollBarVisibility="Auto"
+              ScrollViewer.VerticalScrollBarVisibility="Auto"></TextBox>
+          
+        </TabItem>
       </TabControl>
     </Panel>
   </Grid>

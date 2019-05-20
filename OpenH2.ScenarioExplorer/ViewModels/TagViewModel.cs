@@ -6,6 +6,8 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
+using Newtonsoft.Json;
+using OpenH2.Core.Tags;
 
 namespace OpenH2.ScenarioExplorer.ViewModels
 {
@@ -23,6 +25,23 @@ namespace OpenH2.ScenarioExplorer.ViewModels
         public string Name { get; set; }
 
         public Memory<byte> Data { get; set; }
+
+        public string OriginalTagJson { get; private set; }
+
+        private BaseTag _originalTag;
+        public BaseTag OriginalTag
+        {
+            get => _originalTag;
+            set
+            {
+                _originalTag = value;
+
+                if(value != null)
+                {
+                    OriginalTagJson = JsonConvert.SerializeObject(value, Formatting.Indented);
+                }
+            }
+        }
 
         public ObservableCollection<HexViewerFeature> Features { get; set; } = new ObservableCollection<HexViewerFeature>();
 

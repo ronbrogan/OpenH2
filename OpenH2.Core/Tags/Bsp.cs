@@ -1,6 +1,7 @@
 ﻿using System;
 using OpenH2.Core.Offsets;
 using System.Collections.Generic;
+using Newtonsoft.Json;
 
 namespace OpenH2.Core.Tags
 {
@@ -13,10 +14,13 @@ namespace OpenH2.Core.Tags
         public override string Name { get; set; }
 
         public BspHeader Header { get; set; }
+
+        [JsonIgnore]
         public List<RawBlock> RawBlocks { get; internal set; }
 
         public List<RenderChunk> RenderChunks { get; internal set; }
 
+        [JsonIgnore]
         public byte[] RawMeta { get; set; }
         
 
@@ -180,21 +184,26 @@ namespace OpenH2.Core.Tags
             public ushort VertexCount;
             public ushort TriangleCount;
 
+            public uint DataBlockRawOffset;
+            public uint DataBlockSize;
+            public uint DataPreambleSize;
+            public uint ResourceSubsectionSize;
+
             // Cao offset: 56/60
-            public ChunkData[] ChunkDatas;
+            public Resource[] Resources;
 
             public static int Length => 176;
 
-            public class ChunkData
+            public class Resource
             {
-                public ChunkDataType Type;
+                public ResourceType Type;
                 public int Size;
                 public int Offset;
 
                 public static int Length => 16;
 
                 [Flags]
-                public enum ChunkDataType : byte
+                public enum ResourceType : byte
                 {
                     One = 1,
                     Two = 2,

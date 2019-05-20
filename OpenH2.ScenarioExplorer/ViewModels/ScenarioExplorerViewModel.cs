@@ -65,5 +65,7 @@ namespace OpenH2.ScenarioExplorer.ViewModels
 
         public DataPreviewViewModel SelectedOffsetData { get; set; }
 
+        public bool DisableHexViewer { get; set; }
+
     }
 }

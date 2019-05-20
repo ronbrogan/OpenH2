@@ -4,6 +4,7 @@ using System.ComponentModel;
 using System.Linq;
 using OpenH2.Core.Extensions;
 using OpenH2.Core.Representations;
+using OpenH2.Core.Tags;
 using PropertyChanged;
 
 namespace OpenH2.ScenarioExplorer.ViewModels
@@ -33,8 +34,13 @@ namespace OpenH2.ScenarioExplorer.ViewModels
                 {
                     InternalOffsetStart = tagEntry.Offset.OriginalValue,
                     InternalOffsetEnd = tagEntry.Offset.OriginalValue + tagEntry.MetaSize,
-                    Data = sceneData.Slice(tagEntry.Offset.Value, tagEntry.MetaSize).ToArray()
+                    Data = sceneData.Slice(tagEntry.Offset.Value, tagEntry.MetaSize).ToArray(),
                 };
+
+                BaseTag tag = null;
+                scene.Tags.TryGetValue(tagEntry.ID, out tag);
+
+                vm.OriginalTag = tag;
 
                 Tags.Add(vm);
             }

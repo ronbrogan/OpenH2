@@ -30,6 +30,20 @@ namespace OpenH2.AvaloniaControls.HexViewer
         public static readonly DirectProperty<HexViewer, int> SelectedOffsetProperty =
             AvaloniaProperty.RegisterDirect<HexViewer, int>(nameof(SelectedOffset), h => h.SelectedOffset, (h, v) => h.SelectedOffset = v, defaultBindingMode: Avalonia.Data.BindingMode.TwoWay);
 
+        public static readonly DirectProperty<HexViewer, bool> IsDisabledProperty =
+            AvaloniaProperty.RegisterDirect<HexViewer, bool>(nameof(IsDisabled), h => h.IsDisabled, (h,v) => h.IsDisabled = v);
+
+        private bool _isDisabled;
+        public bool IsDisabled
+        {
+            get => _isDisabled;
+            set
+            {
+                SetAndRaise(IsDisabledProperty, ref _isDisabled, value);
+                UpdateData();
+            }
+        }
+
         private Memory<byte> _data;
         private Memory<byte> Data
         {
@@ -47,7 +61,7 @@ namespace OpenH2.AvaloniaControls.HexViewer
             get => _features;
             set
             {
-                //SetAndRaise(FeaturesProperty, ref _features, value);
+                SetAndRaise(FeaturesProperty, ref _features, value);
                 UpdateData();
             }
         }
@@ -136,6 +150,18 @@ namespace OpenH2.AvaloniaControls.HexViewer
         {
             if (_data.IsEmpty)
                 return;
+
+            if(this.IsDisabled)
+            {
+                this.HexBox.Text = string.Empty;
+                this.AsciiBox.Text = string.Empty;
+                this.AddressBox.Text = string.Empty;
+
+                this.HexBox.PointerPressed -= this.HexBox_PointerPressed;
+
+                this.UpdateHexBox();
+                return;
+            }
 
             var span = this._data.Span;
 

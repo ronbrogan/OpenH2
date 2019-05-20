@@ -1,0 +1,22 @@
+//------------------------------------------------
+//--- 010 Editor v7.0.2 Binary Template
+//
+//      File: 
+//   Authors: 
+//   Version: 
+//   Purpose: 
+//  Category: 
+// File Mask: 
+//  ID Bytes: 
+//   History: 
+//------------------------------------------------
+local int items <hidden=true> = 170;
+
+struct RangeInfo {
+    ushort start;
+    ushort end;
+    ushort unk;
+    ushort partId;
+};
+
+RangeInfo RangeInfos[items];

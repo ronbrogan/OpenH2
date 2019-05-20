@@ -1,0 +1,36 @@
+//------------------------------------------------
+//--- 010 Editor v7.0.2 Binary Template
+//
+//      File: 
+//   Authors: 
+//   Version: 
+//   Purpose: 
+//  Category: 
+// File Mask: 
+//  ID Bytes: 
+//   History: 
+//------------------------------------------------
+
+local int items <hidden=true> = 12;
+
+struct PartInfo {
+    ushort val1;
+    ushort type_mb;
+    ushort material_mb;
+    ushort offset;
+    ushort size;
+    
+    ushort offset2;
+    
+    uint size2;
+
+    float x;
+    float y;
+    float z;
+    
+    int zero[4];
+
+    float rest[7];
+};
+
+PartInfo PartInfos[items];

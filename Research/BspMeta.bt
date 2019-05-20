@@ -201,11 +201,11 @@ struct Cluster {
     int val8;
     int val9;
     int val10;
-    int val11;
-    int val12;
-    int val13;
+    int dataBlockRawOffset;
+    int totalDataBlockSize;
+    int preambleSize;
     int resourceDataSectionSize;
-    int size1; // items are 4 bytes
+    int resourceCount; // items are 4 bytes
     InternalOffset resources; 
     int val17;
     int val18;

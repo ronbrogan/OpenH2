@@ -41,11 +41,16 @@ namespace OpenH2.Core.Tags.Processors
                 {
                     VertexCount = span.ReadUInt16At(0 + offset),
                     TriangleCount = span.ReadUInt16At(2 + offset),
+
+                    DataBlockRawOffset = span.ReadUInt32At(40 + offset),
+                    DataBlockSize = span.ReadUInt32At(44 + offset),
+                    DataPreambleSize = span.ReadUInt32At(48 + offset),
+                    ResourceSubsectionSize = span.ReadUInt32At(52 + offset)
                 };
 
-                var chunkCao = span.ReadMetaCaoAt(56, index);
+                var chunkCao = span.ReadMetaCaoAt(56 + offset, index);
 
-                chunk.ChunkDatas = GetRenderChunkDatas(data, chunkCao).ToArray();
+                chunk.Resources = GetRenderChunkDatas(data, chunkCao).ToArray();
 
                 chunks.Add(chunk);
             }
@@ -53,19 +58,19 @@ namespace OpenH2.Core.Tags.Processors
             return chunks;
         }
 
-        private static List<Bsp.RenderChunk.ChunkData> GetRenderChunkDatas(Span<byte> data, CountAndOffset cao)
+        private static List<Bsp.RenderChunk.Resource> GetRenderChunkDatas(Span<byte> data, CountAndOffset cao)
         {
-            var span = data.Slice(cao.Offset.Value, cao.Count * Bsp.RenderChunk.ChunkData.Length);
+            var span = data.Slice(cao.Offset.Value, cao.Count * Bsp.RenderChunk.Resource.Length);
 
-            var datas = new List<Bsp.RenderChunk.ChunkData>(cao.Count);
+            var datas = new List<Bsp.RenderChunk.Resource>(cao.Count);
 
             for (var i = 0; i < cao.Count; i++)
             {
-                var offset = i * Bsp.RenderChunk.ChunkData.Length;
+                var offset = i * Bsp.RenderChunk.Resource.Length;
 
-                var chunkData = new Bsp.RenderChunk.ChunkData()
+                var chunkData = new Bsp.RenderChunk.Resource()
                 {
-                    Type = (Bsp.RenderChunk.ChunkData.ChunkDataType)span[0],
+                    Type = (Bsp.RenderChunk.Resource.ResourceType)span[offset],
                     Size = span.ReadInt32At(8 + offset),
                     Offset = span.ReadInt32At(12 + offset),
                 };
