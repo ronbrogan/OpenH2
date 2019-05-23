@@ -17,15 +17,15 @@ namespace OpenH2.Core.Tags.Processors
                 Name = name,
                 NameId = span.ReadInt32At(0),
                 BoundingBoxCount = span.ReadInt32At(20),
-                BoundingBoxesOffset = new MetaOffset(index, span.ReadInt32At(24)),
+                BoundingBoxesOffset = new TagInternalOffset(index, span.ReadInt32At(24)),
                 LodCount = span.ReadInt32At(28),
-                LodsOffset = new MetaOffset(index, span.ReadInt32At(32)),
+                LodsOffset = new TagInternalOffset(index, span.ReadInt32At(32)),
                 PartCount = span.ReadInt32At(36),
-                PartsOffset = new MetaOffset(index, span.ReadInt32At(40)),
+                PartsOffset = new TagInternalOffset(index, span.ReadInt32At(40)),
                 MarkerCount = span.ReadInt32At(72),
-                MarkersOffset = new MetaOffset(index, span.ReadInt32At(76)),
+                MarkersOffset = new TagInternalOffset(index, span.ReadInt32At(76)),
                 ShaderCount = span.ReadInt32At(96),
-                ShadersOffset = new MetaOffset(index, span.ReadInt32At(100))
+                ShadersOffset = new TagInternalOffset(index, span.ReadInt32At(100))
             };
 
             tag.BoundingBoxes = GetBoundingBoxes(span, tag.BoundingBoxCount, tag.BoundingBoxesOffset);
@@ -41,7 +41,7 @@ namespace OpenH2.Core.Tags.Processors
         private static Model.BoundingBox[] GetBoundingBoxes(
             Span<byte> data, 
             int count, 
-            MetaOffset offset)
+            TagInternalOffset offset)
         {
             var result = new Model.BoundingBox[count];
             var objLength = Model.BoundingBox.Length;
@@ -73,7 +73,7 @@ namespace OpenH2.Core.Tags.Processors
         private static Model.LevelOfDetail[] GetLevelOfDetails(
             Span<byte> data, 
             int count, 
-            MetaOffset offset, 
+            TagInternalOffset offset, 
             TagIndexEntry index)
         {
             var result = new Model.LevelOfDetail[count];
@@ -87,7 +87,7 @@ namespace OpenH2.Core.Tags.Processors
                 {
                     PartNameId = span.ReadInt32At(0),
                     PermutationCount = span.ReadInt32At(8),
-                    PermutationsOffset = new MetaOffset(index, span.ReadInt32At(12))
+                    PermutationsOffset = new TagInternalOffset(index, span.ReadInt32At(12))
                 };
 
                 obj.Permutations = GetPermutations(data, obj.PermutationCount, obj.PermutationsOffset);
@@ -98,7 +98,7 @@ namespace OpenH2.Core.Tags.Processors
             return result;
         }
 
-        private static Model.Permutation[] GetPermutations(Span<byte> data, int count, MetaOffset offset)
+        private static Model.Permutation[] GetPermutations(Span<byte> data, int count, TagInternalOffset offset)
         {
             var result = new Model.Permutation[count];
             var objLength = Model.Permutation.Length;
@@ -124,7 +124,7 @@ namespace OpenH2.Core.Tags.Processors
             return result;
         }
 
-        private static Model.Part[] GetParts(Span<byte> data, int count, MetaOffset offset, TrackingReader sceneReader)
+        private static Model.Part[] GetParts(Span<byte> data, int count, TagInternalOffset offset, TrackingReader sceneReader)
         {
             var result = new Model.Part[count];
             var objLength = Model.Part.Length;
@@ -166,7 +166,7 @@ namespace OpenH2.Core.Tags.Processors
         }
 
         /// <param name="offset">This offset is the offset of the preceeding Parts section</param>
-        private static Model.Bone[] GetBones(Span<byte> data, int count, MetaOffset offset)
+        private static Model.Bone[] GetBones(Span<byte> data, int count, TagInternalOffset offset)
         {
             var result = new Model.Bone[count];
             var boneSectionStart = offset.Value + (count * Model.Part.Length);
@@ -200,7 +200,7 @@ namespace OpenH2.Core.Tags.Processors
             return result;
         }
 
-        private static Model.Marker[] GetMarkers(Span<byte> data, int count, MetaOffset offset)
+        private static Model.Marker[] GetMarkers(Span<byte> data, int count, TagInternalOffset offset)
         {
             var result = new Model.Marker[count];
             var objLength = Model.Marker.Length;
@@ -226,7 +226,7 @@ namespace OpenH2.Core.Tags.Processors
             return result;
         }
 
-        private static Model.Shader[] GetShaders(Span<byte> data, int count, MetaOffset offset)
+        private static Model.Shader[] GetShaders(Span<byte> data, int count, TagInternalOffset offset)
         {
             var result = new Model.Shader[count];
             var objLength = Model.Shader.Length;

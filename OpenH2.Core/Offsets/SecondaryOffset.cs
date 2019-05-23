@@ -12,7 +12,8 @@ namespace OpenH2.Core.Offsets
             this.offset = offsetValue;
             this.scene = scene;
         }
-
+        
+        // TODO: remove reliance the reference here to late bind the secondary magic
         public int Value => this.offset - this.scene.SecondaryMagic;
 
         public int OriginalValue => this.offset;

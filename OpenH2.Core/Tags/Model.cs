@@ -1,5 +1,6 @@
 ﻿using System;
 using OpenH2.Core.Offsets;
+using OpenH2.Core.Tags.Layout;
 
 namespace OpenH2.Core.Tags
 {
@@ -11,40 +12,73 @@ namespace OpenH2.Core.Tags
 
         public override string Name { get; set; }
 
+        [PrimitiveValue(0)]
         public int NameId { get; set; }
+
+        [PrimitiveValue(0)]
         public int BoundingBoxCount { get; set; }
-        public MetaOffset BoundingBoxesOffset { get; set; }
+        public TagInternalOffset BoundingBoxesOffset { get; set; }
         public int LodCount { get; set; }
-        public MetaOffset LodsOffset { get; set; }
+        public TagInternalOffset LodsOffset { get; set; }
         public int PartCount { get; set; }
-        public MetaOffset PartsOffset { get; set; }
+        public TagInternalOffset PartsOffset { get; set; }
         public int MarkerCount { get; set; }
-        public MetaOffset MarkersOffset { get; set; }
+        public TagInternalOffset MarkersOffset { get; set; }
         public int ShaderCount { get; set; }
-        public MetaOffset ShadersOffset { get; set; }
+        public TagInternalOffset ShadersOffset { get; set; }
 
 
 
-
+        [InternalReferenceValue(20)]
         public BoundingBox[] BoundingBoxes { get; set; }
+
+        //[InternalReferenceValue(28)]
         public LevelOfDetail[] Lods { get; set; }
+
+        
         public Permutation[] Permutations { get; set; }
+
+        //[InternalReferenceValue(36)]
         public Part[] Parts { get; set; }
         public Bone[] Bones { get; set; }
+
+        //[InternalReferenceValue(72)]
         public Marker[] Markers { get; set; }
+
+        //[InternalReferenceValue(96)]
         public Shader[] Shaders { get; set; }
 
+        [FixedLength(56)]
         public class BoundingBox
         {
+            [PrimitiveValue(0)]
             public float MinX { get; set; }
+
+            [PrimitiveValue(4)]
             public float MaxX { get; set; }
+
+            [PrimitiveValue(8)]
             public float MinY { get; set; }
+
+            [PrimitiveValue(12)]
             public float MaxY { get; set; }
+
+            [PrimitiveValue(16)]
             public float MinZ { get; set; }
+
+            [PrimitiveValue(20)]
             public float MaxZ { get; set; }
+
+            [PrimitiveValue(24)]
             public float MinU { get; set; }
+
+            [PrimitiveValue(28)]
             public float MaxU { get; set; }
+
+            [PrimitiveValue(32)]
             public float MinV { get; set; }
+
+            [PrimitiveValue(36)]
             public float MaxV { get; set; }
 
             public static int Length => 56;
@@ -54,7 +88,7 @@ namespace OpenH2.Core.Tags
         {
             public int PartNameId { get; set; }
             public int PermutationCount { get; set; }
-            public MetaOffset PermutationsOffset { get; set; }
+            public TagInternalOffset PermutationsOffset { get; set; }
 
             public Permutation[] Permutations { get; set; }
 

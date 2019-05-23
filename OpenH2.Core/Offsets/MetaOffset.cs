@@ -12,9 +12,9 @@ namespace OpenH2.Core.Offsets
     /// the tag, we can use the secondary as a local offset.
     /// </summary>
     [DebuggerDisplay("{Value}")]
-    public class MetaOffset : IOffset
+    public class TagInternalOffset : IOffset
     {
-        public MetaOffset(TagIndexEntry indexEntry, int offsetValue)
+        public TagInternalOffset(TagIndexEntry indexEntry, int offsetValue)
         {
             this.OriginalValue = offsetValue;
 
