@@ -5,6 +5,7 @@ using OpenH2.Core.Tags.Layout;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Reflection.Emit;
@@ -84,12 +85,12 @@ namespace OpenH2.Core.Tags.Processors
                 caoLocal = gen.DeclareLocal(caoLookupType);
 
                 gen.Emit(OpCodes.Newobj, caoLookupType.GetConstructor(new Type[] { }));
-                gen.Emit(OpCodes.Stloc, caoLocal.LocalIndex);
+                gen.Emit(OpCodes.Stloc, caoLocal);
             }
 
             gen.Emit(OpCodes.Ldarg_0);
             gen.Emit(OpCodes.Newobj, tagType.GetConstructor(new Type[] { typeof(uint) }));
-            gen.Emit(OpCodes.Stloc, tagLocal.LocalIndex);
+            gen.Emit(OpCodes.Stloc, tagLocal);
 
             // Do first pass over "header" reagion
             foreach (var prop in props)
@@ -101,7 +102,7 @@ namespace OpenH2.Core.Tags.Processors
                         break;
 
                     case InternalReferenceValueAttribute reference:
-                        //GenerateReferenceProperty(gen, caoLocal, prop);
+                        GenerateReferenceProperty(gen, caoLocal, prop);
                         break;
                 }
             }
@@ -109,11 +110,17 @@ namespace OpenH2.Core.Tags.Processors
             // Do subsequent passes for internal references
             foreach (var prop in props.Where(p => p.LayoutAttribute is InternalReferenceValueAttribute))
             {
-                //GenerateInternalReferenceArrayReader(gen, tagLocal, caoLocal, prop);
+                GenerateInternalReferenceArrayReader(gen, tagLocal, caoLocal, prop);
             }
 
-            gen.Emit(OpCodes.Ldloc, tagLocal.LocalIndex);
+            gen.Emit(OpCodes.Ldloc, tagLocal);
             gen.Emit(OpCodes.Ret);
+
+            var streamField = typeof(ILGenerator).GetField("m_ILStream", BindingFlags.NonPublic | BindingFlags.Instance);
+            var bytes = (byte[])streamField.GetValue(gen);
+
+            using (var file = File.OpenWrite("D:\\taggen.il"))
+                file.Write(bytes, 0, gen.ILOffset);
 
             return builder.getDelegate();
         }
@@ -127,6 +134,7 @@ namespace OpenH2.Core.Tags.Processors
 
             var cao = gen.DeclareLocal(typeof(CountAndOffset));
 
+            gen.Emit(OpCodes.Ldloc, caoLocal);
             gen.Emit(OpCodes.Ldc_I4, prop.LayoutAttribute.Offset); // cao lookup key
             gen.Emit(OpCodes.Callvirt, MI.Cao.IntDictLookup); // Cao is on the stack
             gen.Emit(OpCodes.Stloc, cao); // store cao
@@ -165,8 +173,8 @@ namespace OpenH2.Core.Tags.Processors
                 gen.Emit(OpCodes.Ldloc, result);
                 gen.Emit(OpCodes.Ldloc, i);
 
+                // TODO: replace ctor with recursive tag creator calls
                 var ctor = prop.Type.GetElementType().GetConstructor(new Type[] { });
-
                 gen.Emit(OpCodes.Newobj, ctor);
 
                 gen.Emit(OpCodes.Stelem_Ref);
@@ -184,6 +192,10 @@ namespace OpenH2.Core.Tags.Processors
             gen.Emit(OpCodes.Ldloc, count);
             gen.Emit(OpCodes.Clt);
             gen.Emit(OpCodes.Brtrue, loop);
+
+            gen.Emit(OpCodes.Ldloc, tagLocal);
+            gen.Emit(OpCodes.Ldloc, result);
+            gen.Emit(OpCodes.Callvirt, prop.Setter);
         }
 
         /// <summary>
@@ -194,7 +206,9 @@ namespace OpenH2.Core.Tags.Processors
         /// <param name="prop"></param>
         private void GenerateReferenceProperty(ILGenerator gen, LocalBuilder caoLocal, TagProperty prop)
         {
-            gen.Emit(OpCodes.Ldc_I4, prop.LayoutAttribute.Offset);
+            gen.Emit(OpCodes.Ldloc, caoLocal); // Load Cao dict for later
+
+            gen.Emit(OpCodes.Ldc_I4, prop.LayoutAttribute.Offset); // Load Cao dict key for later
 
             gen.Emit(OpCodes.Ldarg_1); // Load Span<byte> onto evalstack
 
