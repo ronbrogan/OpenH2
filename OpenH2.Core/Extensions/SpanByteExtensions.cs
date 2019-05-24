@@ -146,7 +146,12 @@ namespace OpenH2.Core.Extensions
 
         public static CountAndOffset ReadMetaCaoAt(this Span<byte> data, int offset, TagIndexEntry index)
         {
-            return new CountAndOffset(data.ReadInt32At(offset), new TagInternalOffset(index, data.ReadInt32At(offset + 4)));
+            return ReadMetaCaoAt(data, offset, index.Offset.Value);
+        }
+
+        public static CountAndOffset ReadMetaCaoAt(this Span<byte> data, int offset, int magic)
+        {
+            return new CountAndOffset(data.ReadInt32At(offset), new TagInternalOffset(magic, data.ReadInt32At(offset + 4)));
         }
 
         private static UInt32ToSingle floatConverter = new UInt32ToSingle();

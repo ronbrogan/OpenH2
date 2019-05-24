@@ -5,7 +5,7 @@ using OpenH2.Core.Tags.Layout;
 namespace OpenH2.Core.Tags
 {
     public class Model : BaseTag
-    {
+    { 
         public Model(uint id) : base(id)
         {
         }
@@ -15,7 +15,6 @@ namespace OpenH2.Core.Tags
         [PrimitiveValue(0)]
         public int NameId { get; set; }
 
-        [PrimitiveValue(0)]
         public int BoundingBoxCount { get; set; }
         public TagInternalOffset BoundingBoxesOffset { get; set; }
         public int LodCount { get; set; }

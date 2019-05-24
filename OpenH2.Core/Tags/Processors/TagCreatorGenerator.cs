@@ -1,64 +1,65 @@
 ﻿using OpenH2.Core.Extensions;
 using OpenH2.Core.Offsets;
-using OpenH2.Core.Representations;
 using OpenH2.Core.Tags.Layout;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Reflection.Emit;
-using System.Text;
+using System.Runtime.Serialization;
 
 namespace OpenH2.Core.Tags.Processors
 {
-    public class TagCreatorGenerator
-    {
-        public delegate T TagCreator<T>(uint id, Span<byte> data, TagIndexEntry index);
+    public delegate object TagCreator(Span<byte> data, int internalOffsetMagic, int startAt = 0);
+    public delegate T TagCreator<T>(Span<byte> data, int internalOffsetMagic, int startAt = 0);
 
-        private static Type[] arguments = new[] { typeof(uint), typeof(Span<byte>), typeof(TagIndexEntry) };
-        
-        public TagCreator<T> GenerateTagCreator<T>() where T : BaseTag
+    public static class TagCreatorGenerator
+    {
+        private static Type[] arguments = new[] { typeof(Span<byte>), typeof(int), typeof(int) };
+
+        private static Dictionary<Type, TagCreator> cachedTagCreatorDelegates = new Dictionary<Type, TagCreator>();
+
+        public static TagCreator<T> GetTagCreator<T>()
         {
             var tagType = typeof(T);
+
+            var creator = GetTagCreator(tagType);
+
+            return new TagCreator<T>((Span<byte> s, int i, int o) => (T)creator(s, i, o));
+        }
+
+        public static TagCreator GetTagCreator(Type tagType)
+        {
+            if (cachedTagCreatorDelegates.TryGetValue(tagType, out var deleg))
+            {
+                return deleg;
+            }
 
             var builder = new DynamicMethod("Read" + tagType.Name, tagType, arguments);
 
-            var wrapper = new MethodBuilderWrapper<T>()
+            var wrapper = new MethodBuilderWrapper()
             {
                 generator = builder.GetILGenerator(),
-                getDelegate = () => (TagCreator<T>)builder.CreateDelegate(typeof(TagCreator<T>))
+                getDelegate = () => {
+                    var delg = (TagCreator)builder.CreateDelegate(typeof(TagCreator));
+
+                    cachedTagCreatorDelegates[tagType] = delg;
+
+                    return delg;
+                }
             };
 
-            return GenerateTagCreator(wrapper);
+            return GenerateTagCreator(tagType, wrapper);
         }
 
-        public TagCreator<T> GenerateTagCreator<T>(TypeBuilder type) where T: BaseTag
-        {
-            var tagType = typeof(T);
-
-            var builder = type.DefineMethod("Read" + tagType.Name,
-                MethodAttributes.Public, tagType, arguments);
-
-            var wrapper = new MethodBuilderWrapper<T>()
-            {
-                generator = builder.GetILGenerator(),
-                getDelegate = () => (TagCreator<T>)builder.CreateDelegate(typeof(TagCreator<T>))
-            };
-
-            return GenerateTagCreator(wrapper);
-        }
-
-        private TagCreator<T> GenerateTagCreator<T>(MethodBuilderWrapper<T> builder) where T : BaseTag
+        private static TagCreator GenerateTagCreator(Type tagType, MethodBuilderWrapper builder)
         {
             var gen = builder.generator;
 
 #if DEBUG
             var debugWrite = typeof(Debug).GetMethod("WriteLine", new[] { typeof(object) });
 #endif
-
-            var tagType = typeof(T);
 
             /// public Tag TagCreator(uint id, Span<byte> data)
             /// {
@@ -68,10 +69,17 @@ namespace OpenH2.Core.Tags.Processors
             ///     var val = data.ReadXAt(prop.Offset);
             ///     t.Prop = val;
             /// 
+            ///     // foreach refprop
+            ///     var result = new p[];
+            ///     for(cao)
+            ///         result[i] = new p();
+            ///         
+            ///     t.Prop = result;
+            /// 
             ///     return t;
             /// };
 
-            var props = TagTypeMetadataProvider.GetProperties(typeof(T));
+            var props = TagTypeMetadataProvider.GetProperties(tagType);
 
             var tagLocal = gen.DeclareLocal(tagType);
             LocalBuilder caoLocal = null;
@@ -88,8 +96,8 @@ namespace OpenH2.Core.Tags.Processors
                 gen.Emit(OpCodes.Stloc, caoLocal);
             }
 
-            gen.Emit(OpCodes.Ldarg_0);
-            gen.Emit(OpCodes.Newobj, tagType.GetConstructor(new Type[] { typeof(uint) }));
+            gen.Emit(OpCodes.Ldtoken, tagType);
+            gen.Emit(OpCodes.Call, MI.Runtime.GetUninitializedObject);
             gen.Emit(OpCodes.Stloc, tagLocal);
 
             // Do first pass over "header" reagion
@@ -116,16 +124,10 @@ namespace OpenH2.Core.Tags.Processors
             gen.Emit(OpCodes.Ldloc, tagLocal);
             gen.Emit(OpCodes.Ret);
 
-            var streamField = typeof(ILGenerator).GetField("m_ILStream", BindingFlags.NonPublic | BindingFlags.Instance);
-            var bytes = (byte[])streamField.GetValue(gen);
-
-            using (var file = File.OpenWrite("D:\\taggen.il"))
-                file.Write(bytes, 0, gen.ILOffset);
-
             return builder.getDelegate();
         }
 
-        private void GenerateInternalReferenceArrayReader(ILGenerator gen, LocalBuilder tagLocal, LocalBuilder caoLocal, TagProperty prop)
+        private static void GenerateInternalReferenceArrayReader(ILGenerator gen, LocalBuilder tagLocal, LocalBuilder caoLocal, TagProperty prop)
         {
             if (prop.Type.BaseType != typeof(Array))
             {
@@ -173,9 +175,26 @@ namespace OpenH2.Core.Tags.Processors
                 gen.Emit(OpCodes.Ldloc, result);
                 gen.Emit(OpCodes.Ldloc, i);
 
-                // TODO: replace ctor with recursive tag creator calls
-                var ctor = prop.Type.GetElementType().GetConstructor(new Type[] { });
-                gen.Emit(OpCodes.Newobj, ctor);
+                var elemType = prop.Type.GetElementType();
+                var typeLength = TagTypeMetadataProvider.GetFixedLength(elemType);
+                var creatorInvoke = typeof(TagCreator).GetMethod("Invoke");
+
+                gen.Emit(OpCodes.Ldtoken, elemType);
+                gen.Emit(OpCodes.Call, MI.This.GetTagCreator);
+
+
+                gen.Emit(OpCodes.Ldarg_0); // load span
+
+                gen.Emit(OpCodes.Ldarg_1); // load magic
+
+                // offset + (i * length)
+                gen.Emit(OpCodes.Ldloc, offset);
+                gen.Emit(OpCodes.Ldloc, i);
+                gen.Emit(OpCodes.Ldc_I4, typeLength);
+                gen.Emit(OpCodes.Mul); 
+                gen.Emit(OpCodes.Add);// Load item start
+
+                gen.Emit(OpCodes.Callvirt, creatorInvoke);
 
                 gen.Emit(OpCodes.Stelem_Ref);
             }
@@ -204,34 +223,26 @@ namespace OpenH2.Core.Tags.Processors
         /// <param name="gen"></param>
         /// <param name="caoLocal"></param>
         /// <param name="prop"></param>
-        private void GenerateReferenceProperty(ILGenerator gen, LocalBuilder caoLocal, TagProperty prop)
+        private static void GenerateReferenceProperty(ILGenerator gen, LocalBuilder caoLocal, TagProperty prop)
         {
             gen.Emit(OpCodes.Ldloc, caoLocal); // Load Cao dict for later
 
             gen.Emit(OpCodes.Ldc_I4, prop.LayoutAttribute.Offset); // Load Cao dict key for later
 
-            gen.Emit(OpCodes.Ldarg_1); // Load Span<byte> onto evalstack
+            gen.Emit(OpCodes.Ldarg_0); // Load Span<byte> onto evalstack
 
+            gen.Emit(OpCodes.Ldarg_2); // Load start offset
             gen.Emit(OpCodes.Ldc_I4, prop.LayoutAttribute.Offset); // Load offset onto evalstack
+            gen.Emit(OpCodes.Add); // start + offset
 
-            gen.Emit(OpCodes.Call, MI.SpanByte.ReadInt32At); // Consume span and offset, load count
+            gen.Emit(OpCodes.Ldarg_1); // load magic
 
-            gen.Emit(OpCodes.Ldarg_2); // load tag index
-
-            gen.Emit(OpCodes.Ldarg_1); // Load Span<byte> onto evalstack
-
-            gen.Emit(OpCodes.Ldc_I4, prop.LayoutAttribute.Offset + 4); // Load offset onto evalstack
-
-            gen.Emit(OpCodes.Call, MI.SpanByte.ReadInt32At); // Consume span and offset, load offset value onto evalstack
-
-            gen.Emit(OpCodes.Newobj, MI.Offset.TagInternalOffsetCtor); // consume tag index and offset value, loading InternalOffset
-
-            gen.Emit(OpCodes.Newobj, MI.Cao.Ctor); // consume count from above and InternalOffset
+            gen.Emit(OpCodes.Call, MI.SpanByte.ReadMetaCaoAt); // consume count from above and InternalOffset
 
             gen.Emit(OpCodes.Callvirt, MI.Cao.IntDictAddMethod); // Push Prop layout offset and Cao
         }
 
-        private void GeneratePrimitiveProperty(ILGenerator gen, LocalBuilder tagLocal, TagProperty prop)
+        private static void GeneratePrimitiveProperty(ILGenerator gen, LocalBuilder tagLocal, TagProperty prop)
         {
             var type = prop.Type;
 
@@ -244,9 +255,11 @@ namespace OpenH2.Core.Tags.Processors
             {
                 gen.Emit(OpCodes.Ldloc, tagLocal.LocalIndex); // Load tag onto evalstack for later
 
-                gen.Emit(OpCodes.Ldarg_1); // Load Span<byte> onto evalstack
+                gen.Emit(OpCodes.Ldarg_0); // Load Span<byte> onto evalstack
 
+                gen.Emit(OpCodes.Ldarg_2);
                 gen.Emit(OpCodes.Ldc_I4, prop.LayoutAttribute.Offset); // Load offset onto evalstack
+                gen.Emit(OpCodes.Add);
 
                 gen.Emit(OpCodes.Call, readerMethod); // Consume span and offset
 
@@ -255,10 +268,10 @@ namespace OpenH2.Core.Tags.Processors
         }
 
 
-        private class MethodBuilderWrapper<T>
+        private class MethodBuilderWrapper
         {
             public ILGenerator generator;
-            public Func<TagCreator<T>> getDelegate;
+            public Func<TagCreator> getDelegate;
         }
 
         private static Dictionary<Type, MethodInfo> PrimitiveSpanReaders = new Dictionary<Type, MethodInfo>
@@ -272,10 +285,28 @@ namespace OpenH2.Core.Tags.Processors
 
         private static class MI
         {
+            public static class This
+            {
+                public static MethodInfo GetTagCreator = typeof(TagCreatorGenerator)
+                    .GetMethod(nameof(TagCreatorGenerator.GetTagCreator), 0, new[] { typeof(Type) });
+            }
+
+            public static class Runtime
+            {
+                public static MethodInfo GetUninitializedObject = typeof(FormatterServices)
+                    .GetMethod(nameof(FormatterServices.GetUninitializedObject));
+            }
+
             public static class SpanByte
             {
                 public static MethodInfo ReadInt32At = typeof(SpanByteExtensions)
                     .GetMethod(nameof(SpanByteExtensions.ReadInt32At));
+
+                public static MethodInfo ReadMetaCaoAt = typeof(SpanByteExtensions)
+                    .GetMethod(nameof(SpanByteExtensions.ReadMetaCaoAt), new[] { typeof(Span<byte>), typeof(int), typeof(int) });
+
+                public static MethodInfo Slice = typeof(Span<byte>)
+                    .GetMethod(nameof(Span<byte>.Slice), new[] { typeof(int), typeof(int) });
             }
 
             public static class Cao
@@ -299,7 +330,7 @@ namespace OpenH2.Core.Tags.Processors
             public static class Offset
             {
                 public static ConstructorInfo TagInternalOffsetCtor = typeof(TagInternalOffset)
-                    .GetConstructor(new[] { typeof(TagIndexEntry), typeof(int) });
+                    .GetConstructor(new[] { typeof(int), typeof(int) });
 
                 public static MethodInfo IOffsetValue = typeof(IOffset)
                     .GetProperty(nameof(IOffset.Value)).GetGetMethod();

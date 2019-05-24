@@ -21,6 +21,12 @@ namespace OpenH2.Core.Offsets
             this.Value = offsetValue - indexEntry.Offset.OriginalValue;
         }
 
+        public TagInternalOffset(int magic, int offset)
+        {
+            this.OriginalValue = offset;
+            this.Value = offset - magic;
+        }
+
         public int Value { get; private set; }
 
         public int OriginalValue { get; private set; }
