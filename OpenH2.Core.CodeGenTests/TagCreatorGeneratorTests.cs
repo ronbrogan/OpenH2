@@ -18,13 +18,13 @@ using Xunit.Abstractions;
 
 namespace OpenH2.Core.CodeGenTests
 {
-    public class TagCreatorGeneratorTests
+    public class TagCreatorGeneratorTests : XunitLoggingBase
     {
         private string AssemblyName = "TagSerializer";
 
         private readonly ITestOutputHelper output;
 
-        public TagCreatorGeneratorTests(ITestOutputHelper output)
+        public TagCreatorGeneratorTests(ITestOutputHelper output) : base(output)
         {
             this.output = output;
         }
