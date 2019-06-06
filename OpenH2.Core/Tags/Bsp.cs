@@ -2,205 +2,313 @@
 using OpenH2.Core.Offsets;
 using System.Collections.Generic;
 using Newtonsoft.Json;
+using OpenH2.Core.Tags.Layout;
 
 namespace OpenH2.Core.Tags
 {
+    [TagLabel("sbsp")]
     public class Bsp : BaseTag
     {
+        [JsonIgnore]
+        public byte[] RawMeta { get; set; }
+
+        public override string Name { get; set; }
+
         public Bsp(uint id) : base(id)
         {
         }
 
-        public override string Name { get; set; }
+        [PrimitiveValue(8)]
+        public int Checksum { get; set; }
 
-        public BspHeader Header { get; set; }
+        [InternalReferenceValue(12)]
+        public ShaderInfo[] Shaders { get; set; }
 
-        [JsonIgnore]
-        public List<RawBlock> RawBlocks { get; internal set; }
-
-        public List<RenderChunk> RenderChunks { get; internal set; }
-
-        [JsonIgnore]
-        public byte[] RawMeta { get; set; }
-        
-
-        public class BspHeader
-        {
-            public int Checksum { get; set; }
-            public CountAndOffset ShaderLocation { get; set; }
-            public CountAndOffset RawBlockLocation { get; set; }
-            public MiscBlockCaos MiscBlocks { get; set; }
-            public List<ShaderInfo> Shaders { get; set; }
-            public List<RawBlockCaos> RawBlocks { get; set; }
-        }
+        [InternalReferenceValue(20)]
+        public CollisionInfo[] CollisionInfos { get; set; }
 
 
-        public class MiscBlockCaos
-        {
-            public CountAndOffset MiscObject1Cao { get; set; }
-            public CountAndOffset MiscObject2Cao { get; set; }
-            public CountAndOffset MiscObject3Cao { get; set; }
-            public CountAndOffset MiscObject4Cao { get; set; }
-            public CountAndOffset MiscObject5Cao { get; set; }
-            public CountAndOffset RenderChunkCao { get; set; }
-            public CountAndOffset MiscObject7Cao { get; set; }
-            public CountAndOffset MiscObject8Cao { get; set; }
-            public CountAndOffset MiscObject9Cao { get; set; }
-            public CountAndOffset MiscObject10Cao { get; set; }
-            public CountAndOffset MiscObject11Cao { get; set; }
-            public CountAndOffset MiscObject12Cao { get; set; }
-            public CountAndOffset MiscObject13Cao { get; set; }
-            public CountAndOffset MiscObject14Cao { get; set; }
-            public CountAndOffset MiscObject15Cao { get; set; }
-            public CountAndOffset MiscObject16Cao { get; set; }
-            public CountAndOffset MiscObject17Cao { get; set; }
-            public CountAndOffset MiscObject18Cao { get; set; }
-            public CountAndOffset MiscObject19Cao { get; set; }
-            public CountAndOffset MiscObject20Cao { get; set; }
-            public CountAndOffset MiscObject21Cao { get; set; }
-            public CountAndOffset MiscObject22Cao { get; set; }
-            public CountAndOffset MiscObject23Cao { get; set; }
-        }
+        //[InternalReferenceValue(76)]
+        //public object[] MiscObject1Cao { get; set; }
 
+        //[InternalReferenceValue(84)]
+        //public object[] MiscObject2Cao { get; set; }
+
+        //[InternalReferenceValue(92)]
+        //public object[] MiscObject3Cao { get; set; }
+
+        //[InternalReferenceValue(100)]
+        //public object[] MiscObject4Cao { get; set; } 
+
+        //[InternalReferenceValue(148)]
+        //public object[] MiscObject5Cao { get; set; } 
+
+        [InternalReferenceValue(156)]
+        public RenderChunk[] RenderChunks { get; set; } 
+
+        //[InternalReferenceValue(164)]
+        //public object[] MiscObject7Cao { get; set; } 
+
+        //[InternalReferenceValue(172)]
+        //public object[] MiscObject8Cao { get; set; } 
+
+        //[InternalReferenceValue(212)]
+        //public object[] MiscObject9Cao { get; set; } 
+
+        //[InternalReferenceValue(220)]
+        //public object[] MiscObject10Cao { get; set; }
+
+        //[InternalReferenceValue(252)]
+        //public object[] MiscObject11Cao { get; set; }
+
+        //[InternalReferenceValue(260)]
+        //public object[] MiscObject12Cao { get; set; }
+
+        //[InternalReferenceValue(312)]
+        //public object[] MiscObject13Cao { get; set; }
+
+        //[InternalReferenceValue(320)]
+        //public object[] MiscObject14Cao { get; set; }
+
+        //[InternalReferenceValue(328)]
+        //public object[] MiscObject15Cao { get; set; }
+
+        //[InternalReferenceValue(336)]
+        //public object[] MiscObject16Cao { get; set; }
+
+        //[InternalReferenceValue(344)]
+        //public object[] MiscObject17Cao { get; set; }
+
+        //[InternalReferenceValue(464)]
+        //public object[] MiscObject18Cao { get; set; }
+
+        //[InternalReferenceValue(480)]
+        //public object[] MiscObject19Cao { get; set; }
+
+        //[InternalReferenceValue(540)]
+        //public object[] MiscObject20Cao { get; set; }
+
+        //[InternalReferenceValue(548)]
+        //public object[] MiscObject21Cao { get; set; }
+
+        //[InternalReferenceValue(556)]
+        //public object[] MiscObject22Cao { get; set; }
+
+        //[InternalReferenceValue(564)]
+        //public object[] MiscObject23Cao { get; set; }
+
+
+        [FixedLength(20)]
         public class ShaderInfo
         {
+
+            // TODO: [StringValue(0,4)]
             public string Tag { get; set; }
+
+            [PrimitiveValue(4)]
             public int Unknown { get; set; }
+
+            [PrimitiveValue(8)]
             public int Value1 { get; set; }
-            public string OldTag { get; set; }
-            public int Value2 { get; set; }
 
-            public static int Length => 20;
+            // TODO: [StringValue(12,4)]
+            public string OldTag { get; set; }
+
+            [PrimitiveValue(16)]
+            public int Value2 { get; set; }
         }
 
-        public class RawBlockCaos
+        [FixedLength(68)]
+        public class CollisionInfo
         {
-            public CountAndOffset RawObject1Cao { get; set; }
-            public CountAndOffset RawObject2Cao { get; set; }
-            public CountAndOffset RawObject3Cao { get; set; }
-            public CountAndOffset RawObject4Cao { get; set; }
-            public CountAndOffset RawObject5Cao { get; set; }
-            public CountAndOffset FacesCao { get; set; }
-            public CountAndOffset HalfEdgeCao { get; set; }
-            public CountAndOffset VerticiesCao { get; set; }
+            [InternalReferenceValue(0)]
+            public RawObject1[] RawObject1s { get; set; }
+
+            [InternalReferenceValue(8)]
+            public RawObject2[] RawObject2s { get; set; }
+
+            [InternalReferenceValue(16)]
+            public RawObject3[] RawObject3s { get; set; }
+
+            [InternalReferenceValue(24)]
+            public RawObject4[] RawObject4s { get; set; }
+
+            [InternalReferenceValue(32)]
+            public RawObject5[] RawObject5s { get; set; }
+
+            [InternalReferenceValue(40)]
+            public Face[] Faces { get; set; }
+
+            [InternalReferenceValue(48)]
+            public HalfEdgeContainer[] HalfEdges { get; set; }
+
+            [InternalReferenceValue(56)]
+            public Vertex[] Verticies { get; set; }
+
+            [PrimitiveValue(64)]
             public int Unknown { get; set; }
 
-            public static int Length => 68;
+            [FixedLength(8)]
+            public class RawObject1
+            {
+                [PrimitiveValue(0)]
+                public ushort val1 { get; set; }
+
+                [PrimitiveValue(2)]
+                public ushort val2 { get; set; }
+
+                [PrimitiveValue(4)]
+                public ushort unknown1 { get; set; }
+
+                [PrimitiveValue(6)]
+                public ushort unknown2 { get; set; }
+            }
+
+            [FixedLength(16)]
+            public class RawObject2
+            {
+                [PrimitiveValue(0)]
+                public float x { get; set; }
+
+                [PrimitiveValue(4)]
+                public float y { get; set; }
+
+                [PrimitiveValue(8)]
+                public float z { get; set; }
+
+                [PrimitiveValue(12)]
+                public float w { get; set; }
+            }
+
+            [FixedLength(4)]
+            public class RawObject3
+            {
+                [PrimitiveValue(0)]
+                public ushort val1 { get; set; }
+
+                [PrimitiveValue(2)]
+                public ushort val2 { get; set; }
+            }
+
+            [FixedLength(4)]
+            public class RawObject4
+            {
+                [PrimitiveValue(0)]
+                public ushort val1 { get; set; }
+
+                [PrimitiveValue(2)]
+                public ushort val2 { get; set; }
+            }
+
+            [FixedLength(16)]
+            public class RawObject5
+            {
+                [PrimitiveValue(0)]
+                public float x { get; set; }
+
+                [PrimitiveValue(4)]
+                public float y { get; set; }
+
+                [PrimitiveValue(8)]
+                public float z { get; set; }
+
+                [PrimitiveValue(12)]
+                public short u { get; set; }
+
+                [PrimitiveValue(12)]
+                public short v { get; set; }
+            }
+
+            [FixedLength(8)]
+            public class Face
+            {
+                [PrimitiveValue(0)]
+                public ushort val1 { get; set; }
+
+                [PrimitiveValue(2)]
+                public ushort FirstEdge { get; set; }
+
+                [PrimitiveValue(4)]
+                public ushort val3 { get; set; }
+
+                [PrimitiveValue(6)]
+                public ushort val4 { get; set; }
+            }
+
+            [FixedLength(12)]
+            public class HalfEdgeContainer
+            {
+                [PrimitiveValue(0)]
+                public ushort Vertex0 { get; set; }
+
+                [PrimitiveValue(2)]
+                public ushort Vertex1 { get; set; }
+
+                [PrimitiveValue(4)]
+                public ushort NextEdge { get; set; }
+
+                [PrimitiveValue(6)]
+                public ushort PrevEdge { get; set; }
+
+                [PrimitiveValue(8)]
+                public ushort Face0 { get; set; }
+
+                [PrimitiveValue(10)]
+                public ushort Face1 { get; set; }
+            }
+
+            [FixedLength(16)]
+            public struct Vertex
+            {
+                [PrimitiveValue(0)]
+                public float x { get; set; }
+
+                [PrimitiveValue(4)]
+                public float y { get; set; }
+
+                [PrimitiveValue(8)]
+                public float z { get; set; }
+
+                [PrimitiveValue(12)]
+                public int edge { get; set; }
+            }
         }
-
-        public class RawBlock
-        {
-            public List<RawObject1> RawObject1s { get; set; } = new List<RawObject1>();
-            public List<RawObject2> RawObject2s { get; set; } = new List<RawObject2>();
-            public List<RawObject3> RawObject3s { get; set; } = new List<RawObject3>();
-            public List<RawObject4> RawObject4s { get; set; } = new List<RawObject4>();
-            public List<RawObject5> RawObject5s { get; set; } = new List<RawObject5>();
-            public List<Face> Faces { get; set; } = new List<Face>();
-            public List<HalfEdgeContainer> HalfEdges { get; set; } = new List<HalfEdgeContainer>();
-            public List<Vertex> Verticies { get; set; } = new List<Vertex>();
-        }
-
-        public class RawObject1
-        {
-            public ushort val1;
-            public ushort val2;
-            public ushort unknown1;
-            public ushort unknown2;
-
-            public static int Length => 8;
-        }
-
-        public struct RawObject2
-        {
-            public float x;
-            public float y;
-            public float z;
-            public float w;
-
-            public static int Length => 16;
-        }
-
-        public class RawObject3
-        {
-            public ushort val1;
-            public ushort val2;
-
-            public static int Length => 4;
-        }
-
-        public class RawObject4
-        {
-            public ushort val1;
-            public ushort val2;
-
-            public static int Length => 4;
-        }
-
-        public struct RawObject5
-        {
-            public float x;
-            public float y;
-            public float z;
-            public short u;
-            public short v;
-
-            public static int Length => 16;
-        }
-
-        public class Face
-        {
-            public ushort val1;
-            public ushort FirstEdge;
-            public ushort val3;
-            public ushort val4;
-
-            public static int Length => 8;
-        }
-
-        public class HalfEdgeContainer
-        {
-            public ushort Vertex0;
-            public ushort Vertex1;
-            public ushort NextEdge;
-            public ushort PrevEdge;
-            public ushort Face0;
-            public ushort Face1;
-
-            public static int Length => 12;
-        }
-
-        public struct Vertex
-        {
-            public float x;
-            public float y;
-            public float z;
-            public int edge;
-
-            public static int Length => 16;
-        }
-
+        
+        [FixedLength(176)]
         public class RenderChunk
         {
-            public ushort VertexCount;
-            public ushort TriangleCount;
+            [PrimitiveValue(0)]
+            public ushort VertexCount { get; set; }
 
-            public uint DataBlockRawOffset;
-            public uint DataBlockSize;
-            public uint DataPreambleSize;
-            public uint ResourceSubsectionSize;
+            [PrimitiveValue(2)]
+            public ushort TriangleCount { get; set; }
 
-            // Cao offset: 56/60
-            public Resource[] Resources;
+            [PrimitiveValue(40)]
+            public uint DataBlockRawOffset { get; set; }
 
-            public static int Length => 176;
+            [PrimitiveValue(44)]
+            public uint DataBlockSize { get; set; }
 
+            [PrimitiveValue(48)]
+            public uint DataPreambleSize { get; set; }
+
+            [PrimitiveValue(52)]
+            public uint ResourceSubsectionSize { get; set; }
+
+            [InternalReferenceValue(56)]
+            public Resource[] Resources { get; set; }
+
+            [FixedLength(16)]
             public class Resource
             {
-                public ResourceType Type;
-                public int Size;
-                public int Offset;
+                [PrimitiveValue(0)]
+                public ResourceType Type { get; set; }
 
-                public static int Length => 16;
+                [PrimitiveValue(8)]
+                public int Size { get; set; }
+
+                [PrimitiveValue(12)]
+                public int Offset { get; set; }
 
                 [Flags]
                 public enum ResourceType : byte

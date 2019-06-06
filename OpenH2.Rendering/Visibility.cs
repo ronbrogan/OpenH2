@@ -23,10 +23,10 @@ namespace OpenH2.Rendering
                 accumulator.AddTerrain(terrain);
             }
 
-            foreach(var skybox in scenario.Skybox)
-            {
-                accumulator.AddSkybox(skybox);
-            }
+            //foreach(var skybox in scenario.Skybox)
+            //{
+            //    accumulator.AddSkybox(skybox);
+            //}
         }
     }
 }

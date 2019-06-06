@@ -60,7 +60,7 @@ namespace OpenH2.Core.Factories
 
             foreach(var item in index)
             {
-                if (item.MetaSize == 0 || item.Offset.OriginalValue == 0)
+                if (item == null || item.MetaSize == 0 || item.Offset.OriginalValue == 0)
                     continue;
 
                 var chunk = reader.Chunk(item.Offset.Value, item.MetaSize, "Tag");
@@ -155,7 +155,7 @@ namespace OpenH2.Core.Factories
             var listBytes = reader.Chunk(index.ObjectIndexOffset.Value, index.ObjectCount * TagIndexEntry.Size, "ObjectIndexList").Span;
             var nullObjTag = new string(new byte[] { 0xFF, 0xFF, 0xFF, 0xFF }.Select(b => (char)b).ToArray());
 
-            var list = new List<TagIndexEntry>();
+            var list = new List<TagIndexEntry>(index.ObjectCount);
 
             for (var i = 0; i < index.ObjectCount; i++)
             {

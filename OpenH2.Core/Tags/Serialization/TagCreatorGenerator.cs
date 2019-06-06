@@ -9,16 +9,37 @@ using System.Reflection;
 using System.Reflection.Emit;
 using System.Runtime.Serialization;
 
-namespace OpenH2.Core.Tags.Processors
+namespace OpenH2.Core.Tags.Serialization
 {
     public delegate object TagCreator(Span<byte> data, int internalOffsetMagic, int startAt = 0);
     public delegate T TagCreator<T>(Span<byte> data, int internalOffsetMagic, int startAt = 0);
 
     public static class TagCreatorGenerator
     {
-        private static Type[] arguments = new[] { typeof(Span<byte>), typeof(int), typeof(int) };
+        internal static Type[] arguments = new[] { typeof(Span<byte>), typeof(int), typeof(int) };
 
-        private static Dictionary<Type, TagCreator> cachedTagCreatorDelegates = new Dictionary<Type, TagCreator>();
+        internal static Dictionary<Type, TagCreator> cachedTagCreatorDelegates = new Dictionary<Type, TagCreator>();
+
+
+        internal static Func<Type, MethodBuilderWrapper> builderWrapperFactory = tagType =>
+        {
+            var builder = new DynamicMethod("Read" + tagType.Name, typeof(object), arguments);
+
+            var wrapper = new MethodBuilderWrapper()
+            {
+                generator = builder.GetILGenerator(),
+                getDelegate = () => {
+                    var delg = (TagCreator)builder.CreateDelegate(typeof(TagCreator));
+
+                    cachedTagCreatorDelegates[tagType] = delg;
+
+                    return delg;
+                }
+            };
+
+            return wrapper;
+        };
+
 
         public static TagCreator<T> GetTagCreator<T>()
         {
@@ -36,19 +57,7 @@ namespace OpenH2.Core.Tags.Processors
                 return deleg;
             }
 
-            var builder = new DynamicMethod("Read" + tagType.Name, tagType, arguments);
-
-            var wrapper = new MethodBuilderWrapper()
-            {
-                generator = builder.GetILGenerator(),
-                getDelegate = () => {
-                    var delg = (TagCreator)builder.CreateDelegate(typeof(TagCreator));
-
-                    cachedTagCreatorDelegates[tagType] = delg;
-
-                    return delg;
-                }
-            };
+            var wrapper = builderWrapperFactory(tagType);
 
             return GenerateTagCreator(tagType, wrapper);
         }
@@ -97,7 +106,20 @@ namespace OpenH2.Core.Tags.Processors
             }
 
             gen.Emit(OpCodes.Ldtoken, tagType);
+            gen.Emit(OpCodes.Call, MI.SystemType.GetTypeFromHandle);
             gen.Emit(OpCodes.Call, MI.Runtime.GetUninitializedObject);
+
+            // If it's a class, we need to cast to store in local
+            // If it's a struct, we need to unbox 
+            if(tagType.IsClass)
+            {
+                gen.Emit(OpCodes.Castclass, tagType);
+            }
+            else
+            {
+                gen.Emit(OpCodes.Unbox, tagType);
+            }
+
             gen.Emit(OpCodes.Stloc, tagLocal);
 
             // Do first pass over "header" reagion
@@ -122,6 +144,15 @@ namespace OpenH2.Core.Tags.Processors
             }
 
             gen.Emit(OpCodes.Ldloc, tagLocal);
+
+            // If it's a struct, we need to box, as we return object
+            if(tagType.IsClass == false)
+            {
+                gen.Emit(OpCodes.Box, tagType);
+            }
+
+
+            /// TODO: Figure out why structs break deserialization, crash after return
             gen.Emit(OpCodes.Ret);
 
             return builder.getDelegate();
@@ -180,6 +211,7 @@ namespace OpenH2.Core.Tags.Processors
                 var creatorInvoke = typeof(TagCreator).GetMethod("Invoke");
 
                 gen.Emit(OpCodes.Ldtoken, elemType);
+                gen.Emit(OpCodes.Call, MI.SystemType.GetTypeFromHandle);
                 gen.Emit(OpCodes.Call, MI.This.GetTagCreator);
 
 
@@ -195,6 +227,11 @@ namespace OpenH2.Core.Tags.Processors
                 gen.Emit(OpCodes.Add);// Load item start
 
                 gen.Emit(OpCodes.Callvirt, creatorInvoke);
+
+                if(elemType.IsValueType)
+                {
+                    gen.Emit(OpCodes.Unbox_Any, elemType);
+                }
 
                 gen.Emit(OpCodes.Stelem_Ref);
             }
@@ -253,7 +290,7 @@ namespace OpenH2.Core.Tags.Processors
 
             if (PrimitiveSpanReaders.TryGetValue(type, out var readerMethod))
             {
-                gen.Emit(OpCodes.Ldloc, tagLocal.LocalIndex); // Load tag onto evalstack for later
+                gen.Emit(OpCodes.Ldloc, tagLocal); // Load tag onto evalstack for later
 
                 gen.Emit(OpCodes.Ldarg_0); // Load Span<byte> onto evalstack
 
@@ -268,7 +305,7 @@ namespace OpenH2.Core.Tags.Processors
         }
 
 
-        private class MethodBuilderWrapper
+        internal class MethodBuilderWrapper
         {
             public ILGenerator generator;
             public Func<TagCreator> getDelegate;
@@ -287,14 +324,24 @@ namespace OpenH2.Core.Tags.Processors
         {
             public static class This
             {
+                // ISSUE: #2 - Replace generic GetMethod calls with new overload
                 public static MethodInfo GetTagCreator = typeof(TagCreatorGenerator)
-                    .GetMethod(nameof(TagCreatorGenerator.GetTagCreator), 0, new[] { typeof(Type) });
+                    .GetMethods(BindingFlags.Public | BindingFlags.Static)
+                    .First(m => 
+                        m.Name == nameof(TagCreatorGenerator.GetTagCreator)
+                        && m.IsGenericMethod == false);
             }
 
             public static class Runtime
             {
                 public static MethodInfo GetUninitializedObject = typeof(FormatterServices)
                     .GetMethod(nameof(FormatterServices.GetUninitializedObject));
+            }
+
+            public static class SystemType
+            {
+                public static MethodInfo GetTypeFromHandle = typeof(Type)
+                    .GetMethod(nameof(Type.GetTypeFromHandle));
             }
 
             public static class SpanByte

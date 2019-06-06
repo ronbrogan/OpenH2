@@ -6,6 +6,7 @@ using OpenH2.Core.Factories;
 using OpenH2.ScenarioExplorer.ViewModels;
 using PropertyChanged;
 using ReactiveUI;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -48,7 +49,14 @@ namespace OpenH2.ScenarioExplorer
 
             if (result.Any() && result[0].IsSignificant() && File.Exists(result[0]))
             {
-                LoadScenario(result[0]);
+                try
+                {
+                    LoadScenario(result[0]);
+                }
+                catch(Exception e)
+                {
+                    Console.WriteLine(e);
+                }
             }
         }
 

@@ -29,6 +29,8 @@ namespace OpenH2.ScenarioExplorer.ViewModels
         public string OriginalTagJson { get; private set; }
 
         private BaseTag _originalTag;
+
+        [DoNotCheckEquality]
         public BaseTag OriginalTag
         {
             get => _originalTag;

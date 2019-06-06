@@ -1,10 +1,8 @@
 ﻿using OpenH2.Core.Tags.Layout;
 using System;
-using System.Collections.Generic;
 using System.Reflection;
-using System.Text;
 
-namespace OpenH2.Core.Tags.Processors
+namespace OpenH2.Core.Tags.Serialization
 {
     public class TagProperty
     {

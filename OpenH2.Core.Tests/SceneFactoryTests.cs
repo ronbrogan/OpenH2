@@ -17,7 +17,7 @@ namespace OpenH2.Core.Tests
             this.output = output;
         }
 
-        [Fact]
+        [Fact, Trait("skip", "true")]
         public void Load_scene_from_file()
         {
             var mapStream = new FileStream(@"D:\Halo 2 Vista Original Maps\ascension.map", FileMode.Open, FileAccess.Read, FileShare.Read);
@@ -44,12 +44,11 @@ namespace OpenH2.Core.Tests
 
             var scnr = scene.Tags.Values.First(v => v.GetType() == typeof(Scenario)) as Scenario;
 
-            File.WriteAllBytes("D:\\scnr.tag", scnr.RawMeta);
-
             output.WriteLine($"Scene parsing took: {sw.ElapsedMilliseconds}ms and covered: {coverage.PercentCovered.ToString("0.00")}%");
         }
 
-        [Fact]
+        
+        [Fact, Trait("skip", "true")]
         public void Calculated_signature_matches_stored_signature()
         {
             var mapStream = new FileStream("ascension.map", FileMode.Open, FileAccess.Read, FileShare.Read);

@@ -18,11 +18,11 @@ namespace OpenH2.Translation.TagData.Processors
 
             var tagData = new BspTagData(bsp);
 
-            var block = bsp.RawBlocks.First();
+            var block = bsp.CollisionInfos.First();
 
             var faces = new List<int[]>();
             
-            for(var i = 0; i < block.Faces.Count; i++)
+            for(var i = 0; i < block.Faces.Length; i++)
             {
                 var face = block.Faces[i];
 

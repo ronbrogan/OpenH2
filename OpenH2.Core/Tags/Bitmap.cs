@@ -5,8 +5,11 @@ using OpenH2.Core.Tags.Layout;
 
 namespace OpenH2.Core.Tags
 {
+    [TagLabel("bitm")]
     public class Bitmap : BaseTag
     {
+        public override string Name { get; set; }
+
         public Bitmap(uint id) : base(id)
         {
         }
@@ -55,12 +58,18 @@ namespace OpenH2.Core.Tags
 
         [PrimitiveValue(102)]
         public short PixelOffset { get; set; }
-
+        
+        // TODO: this is abnormal, basically it's 6 offsets, then six sizes
+        // Could have Lod0Offset, Lod1Offset...
+        // and Lod0Size, Lod1Size...
+        // Leaning towards doing that, then have an array property that makes it easy to use
+        // OR - if this pattern is somewhere else, add support
         public BitmapLevelOfDetail[] LevelsOfDetail { get; set; }
 
+        [PrimitiveValue(156)]
         public uint ID { get; set; }
 
-        public override string Name { get; set; }
+        
 
         public class BitmapLevelOfDetail
         {

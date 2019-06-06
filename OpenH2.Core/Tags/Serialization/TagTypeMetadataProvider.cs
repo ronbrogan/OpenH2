@@ -3,7 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Reflection;
 
-namespace OpenH2.Core.Tags.Processors
+namespace OpenH2.Core.Tags.Serialization
 {
     public static class TagTypeMetadataProvider
     {
@@ -17,7 +17,7 @@ namespace OpenH2.Core.Tags.Processors
                 return props;
             }
 
-            var properties = tag.GetProperties();
+            var properties = tag.GetProperties(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
 
             var tagPropertyInfos = new List<TagProperty>(properties.Length);
 
@@ -31,8 +31,8 @@ namespace OpenH2.Core.Tags.Processors
                     {
                         LayoutAttribute = attr,
                         Type = prop.PropertyType,
-                        Setter = prop.GetSetMethod(),
-                        Getter = prop.GetGetMethod()
+                        Setter = prop.GetSetMethod(true),
+                        Getter = prop.GetGetMethod(true)
                     });
                 }
             }

@@ -5,7 +5,7 @@ using OpenH2.Core.Offsets;
 using OpenH2.Core.Parsing;
 using OpenH2.Core.Representations;
 
-namespace OpenH2.Core.Tags.Processors
+namespace OpenH2.Core.Tags.Serialization
 {
     public static class BitmapTagProcessor
     {
@@ -42,8 +42,8 @@ namespace OpenH2.Core.Tags.Processors
             {
                 var lod = new Bitmap.BitmapLevelOfDetail();
 
-                lod.Offset = new NormalOffset((int)span.ReadUInt32At(offsetsStart + (i * 4)));
-                lod.Size = span.ReadUInt32At(sizesStart + (i * 4));
+                lod.Offset = new NormalOffset((int)span.ReadUInt32At(offsetsStart + i * 4));
+                lod.Size = span.ReadUInt32At(sizesStart + i * 4);
 
                 if (lod.Offset.Location == Enums.DataFile.Local && lod.Offset.Value != 0 && lod.Offset.Value != int.MaxValue && lod.Size != 0)
                 {

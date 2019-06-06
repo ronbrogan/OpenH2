@@ -17,11 +17,11 @@ namespace OpenH2.Translation.TagData.Processors
 
             var tagData = new ModelTagData(model)
             {
-                Parts = new Mesh[model.PartCount],
+                Parts = new Mesh[model.Parts.Length],
                 Name = model.Name
             };
 
-            for (var i = 0; i < model.PartCount; i++)
+            for (var i = 0; i < model.Parts.Length; i++)
             {
                 var part = model.Parts[i];
 

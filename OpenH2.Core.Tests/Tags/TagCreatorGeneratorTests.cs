@@ -1,5 +1,7 @@
-﻿using OpenH2.Core.Tags.Layout;
-using OpenH2.Core.Tags.Processors;
+﻿using OpenH2.Core.Tags;
+using OpenH2.Core.Tags.Layout;
+using OpenH2.Core.Tags.Serialization;
+using System.Runtime.Serialization;
 using Xunit;
 
 namespace OpenH2.Core.Tests.Tags
@@ -41,12 +43,13 @@ namespace OpenH2.Core.Tests.Tags
             public class SubTag
             {
                 [PrimitiveValue(0)]
-                public int Deadbeef { get; set; }
+                private int Deadbeef { get; set; }
 
                 [InternalReferenceValue(4)]
                 public SubSubTag[] SubSubTags { get; set; }
 
                 [FixedLength(4)]
+                // TODO: fix invalid program when this is a struct
                 public class SubSubTag
                 {
                     [PrimitiveValue(0)]
