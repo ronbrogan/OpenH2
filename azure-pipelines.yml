@@ -15,13 +15,20 @@ variables:
   buildConfiguration: 'Release'
 
 steps:
-- task: NuGetToolInstaller@0
 
-- task: NuGetCommand@2
+- task: DotNetCoreCLI@2
   inputs:
-    restoreSolution: '$(solution)'
+    command: restore
+    projects: '$(solution)'
 
-- task: VSTest@2
+- task: DotNetCoreCLI@2
   inputs:
-    platform: '$(buildPlatform)'
-    configuration: '$(buildConfiguration)'
+    command: build
+    projects: '$(solution)'
+
+# dotnet test --no-build --filter skip!=true
+- task: DotNetCoreCLI@2
+  inputs:
+    command: test
+    projects: '$(solution)'
+    arguments: ' --no-build --filter skip!=true'
