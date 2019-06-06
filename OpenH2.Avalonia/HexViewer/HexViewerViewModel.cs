@@ -7,7 +7,7 @@ using System.Reflection;
 namespace OpenH2.AvaloniaControls.HexViewer
 {
     [AddINotifyPropertyChangedInterface]
-    internal class HexViewerViewModel
+    public class HexViewerViewModel
     {
         public HexViewerViewModel()
         {
@@ -28,7 +28,7 @@ namespace OpenH2.AvaloniaControls.HexViewer
     }
 
     [AddINotifyPropertyChangedInterface]
-    internal class BrushDetails
+    public class BrushDetails
     {
         public BrushDetails(PropertyInfo pi)
         {

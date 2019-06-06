@@ -12,10 +12,12 @@ using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
 using Avalonia.Metadata;
+using PropertyChanged;
 
 [assembly: XmlnsDefinition("https://github.com/ronbrogan/openh2/avaloniacontrols", "OpenH2.AvaloniaControls.HexViewer")]
 namespace OpenH2.AvaloniaControls.HexViewer
 {
+    [DoNotNotify]
     public class HexViewer : UserControl
     {
         public static readonly DirectProperty<HexViewer, Memory<byte>> DataProperty =
