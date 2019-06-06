@@ -16,6 +16,10 @@ variables:
 
 steps:
 
+- task: DotNetCoreInstaller@0
+  inputs:
+    version: '3.0.100-preview5-011568' # replace this value with the version that you need for your project
+
 - task: DotNetCoreCLI@2
   inputs:
     command: restore
