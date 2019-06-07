@@ -9,10 +9,7 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Reflection.Emit;
-using System.Resources;
-using System.Text;
 using System.Threading;
-using System.Threading.Tasks;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -20,8 +17,6 @@ namespace OpenH2.Core.CodeGenTests
 {
     public class TagCreatorGeneratorTests : XunitLoggingBase
     {
-        private string AssemblyName = "TagSerializer";
-
         private readonly ITestOutputHelper output;
 
         public TagCreatorGeneratorTests(ITestOutputHelper output) : base(output)
@@ -38,18 +33,25 @@ namespace OpenH2.Core.CodeGenTests
                 .Where(x => x.Attribute != null)
                 .Select(x => x.Type);
 
-            var assy = GenerateAssembly(tagTypes);
+            var assy = GenerateAssembly("TagSerializer", tagTypes);
 
-            var (code, output) = ExecutePEVerify(assy);
+            var code = ExecutePEVerify(assy);
 
-            this.output.WriteLine("================= Start PEVerify Output =================");
-            this.output.WriteLine(output);
-            this.output.WriteLine("================= End PEVerify Output =================");
 
             Assert.Equal(0, code);
         }
 
-        internal (int,string) ExecutePEVerify(string assyPath)
+        [Fact]
+        public void TestTag_Verify()
+        {
+            var assy = GenerateAssembly("TestTagSerializer", new[] { typeof(TestTag) });
+
+            var code = ExecutePEVerify(assy);
+
+            Assert.Equal(0, code);
+        }
+
+        internal int ExecutePEVerify(string assyPath)
         {
             var peverify = ToolLocationHelper.GetPathToDotNetFrameworkSdkFile("PEVerify.exe");
 
@@ -67,29 +69,33 @@ namespace OpenH2.Core.CodeGenTests
 
                 proc.WaitForExit(10000);
 
+                this.output.WriteLine("================= Start PEVerify Output =================");
+                this.output.WriteLine(writer.GetStringBuilder().ToString());
+                this.output.WriteLine("================= End PEVerify Output =================");
+
                 if (proc.HasExited)
                 {
-                    return (proc.ExitCode, writer.GetStringBuilder().ToString());
+                    return proc.ExitCode;
                 }
                 else
                 {
-                    return (-1, writer.GetStringBuilder().ToString() + "\r\n PEVerify timed out after 10s");
+                    return -1;
                 }
             } 
         }
 
-        internal string GenerateAssembly(IEnumerable<Type> types)
+        internal string GenerateAssembly(string assemblyName, IEnumerable<Type> types)
         {
-            var assyName = new AssemblyName(AssemblyName);
+            var assyName = new AssemblyName(assemblyName);
 
             var dom = Thread.GetDomain();
 
             var assembly = dom.DefineDynamicAssembly(assyName,
                 AssemblyBuilderAccess.RunAndSave);
 
-            var module = assembly.DefineDynamicModule(AssemblyName, AssemblyName + ".dll", true);
+            var module = assembly.DefineDynamicModule(assemblyName, assemblyName + ".dll", true);
 
-            var type = module.DefineType(AssemblyName, TypeAttributes.Public);
+            var type = module.DefineType(assemblyName, TypeAttributes.Public);
 
             TagCreatorGenerator.builderWrapperFactory = tagType =>
             {
@@ -124,6 +130,36 @@ namespace OpenH2.Core.CodeGenTests
             assembly.Save(outputFile);
 
             return Path.Combine(dom.SetupInformation.ApplicationBase, outputFile);
+        }
+
+        public class TestTag
+        {
+            [PrimitiveValue(0)]
+            public int Value1 { get; set; }
+
+            [PrimitiveValue(4)]
+            public float Value2 { get; set; }
+
+            [InternalReferenceValue(8)]
+            public SubTag[] SubValues { get; set; }
+
+
+            [FixedLength(12)]
+            public struct SubTag
+            {
+                [PrimitiveValue(0)]
+                private int Deadbeef { get; set; }
+
+                [InternalReferenceValue(4)]
+                public SubSubTag[] SubSubTags { get; set; }
+
+                [FixedLength(4)]
+                public struct SubSubTag
+                {
+                    [PrimitiveValue(0)]
+                    public float Value { get; set; }
+                }
+            }
         }
     }
 }

@@ -1,7 +1,5 @@
-﻿using OpenH2.Core.Tags;
-using OpenH2.Core.Tags.Layout;
+﻿using OpenH2.Core.Tags.Layout;
 using OpenH2.Core.Tags.Serialization;
-using System.Runtime.Serialization;
 using Xunit;
 
 namespace OpenH2.Core.Tests.Tags
@@ -49,8 +47,7 @@ namespace OpenH2.Core.Tests.Tags
                 public SubSubTag[] SubSubTags { get; set; }
 
                 [FixedLength(4)]
-                // TODO: fix invalid program when this is a struct
-                public class SubSubTag
+                public struct SubSubTag
                 {
                     [PrimitiveValue(0)]
                     public float Value { get; set; }

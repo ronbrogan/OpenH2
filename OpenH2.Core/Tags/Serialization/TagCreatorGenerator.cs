@@ -17,7 +17,6 @@ namespace OpenH2.Core.Tags.Serialization
     public static class TagCreatorGenerator
     {
         internal static Type[] arguments = new[] { typeof(Span<byte>), typeof(int), typeof(int) };
-
         internal static Dictionary<Type, TagCreator> cachedTagCreatorDelegates = new Dictionary<Type, TagCreator>();
 
 
@@ -39,7 +38,6 @@ namespace OpenH2.Core.Tags.Serialization
 
             return wrapper;
         };
-
 
         public static TagCreator<T> GetTagCreator<T>()
         {
@@ -117,7 +115,7 @@ namespace OpenH2.Core.Tags.Serialization
             }
             else
             {
-                gen.Emit(OpCodes.Unbox, tagType);
+                gen.Emit(OpCodes.Unbox_Any, tagType);
             }
 
             gen.Emit(OpCodes.Stloc, tagLocal);
@@ -128,7 +126,7 @@ namespace OpenH2.Core.Tags.Serialization
                 switch (prop.LayoutAttribute)
                 {
                     case PrimitiveValueAttribute prim:
-                        GeneratePrimitiveProperty(gen, tagLocal, prop);
+                        GeneratePrimitiveProperty(gen, tagLocal, prop, tagType);
                         break;
 
                     case InternalReferenceValueAttribute reference:
@@ -140,7 +138,7 @@ namespace OpenH2.Core.Tags.Serialization
             // Do subsequent passes for internal references
             foreach (var prop in props.Where(p => p.LayoutAttribute is InternalReferenceValueAttribute))
             {
-                GenerateInternalReferenceArrayReader(gen, tagLocal, caoLocal, prop);
+                GenerateInternalReferenceArrayReader(gen, tagLocal, caoLocal, prop, tagType);
             }
 
             gen.Emit(OpCodes.Ldloc, tagLocal);
@@ -151,14 +149,12 @@ namespace OpenH2.Core.Tags.Serialization
                 gen.Emit(OpCodes.Box, tagType);
             }
 
-
-            /// TODO: Figure out why structs break deserialization, crash after return
             gen.Emit(OpCodes.Ret);
 
             return builder.getDelegate();
         }
 
-        private static void GenerateInternalReferenceArrayReader(ILGenerator gen, LocalBuilder tagLocal, LocalBuilder caoLocal, TagProperty prop)
+        private static void GenerateInternalReferenceArrayReader(ILGenerator gen, LocalBuilder tagLocal, LocalBuilder caoLocal, TagProperty prop, Type tagType)
         {
             if (prop.Type.BaseType != typeof(Array))
             {
@@ -214,7 +210,6 @@ namespace OpenH2.Core.Tags.Serialization
                 gen.Emit(OpCodes.Call, MI.SystemType.GetTypeFromHandle);
                 gen.Emit(OpCodes.Call, MI.This.GetTagCreator);
 
-
                 gen.Emit(OpCodes.Ldarg_0); // load span
 
                 gen.Emit(OpCodes.Ldarg_1); // load magic
@@ -231,9 +226,12 @@ namespace OpenH2.Core.Tags.Serialization
                 if(elemType.IsValueType)
                 {
                     gen.Emit(OpCodes.Unbox_Any, elemType);
+                    gen.Emit(OpCodes.Stelem, elemType);
                 }
-
-                gen.Emit(OpCodes.Stelem_Ref);
+                else
+                {
+                    gen.Emit(OpCodes.Stelem_Ref);
+                }
             }
 
             // i++
@@ -249,9 +247,18 @@ namespace OpenH2.Core.Tags.Serialization
             gen.Emit(OpCodes.Clt);
             gen.Emit(OpCodes.Brtrue, loop);
 
-            gen.Emit(OpCodes.Ldloc, tagLocal);
+            if(tagType.IsClass)
+            {
+                gen.Emit(OpCodes.Ldloc, tagLocal);
+            }
+            else
+            {
+                // Value type requires loading address instead of value
+                gen.Emit(OpCodes.Ldloca, tagLocal);
+            }
+            
             gen.Emit(OpCodes.Ldloc, result);
-            gen.Emit(OpCodes.Callvirt, prop.Setter);
+            gen.Emit(OpCodes.Call, prop.Setter);
         }
 
         /// <summary>
@@ -279,7 +286,7 @@ namespace OpenH2.Core.Tags.Serialization
             gen.Emit(OpCodes.Callvirt, MI.Cao.IntDictAddMethod); // Push Prop layout offset and Cao
         }
 
-        private static void GeneratePrimitiveProperty(ILGenerator gen, LocalBuilder tagLocal, TagProperty prop)
+        private static void GeneratePrimitiveProperty(ILGenerator gen, LocalBuilder tagLocal, TagProperty prop, Type tagType)
         {
             var type = prop.Type;
 
@@ -290,7 +297,16 @@ namespace OpenH2.Core.Tags.Serialization
 
             if (PrimitiveSpanReaders.TryGetValue(type, out var readerMethod))
             {
-                gen.Emit(OpCodes.Ldloc, tagLocal); // Load tag onto evalstack for later
+                // Load tag onto evalstack for later
+                if(tagType.IsClass)
+                {
+                    gen.Emit(OpCodes.Ldloc, tagLocal);
+                }
+                else
+                {
+                    // Must load the address when value type
+                    gen.Emit(OpCodes.Ldloca, tagLocal);
+                }
 
                 gen.Emit(OpCodes.Ldarg_0); // Load Span<byte> onto evalstack
 
@@ -300,7 +316,8 @@ namespace OpenH2.Core.Tags.Serialization
 
                 gen.Emit(OpCodes.Call, readerMethod); // Consume span and offset
 
-                gen.Emit(OpCodes.Callvirt, prop.Setter); // Consume tag and returned value args, set tag val
+                // Consume tag and returned value args, set tag val
+                gen.Emit(OpCodes.Call, prop.Setter);
             }
         }
 

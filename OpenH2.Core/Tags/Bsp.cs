@@ -258,7 +258,7 @@ namespace OpenH2.Core.Tags
             }
 
             [FixedLength(16)]
-            public struct Vertex
+            public class Vertex
             {
                 [PrimitiveValue(0)]
                 public float x { get; set; }
