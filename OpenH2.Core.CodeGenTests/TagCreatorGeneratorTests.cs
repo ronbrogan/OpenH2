@@ -25,7 +25,7 @@ namespace OpenH2.Core.CodeGenTests
         }
 
         [Fact]
-        public void TestGeneratedAssembly()
+        public void AllTags_PassPEVerify()
         {
             var tagTypes = typeof(BaseTag).Assembly.GetTypes()
                 .Where(t => typeof(BaseTag).IsAssignableFrom(t) && t.IsAbstract == false)
@@ -37,12 +37,11 @@ namespace OpenH2.Core.CodeGenTests
 
             var code = ExecutePEVerify(assy);
 
-
             Assert.Equal(0, code);
         }
 
         [Fact]
-        public void TestTag_Verify()
+        public void TestTag_PassesPEVerify()
         {
             var assy = GenerateAssembly("TestTagSerializer", new[] { typeof(TestTag) });
 
@@ -65,7 +64,6 @@ namespace OpenH2.Core.CodeGenTests
             {
                 proc.OutputDataReceived += (s, e) => writer.WriteLine(e.Data);
                 proc.BeginOutputReadLine();
-
 
                 proc.WaitForExit(10000);
 
