@@ -30,7 +30,7 @@ namespace OpenH2.Core.Tests.Tags
             Assert.Equal(0.001f, tag.SubValues[1].SubSubTags[1].Value, 3);
         }
 
-        public class TestTag
+        private class TestTag
         {
             [PrimitiveValue(0)]
             public int Value1 { get; set; }
@@ -46,7 +46,7 @@ namespace OpenH2.Core.Tests.Tags
             public class SubTag
             {
                 [PrimitiveValue(0)]
-                public int Deadbeef { get; set; }
+                private int Deadbeef { get; set; }
 
                 [InternalReferenceValue(4)]
                 public SubSubTag[] SubSubTags { get; set; }

@@ -23,17 +23,31 @@ namespace OpenH2.Core.Tags.Serialization
         private Func<Type, SerializerBuilderContext> builderWrapperFactory;
 
         
-        public TagCreatorGenerator(ModuleBuilder module = null)
+        public TagCreatorGenerator()
         {
-            if(module == null)
+            Func<Type, SerializerBuilderContext> nested = null;
+
+            nested = (t) =>
             {
-                var assyBuilder = AssemblyBuilder.DefineDynamicAssembly(
-                    new AssemblyName("TagSerialization"), 
-                    AssemblyBuilderAccess.Run);
+                var name = t.FullName
+                  .Substring(t.FullName.LastIndexOf('.') + 1)
+                  .Replace("+", "_");
 
-                module = assyBuilder.DefineDynamicModule(assyBuilder.GetName().Name);
-            }
+                var method = new DynamicMethod("Read" + name, typeof(object), arguments);
 
+                return new SerializerBuilderContext()
+                {
+                    MethodIL = method.GetILGenerator(),
+                    GetNestedContext = nested,
+                    GetMethodInfo = () => method
+                };
+            };
+
+            builderWrapperFactory = nested;
+        }
+
+        public TagCreatorGenerator(ModuleBuilder module)
+        {
             builderWrapperFactory = tagType =>
             {
                 var type = module.DefineType($"{tagType.Name}Serializer", TypeAttributes.Public);
@@ -43,10 +57,35 @@ namespace OpenH2.Core.Tags.Serialization
                     typeof(object),
                     arguments);
 
+                Func<Type, SerializerBuilderContext> nested = null;
+                nested = (t) =>
+                {
+                    var name = t.FullName
+                      .Substring(t.FullName.LastIndexOf('.') + 1)
+                      .Replace("+", "_");
+
+                    var methodBuilder = type.DefineMethod("Read" + name,
+                        MethodAttributes.Public | MethodAttributes.Static,
+                        typeof(object),
+                        arguments);
+
+                    return new SerializerBuilderContext()
+                    {
+                        MethodIL = methodBuilder.GetILGenerator(),
+                        GetNestedContext = nested,
+                        GetMethodInfo = () => methodBuilder
+                    };
+                };
+
                 var wrapper = new SerializerBuilderContext()
                 {
-                    TypeBuilder = type,
-                    MethodBuilder = builder,
+                    MethodIL = builder.GetILGenerator(),
+                    GetNestedContext = nested,
+                    GetMethodInfo = () =>
+                    {
+                        var t = type.CreateTypeInfo().AsType();
+                        return t.GetMethod(builder.Name);
+                    }
                 };
 
                 return wrapper;
@@ -73,61 +112,26 @@ namespace OpenH2.Core.Tags.Serialization
 
             GenerateTagCreator(tagType, context);
 
-            var createdType = context.TypeBuilder.CreateTypeInfo().AsType();
+            var creator = (TagCreator)context.GetMethodInfo().CreateDelegate(typeof(TagCreator));
 
-            var method = createdType.GetMethod(context.MethodBuilder.Name);
+            cachedTagCreatorDelegates.Add(tagType, creator);
 
-            return (TagCreator)method.CreateDelegate(typeof(TagCreator));
+            return creator;
         }
 
-        private MethodBuilder GenerateNestedTagCreatorMethod(Type nestedTagType, SerializerBuilderContext context)
+        private MethodInfo GenerateNestedTagCreatorMethod(Type nestedTagType, SerializerBuilderContext context)
         {
-            var name = nestedTagType.FullName
-              .Substring(nestedTagType.FullName.LastIndexOf('.') + 1)
-              .Replace("+", "_");
-
-            var methodBuilder = context.TypeBuilder.DefineMethod("Read" + name,
-                MethodAttributes.Public | MethodAttributes.Static,
-                typeof(object),
-                arguments);
-
-            var newContext = new SerializerBuilderContext()
-            {
-                TypeBuilder = context.TypeBuilder,
-                MethodBuilder = methodBuilder
-            };
+            var newContext = context.GetNestedContext(nestedTagType);
 
             GenerateTagCreator(nestedTagType, newContext);
 
-            return methodBuilder;
+            return newContext.GetMethodInfo();
         }
 
         private void GenerateTagCreator(Type tagType, SerializerBuilderContext context)
         {
-            var gen = context.MethodBuilder.GetILGenerator();
+            var gen = context.MethodIL;
             var internalPropCreators = new Dictionary<TagProperty, MethodInfo>();
-
-#if DEBUG
-            var debugWrite = typeof(Debug).GetMethod("WriteLine", new[] { typeof(object) });
-#endif
-
-            /// public Tag TagCreator(uint id, Span<byte> data)
-            /// {
-            ///     var t= new Tag();
-            /// 
-            ///     // foreach prop
-            ///     var val = data.ReadXAt(prop.Offset);
-            ///     t.Prop = val;
-            /// 
-            ///     // foreach refprop
-            ///     var result = new p[];
-            ///     for(cao)
-            ///         result[i] = new p();
-            ///         
-            ///     t.Prop = result;
-            /// 
-            ///     return t;
-            /// };
 
             var props = TagTypeMetadataProvider.GetProperties(tagType);
 
@@ -174,6 +178,7 @@ namespace OpenH2.Core.Tags.Serialization
 
                     case InternalReferenceValueAttribute reference:
                         var propType = prop.Type.IsArray ? prop.Type.GetElementType() : prop.Type;
+                        // Ensure that any nested type creators are pre-created
                         internalPropCreators[prop] = GenerateNestedTagCreatorMethod(propType, context);
                         GenerateReferenceProperty(gen, caoLocal, prop);
                         break;
@@ -196,8 +201,6 @@ namespace OpenH2.Core.Tags.Serialization
             }
 
             gen.Emit(OpCodes.Ret);
-
-            
         }
 
         private static void GenerateInternalReferenceArrayReader(ILGenerator gen, LocalBuilder tagLocal, LocalBuilder caoLocal, TagProperty prop, Type tagType, MethodInfo creator)
@@ -362,11 +365,11 @@ namespace OpenH2.Core.Tags.Serialization
             }
         }
 
-
         internal class SerializerBuilderContext
         {
-            public TypeBuilder TypeBuilder;
-            public MethodBuilder MethodBuilder;
+            public Func<Type, SerializerBuilderContext> GetNestedContext;
+            public ILGenerator MethodIL;
+            public Func<MethodInfo> GetMethodInfo;
         }
 
         private static Dictionary<Type, MethodInfo> PrimitiveSpanReaders = new Dictionary<Type, MethodInfo>

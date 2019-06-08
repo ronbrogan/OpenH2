@@ -43,7 +43,7 @@ namespace OpenH2.Core.CodeGenTests
         [Fact]
         public void TestTag_PassesPEVerify()
         {
-            var assy = GenerateAssembly("TestTagSerializer", new[] { typeof(TestTag) });
+            var assy = GenerateAssembly("TestTagSerializer", new[] { typeof(TestTag), typeof(TestTag) });
 
             var code = ExecutePEVerify(assy);
 
