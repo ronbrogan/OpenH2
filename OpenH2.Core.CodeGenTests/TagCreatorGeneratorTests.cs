@@ -93,35 +93,12 @@ namespace OpenH2.Core.CodeGenTests
 
             var module = assembly.DefineDynamicModule(assemblyName, assemblyName + ".dll", true);
 
-            var type = module.DefineType(assemblyName, TypeAttributes.Public);
-
-            TagCreatorGenerator.builderWrapperFactory = tagType =>
-            {
-                var builder = type.DefineMethod("Read" + tagType.Name,
-                    MethodAttributes.Public | MethodAttributes.Static,
-                    typeof(object),
-                    TagCreatorGenerator.arguments);
-
-                var wrapper = new TagCreatorGenerator.MethodBuilderWrapper()
-                {
-                    generator = builder.GetILGenerator(),
-                    getDelegate = () => {
-                        // dummy delegate for type gen purposes, can't use method until type is created
-                        var delg = new TagCreator((s, i, j) => null);
-
-                        return delg;
-                    }
-                };
-
-                return wrapper;
-            };
+            var generator = new TagCreatorGenerator(module);
 
             foreach (var t in types)
             {
-                TagCreatorGenerator.GetTagCreator(t);
+                generator.GetTagCreator(t);
             }
-
-            type.CreateType();
 
             var outputFile = assyName + ".dll";
 
@@ -146,7 +123,7 @@ namespace OpenH2.Core.CodeGenTests
             public struct SubTag
             {
                 [PrimitiveValue(0)]
-                private int Deadbeef { get; set; }
+                public int Deadbeef { get; set; }
 
                 [InternalReferenceValue(4)]
                 public SubSubTag[] SubSubTags { get; set; }

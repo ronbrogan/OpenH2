@@ -17,6 +17,7 @@
     <PackageReference Include="System.Numerics.Vectors" Version="4.6.0-preview5.19224.8" />
     <PackageReference Include="System.Reflection" Version="4.3.0" />
     <PackageReference Include="System.Reflection.Emit" Version="4.6.0-preview5.19224.8" />
+    <PackageReference Include="System.Reflection.Emit.ILGeneration" Version="4.6.0-preview5.19224.8" />
     <PackageReference Include="System.Reflection.Emit.Lightweight" Version="4.6.0-preview5.19224.8" />
     <PackageReference Include="System.Runtime.Numerics" Version="4.3.0" />
   </ItemGroup>

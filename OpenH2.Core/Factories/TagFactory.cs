@@ -12,6 +12,8 @@ namespace OpenH2.Core.Factories
 {
     public static class TagFactory
     {
+        private static TagCreatorGenerator generator = new TagCreatorGenerator();
+
         public static BaseTag CreateTag(uint id, string name, TagIndexEntry index, TrackingChunk chunk, TrackingReader sceneReader)
         {
             var tagType = GetTypeForTag(index.Tag);
@@ -19,7 +21,7 @@ namespace OpenH2.Core.Factories
             if (tagType == null)
                 return null;
 
-            var tagCreator = TagCreatorGenerator.GetTagCreator(tagType);
+            var tagCreator = generator.GetTagCreator(tagType);
 
             var tag = tagCreator(chunk.Span, index.Offset.OriginalValue);
 

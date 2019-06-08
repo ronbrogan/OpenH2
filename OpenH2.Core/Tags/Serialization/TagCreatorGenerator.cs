@@ -14,32 +14,46 @@ namespace OpenH2.Core.Tags.Serialization
     public delegate object TagCreator(Span<byte> data, int internalOffsetMagic, int startAt = 0);
     public delegate T TagCreator<T>(Span<byte> data, int internalOffsetMagic, int startAt = 0);
 
-    public static class TagCreatorGenerator
+    public class TagCreatorGenerator
     {
-        internal static Type[] arguments = new[] { typeof(Span<byte>), typeof(int), typeof(int) };
-        internal static Dictionary<Type, TagCreator> cachedTagCreatorDelegates = new Dictionary<Type, TagCreator>();
+        private static Type[] arguments = new[] { typeof(Span<byte>), typeof(int), typeof(int) };
+        private static Dictionary<Type, TagCreator> cachedTagCreatorDelegates = new Dictionary<Type, TagCreator>();
 
 
-        internal static Func<Type, MethodBuilderWrapper> builderWrapperFactory = tagType =>
+        private Func<Type, SerializerBuilderContext> builderWrapperFactory;
+
+        
+        public TagCreatorGenerator(ModuleBuilder module = null)
         {
-            var builder = new DynamicMethod("Read" + tagType.Name, typeof(object), arguments);
-
-            var wrapper = new MethodBuilderWrapper()
+            if(module == null)
             {
-                generator = builder.GetILGenerator(),
-                getDelegate = () => {
-                    var delg = (TagCreator)builder.CreateDelegate(typeof(TagCreator));
+                var assyBuilder = AssemblyBuilder.DefineDynamicAssembly(
+                    new AssemblyName("TagSerialization"), 
+                    AssemblyBuilderAccess.Run);
 
-                    cachedTagCreatorDelegates[tagType] = delg;
+                module = assyBuilder.DefineDynamicModule(assyBuilder.GetName().Name);
+            }
 
-                    return delg;
-                }
+            builderWrapperFactory = tagType =>
+            {
+                var type = module.DefineType($"{tagType.Name}Serializer", TypeAttributes.Public);
+
+                var builder = type.DefineMethod("Read" + tagType.Name,
+                    MethodAttributes.Public | MethodAttributes.Static,
+                    typeof(object),
+                    arguments);
+
+                var wrapper = new SerializerBuilderContext()
+                {
+                    TypeBuilder = type,
+                    MethodBuilder = builder,
+                };
+
+                return wrapper;
             };
+        }
 
-            return wrapper;
-        };
-
-        public static TagCreator<T> GetTagCreator<T>()
+        public TagCreator<T> GetTagCreator<T>()
         {
             var tagType = typeof(T);
 
@@ -48,21 +62,50 @@ namespace OpenH2.Core.Tags.Serialization
             return new TagCreator<T>((Span<byte> s, int i, int o) => (T)creator(s, i, o));
         }
 
-        public static TagCreator GetTagCreator(Type tagType)
+        public TagCreator GetTagCreator(Type tagType)
         {
             if (cachedTagCreatorDelegates.TryGetValue(tagType, out var deleg))
             {
                 return deleg;
             }
 
-            var wrapper = builderWrapperFactory(tagType);
+            var context = builderWrapperFactory(tagType);
 
-            return GenerateTagCreator(tagType, wrapper);
+            GenerateTagCreator(tagType, context);
+
+            var createdType = context.TypeBuilder.CreateTypeInfo().AsType();
+
+            var method = createdType.GetMethod(context.MethodBuilder.Name);
+
+            return (TagCreator)method.CreateDelegate(typeof(TagCreator));
         }
 
-        private static TagCreator GenerateTagCreator(Type tagType, MethodBuilderWrapper builder)
+        private MethodBuilder GenerateNestedTagCreatorMethod(Type nestedTagType, SerializerBuilderContext context)
         {
-            var gen = builder.generator;
+            var name = nestedTagType.FullName
+              .Substring(nestedTagType.FullName.LastIndexOf('.') + 1)
+              .Replace("+", "_");
+
+            var methodBuilder = context.TypeBuilder.DefineMethod("Read" + name,
+                MethodAttributes.Public | MethodAttributes.Static,
+                typeof(object),
+                arguments);
+
+            var newContext = new SerializerBuilderContext()
+            {
+                TypeBuilder = context.TypeBuilder,
+                MethodBuilder = methodBuilder
+            };
+
+            GenerateTagCreator(nestedTagType, newContext);
+
+            return methodBuilder;
+        }
+
+        private void GenerateTagCreator(Type tagType, SerializerBuilderContext context)
+        {
+            var gen = context.MethodBuilder.GetILGenerator();
+            var internalPropCreators = new Dictionary<TagProperty, MethodInfo>();
 
 #if DEBUG
             var debugWrite = typeof(Debug).GetMethod("WriteLine", new[] { typeof(object) });
@@ -130,6 +173,8 @@ namespace OpenH2.Core.Tags.Serialization
                         break;
 
                     case InternalReferenceValueAttribute reference:
+                        var propType = prop.Type.IsArray ? prop.Type.GetElementType() : prop.Type;
+                        internalPropCreators[prop] = GenerateNestedTagCreatorMethod(propType, context);
                         GenerateReferenceProperty(gen, caoLocal, prop);
                         break;
                 }
@@ -138,7 +183,8 @@ namespace OpenH2.Core.Tags.Serialization
             // Do subsequent passes for internal references
             foreach (var prop in props.Where(p => p.LayoutAttribute is InternalReferenceValueAttribute))
             {
-                GenerateInternalReferenceArrayReader(gen, tagLocal, caoLocal, prop, tagType);
+                var creator = internalPropCreators[prop];
+                GenerateInternalReferenceArrayReader(gen, tagLocal, caoLocal, prop, tagType, creator);
             }
 
             gen.Emit(OpCodes.Ldloc, tagLocal);
@@ -151,10 +197,10 @@ namespace OpenH2.Core.Tags.Serialization
 
             gen.Emit(OpCodes.Ret);
 
-            return builder.getDelegate();
+            
         }
 
-        private static void GenerateInternalReferenceArrayReader(ILGenerator gen, LocalBuilder tagLocal, LocalBuilder caoLocal, TagProperty prop, Type tagType)
+        private static void GenerateInternalReferenceArrayReader(ILGenerator gen, LocalBuilder tagLocal, LocalBuilder caoLocal, TagProperty prop, Type tagType, MethodInfo creator)
         {
             if (prop.Type.BaseType != typeof(Array))
             {
@@ -204,11 +250,6 @@ namespace OpenH2.Core.Tags.Serialization
 
                 var elemType = prop.Type.GetElementType();
                 var typeLength = TagTypeMetadataProvider.GetFixedLength(elemType);
-                var creatorInvoke = typeof(TagCreator).GetMethod("Invoke");
-
-                gen.Emit(OpCodes.Ldtoken, elemType);
-                gen.Emit(OpCodes.Call, MI.SystemType.GetTypeFromHandle);
-                gen.Emit(OpCodes.Call, MI.This.GetTagCreator);
 
                 gen.Emit(OpCodes.Ldarg_0); // load span
 
@@ -221,7 +262,7 @@ namespace OpenH2.Core.Tags.Serialization
                 gen.Emit(OpCodes.Mul); 
                 gen.Emit(OpCodes.Add);// Load item start
 
-                gen.Emit(OpCodes.Callvirt, creatorInvoke);
+                gen.Emit(OpCodes.Call, creator);
 
                 if(elemType.IsValueType)
                 {
@@ -322,10 +363,10 @@ namespace OpenH2.Core.Tags.Serialization
         }
 
 
-        internal class MethodBuilderWrapper
+        internal class SerializerBuilderContext
         {
-            public ILGenerator generator;
-            public Func<TagCreator> getDelegate;
+            public TypeBuilder TypeBuilder;
+            public MethodBuilder MethodBuilder;
         }
 
         private static Dictionary<Type, MethodInfo> PrimitiveSpanReaders = new Dictionary<Type, MethodInfo>
@@ -339,16 +380,6 @@ namespace OpenH2.Core.Tags.Serialization
 
         private static class MI
         {
-            public static class This
-            {
-                // ISSUE: #2 - Replace generic GetMethod calls with new overload
-                public static MethodInfo GetTagCreator = typeof(TagCreatorGenerator)
-                    .GetMethods(BindingFlags.Public | BindingFlags.Static)
-                    .First(m => 
-                        m.Name == nameof(TagCreatorGenerator.GetTagCreator)
-                        && m.IsGenericMethod == false);
-            }
-
             public static class Runtime
             {
                 public static MethodInfo GetUninitializedObject = typeof(FormatterServices)

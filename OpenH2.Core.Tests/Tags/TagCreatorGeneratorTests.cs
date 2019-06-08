@@ -1,19 +1,24 @@
 ﻿using OpenH2.Core.Tags.Layout;
 using OpenH2.Core.Tags.Serialization;
+using System.Reflection.Emit;
 using Xunit;
 
 namespace OpenH2.Core.Tests.Tags
 {
     public class TagFormatReaderGeneratorTests
     {
+        private AssemblyBuilder assyBuilder;
+
         [Fact]
         public void TestTag_DeserializesAllProperties()
         {
             var magic = 100;
 
-            var creator = TagCreatorGenerator.GetTagCreator<TestTag>();
+            var gen = new TagCreatorGenerator();
 
-            var tag = creator(testTagData, magic);
+            var creator = gen.GetTagCreator(typeof(TestTag));
+
+            var tag = (TestTag)creator(testTagData, magic);
 
             Assert.NotNull(tag);
 
@@ -25,7 +30,7 @@ namespace OpenH2.Core.Tests.Tags
             Assert.Equal(0.001f, tag.SubValues[1].SubSubTags[1].Value, 3);
         }
 
-        private class TestTag
+        public class TestTag
         {
             [PrimitiveValue(0)]
             public int Value1 { get; set; }
@@ -41,7 +46,7 @@ namespace OpenH2.Core.Tests.Tags
             public class SubTag
             {
                 [PrimitiveValue(0)]
-                private int Deadbeef { get; set; }
+                public int Deadbeef { get; set; }
 
                 [InternalReferenceValue(4)]
                 public SubSubTag[] SubSubTags { get; set; }
