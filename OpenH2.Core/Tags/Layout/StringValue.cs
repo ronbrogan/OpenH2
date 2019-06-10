@@ -4,14 +4,13 @@ using System.Text;
 
 namespace OpenH2.Core.Tags.Layout
 {
-
-    public sealed class StringValueAttribute : TagValueAttribute
+    public sealed class PrimitiveArrayAttribute : TagValueAttribute
     {
-        public StringValueAttribute(int offset, int maxLength) : base(offset)
+        public PrimitiveArrayAttribute(int offset, int count) : base(offset)
         {
-            MaxLength = maxLength;
+            Count = count;
         }
 
-        public int MaxLength { get; }
+        public int Count { get; }
     }
 }

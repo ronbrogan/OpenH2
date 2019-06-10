@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Text;
@@ -55,6 +56,12 @@ namespace OpenH2.Core.Extensions
             }
 
             return builder.ToString();
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static byte ReadByteAt(this Span<byte> data, int offset)
+        {
+            return data[offset];
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

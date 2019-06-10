@@ -59,6 +59,13 @@ namespace OpenH2.Core.Tags
         [PrimitiveValue(102)]
         public short PixelOffset { get; set; }
         
+        [PrimitiveArray(108, 6)]
+        public uint[] LodOffsets { get; set; }
+
+        [PrimitiveArray(132, 6)]
+        public uint[] LodSizes { get; set; }
+
+
         // TODO: this is abnormal, basically it's 6 offsets, then six sizes
         // Could have Lod0Offset, Lod1Offset...
         // and Lod0Size, Lod1Size...

@@ -16,9 +16,9 @@ namespace OpenH2.Core.Tests.Tags
 
             var gen = new TagCreatorGenerator();
 
-            var creator = gen.GetTagCreator(typeof(TestTag));
+            var creator = gen.GetTagCreator<TestTag>();
 
-            var tag = (TestTag)creator(testTagData, magic);
+            var tag = creator(testTagData, magic);
 
             Assert.NotNull(tag);
 
@@ -28,6 +28,8 @@ namespace OpenH2.Core.Tests.Tags
             Assert.Equal(2, tag.SubValues.Length);
 
             Assert.Equal(0.001f, tag.SubValues[1].SubSubTags[1].Value, 3);
+
+            Assert.Equal(0xefbeadde, tag.SubValues[0].ArrayItem[0]);
         }
 
         private class TestTag
@@ -45,8 +47,8 @@ namespace OpenH2.Core.Tests.Tags
             [FixedLength(12)]
             public class SubTag
             {
-                [PrimitiveValue(0)]
-                private int Deadbeef { get; set; }
+                [PrimitiveArray(0, 1)]
+                public uint[] ArrayItem { get; set; }
 
                 [InternalReferenceValue(4)]
                 public SubSubTag[] SubSubTags { get; set; }
