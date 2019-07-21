@@ -2,11 +2,39 @@
 using OpenH2.Core.Offsets;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
 using System.Runtime.Serialization;
 
 namespace OpenH2.Core.Tags.Serialization.SerializerEmit
 {
+    internal static class TagCreatorArguments
+    {
+        public enum Name
+        {
+            Id,
+            Name,
+            Data,
+            Magic,
+            StartAt
+        }
+
+        public static SortedDictionary<Name, Type> ArgumentInfo = new SortedDictionary<Name, Type>
+        {
+            { Name.Data, typeof(Span<byte>) },
+            { Name.Magic, typeof(int) },
+            { Name.StartAt, typeof(int) }
+        };
+
+        public static Type[] ArgumentTypes = ArgumentInfo.Values.ToArray();
+        public static Name[] ArgumentNames = ArgumentInfo.Keys.ToArray();
+
+        public static int GetArgumentLocation(Name name)
+        {
+            return Array.IndexOf(ArgumentNames, name);
+        }
+    }
+
     internal static class MI
     {
         public static Dictionary<Type, MethodInfo> PrimitiveSpanReaders = new Dictionary<Type, MethodInfo>

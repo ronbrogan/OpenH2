@@ -153,7 +153,7 @@ namespace OpenH2.Core.Tags.Serialization.SerializerEmit
                 gen.Emit(OpCodes.Ldloc, i);
 
                 // Load Span<byte> onto evalstack
-                gen.Emit(OpCodes.Ldarg_0);
+                gen.Emit(OpCodes.Ldarg, TagCreatorArguments.GetArgumentLocation(TagCreatorArguments.Name.Data));
 
                 // Load item start
                 // start + offset + (i * length)
@@ -162,7 +162,7 @@ namespace OpenH2.Core.Tags.Serialization.SerializerEmit
                 gen.Emit(OpCodes.Mul);
                 gen.Emit(OpCodes.Ldc_I4, arr.Offset);
                 gen.Emit(OpCodes.Add);
-                gen.Emit(OpCodes.Ldarg_2); // Load subtag start
+                gen.Emit(OpCodes.Ldarg, TagCreatorArguments.GetArgumentLocation(TagCreatorArguments.Name.StartAt)); // Load subtag start
                 gen.Emit(OpCodes.Add);
 
                 // Consume span and offset
@@ -257,9 +257,9 @@ namespace OpenH2.Core.Tags.Serialization.SerializerEmit
                 var elemType = prop.Type.GetElementType();
                 var typeLength = TagTypeMetadataProvider.GetFixedLength(elemType);
 
-                gen.Emit(OpCodes.Ldarg_0); // load span
+                gen.Emit(OpCodes.Ldarg, TagCreatorArguments.GetArgumentLocation(TagCreatorArguments.Name.Data)); // load span
 
-                gen.Emit(OpCodes.Ldarg_1); // load magic
+                gen.Emit(OpCodes.Ldarg, TagCreatorArguments.GetArgumentLocation(TagCreatorArguments.Name.Magic)); // load magic
 
                 // offset + (i * length)
                 gen.Emit(OpCodes.Ldloc, offset);
@@ -320,13 +320,13 @@ namespace OpenH2.Core.Tags.Serialization.SerializerEmit
 
             gen.Emit(OpCodes.Ldc_I4, prop.LayoutAttribute.Offset); // Load Cao dict key for later
 
-            gen.Emit(OpCodes.Ldarg_0); // Load Span<byte> onto evalstack
+            gen.Emit(OpCodes.Ldarg, TagCreatorArguments.GetArgumentLocation(TagCreatorArguments.Name.Data)); // Load Span<byte> onto evalstack
 
-            gen.Emit(OpCodes.Ldarg_2); // Load start offset
+            gen.Emit(OpCodes.Ldarg, TagCreatorArguments.GetArgumentLocation(TagCreatorArguments.Name.StartAt)); // Load start offset
             gen.Emit(OpCodes.Ldc_I4, prop.LayoutAttribute.Offset); // Load offset onto evalstack
             gen.Emit(OpCodes.Add); // start + offset
 
-            gen.Emit(OpCodes.Ldarg_1); // load magic
+            gen.Emit(OpCodes.Ldarg, TagCreatorArguments.GetArgumentLocation(TagCreatorArguments.Name.Magic)); // load magic
 
             gen.Emit(OpCodes.Call, MI.SpanByte.ReadMetaCaoAt); // consume count from above and InternalOffset
 
@@ -355,9 +355,9 @@ namespace OpenH2.Core.Tags.Serialization.SerializerEmit
                     gen.Emit(OpCodes.Ldloca, tagLocal);
                 }
 
-                gen.Emit(OpCodes.Ldarg_0); // Load Span<byte> onto evalstack
+                gen.Emit(OpCodes.Ldarg, TagCreatorArguments.GetArgumentLocation(TagCreatorArguments.Name.Data)); // Load Span<byte> onto evalstack
 
-                gen.Emit(OpCodes.Ldarg_2);
+                gen.Emit(OpCodes.Ldarg, TagCreatorArguments.GetArgumentLocation(TagCreatorArguments.Name.StartAt));
                 gen.Emit(OpCodes.Ldc_I4, prop.LayoutAttribute.Offset); // Load offset onto evalstack
                 gen.Emit(OpCodes.Add);
 

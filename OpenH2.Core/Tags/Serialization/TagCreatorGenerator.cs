@@ -11,7 +11,7 @@ namespace OpenH2.Core.Tags.Serialization
 
     public class TagCreatorGenerator
     {
-        private static Type[] arguments = new[] { typeof(Span<byte>), typeof(int), typeof(int) };
+        
         private static Dictionary<Type, TagCreator> cachedTagCreatorDelegates = new Dictionary<Type, TagCreator>();
 
         private Func<Type, SerializerEmitContext> builderWrapperFactory;
@@ -26,7 +26,7 @@ namespace OpenH2.Core.Tags.Serialization
                   .Substring(t.FullName.LastIndexOf('.') + 1)
                   .Replace("+", "_");
 
-                var method = new DynamicMethod("Read" + name, typeof(object), arguments);
+                var method = new DynamicMethod("Read" + name, typeof(object), TagCreatorArguments.ArgumentTypes);
 
                 return new SerializerEmitContext()
                 {
@@ -48,7 +48,7 @@ namespace OpenH2.Core.Tags.Serialization
                 var builder = type.DefineMethod("Read" + tagType.Name,
                     MethodAttributes.Public | MethodAttributes.Static,
                     typeof(object),
-                    arguments);
+                    TagCreatorArguments.ArgumentTypes);
 
                 Func<Type, SerializerEmitContext> nested = null;
                 nested = (t) =>
@@ -60,7 +60,7 @@ namespace OpenH2.Core.Tags.Serialization
                     var methodBuilder = type.DefineMethod("Read" + name,
                         MethodAttributes.Public | MethodAttributes.Static,
                         typeof(object),
-                        arguments);
+                        TagCreatorArguments.ArgumentTypes);
 
                     return new SerializerEmitContext()
                     {
