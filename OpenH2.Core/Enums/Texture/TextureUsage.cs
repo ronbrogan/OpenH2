@@ -1,6 +1,6 @@
 ﻿namespace OpenH2.Core.Enums.Texture
 {
-    public enum TextureUsage
+    public enum TextureUsage : ushort
     {
         AlphaBlend = 0,
         Normal = 1,

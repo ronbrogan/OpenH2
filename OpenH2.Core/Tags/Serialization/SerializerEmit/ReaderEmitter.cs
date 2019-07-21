@@ -85,6 +85,15 @@ namespace OpenH2.Core.Tags.Serialization.SerializerEmit
                 GenerateInternalReferenceArrayReader(gen, tagLocal, caoLocal, prop, tagType, creator);
             }
 
+            // Renamed postfix to PopulateExternalData, revive if needed
+            //var postfix = tagType.GetMethod("Postfix");
+            //if(postfix != null)
+            //{
+            //    // Call postfix
+            //    gen.Emit(OpCodes.Ldloc, tagLocal);
+            //    gen.Emit(OpCodes.Callvirt, postfix);
+            //}
+
             gen.Emit(OpCodes.Ldloc, tagLocal);
 
             // If it's a struct, we need to box, as we return object

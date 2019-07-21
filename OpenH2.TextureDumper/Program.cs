@@ -43,7 +43,7 @@ namespace OpenH2.TextureDumper
 
             foreach(var bitmTag in bitmaps)
             {
-                var writePath = Path.Combine(outPath, Path.GetDirectoryName(bitmTag.Name));
+                var writePath = Path.Combine(outPath, Path.GetDirectoryName(bitmTag.Name ?? Guid.NewGuid().ToString()));
                 var writeName = Path.GetFileName(bitmTag.Name) + ".dds";
 
                 if(Directory.Exists(writePath) == false)

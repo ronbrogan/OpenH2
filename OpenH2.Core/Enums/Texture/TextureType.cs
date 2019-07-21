@@ -1,6 +1,6 @@
 ﻿namespace OpenH2.Core.Enums.Texture
 {
-    public enum TextureType
+    public enum TextureType : ushort
     {
         TwoDimensional = 0,
         ThreeDimensional = 1,

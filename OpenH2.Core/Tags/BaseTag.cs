@@ -1,4 +1,6 @@
-﻿namespace OpenH2.Core.Tags
+﻿using OpenH2.Core.Parsing;
+
+namespace OpenH2.Core.Tags
 {
     public abstract class BaseTag
     {
@@ -14,5 +16,7 @@
         {
             this.Id = id;
         }
+
+        public virtual void PopulateExternalData(TrackingReader sceneReader) { }
     }
 }

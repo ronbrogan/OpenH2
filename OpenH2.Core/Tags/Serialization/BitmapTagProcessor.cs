@@ -38,20 +38,7 @@ namespace OpenH2.Core.Tags.Serialization
             var offsetsStart = 108;
             var sizesStart = 132;
 
-            for (int i = 0; i < 6; i++)
-            {
-                var lod = new Bitmap.BitmapLevelOfDetail();
-
-                lod.Offset = new NormalOffset((int)span.ReadUInt32At(offsetsStart + i * 4));
-                lod.Size = span.ReadUInt32At(sizesStart + i * 4);
-
-                if (lod.Offset.Location == Enums.DataFile.Local && lod.Offset.Value != 0 && lod.Offset.Value != int.MaxValue && lod.Size != 0)
-                {
-                    lod.Data = sceneReader.Chunk(lod.Offset.Value, (int)lod.Size, "Bitmap").AsMemory();
-                }
-
-                tag.LevelsOfDetail[i] = lod;
-            }
+            
 
             tag.ID = span.ReadUInt32At(156);
 

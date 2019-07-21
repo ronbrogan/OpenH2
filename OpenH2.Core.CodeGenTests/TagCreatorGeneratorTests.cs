@@ -107,7 +107,7 @@ namespace OpenH2.Core.CodeGenTests
             return Path.Combine(dom.SetupInformation.ApplicationBase, outputFile);
         }
 
-        public class TestTag
+        public class TestTag : BaseTag
         {
             [PrimitiveValue(0)]
             public int Value1 { get; set; }
@@ -117,7 +117,7 @@ namespace OpenH2.Core.CodeGenTests
 
             [InternalReferenceValue(8)]
             public SubTag[] SubValues { get; set; }
-
+            public override string Name { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
 
             [FixedLength(12)]
             public struct SubTag

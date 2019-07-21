@@ -1,6 +1,7 @@
 ﻿using System;
 using OpenH2.Core.Enums.Texture;
 using OpenH2.Core.Offsets;
+using OpenH2.Core.Parsing;
 using OpenH2.Core.Tags.Layout;
 
 namespace OpenH2.Core.Tags
@@ -65,12 +66,6 @@ namespace OpenH2.Core.Tags
         [PrimitiveArray(132, 6)]
         public uint[] LodSizes { get; set; }
 
-
-        // TODO: this is abnormal, basically it's 6 offsets, then six sizes
-        // Could have Lod0Offset, Lod1Offset...
-        // and Lod0Size, Lod1Size...
-        // Leaning towards doing that, then have an array property that makes it easy to use
-        // OR - if this pattern is somewhere else, add support
         public BitmapLevelOfDetail[] LevelsOfDetail { get; set; }
 
         [PrimitiveValue(156)]
@@ -85,6 +80,26 @@ namespace OpenH2.Core.Tags
             public uint Size { get; set; }
 
             public Memory<byte> Data { get; set; } = Memory<byte>.Empty;
+        }
+
+        public override void PopulateExternalData(TrackingReader sceneReader)
+        {
+            LevelsOfDetail = new BitmapLevelOfDetail[6];
+
+            for (int i = 0; i < 6; i++)
+            {
+                var lod = new BitmapLevelOfDetail();
+
+                lod.Offset = new NormalOffset((int)this.LodOffsets[i]);
+                lod.Size = this.LodSizes[i];
+
+                if (lod.Offset.Location == Enums.DataFile.Local && lod.Offset.Value != 0 && lod.Offset.Value != int.MaxValue && lod.Size != 0)
+                {
+                    lod.Data = sceneReader.Chunk(lod.Offset.Value, (int)lod.Size, "Bitmap").AsMemory();
+                }
+
+                LevelsOfDetail[i] = lod;
+            }
         }
     }
 }

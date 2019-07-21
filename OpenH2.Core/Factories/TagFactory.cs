@@ -23,7 +23,9 @@ namespace OpenH2.Core.Factories
 
             var tagCreator = generator.GetTagCreator(tagType);
 
-            var tag = tagCreator(chunk.Span, index.Offset.OriginalValue);
+            var tag = tagCreator(chunk.Span, index.Offset.OriginalValue) as BaseTag;
+
+            tag.PopulateExternalData(sceneReader);
 
             return tag as BaseTag;
         }
@@ -34,7 +36,7 @@ namespace OpenH2.Core.Factories
         {
             if(cachedTagTypes == null)
             {
-                cachedTagTypes = Assembly.GetAssembly(typeof(TagFactory)).GetTypes()
+                cachedTagTypes = Assembly.GetAssembly(typeof(BaseTag)).GetTypes()
                     .Where(t => t.IsClass && t.IsSubclassOf(typeof(BaseTag)))
                     .Select(t => new
                     {

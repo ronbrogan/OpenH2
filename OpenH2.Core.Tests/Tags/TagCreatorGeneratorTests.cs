@@ -1,4 +1,6 @@
-﻿using OpenH2.Core.Tags.Layout;
+﻿using OpenH2.Core.Parsing;
+using OpenH2.Core.Tags;
+using OpenH2.Core.Tags.Layout;
 using OpenH2.Core.Tags.Serialization;
 using System.Reflection.Emit;
 using Xunit;
@@ -20,6 +22,8 @@ namespace OpenH2.Core.Tests.Tags
 
             var tag = creator(testTagData, magic);
 
+            tag.PopulateExternalData(null);
+
             Assert.NotNull(tag);
 
             Assert.Equal(119, tag.Value1);
@@ -30,9 +34,11 @@ namespace OpenH2.Core.Tests.Tags
             Assert.Equal(0.001f, tag.SubValues[1].SubSubTags[1].Value, 3);
 
             Assert.Equal(0xefbeadde, tag.SubValues[0].ArrayItem[0]);
+
+            Assert.NotNull(tag.FirstSubValue);
         }
 
-        private class TestTag
+        private class TestTag : BaseTag
         {
             [PrimitiveValue(0)]
             public int Value1 { get; set; }
@@ -43,6 +49,14 @@ namespace OpenH2.Core.Tests.Tags
             [InternalReferenceValue(8)]
             public SubTag[] SubValues { get; set; }
 
+            public SubTag FirstSubValue { get; set; }
+
+            public override string Name { get => throw new System.NotImplementedException(); set => throw new System.NotImplementedException(); }
+
+            public override void PopulateExternalData(TrackingReader sceneReader)
+            {
+                FirstSubValue = SubValues[0];
+            }
 
             [FixedLength(12)]
             public class SubTag

@@ -1,6 +1,6 @@
 ﻿namespace OpenH2.Core.Enums.Texture
 {
-    public enum TextureFormat
+    public enum TextureFormat : ushort
     {
         DXT1 = 0,
         DXT23 = 1,
