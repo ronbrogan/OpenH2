@@ -66,6 +66,10 @@
         <TabItem Header="Offset">
           <StackPanel Orientation="Vertical" DataContext="{Binding SelectedOffsetData}" Margin="15">
             <StackPanel Orientation="Horizontal" >
+              <TextBlock Text="Internal Offset: "></TextBlock>
+              <TextBlock Text="{Binding InternalOffset}"></TextBlock>
+            </StackPanel>
+            <StackPanel Orientation="Horizontal" >
               <TextBlock Text="Byte: "></TextBlock>
               <TextBlock Text="{Binding Byte}"></TextBlock>
             </StackPanel>

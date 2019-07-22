@@ -41,7 +41,7 @@ namespace OpenH2.ScenarioExplorer.ViewModels
             {
                 selectedOffset = value;
 
-                this.SelectedOffsetData = new DataPreviewViewModel(value, CurrentTag.Data.Span);
+                this.SelectedOffsetData = new DataPreviewViewModel(value, CurrentTag);
             }
         }
 

@@ -9,8 +9,10 @@ namespace OpenH2.ScenarioExplorer.ViewModels
     [AddINotifyPropertyChangedInterface]
     public class DataPreviewViewModel
     {
-        public DataPreviewViewModel(int offset, Span<byte> data)
+        public DataPreviewViewModel(int offset, TagViewModel tag)
         {
+            var data = tag.Data.Span;
+
             this.Byte = data[offset];
             this.Short = data.ReadInt16At(offset);
             this.UShort = data.ReadUInt16At(offset);
@@ -18,8 +20,9 @@ namespace OpenH2.ScenarioExplorer.ViewModels
             this.UInt = data.ReadUInt32At(offset);
             this.Float = data.ReadFloatAt(offset);
             this.String = data.ReadStringFrom(offset, 32);
-        }
 
+            this.InternalOffset = (uint)(data.ReadUInt32At(offset) - tag.InternalOffsetStart);
+        }
 
         public byte Byte { get; set; }
 
@@ -35,6 +38,6 @@ namespace OpenH2.ScenarioExplorer.ViewModels
 
         public string String { get; set; }
 
-        public int InternalOffset { get; set; }
+        public uint InternalOffset { get; set; }
     }
 }
