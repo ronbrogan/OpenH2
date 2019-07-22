@@ -38,25 +38,46 @@ namespace OpenH2.BspMetaAnalysis
             }
         }
 
-        public static string CreatObjFileForBsp(BspTagData mesh)
+        public static string CreatObjFileForBsp(BspTagData tag)
         {
             var sb = new StringBuilder();
 
-            foreach (var vert in mesh.Verticies)
-            {
-                sb.AppendLine($"v {vert.Position.X.ToString("0.000000")} {vert.Position.Y.ToString("0.000000")} {vert.Position.Z.ToString("0.000000")}");
-            }
+            var vertsWritten = 1;
 
-            foreach (var tri in mesh.Faces)
+            for(var i = 0; i < tag.RenderModels.Length; i++)
             {
-                sb.Append("f");
+                var mesh = tag.RenderModels[i];
+                sb.AppendLine($"o BspChunk.{i}");
 
-                foreach(var vert in tri)
+                foreach (var vert in mesh.Verticies)
                 {
-                    sb.Append($" {vert + 1}");
+                    sb.AppendLine($"v {vert.Position.X.ToString("0.000000")} {vert.Position.Y.ToString("0.000000")} {vert.Position.Z.ToString("0.000000")}");
                 }
 
-                sb.AppendLine("");
+                foreach (var vert in mesh.Verticies)
+                {
+                    sb.AppendLine($"vt {vert.Texture.X.ToString("0.000000")} {vert.Texture.Y.ToString("0.000000")}");
+                }
+
+                foreach (var vert in mesh.Verticies)
+                {
+                    sb.AppendLine($"vn {vert.Normal.X.ToString("0.000000")} {vert.Normal.Y.ToString("0.000000")} {vert.Normal.Z.ToString("0.000000")}");
+                }
+
+
+                foreach (var tri in mesh.Faces)
+                {
+                    sb.Append("f");
+                    sb.Append($" {tri.Item1 + vertsWritten}/{tri.Item1 + vertsWritten}/{tri.Item1 + vertsWritten}");
+                    sb.Append($" {tri.Item2 + vertsWritten}/{tri.Item2 + vertsWritten}/{tri.Item2 + vertsWritten}");
+                    sb.Append($" {tri.Item3 + vertsWritten}/{tri.Item3 + vertsWritten}/{tri.Item3 + vertsWritten}");
+
+                    sb.AppendLine("");
+                }
+
+                sb.AppendLine();
+
+                vertsWritten += mesh.Verticies.Length;
             }
 
             return sb.ToString();

@@ -9,8 +9,14 @@ namespace OpenH2.Translation.TagData
         {
         }
 
-        public int[][] Faces { get; set; }
+        public RenderModel[] RenderModels { get;set;}
 
-        public Vertex[] Verticies { get; set; }
+        public class RenderModel
+        {
+            public (int,int,int)[] Faces { get; set; }
+
+            public Vertex[] Verticies { get; set; }
+        }
+
     }
 }

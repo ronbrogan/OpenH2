@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Diagnostics;
+using System.Numerics;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Text;
@@ -159,6 +160,18 @@ namespace OpenH2.Core.Extensions
         public static CountAndOffset ReadMetaCaoAt(this Span<byte> data, int offset, int magic)
         {
             return new CountAndOffset(data.ReadInt32At(offset), new TagInternalOffset(magic, data.ReadInt32At(offset + 4)));
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static Vector3 ReadVec3At(this Span<byte> data, int offset)
+        {
+            return new Vector3(data.ReadFloatAt(offset), data.ReadFloatAt(offset + 4), data.ReadFloatAt(offset + 8));
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static Vector2 ReadVec2At(this Span<byte> data, int offset)
+        {
+            return new Vector2(data.ReadFloatAt(offset), data.ReadFloatAt(offset + 4));
         }
 
         private static UInt32ToSingle floatConverter = new UInt32ToSingle();

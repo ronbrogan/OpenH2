@@ -3,6 +3,7 @@ using OpenH2.Core.Offsets;
 using System.Collections.Generic;
 using Newtonsoft.Json;
 using OpenH2.Core.Tags.Layout;
+using OpenH2.Core.Parsing;
 
 namespace OpenH2.Core.Tags
 {
@@ -44,7 +45,7 @@ namespace OpenH2.Core.Tags
         //public object[] MiscObject5Cao { get; set; } 
 
         [InternalReferenceValue(156)]
-        public RenderChunk[] RenderChunks { get; set; } 
+        public RenderChunk[] RenderChunks { get; set; }
 
         //[InternalReferenceValue(164)]
         //public object[] MiscObject7Cao { get; set; } 
@@ -97,6 +98,21 @@ namespace OpenH2.Core.Tags
         //[InternalReferenceValue(564)]
         //public object[] MiscObject23Cao { get; set; }
 
+
+        public override void PopulateExternalData(TrackingReader sceneReader)
+        {
+            foreach(var chunk in RenderChunks)
+            {
+                var chunkResourceChunkStart = chunk.DataBlockRawOffset + 8 + chunk.DataPreambleSize;
+
+                foreach(var resource in chunk.Resources)
+                {
+                    var data = sceneReader.Chunk((int)(chunkResourceChunkStart + resource.Offset), resource.Size, "Bsp Render Data");
+
+                    resource.Data = data.AsMemory();
+                }
+            }
+        }
 
         [FixedLength(20)]
         public class ShaderInfo
@@ -309,6 +325,8 @@ namespace OpenH2.Core.Tags
 
                 [PrimitiveValue(12)]
                 public int Offset { get; set; }
+
+                public Memory<byte> Data { get; set; }
 
                 [Flags]
                 public enum ResourceType : byte
