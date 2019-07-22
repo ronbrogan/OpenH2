@@ -6,8 +6,8 @@ using System.Reflection.Emit;
 
 namespace OpenH2.Core.Tags.Serialization
 {
-    public delegate object TagCreator(Span<byte> data, int internalOffsetMagic, int startAt = 0);
-    public delegate T TagCreator<T>(Span<byte> data, int internalOffsetMagic, int startAt = 0);
+    public delegate object TagCreator(uint id, string name, Span<byte> data, int internalOffsetMagic, int startAt = 0);
+    public delegate T TagCreator<T>(uint id, string name, Span<byte> data, int internalOffsetMagic, int startAt = 0);
 
     public class TagCreatorGenerator
     {
@@ -91,7 +91,7 @@ namespace OpenH2.Core.Tags.Serialization
 
             var creator = GetTagCreator(tagType);
 
-            return new TagCreator<T>((Span<byte> s, int i, int o) => (T)creator(s, i, o));
+            return new TagCreator<T>((uint id, string name, Span<byte> s, int i, int o) => (T)creator(id, name, s, i, o));
         }
 
         public TagCreator GetTagCreator(Type tagType)

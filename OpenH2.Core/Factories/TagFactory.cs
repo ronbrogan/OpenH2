@@ -23,7 +23,7 @@ namespace OpenH2.Core.Factories
 
             var tagCreator = generator.GetTagCreator(tagType);
 
-            var tag = tagCreator(chunk.Span, index.Offset.OriginalValue) as BaseTag;
+            var tag = tagCreator(id, name, chunk.Span, index.Offset.OriginalValue) as BaseTag;
 
             tag.PopulateExternalData(sceneReader);
 

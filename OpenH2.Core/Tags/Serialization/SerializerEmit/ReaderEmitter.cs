@@ -10,6 +10,8 @@ namespace OpenH2.Core.Tags.Serialization.SerializerEmit
 {
     internal static class ReaderEmitter
     {
+        private static bool UseTagConstructorIfPossible = true;
+
         private static MethodInfo GenerateNestedTagCreatorMethod(Type nestedTagType, SerializerEmitContext context)
         {
             var newContext = context.GetNestedContext(nestedTagType);
@@ -39,22 +41,41 @@ namespace OpenH2.Core.Tags.Serialization.SerializerEmit
                 gen.Emit(OpCodes.Stloc, caoLocal);
             }
 
-            gen.Emit(OpCodes.Ldtoken, tagType);
-            gen.Emit(OpCodes.Call, MI.SystemType.GetTypeFromHandle);
-            gen.Emit(OpCodes.Call, MI.Runtime.GetUninitializedObject);
+            var suitableCtor = tagType.GetConstructor(new[] { typeof(uint) });
 
-            // If it's a class, we need to cast to store in local
-            // If it's a struct, we need to unbox 
-            if (tagType.IsClass)
+            if(UseTagConstructorIfPossible && suitableCtor != null)
             {
-                gen.Emit(OpCodes.Castclass, tagType);
+                gen.Emit(OpCodes.Ldarg, TagCreatorArguments.GetArgumentLocation(TagCreatorArguments.Name.Id));
+                gen.Emit(OpCodes.Newobj, suitableCtor);
             }
             else
             {
-                gen.Emit(OpCodes.Unbox_Any, tagType);
+                gen.Emit(OpCodes.Ldtoken, tagType);
+                gen.Emit(OpCodes.Call, MI.SystemType.GetTypeFromHandle);
+                gen.Emit(OpCodes.Call, MI.Runtime.GetUninitializedObject);
+
+                // If it's a class, we need to cast to store in local
+                // If it's a struct, we need to unbox 
+                if (tagType.IsClass)
+                {
+                    gen.Emit(OpCodes.Castclass, tagType);
+                }
+                else
+                {
+                    gen.Emit(OpCodes.Unbox_Any, tagType);
+                }
             }
 
             gen.Emit(OpCodes.Stloc, tagLocal);
+
+            var tagNameProp = tagType.GetProperty(nameof(BaseTag.Name), BindingFlags.Public | BindingFlags.Instance);
+            if (tagNameProp != null)
+            {
+                // Set tag name
+                gen.Emit(OpCodes.Ldloc, tagLocal);
+                gen.Emit(OpCodes.Ldarg, TagCreatorArguments.GetArgumentLocation(TagCreatorArguments.Name.Name));
+                gen.Emit(OpCodes.Callvirt, tagNameProp.GetSetMethod());
+            }
 
             // Do first pass over "header" reagion
             foreach (var prop in props)
@@ -74,6 +95,10 @@ namespace OpenH2.Core.Tags.Serialization.SerializerEmit
                         // Ensure that any nested type creators are pre-created
                         internalPropCreators[prop] = GenerateNestedTagCreatorMethod(propType, context);
                         GenerateReferenceProperty(gen, caoLocal, prop);
+                        break;
+
+                    case StringValueAttribute str:
+                        GenerateStringProperty(gen, tagLocal, prop, tagType, str);
                         break;
                 }
             }
@@ -103,6 +128,43 @@ namespace OpenH2.Core.Tags.Serialization.SerializerEmit
             }
 
             gen.Emit(OpCodes.Ret);
+        }
+
+        private static void GenerateStringProperty(ILGenerator gen, LocalBuilder tagLocal, TagProperty prop, Type tagType, StringValueAttribute str)
+        {
+            var type = prop.Type;
+
+            if (type != typeof(string))
+            {
+                throw new Exception("StringValueAttributes must be on string properties");
+            }
+
+            if (MI.PrimitiveSpanReaders.TryGetValue(type, out var readerMethod))
+            {
+                // Load tag onto evalstack for later
+                if (tagType.IsClass)
+                {
+                    gen.Emit(OpCodes.Ldloc, tagLocal);
+                }
+                else
+                {
+                    // Must load the address when value type
+                    gen.Emit(OpCodes.Ldloca, tagLocal);
+                }
+
+                gen.Emit(OpCodes.Ldarg, TagCreatorArguments.GetArgumentLocation(TagCreatorArguments.Name.Data)); // Load Span<byte> onto evalstack
+
+                gen.Emit(OpCodes.Ldarg, TagCreatorArguments.GetArgumentLocation(TagCreatorArguments.Name.StartAt));
+                gen.Emit(OpCodes.Ldc_I4, prop.LayoutAttribute.Offset); // Load offset onto evalstack
+                gen.Emit(OpCodes.Add);
+
+                gen.Emit(OpCodes.Ldc_I4, str.MaxLength);
+
+                gen.Emit(OpCodes.Call, readerMethod); // Consume span, offset, length
+
+                // Consume tag and returned value args, set tag val
+                gen.Emit(OpCodes.Call, prop.Setter);
+            }
         }
 
         private static void GeneratePrimitiveArrayProperty(ILGenerator gen, LocalBuilder tagLocal, TagProperty prop, Type tagType, PrimitiveArrayAttribute arr)
@@ -257,8 +319,9 @@ namespace OpenH2.Core.Tags.Serialization.SerializerEmit
                 var elemType = prop.Type.GetElementType();
                 var typeLength = TagTypeMetadataProvider.GetFixedLength(elemType);
 
+                gen.Emit(OpCodes.Ldarg, TagCreatorArguments.GetArgumentLocation(TagCreatorArguments.Name.Id)); // load id
+                gen.Emit(OpCodes.Ldarg, TagCreatorArguments.GetArgumentLocation(TagCreatorArguments.Name.Name)); // load name
                 gen.Emit(OpCodes.Ldarg, TagCreatorArguments.GetArgumentLocation(TagCreatorArguments.Name.Data)); // load span
-
                 gen.Emit(OpCodes.Ldarg, TagCreatorArguments.GetArgumentLocation(TagCreatorArguments.Name.Magic)); // load magic
 
                 // offset + (i * length)

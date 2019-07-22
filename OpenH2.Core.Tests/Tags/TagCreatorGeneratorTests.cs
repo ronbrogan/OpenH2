@@ -20,11 +20,14 @@ namespace OpenH2.Core.Tests.Tags
 
             var creator = gen.GetTagCreator<TestTag>();
 
-            var tag = creator(testTagData, magic);
+            var tag = creator(1, "name", testTagData, magic);
 
             tag.PopulateExternalData(null);
 
             Assert.NotNull(tag);
+
+            Assert.Equal(1u, tag.Id);
+            Assert.Equal("name", tag.Name);
 
             Assert.Equal(119, tag.Value1);
             Assert.Equal(151.251f, tag.Value2, 3);
@@ -36,10 +39,19 @@ namespace OpenH2.Core.Tests.Tags
             Assert.Equal(0xefbeadde, tag.SubValues[0].ArrayItem[0]);
 
             Assert.NotNull(tag.FirstSubValue);
+
+            Assert.Equal("mt1", tag.FirstSubValue.SubSubTags[0].StringVal);
         }
 
         private class TestTag : BaseTag
         {
+            public override string Name { get; set; }
+
+            public TestTag(uint id) : base(id)
+            {
+
+            }
+
             [PrimitiveValue(0)]
             public int Value1 { get; set; }
 
@@ -50,8 +62,6 @@ namespace OpenH2.Core.Tests.Tags
             public SubTag[] SubValues { get; set; }
 
             public SubTag FirstSubValue { get; set; }
-
-            public override string Name { get => throw new System.NotImplementedException(); set => throw new System.NotImplementedException(); }
 
             public override void PopulateExternalData(TrackingReader sceneReader)
             {
@@ -67,11 +77,14 @@ namespace OpenH2.Core.Tests.Tags
                 [InternalReferenceValue(4)]
                 public SubSubTag[] SubSubTags { get; set; }
 
-                [FixedLength(4)]
+                [FixedLength(8)]
                 public struct SubSubTag
                 {
                     [PrimitiveValue(0)]
                     public float Value { get; set; }
+
+                    [StringValue(4, 4)]
+                    public string StringVal { get; set; }
                 }
             }
         }
@@ -79,8 +92,9 @@ namespace OpenH2.Core.Tests.Tags
         private byte[] testTagData = new byte[] {
             0x77, 0x00, 0x00, 0x00, 0x3F, 0x40, 0x17, 0x43, 0x02, 0x00, 0x00, 0x00, 0x7C, 0x00, 0x00, 0x00,
             0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xDE, 0xAD, 0xBE, 0xEF, 0x01, 0x00, 0x00, 0x00,
-            0x94, 0x00, 0x00, 0x00, 0xDE, 0xAD, 0xBE, 0xEF, 0x02, 0x00, 0x00, 0x00, 0x98, 0x00, 0x00, 0x00,
-            0x29, 0x1C, 0x18, 0xC3, 0x05, 0x34, 0xD9, 0x3F, 0x6F, 0x12, 0x83, 0x3A
+            0x94, 0x00, 0x00, 0x00, 0xDE, 0xAD, 0xBE, 0xEF, 0x02, 0x00, 0x00, 0x00, 0x9C, 0x00, 0x00, 0x00,
+            0x29, 0x1C, 0x18, 0xC3, 0x6D, 0x74, 0x31, 0x00, 0x05, 0x34, 0xD9, 0x3F, 0x6D, 0x74, 0x69, 0x32,
+            0x6F, 0x12, 0x83, 0x3A, 0x6D, 0x74, 0x69, 0x33
         };
     }
 }

@@ -21,6 +21,8 @@ namespace OpenH2.Core.Tags.Serialization.SerializerEmit
 
         public static SortedDictionary<Name, Type> ArgumentInfo = new SortedDictionary<Name, Type>
         {
+            { Name.Id, typeof(uint) },
+            { Name.Name, typeof(string) },
             { Name.Data, typeof(Span<byte>) },
             { Name.Magic, typeof(int) },
             { Name.StartAt, typeof(int) }
@@ -45,6 +47,7 @@ namespace OpenH2.Core.Tags.Serialization.SerializerEmit
             { typeof(int), MI.SpanByte.ReadInt32At},
             { typeof(uint), typeof(SpanByteExtensions).GetMethod(nameof(SpanByteExtensions.ReadUInt32At)) },
             { typeof(float), typeof(SpanByteExtensions).GetMethod(nameof(SpanByteExtensions.ReadFloatAt)) },
+            { typeof(string), typeof(SpanByteExtensions).GetMethod(nameof(SpanByteExtensions.ReadStringFrom)) }
         };
 
         public static Dictionary<Type, int> PrimitiveSizes = new Dictionary<Type, int>
