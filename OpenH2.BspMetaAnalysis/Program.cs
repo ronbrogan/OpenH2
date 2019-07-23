@@ -4,6 +4,8 @@ using System.Linq;
 using System.Text;
 using OpenH2.Translation;
 using OpenH2.Translation.TagData;
+using System.Drawing;
+using System;
 
 namespace OpenH2.BspMetaAnalysis
 {
@@ -13,7 +15,7 @@ namespace OpenH2.BspMetaAnalysis
         {
             var mapNames = new string[]
             {
-                @"D:\Halo 2 Vista Original Maps\03a_oldmombasa.map"
+                @"D:\Halo 2 Vista Original Maps\ascension.map"
             };
 
             var metas = mapNames.Select(s =>
@@ -23,7 +25,7 @@ namespace OpenH2.BspMetaAnalysis
                     return fac.FromFile(fs);
             }).ToDictionary(s => s.Header.Name, s => s);
 
-            var ascension = metas["03a_oldmombasa"];
+            var ascension = metas["ascension"];
 
             var translator = new TagTranslator(ascension);
 
@@ -33,9 +35,57 @@ namespace OpenH2.BspMetaAnalysis
             {
                 var bsp = bsps[i];
 
+                var mtl = CreateMtlFileForBsp(bsp);
+                File.WriteAllText($"D:\\bsp_{i}.mtl", mtl);
+
                 var obj = CreatObjFileForBsp(bsp);
-                File.WriteAllText($"D:\\bsp_{i}.obj", obj);
+                File.WriteAllText($"D:\\bsp_{i}.obj", $"usemtl bsp_{i}.mtl\r\n" + obj);
             }
+        }
+
+        public static string CreateMtlFileForBsp(BspTagData tag)
+        {
+            var sb = new StringBuilder();
+
+            foreach(var mesh in tag.RenderModels)
+            {
+                foreach (var group in mesh.FaceGroups)
+                {
+                    var matId = group[0].MaterialId + 1;
+                    var color = GenerateRandomColor();
+
+                    sb.AppendLine("newmtl " + matId);
+                    sb.AppendLine($"Kd {(color.R / 255f).ToString("0.000000")} {(color.G / 255f).ToString("0.000000")} {(color.B / 255f).ToString("0.000000")}");
+                    sb.AppendLine($"Ka {(color.R / 255f).ToString("0.000000")} {(color.G / 255f).ToString("0.000000")} {(color.B / 255f).ToString("0.000000")}");
+                    sb.AppendLine("Ks 1.000 1.000 1.000");
+                    sb.AppendLine("Ns 10.000");
+                    sb.AppendLine("");
+                }
+            }
+
+
+            return sb.ToString();
+        }
+
+        public static Color GenerateRandomColor()
+        {
+            var mix = Color.Gray;
+
+            Random random = new Random();
+            int red = random.Next(256);
+            int green = random.Next(256);
+            int blue = random.Next(256);
+
+            // mix the color
+            if (mix != null)
+            {
+                red = (red + mix.R) / 2;
+                green = (green + mix.G) / 2;
+                blue = (blue + mix.B) / 2;
+            }
+
+            Color color = Color.FromArgb(255, red, green, blue);
+            return color;
         }
 
         public static string CreatObjFileForBsp(BspTagData tag)
@@ -65,14 +115,24 @@ namespace OpenH2.BspMetaAnalysis
                 }
 
 
-                foreach (var tri in mesh.Faces)
+                foreach (var group in mesh.FaceGroups)
                 {
-                    sb.Append("f");
-                    sb.Append($" {tri.Item1 + vertsWritten}/{tri.Item1 + vertsWritten}/{tri.Item1 + vertsWritten}");
-                    sb.Append($" {tri.Item2 + vertsWritten}/{tri.Item2 + vertsWritten}/{tri.Item2 + vertsWritten}");
-                    sb.Append($" {tri.Item3 + vertsWritten}/{tri.Item3 + vertsWritten}/{tri.Item3 + vertsWritten}");
+                    var matId = group[0].MaterialId + 1;
 
-                    sb.AppendLine("");
+                    sb.AppendLine("g " + matId);
+                    sb.AppendLine("usemtl " + matId);
+                    
+                    foreach(var triangle in group)
+                    {
+                        var indicies = triangle.Indicies;
+
+                        sb.Append("f");
+                        sb.Append($" {indicies.Item1 + vertsWritten}/{indicies.Item1 + vertsWritten}/{indicies.Item1 + vertsWritten}");
+                        sb.Append($" {indicies.Item2 + vertsWritten}/{indicies.Item2 + vertsWritten}/{indicies.Item2 + vertsWritten}");
+                        sb.Append($" {indicies.Item3 + vertsWritten}/{indicies.Item3 + vertsWritten}/{indicies.Item3 + vertsWritten}");
+
+                        sb.AppendLine("");
+                    }
                 }
 
                 sb.AppendLine();

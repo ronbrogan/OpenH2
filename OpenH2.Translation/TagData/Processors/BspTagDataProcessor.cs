@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
 using OpenH2.Core.Extensions;
+using System.Collections.Concurrent;
 
 namespace OpenH2.Translation.TagData.Processors
 {
@@ -26,7 +27,6 @@ namespace OpenH2.Translation.TagData.Processors
                 var chunk = bsp.RenderChunks[c];
 
                 var model = new BspTagData.RenderModel();
-                model.Faces = new (int, int, int)[chunk.TriangleCount];
                 model.Verticies = new Vertex[chunk.VertexCount];
                 tagData.RenderModels[c] = model;
 
@@ -36,20 +36,40 @@ namespace OpenH2.Translation.TagData.Processors
                     continue;
                 }
 
+                var matResource = chunk.Resources[1];
+                var matData = matResource.Data.Span;
+
                 // Process face data
                 var faceResource = chunk.Resources[2];
                 var faceData = faceResource.Data.Span;
-                
-                for(var i = 0; i < chunk.TriangleCount; i++)
-                {
-                    var start = i * 6;
-                    var vert0 = faceData.ReadUInt16At(start);
-                    var vert1 = faceData.ReadUInt16At(start+2);
-                    var vert2 = faceData.ReadUInt16At(start + 4);
 
-                    model.Faces[i] = (vert0, vert1, vert2);
-                }
+                var tempGroups = new ConcurrentDictionary<int, List<Triangle>>();
                 
+                // Entry size is 8
+                for (var i = 0; i < matResource.Size / 8; i++)
+                {
+                    var start = i * 8;
+                    var triangleStart = matData.ReadUInt16At(start) / 3;
+                    var triangleLength = matData.ReadUInt16At(start + 2) / 3;
+                    var shaderId = matData.ReadInt16At(start + 6);
+
+                    // PERF: growing lists
+                    var faceGroup = tempGroups.GetOrAdd(shaderId, (s) => new List<Triangle>());
+
+                    for(var s = 0; s < triangleLength; s++)
+                    {
+                        var indicesStart = (triangleStart * 6) + (s * 6);
+
+                        var vert0 = faceData.ReadUInt16At(indicesStart);
+                        var vert1 = faceData.ReadUInt16At(indicesStart + 2);
+                        var vert2 = faceData.ReadUInt16At(indicesStart + 4);
+
+                        faceGroup.Add(new Triangle { Indicies = (vert0, vert1, vert2), MaterialId = shaderId });
+                    }
+                }
+
+                model.FaceGroups = tempGroups.Values.Select(l => l.ToArray()).ToArray();
+
                 var posResouce = chunk.Resources[6];
                 var posData = posResouce.Data.Span;
 
