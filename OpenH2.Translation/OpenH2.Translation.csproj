@@ -6,6 +6,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\OpenH2.Core\OpenH2.Core.csproj" />
+    <ProjectReference Include="..\OpenH2.Foundation\OpenH2.Foundation.csproj" />
   </ItemGroup>
 
   

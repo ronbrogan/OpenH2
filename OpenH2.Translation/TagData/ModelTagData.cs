@@ -13,6 +13,6 @@ namespace OpenH2.Translation.TagData
 
         public string Name { get; set; }
 
-        public Mesh[] Parts { get; set; }
+        public ModeMesh[] Parts { get; set; }
     }
 }

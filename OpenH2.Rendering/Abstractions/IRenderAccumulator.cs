@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using OpenH2.Core.Architecture;
 using OpenH2.Core.Tags;
+using OpenH2.Foundation;
 
 namespace OpenH2.Rendering.Abstractions
 {
@@ -10,9 +12,11 @@ namespace OpenH2.Rendering.Abstractions
     /// </summary>
     public interface IRenderAccumulator
     {
-        void AddRigidBody(object model);
+        void AddRigidBody(Mesh model);
         void AddTerrain(Scenario.Terrain terrain);
         void AddSkybox(object skybox);
+
+        //void AddUI();
 
         void DrawAndFlush();
     }

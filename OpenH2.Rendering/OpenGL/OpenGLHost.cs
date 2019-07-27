@@ -23,15 +23,19 @@ namespace OpenH2.Rendering.OpenGL
 
         public void CreateWindow()
         {
-            window = new GameWindow(600, 400, GraphicsMode.Default, "OpenH2", GameWindowFlags.Default, DisplayDevice.Default, 4, 0, GraphicsContextFlags.Debug);
+            window = new GameWindow(800, 450, GraphicsMode.Default, "OpenH2", GameWindowFlags.Default, DisplayDevice.Default, 4, 0, GraphicsContextFlags.Debug);
+
+            GL.Enable(EnableCap.DepthTest);
         }
 
-        public void RegisterCallbacks(Action updateCallback, Action renderCallback)
+        public void RegisterCallbacks(Action<double> updateCallback, Action<double> renderCallback)
         {
-            window.UpdateFrame += (s, e) => updateCallback();
+            window.UpdateFrame += (s, e) => updateCallback(e.Time);
             window.RenderFrame += (s, e) =>
             {
-                renderCallback();
+                GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
+
+                renderCallback(e.Time);
                 window.SwapBuffers();
             };
         }

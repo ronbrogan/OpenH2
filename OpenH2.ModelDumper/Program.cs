@@ -95,7 +95,7 @@ namespace OpenH2.ModelDumper
             Console.ReadLine();
         }
 
-        public static string CreatObjFileForMesh(Mesh mesh)
+        public static string CreatObjFileForMesh(ModeMesh mesh)
         {
             var triangles = new List<(int, int, int)>();
 

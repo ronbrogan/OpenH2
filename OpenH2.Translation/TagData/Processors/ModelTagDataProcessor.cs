@@ -17,7 +17,7 @@ namespace OpenH2.Translation.TagData.Processors
 
             var tagData = new ModelTagData(model)
             {
-                Parts = new Mesh[model.Parts.Length],
+                Parts = new ModeMesh[model.Parts.Length],
                 Name = model.Name
             };
 
@@ -31,9 +31,9 @@ namespace OpenH2.Translation.TagData.Processors
             return tagData;
         }
 
-        private static Mesh GetMeshFromPart(Model.Part part)
+        private static ModeMesh GetMeshFromPart(Model.Part part)
         {
-            var mesh = new Mesh();
+            var mesh = new ModeMesh();
 
             var data = part.Data.Span;
 

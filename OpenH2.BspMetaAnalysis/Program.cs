@@ -6,6 +6,7 @@ using OpenH2.Translation;
 using OpenH2.Translation.TagData;
 using System.Drawing;
 using System;
+using System.Collections.Generic;
 
 namespace OpenH2.BspMetaAnalysis
 {
@@ -47,19 +48,29 @@ namespace OpenH2.BspMetaAnalysis
         {
             var sb = new StringBuilder();
 
-            foreach(var mesh in tag.RenderModels)
+            var alreadyGenerated = new HashSet<int>();
+
+            for (var i = 0; i < tag.RenderModels.Length; i++)
             {
-                foreach (var group in mesh.FaceGroups)
+                var model = tag.RenderModels[i];
+
+                foreach (var mesh in model.Meshes)
                 {
-                    var matId = group[0].MaterialId + 1;
+                    var matId = mesh.MaterialIdentifier + 1;
+
+                    if (alreadyGenerated.Contains(matId))
+                        continue;
+
                     var color = GenerateRandomColor();
 
-                    sb.AppendLine("newmtl " + matId);
+                    sb.AppendLine($"newmtl {matId}");
                     sb.AppendLine($"Kd {(color.R / 255f).ToString("0.000000")} {(color.G / 255f).ToString("0.000000")} {(color.B / 255f).ToString("0.000000")}");
                     sb.AppendLine($"Ka {(color.R / 255f).ToString("0.000000")} {(color.G / 255f).ToString("0.000000")} {(color.B / 255f).ToString("0.000000")}");
                     sb.AppendLine("Ks 1.000 1.000 1.000");
                     sb.AppendLine("Ns 10.000");
                     sb.AppendLine("");
+
+                    alreadyGenerated.Add(matId);
                 }
             }
 
@@ -96,35 +107,37 @@ namespace OpenH2.BspMetaAnalysis
 
             for(var i = 0; i < tag.RenderModels.Length; i++)
             {
-                var mesh = tag.RenderModels[i];
+                var model = tag.RenderModels[i];
                 sb.AppendLine($"o BspChunk.{i}");
 
-                foreach (var vert in mesh.Verticies)
+                var verts = model.Meshes.First().Verticies;
+
+                foreach (var vert in verts)
                 {
                     sb.AppendLine($"v {vert.Position.X.ToString("0.000000")} {vert.Position.Y.ToString("0.000000")} {vert.Position.Z.ToString("0.000000")}");
                 }
 
-                foreach (var vert in mesh.Verticies)
+                foreach (var vert in verts)
                 {
-                    sb.AppendLine($"vt {vert.Texture.X.ToString("0.000000")} {vert.Texture.Y.ToString("0.000000")}");
+                    sb.AppendLine($"vt {vert.TexCoords.X.ToString("0.000000")} {vert.TexCoords.Y.ToString("0.000000")}");
                 }
 
-                foreach (var vert in mesh.Verticies)
+                foreach (var vert in verts)
                 {
                     sb.AppendLine($"vn {vert.Normal.X.ToString("0.000000")} {vert.Normal.Y.ToString("0.000000")} {vert.Normal.Z.ToString("0.000000")}");
                 }
 
 
-                foreach (var group in mesh.FaceGroups)
+                foreach (var mesh in model.Meshes)
                 {
-                    var matId = group[0].MaterialId + 1;
+                    var matId = mesh.MaterialIdentifier+1;
 
-                    sb.AppendLine("g " + matId);
-                    sb.AppendLine("usemtl " + matId);
+                    sb.AppendLine($"g BspChunk.{i}.{matId}");
+                    sb.AppendLine($"usemtl {matId}");
                     
-                    foreach(var triangle in group)
+                    for(var j = 0; j < mesh.Indicies.Length; j+=3)
                     {
-                        var indicies = triangle.Indicies;
+                        var indicies = (mesh.Indicies[j], mesh.Indicies[j+1], mesh.Indicies[j+2]);
 
                         sb.Append("f");
                         sb.Append($" {indicies.Item1 + vertsWritten}/{indicies.Item1 + vertsWritten}/{indicies.Item1 + vertsWritten}");
@@ -137,7 +150,7 @@ namespace OpenH2.BspMetaAnalysis
 
                 sb.AppendLine();
 
-                vertsWritten += mesh.Verticies.Length;
+                vertsWritten += verts.Length;
             }
 
             return sb.ToString();

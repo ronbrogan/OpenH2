@@ -1,20 +1,33 @@
 ﻿using OpenH2.Foundation;
 using OpenH2.Rendering.Abstractions;
+using OpenH2.Rendering.Shaders;
 using OpenTK.Graphics.OpenGL;
 using System;
 using System.Collections.Generic;
+using System.Numerics;
 
 namespace OpenH2.Rendering.OpenGL
 {
     public class OpenGLGraphicsAdapter : IGraphicsAdapter
     {
-        private Dictionary<object, uint> meshLookup = new Dictionary<object, uint>();
+        private Dictionary<Mesh, uint> meshLookup = new Dictionary<Mesh, uint>();
+        private int? defaultShader;
+        int MatriciesUniformHandle;
+        private MatriciesUniform MatriciesUniform;
 
-        public void UploadMesh(object mesh)
+        public OpenGLGraphicsAdapter()
         {
-            // TODO use verts/indicies from mesh object
-            var verticies = new List<VertexFormat>();
-            var indicies = new List<int>();
+        }
+
+        public void UseMatricies(MatriciesUniform matricies)
+        {
+            MatriciesUniform = matricies;
+        }
+
+        public void UploadMesh(Mesh mesh)
+        {
+            var verticies = mesh.Verticies;
+            var indicies = mesh.Indicies;
 
             uint vao, vbo, ibo;
 
@@ -23,49 +36,57 @@ namespace OpenH2.Rendering.OpenGL
 
             GL.GenBuffers(1, out vbo);
             GL.BindBuffer(BufferTarget.ArrayBuffer, vbo);
-            GL.BufferData(BufferTarget.ArrayBuffer, (IntPtr)(verticies.Count * VertexFormat.Size), verticies.ToArray(), BufferUsageHint.StaticDraw);
+            GL.BufferData(BufferTarget.ArrayBuffer, (IntPtr)(verticies.Length * VertexFormat.Size), verticies, BufferUsageHint.StaticDraw);
 
             GL.GenBuffers(1, out ibo);
             GL.BindBuffer(BufferTarget.ElementArrayBuffer, ibo);
-            GL.BufferData(BufferTarget.ElementArrayBuffer, (IntPtr)(indicies.Count * sizeof(uint)), indicies.ToArray(), BufferUsageHint.StaticDraw);
+            GL.BufferData(BufferTarget.ElementArrayBuffer, (IntPtr)(indicies.Length * sizeof(uint)), indicies, BufferUsageHint.StaticDraw);
 
             SetupVertexFormatAttributes();
 
             meshLookup.Add(mesh, vao);
         }
 
-        public void DrawMesh(object mesh)
+        public void DrawMesh(Mesh mesh)
         {
-            if(meshLookup.ContainsKey(mesh) == false)
+            if (defaultShader.HasValue == false)
+            {
+                defaultShader = ShaderCompiler.CreateStandardShader();
+            }
+
+            GL.UseProgram(defaultShader.Value);
+
+            if (meshLookup.ContainsKey(mesh) == false)
             {
                 UploadMesh(mesh);
             }
 
+            SetupMatrixUniform();
+
             // TODO shaders, transforms
-
-
+            
+            
 
             BindMesh(mesh);
 
-            // TODO type and indicies from mesh object
-            var type = MeshElementType.TriangleList;
-            var indicies = new List<int>();
+            var type = mesh.ElementType;
+            var indicies = mesh.Indicies;
 
             switch (type)
             {
                 case MeshElementType.TriangleList:
-                    GL.DrawElements(PrimitiveType.Triangles, indicies.Count, DrawElementsType.UnsignedInt, 0);
+                    GL.DrawElements(PrimitiveType.Triangles, indicies.Length, DrawElementsType.UnsignedInt, 0);
                     break;
                 case MeshElementType.TriangleStrip:
-                    GL.DrawElements(PrimitiveType.TriangleStrip, indicies.Count, DrawElementsType.UnsignedInt, 0);
+                    GL.DrawElements(PrimitiveType.TriangleStrip, indicies.Length, DrawElementsType.UnsignedInt, 0);
                     break;
                 case MeshElementType.PolygonList:
-                    GL.DrawElements(PrimitiveType.Polygon, indicies.Count, DrawElementsType.UnsignedInt, 0);
+                    GL.DrawElements(PrimitiveType.Polygon, indicies.Length, DrawElementsType.UnsignedInt, 0);
                     break;
             }
         }
 
-        private void BindMesh(object mesh)
+        private void BindMesh(Mesh mesh)
         {
             GL.BindVertexArray(meshLookup[mesh]);
         }
@@ -91,6 +112,20 @@ namespace OpenH2.Rendering.OpenGL
             // Attributes for VertexFormat.Bitangent
             GL.EnableVertexAttribArray(4);
             GL.VertexAttribPointer(4, 3, VertexAttribPointerType.Float, false, VertexFormat.Size, 44);
+        }
+
+        private void SetupMatrixUniform()
+        {
+            
+            if(MatriciesUniformHandle == default(int))
+                GL.GenBuffers(1, out MatriciesUniformHandle);
+
+            GL.BindBuffer(BufferTarget.UniformBuffer, MatriciesUniformHandle);
+
+            GL.BufferData(BufferTarget.UniformBuffer, MatriciesUniform.Size, ref MatriciesUniform, BufferUsageHint.DynamicDraw);
+
+            GL.BindBufferBase(BufferRangeTarget.UniformBuffer, 0, MatriciesUniformHandle);
+            GL.BindBuffer(BufferTarget.UniformBuffer, 0);
         }
     }
 }

@@ -6,6 +6,7 @@ using System.Linq;
 using System.Numerics;
 using OpenH2.Core.Extensions;
 using System.Collections.Concurrent;
+using OpenH2.Foundation;
 
 namespace OpenH2.Translation.TagData.Processors
 {
@@ -25,94 +26,121 @@ namespace OpenH2.Translation.TagData.Processors
             for(var c = 0; c < bsp.RenderChunks.Length; c++)
             {
                 var chunk = bsp.RenderChunks[c];
+                var verts = ProcessVerticies(chunk);
 
-                var model = new BspTagData.RenderModel();
-                model.Verticies = new Vertex[chunk.VertexCount];
-                tagData.RenderModels[c] = model;
+                var meshes = new List<Mesh>();
 
-                if(chunk.Resources.Length < 9)
+
+                if (chunk.Resources.Length < 9)
                 {
+                    // TODO investigate when differing amount of resources
                     // Skip if we don't have the right data setup
                     continue;
                 }
 
-                var matResource = chunk.Resources[1];
-                var matData = matResource.Data.Span;
+                var meshResource = chunk.Resources[1];
+                var meshData = meshResource.Data.Span;
 
                 // Process face data
                 var faceResource = chunk.Resources[2];
                 var faceData = faceResource.Data.Span;
 
-                var tempGroups = new ConcurrentDictionary<int, List<Triangle>>();
-                
+
+                var lastMeshId = 0;
+                List<int> currentIndicies = new List<int>(chunk.TriangleCount * 3);
+
                 // Entry size is 8
-                for (var i = 0; i < matResource.Size / 8; i++)
+                for (var i = 0; i < meshResource.Size / 8; i++)
                 {
                     var start = i * 8;
-                    var triangleStart = matData.ReadUInt16At(start) / 3;
-                    var triangleLength = matData.ReadUInt16At(start + 2) / 3;
-                    var shaderId = matData.ReadInt16At(start + 6);
+                    var indexStart = meshData.ReadUInt16At(start);
+                    var indexCount = meshData.ReadUInt16At(start + 2);
+                    var meshId = meshData.ReadInt16At(start + 6);
 
-                    // PERF: growing lists
-                    var faceGroup = tempGroups.GetOrAdd(shaderId, (s) => new List<Triangle>());
-
-                    for(var s = 0; s < triangleLength; s++)
+                    if(currentIndicies.Any() && meshId != lastMeshId)
                     {
-                        var indicesStart = (triangleStart * 6) + (s * 6);
+                        var mesh = new Mesh();
+                        mesh.Verticies = verts;
+                        mesh.Indicies = currentIndicies.ToArray();
+                        mesh.MaterialIdentifier = lastMeshId;
+                        meshes.Add(mesh);
 
-                        var vert0 = faceData.ReadUInt16At(indicesStart);
-                        var vert1 = faceData.ReadUInt16At(indicesStart + 2);
-                        var vert2 = faceData.ReadUInt16At(indicesStart + 4);
+                        currentIndicies.Clear();
+                    }
 
-                        faceGroup.Add(new Triangle { Indicies = (vert0, vert1, vert2), MaterialId = shaderId });
+                    lastMeshId = meshId;
+
+                    for (var s = 0; s < indexCount; s++)
+                    {
+                        var indicesStart = (indexStart * 2) + (s * 2);
+
+                        currentIndicies.Add(faceData.ReadUInt16At(indicesStart));
                     }
                 }
 
-                model.FaceGroups = tempGroups.Values.Select(l => l.ToArray()).ToArray();
-
-                var posResouce = chunk.Resources[6];
-                var posData = posResouce.Data.Span;
-
-                for(var i = 0; i < chunk.VertexCount; i++)
+                if (currentIndicies.Any())
                 {
-                    var vert = new Vertex();
+                    var mesh = new Mesh();
+                    mesh.Verticies = verts;
+                    mesh.Indicies = currentIndicies.ToArray();
+                    mesh.MaterialIdentifier = lastMeshId;
+                    meshes.Add(mesh);
 
-                    vert.Position = posData.ReadVec3At(i * 12);
-
-                    model.Verticies[i] = vert;
+                    currentIndicies.Clear();
                 }
 
-                var texResouce = chunk.Resources[7];
-                var texData = texResouce.Data.Span;
-
-                for (var i = 0; i < chunk.VertexCount; i++)
-                {
-                    var vert = model.Verticies[i];
-
-                    vert.Texture = texData.ReadVec2At(i * 8);
-
-                    model.Verticies[i] = vert;
-                }
-
-                var tbnResouce = chunk.Resources[8];
-                var tbnData = tbnResouce.Data.Span;
-
-                for (var i = 0; i < chunk.VertexCount; i++)
-                {
-                    var vert = model.Verticies[i];
-
-                    var start = i * 36;
-                    vert.Tangent = tbnData.ReadVec3At(start);
-                    vert.Bitangent = tbnData.ReadVec3At(start + 12);
-                    vert.Normal = tbnData.ReadVec3At(start + 24);
-
-                    model.Verticies[i] = vert;
-                }
-
-                
+                var model = new BspTagData.RenderModel();
+                model.Meshes = meshes;
+                tagData.RenderModels[c] = model;
             }
 
             return tagData;
+        }
+
+        private static VertexFormat[] ProcessVerticies(Bsp.RenderChunk chunk)
+        {
+            var verts = new VertexFormat[chunk.VertexCount];
+
+            var posResouce = chunk.Resources[6];
+            var posData = posResouce.Data.Span;
+
+            for (var i = 0; i < chunk.VertexCount; i++)
+            {
+                var vert = new VertexFormat();
+
+                vert.Position = posData.ReadVec3At(i * 12);
+
+                verts[i] = vert;
+            }
+
+            var texResouce = chunk.Resources[7];
+            var texData = texResouce.Data.Span;
+
+            for (var i = 0; i < chunk.VertexCount; i++)
+            {
+                var vert = verts[i];
+
+                vert.TexCoords = texData.ReadVec2At(i * 8);
+
+                verts[i] = vert;
+            }
+
+            var tbnResouce = chunk.Resources[8];
+            var tbnData = tbnResouce.Data.Span;
+
+            for (var i = 0; i < chunk.VertexCount; i++)
+            {
+                var vert = verts[i];
+
+                var start = i * 36;
+                vert.Tangent = tbnData.ReadVec3At(start);
+                vert.Bitangent = tbnData.ReadVec3At(start + 12);
+                vert.Normal = tbnData.ReadVec3At(start + 24);
+
+                verts[i] = vert;
+            }
+
+            return verts;
         }
 
         public BspTagData ProcessCollisionGeometry(Bsp bsp, BspTagData tagData)

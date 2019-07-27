@@ -4,7 +4,7 @@ using System.Text;
 
 namespace OpenH2.Core.Types
 {
-    public class Mesh
+    public class ModeMesh
     {
         public uint ShaderCount { get; set; }
         public uint UnknownCount { get; set; }

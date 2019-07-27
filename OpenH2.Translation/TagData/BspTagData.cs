@@ -1,5 +1,6 @@
 ﻿using OpenH2.Core.Tags;
 using OpenH2.Core.Types;
+using OpenH2.Foundation;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 
@@ -15,9 +16,7 @@ namespace OpenH2.Translation.TagData
 
         public class RenderModel
         {
-            public Triangle[][] FaceGroups { get; set; }
-
-            public Vertex[] Verticies { get; set; }
+            public List<Mesh> Meshes { get; set; }
         }
 
         public class PartInfo

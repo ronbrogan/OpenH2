@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using OpenH2.Core.Architecture;
 using OpenH2.Core.Tags;
 using OpenH2.Rendering.Abstractions;
 
@@ -16,12 +17,12 @@ namespace OpenH2.Rendering
         }
 
         // TODO create interface to expose items instead of Visibility using Scenario directly?
-        public void AccumulateVisibleItems(Scenario scenario)
+        public void AccumulateVisibleItems(Scene scene)
         {
-            foreach(var terrain in scenario.Terrains)
-            {
-                accumulator.AddTerrain(terrain);
-            }
+            //foreach(var terrain in scene.Terrains)
+            //{
+            //    accumulator.AddTerrain(terrain);
+            //}
 
             //foreach(var skybox in scenario.Skybox)
             //{
