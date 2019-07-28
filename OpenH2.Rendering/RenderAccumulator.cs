@@ -9,7 +9,7 @@ namespace OpenH2.Rendering
     public class RenderAccumulator : IRenderAccumulator<Bitmap>
     {
         private readonly IGraphicsAdapter adapter;
-        private Dictionary<uint, List<Mesh>> meshesByShader = new Dictionary<uint, List<Mesh>>();
+        private Dictionary<IMaterial<Bitmap>, List<Mesh>> meshesByMaterial = new Dictionary<IMaterial<Bitmap>, List<Mesh>>();
 
         private Dictionary<Mesh, IMaterial<Bitmap>> materialLookups = new Dictionary<Mesh, IMaterial<Bitmap>>();
 
@@ -25,16 +25,15 @@ namespace OpenH2.Rendering
         /// <param name="meshes"></param>
         public void AddRigidBody(Mesh mesh, IMaterial<Bitmap> mat)
         {
-            var shader = default(uint);
             materialLookups[mesh] = mat;
 
-            if (meshesByShader.TryGetValue(shader, out var meshList))
+            if (meshesByMaterial.TryGetValue(mat, out var meshList))
             {
                 meshList.Add(mesh);
             }
             else
             {
-                meshesByShader[shader] = new List<Mesh>() { mesh };
+                meshesByMaterial[mat] = new List<Mesh>() { mesh };
             }
         }
 
@@ -53,9 +52,9 @@ namespace OpenH2.Rendering
         /// </summary>
         public void DrawAndFlush()
         {
-            foreach(var shader in meshesByShader.Keys)
+            foreach(var shader in meshesByMaterial.Keys)
             {
-                var meshes = meshesByShader[shader];
+                var meshes = meshesByMaterial[shader];
 
                 foreach(var mesh in meshes)
                 {
@@ -63,7 +62,7 @@ namespace OpenH2.Rendering
                 }
             }
 
-            meshesByShader.Clear();
+            meshesByMaterial.Clear();
         }
     }
 }

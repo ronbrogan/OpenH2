@@ -46,7 +46,7 @@ namespace OpenH2.Engine.EntityFactories
                     continue;
                 }
 
-                var shaderRef = tag.Shaders[mesh.MaterialIdentifier];
+                var shaderRef = tag.ShaderInfo2s[mesh.MaterialIdentifier];
                 Shader shader;
                 if (map.Tags.TryGetValue(shaderRef.ShaderId, out var shaderTag) == false)
                 {
