@@ -1,4 +1,5 @@
-﻿using OpenH2.Foundation;
+﻿using OpenH2.Core.Tags;
+using OpenH2.Foundation;
 using OpenH2.Rendering.Abstractions;
 using OpenH2.Rendering.Shaders;
 using OpenTK.Graphics.OpenGL;
@@ -11,6 +12,8 @@ namespace OpenH2.Rendering.OpenGL
     public class OpenGLGraphicsAdapter : IGraphicsAdapter
     {
         private Dictionary<Mesh, uint> meshLookup = new Dictionary<Mesh, uint>();
+        private Dictionary<Bitmap, int> textureLookup = new Dictionary<Bitmap, int>();
+        private ITextureBinder textureBinder = new OpenGLTextureBinder();
         private int? defaultShader;
         int MatriciesUniformHandle;
         private MatriciesUniform MatriciesUniform;
@@ -24,7 +27,7 @@ namespace OpenH2.Rendering.OpenGL
             MatriciesUniform = matricies;
         }
 
-        public void UploadMesh(Mesh mesh)
+        public uint UploadMesh(Mesh mesh)
         {
             var verticies = mesh.Verticies;
             var indicies = mesh.Indicies;
@@ -45,29 +48,27 @@ namespace OpenH2.Rendering.OpenGL
             SetupVertexFormatAttributes();
 
             meshLookup.Add(mesh, vao);
+            return vao;
         }
 
-        public void DrawMesh(Mesh mesh)
+        public int UploadTexture(Bitmap map)
         {
-            if (defaultShader.HasValue == false)
-            {
-                defaultShader = ShaderCompiler.CreateStandardShader();
-            }
+            var handle = textureBinder.Bind(map);
 
-            GL.UseProgram(defaultShader.Value);
+            textureLookup[map] = handle;
 
-            if (meshLookup.ContainsKey(mesh) == false)
-            {
-                UploadMesh(mesh);
-            }
+            return handle;
+        }
 
+        public void DrawMesh(Mesh mesh, IMaterial<Bitmap> material)
+        {
+            UseGenericShader();
             SetupMatrixUniform();
 
-            // TODO shaders, transforms
-            
-            
+            // TODO mesh specific uniform            
 
             BindMesh(mesh);
+            BindDiffuseTexture(material);
 
             var type = mesh.ElementType;
             var indicies = mesh.Indicies;
@@ -86,9 +87,38 @@ namespace OpenH2.Rendering.OpenGL
             }
         }
 
+        private void UseGenericShader()
+        {
+            if (defaultShader.HasValue == false)
+            {
+                defaultShader = ShaderCompiler.CreateStandardShader();
+            }
+
+            GL.UseProgram(defaultShader.Value);
+        }
+
+        private void BindDiffuseTexture(IMaterial<Bitmap> mat)
+        {
+            if (mat.DiffuseMap == null)
+                return;
+
+            if(textureLookup.TryGetValue(mat.DiffuseMap, out var handle) == false)
+            {
+                handle = UploadTexture(mat.DiffuseMap);
+            }
+
+            GL.ActiveTexture(TextureUnit.Texture0);
+            GL.BindTexture(TextureTarget.Texture2D, handle);
+        }
+
         private void BindMesh(Mesh mesh)
         {
-            GL.BindVertexArray(meshLookup[mesh]);
+            if (meshLookup.TryGetValue(mesh, out var vaoId) == false)
+            {
+                vaoId = UploadMesh(mesh);
+            }
+
+            GL.BindVertexArray(vaoId);
         }
 
         private static void SetupVertexFormatAttributes()

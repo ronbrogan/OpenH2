@@ -1,6 +1,8 @@
 ﻿using System;
 using System.IO;
 using System.IO.Compression;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Converters;
 using OpenH2.Core.Enums.Texture;
 using OpenH2.Core.Offsets;
 using OpenH2.Core.Parsing;
@@ -18,12 +20,15 @@ namespace OpenH2.Core.Tags
         }
 
         [PrimitiveValue(0)]
+        [JsonConverter(typeof(StringEnumConverter))]
         public TextureType TextureType { get; set; }
 
         [PrimitiveValue(2)]
+        [JsonConverter(typeof(StringEnumConverter))]
         public TextureFormat TextureFormat { get; set; }
 
         [PrimitiveValue(4)]
+        [JsonConverter(typeof(StringEnumConverter))]
         public TextureUsage TextureUsage { get; set; }
 
         [PrimitiveValue(52)]

@@ -20,13 +20,13 @@ namespace OpenH2.Core.Tags
         [PrimitiveValue(4)]
         public uint StemTagId { get; set; }
 
-        //[InternalReferenceValue(12)]
+        [InternalReferenceValue(12)]
         public BitmapInfo[] BitmapInfos { get; set; }
 
-        //[InternalReferenceValue(32)]
+        [InternalReferenceValue(32)]
         public ParameterSet[] Parameters { get; set; }
 
-        //[InternalReferenceValue(44)]
+        [InternalReferenceValue(44)]
         public BitmapReferenceSetting[] BitmapReferenceSettings { get; set; }
 
         [FixedLength(80)]
@@ -34,6 +34,21 @@ namespace OpenH2.Core.Tags
         {
             [PrimitiveValue(4)]
             public uint DiffuseBitmapId { get; set; }
+
+            [PrimitiveValue(12)]
+            public uint EmissiveBitmapId { get; set; }
+
+            [PrimitiveValue(16)]
+            public float Param1 { get; set; }
+
+            [PrimitiveValue(20)]
+            public float Param2 { get; set; }
+
+            [PrimitiveValue(24)]
+            public float Param3 { get; set; }
+
+            [PrimitiveValue(28)]
+            public float Param4 { get; set; }
         }
 
         [FixedLength(124)]

@@ -10,6 +10,7 @@ using OpenH2.Core.Factories;
 using OpenH2.Core.Tags;
 using OpenH2.Engine.Components;
 using OpenH2.Engine.Entities;
+using OpenH2.Engine.EntityFactories;
 using OpenH2.Engine.Stores;
 using OpenH2.Engine.Systems;
 using OpenH2.Foundation.Engine;
@@ -28,7 +29,7 @@ namespace OpenH2.Engine
         IGraphicsHost graphicsHost;
         IGraphicsAdapter graphicsAdapter;
         IGameLoopSource gameLoop;
-        public IRenderAccumulator RenderAccumulator;
+        public IRenderAccumulator<Bitmap> RenderAccumulator;
 
 
         private World world;
@@ -77,15 +78,15 @@ namespace OpenH2.Engine
         {
             var renderables = world.GetGlobalResource<RenderListStore>();
 
-            foreach (var renderable in renderables.Meshes())
+            foreach (var (mesh, mat) in renderables.Meshes())
             {
-                RenderAccumulator.AddRigidBody(renderable);
+                RenderAccumulator.AddRigidBody(mesh, mat);
             }
 
             var cameras = world.Components<CameraComponent>();
             var cam = cameras.First();
 
-            var pos = new Vector3();
+            var pos = cam.PositionOffset;
             var orientation = new Vector3();
 
             if(cam.TryGetSibling<TransformComponent>(out var xform))
@@ -95,14 +96,14 @@ namespace OpenH2.Engine
                 orientation = xform.Orientation;
             }
 
-            var mat = new MatriciesUniform
+            var matrices = new MatriciesUniform
             {
                 ViewMatrix = cam.ViewMatrix,
                 ProjectionMatrix = cam.ProjectionMatrix,
                 ViewPosition = pos
             };
 
-            graphicsAdapter.UseMatricies(mat);
+            graphicsAdapter.UseMatricies(matrices);
 
             RenderAccumulator.DrawAndFlush();
         }
@@ -117,7 +118,7 @@ namespace OpenH2.Engine
             var translator = new TagTranslator(map);
             var bsps = translator.GetAll<BspTagData>();
 
-            destination.AddEntity(new Terrain(bsps.First()));
+            destination.AddEntity(TerrainFactory.FromBspData(map, bsps.First()));
         }
     }
 }

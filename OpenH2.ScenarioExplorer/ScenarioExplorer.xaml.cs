@@ -29,6 +29,11 @@ namespace OpenH2.ScenarioExplorer
 #if DEBUG
             this.AttachDevTools();
 #endif
+
+            if(App.StartupArgs.Length > 0)
+            {
+                LoadScenario(App.StartupArgs[0]);
+            }
         }
 
         private void InitializeComponent()
@@ -60,7 +65,7 @@ namespace OpenH2.ScenarioExplorer
             }
         }
 
-        private void LoadScenario(string path)
+        public void LoadScenario(string path)
         {
             using (var file = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read))
             {

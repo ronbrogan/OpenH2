@@ -26,6 +26,7 @@ namespace OpenH2.Core.Tags
         public ShaderInfo[] Shaders { get; set; }
 
         [InternalReferenceValue(20)]
+        [JsonIgnore]
         public CollisionInfo[] CollisionInfos { get; set; }
 
 
@@ -47,8 +48,8 @@ namespace OpenH2.Core.Tags
         [InternalReferenceValue(156)]
         public RenderChunk[] RenderChunks { get; set; }
 
-        //[InternalReferenceValue(164)]
-        //public object[] MiscObject7Cao { get; set; } 
+        [InternalReferenceValue(164)]
+        public ShaderInfo2[] ShaderInfo2s { get; set; } 
 
         //[InternalReferenceValue(172)]
         //public object[] MiscObject8Cao { get; set; } 
@@ -329,6 +330,16 @@ namespace OpenH2.Core.Tags
                     Three = 4
                 }
             }
+        }
+
+        [FixedLength(32)]
+        public class ShaderInfo2
+        {
+            [PrimitiveValue(12)]
+            public uint ShaderId { get; set; }
+
+            [PrimitiveValue(20)]
+            public uint Offset { get; set; }
         }
     }
 }

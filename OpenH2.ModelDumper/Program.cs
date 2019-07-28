@@ -2,13 +2,11 @@
 using OpenH2.Core.Representations;
 using OpenH2.Core.Tags;
 using OpenH2.Core.Types;
-using OpenH2.Translation;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
-using OpenH2.Translation.TagData;
 
 namespace OpenH2.ModelDumper
 {
@@ -41,32 +39,7 @@ namespace OpenH2.ModelDumper
 
             var processed = 0;
 
-            foreach(var meta in scene.Tags.Values)
-            {
-                var bspMeta = meta as Bsp;
-
-                if (bspMeta == null)
-                    continue;
-
-                var writePath = Path.Combine(outPath, Path.GetDirectoryName(bspMeta.Name));
-                if (Directory.Exists(writePath) == false)
-                {
-                    Directory.CreateDirectory(writePath);
-                }
-
-                var writeName = $"{Path.GetFileName(bspMeta.Name)}";
-                var writePathAndName = Path.Combine(writePath, writeName);
-
-                Console.WriteLine($"Writing {writeName} to {writePath}");
-
-                File.WriteAllBytes(writePathAndName + ".bsp", bspMeta.RawMeta);
-
-                processed++;
-            }
-
-            var translator = new TagTranslator(scene);
-
-            var models = translator.GetAll<ModelTagData>();
+            var models = scene.Tags.Where(t => t.Value is Model).Select(t => t.Value as Model);
 
             foreach (var modelTag in models)
             {
@@ -84,7 +57,7 @@ namespace OpenH2.ModelDumper
                     Console.WriteLine($"Writing {writeName} to {writePath}");
 
                     //File.WriteAllBytes(writePathAndName + ".model", modelTag.Parts[i].RawData);
-                    File.WriteAllText(writePathAndName + ".obj", CreatObjFileForMesh(modelTag.Parts[0]));
+                    File.WriteAllText(writePathAndName + ".obj", CreatObjFileForMesh(modelTag.Parts[0].Mesh));
 
                     processed++;
                 }

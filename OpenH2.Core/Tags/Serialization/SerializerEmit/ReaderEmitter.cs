@@ -290,6 +290,7 @@ namespace OpenH2.Core.Tags.Serialization.SerializerEmit
             gen.Emit(OpCodes.Callvirt, MI.Offset.IOffsetValue); // Get IOffset value
             gen.Emit(OpCodes.Stloc, offset);
 
+
             gen.Emit(OpCodes.Ldloc, cao);
             gen.Emit(OpCodes.Callvirt, MI.Cao.CountGetter); // Get Cao count
             gen.Emit(OpCodes.Stloc, count);
@@ -297,6 +298,7 @@ namespace OpenH2.Core.Tags.Serialization.SerializerEmit
             var i = gen.DeclareLocal(typeof(int));
             var loop = gen.DefineLabel();
             var loopCheck = gen.DefineLabel();
+            var loopEnd = gen.DefineLabel();
 
             // Create item[] result item
             var result = gen.DeclareLocal(prop.Type);
@@ -304,6 +306,13 @@ namespace OpenH2.Core.Tags.Serialization.SerializerEmit
             gen.Emit(OpCodes.Ldloc, count);
             gen.Emit(OpCodes.Newobj, resultCtor);
             gen.Emit(OpCodes.Stloc, result);
+
+            // TODO when deserializing is non-local only, this shouldn't be necessary anymore
+            // If offset is negative, bypass entity creation
+            gen.Emit(OpCodes.Ldloc, offset);
+            gen.Emit(OpCodes.Ldc_I4_0);
+            gen.Emit(OpCodes.Clt);
+            gen.Emit(OpCodes.Brtrue, loopEnd);
 
             // var i = 0; goto loopcheck
             gen.Emit(OpCodes.Ldc_I4_0);
@@ -356,6 +365,8 @@ namespace OpenH2.Core.Tags.Serialization.SerializerEmit
             gen.Emit(OpCodes.Ldloc, count);
             gen.Emit(OpCodes.Clt);
             gen.Emit(OpCodes.Brtrue, loop);
+
+            gen.MarkLabel(loopEnd);
 
             if (tagType.IsClass)
             {

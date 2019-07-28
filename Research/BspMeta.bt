@@ -135,9 +135,10 @@ struct OffsetSection {
 struct ShaderReference {
     char tag[4];
     int ffs;
-    int value;
+    ushort value;
+    ushort ffs2;
     char oldTag[4];
-    int value2;
+    uint ID;
 };
 
 struct UnknownLongsObj {
@@ -242,9 +243,9 @@ struct ShaderRef {
     char tag[4];
     int ffs1;
     char tag2[4];
-    int val4;
-    int val5;
-    int val6;
+    uint shaderId;
+    int count;
+    InternalOffset offset;
     int val7;
     int val8;
 

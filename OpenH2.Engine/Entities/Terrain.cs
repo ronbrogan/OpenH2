@@ -28,6 +28,11 @@ namespace OpenH2.Engine.Entities
             };
         }
 
+        public void SetComponents(Component[] components)
+        {
+            this.Components = components;
+        }
+
         public Terrain(BspTagData bsp)
         {
             var comp = new RenderModelComponent(this);

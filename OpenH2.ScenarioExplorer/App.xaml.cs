@@ -8,10 +8,14 @@ namespace OpenH2.ScenarioExplorer
 {
     class App : Application
     {
+        public static string[] StartupArgs;
+
+
         [STAThread]
         static void Main(string[] args)
         {
             var hexViewer = typeof(HexViewer);
+            StartupArgs = args;
 
             BuildAvaloniaApp().Start<ScenarioExplorer>();
         }

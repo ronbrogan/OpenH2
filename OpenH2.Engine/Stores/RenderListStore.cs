@@ -1,4 +1,5 @@
-﻿using OpenH2.Engine.Components;
+﻿using OpenH2.Core.Tags;
+using OpenH2.Engine.Components;
 using OpenH2.Foundation;
 using System;
 using System.Collections.Generic;
@@ -8,7 +9,7 @@ namespace OpenH2.Engine.Stores
 {
     public class RenderListStore
     {
-        private List<Mesh> meshes = new List<Mesh>();
+        private List<(Mesh,IMaterial<Bitmap>)> meshes = new List<(Mesh, IMaterial<Bitmap>)>();
 
 
         public void Clear()
@@ -20,11 +21,11 @@ namespace OpenH2.Engine.Stores
         {
             foreach(var mesh in component.Meshes)
             {
-                meshes.Add(mesh);
+                meshes.Add((mesh, component.Materials[mesh.MaterialIdentifier]));
             }
         }
 
-        public Mesh[] Meshes()
+        public (Mesh, IMaterial<Bitmap>)[] Meshes()
         {
             return meshes.ToArray();
         }

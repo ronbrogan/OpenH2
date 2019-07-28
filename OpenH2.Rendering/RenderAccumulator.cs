@@ -6,10 +6,12 @@ using OpenH2.Rendering.Abstractions;
 
 namespace OpenH2.Rendering
 {
-    public class RenderAccumulator : IRenderAccumulator
+    public class RenderAccumulator : IRenderAccumulator<Bitmap>
     {
         private readonly IGraphicsAdapter adapter;
         private Dictionary<uint, List<Mesh>> meshesByShader = new Dictionary<uint, List<Mesh>>();
+
+        private Dictionary<Mesh, IMaterial<Bitmap>> materialLookups = new Dictionary<Mesh, IMaterial<Bitmap>>();
 
         public RenderAccumulator(IGraphicsAdapter graphicsAdapter)
         {
@@ -21,9 +23,10 @@ namespace OpenH2.Rendering
         /// Should be called for each object that to be drawn each frame
         /// </summary>
         /// <param name="meshes"></param>
-        public void AddRigidBody(Mesh mesh)
+        public void AddRigidBody(Mesh mesh, IMaterial<Bitmap> mat)
         {
             var shader = default(uint);
+            materialLookups[mesh] = mat;
 
             if (meshesByShader.TryGetValue(shader, out var meshList))
             {
@@ -56,7 +59,7 @@ namespace OpenH2.Rendering
 
                 foreach(var mesh in meshes)
                 {
-                    this.adapter.DrawMesh(mesh);
+                    this.adapter.DrawMesh(mesh, materialLookups[mesh]);
                 }
             }
 

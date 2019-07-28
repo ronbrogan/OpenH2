@@ -40,5 +40,16 @@ namespace OpenH2.Core.Extensions
         {
             return vec.Y;
         }
+
+        public static Vector3 RandomColor(int shade = 128)
+        {
+            var mix = new Vector3(shade, shade, shade);
+
+            Random random = new Random();
+
+            var rando = new Vector3(random.Next(256), random.Next(256), random.Next(256));
+
+            return (mix + rando) / 512;
+        }
     }
 }

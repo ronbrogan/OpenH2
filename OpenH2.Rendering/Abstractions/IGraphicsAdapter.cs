@@ -1,4 +1,5 @@
-﻿using OpenH2.Foundation;
+﻿using OpenH2.Core.Tags;
+using OpenH2.Foundation;
 using OpenH2.Rendering.Shaders;
 using System;
 using System.Collections.Generic;
@@ -12,8 +13,6 @@ namespace OpenH2.Rendering.Abstractions
     public interface IGraphicsAdapter
     {
         void UseMatricies(MatriciesUniform matricies);
-
-        void UploadMesh(Mesh mesh);
-        void DrawMesh(Mesh mesh);
+        void DrawMesh(Mesh mesh, IMaterial<Bitmap> material);
     }
 }

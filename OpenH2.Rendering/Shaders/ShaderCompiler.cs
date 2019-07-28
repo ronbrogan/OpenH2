@@ -10,65 +10,7 @@ namespace OpenH2.Rendering.Shaders
     {
         public static int CreateStandardShader()
         {
-            var vertexSource = @"#version 450
-
-
-layout(std140, binding = 0) uniform MatrixUniform
-{
-	mat4 ViewMatrix;
-	mat4 ProjectionMatrix;
-	vec3 ViewPosition;
-} Matricies;
-
-
-layout(location = 0) in vec3 local_position;
-layout(location = 1) in vec2 in_texture;
-layout(location = 2) in vec3 local_normal;
-layout(location = 3) in vec3 tangent;
-layout(location = 4) in vec3 bitangent;
-
-out vec3 vertex_color;
-out vec3 world_pos;
-out vec3 world_normal;
-
-
-void main() {
-    mat3 modelmatrix = mat3(1.0);
-
-    vec4 pos = Matricies.ProjectionMatrix * Matricies.ViewMatrix * mat4(modelmatrix) * vec4(local_position, 1);
-    world_pos = local_position;
-
-    world_normal = local_normal;
-
-    vertex_color = vec3(0.5f,1,0.5f);
-    gl_Position = pos;
-}";
-
-            var fragmentSource = @"#version 450
-
-in vec3 world_pos;
-in vec3 world_normal;
-in vec3 vertex_color;
-out vec4 out_color;
-
-vec3 light_pos = vec3(50, 50, 500);
-vec3 light_color = vec3(1,1,1);
-
-void main() {
-    float ambientStrength = 0.2;
-    vec3 ambient = ambientStrength * light_color;
-
-    vec3 norm = normalize(world_normal);
-    vec3 lightDir = normalize(light_pos - world_pos);  
-
-    float diff = max(dot(norm, lightDir), 0.0);
-    vec3 diffuse = diff * light_color;
-
-    vec3 result = (ambient + diffuse) * vertex_color;
-    out_color = vec4(result, 1.0);
-}";
-
-            return CreateShader("Standard", vertexSource, fragmentSource);
+            return CreateShader("Generic");
         }
 
         public static int CreateShader(string shaderName)

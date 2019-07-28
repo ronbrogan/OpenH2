@@ -23,6 +23,10 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\OpenH2.Foundation\OpenH2.Foundation.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Reference Include="System.Buffers">
       <HintPath>C:\Program Files\dotnet\sdk\NuGetFallbackFolder\microsoft.netcore.app\2.1.0\ref\netcoreapp2.1\System.Buffers.dll</HintPath>
     </Reference>

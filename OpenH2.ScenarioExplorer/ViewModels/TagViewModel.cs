@@ -14,10 +14,10 @@ namespace OpenH2.ScenarioExplorer.ViewModels
     [AddINotifyPropertyChangedInterface]
     public class TagViewModel
     {
-        public TagViewModel(uint id, string tag)
+        public TagViewModel(uint id, string tag, string name)
         {
             this.Id = id;
-            this.Name = tag;
+            this.Name = tag + (name != null ? " - " + name : string.Empty);
         }
 
         public uint Id { get; set; }
