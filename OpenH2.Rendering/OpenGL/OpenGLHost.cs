@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Runtime.InteropServices;
+using OpenH2.Foundation.Engine;
 using OpenH2.Rendering.Abstractions;
 using OpenTK;
 using OpenTK.Graphics;
@@ -43,6 +45,23 @@ namespace OpenH2.Rendering.OpenGL
         public void Start(int updatesPerSecond, int framesPerSecond)
         {
             window.Run(updatesPerSecond, framesPerSecond);
+        }
+
+        public void EnableConsoleDebug()
+        {
+            GL.Enable(EnableCap.DebugOutput);
+
+            GL.DebugMessageCallback(callbackWrapper, IntPtr.Zero);
+        }
+
+        private static DebugProc callbackWrapper = DebugCallbackF;
+        private static void DebugCallbackF(DebugSource source, DebugType type, int id, DebugSeverity severity, int length, IntPtr message, IntPtr userParam)
+        {
+            if (severity == DebugSeverity.DebugSeverityNotification)
+                return;
+
+            string msg = Marshal.PtrToStringAnsi(message, length);
+            Console.WriteLine(msg);
         }
     }
 }

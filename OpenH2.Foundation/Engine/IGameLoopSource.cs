@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace OpenH2.Rendering.Abstractions
+namespace OpenH2.Foundation.Engine
 {
     public interface IGameLoopSource
     {

@@ -24,7 +24,6 @@ namespace OpenH2.TextureViewer
 
         private static Dictionary<int, int> BitmTextureIdLookup = new Dictionary<int, int>();
 
-        private static bool Initialized { get; set; }
         public static int MatriciesUniformHandle;
         public static MatriciesUniform MatriciesUniform;
         private static uint QuadMeshId;
@@ -56,39 +55,56 @@ namespace OpenH2.TextureViewer
                 scene = factory.FromFile(map);
             }
 
-            var translator = new TagTranslator(scene);
-
             Bitmaps = scene.Tags.Where(t => t.Value is Bitmap).Select(t => t.Value as Bitmap).ToArray();
 
             var host = new OpenGLHost();
-
-            var graphicsHost = host;
-            var gameLoop = host;
-            var graphicsAdapter = host.GetAdapter();
-
             host.CreateWindow();
             Setup();
 
-            gameLoop.RegisterCallbacks(Update, Render);
-            gameLoop.Start(30, 30);
+            host.RegisterCallbacks(Update, Render);
+            host.Start(30, 30);
         }
 
-        private static bool downLastFrame = false;
+        private static DebugProc callback = DebugCallbackF;
+        public static void Setup()
+        {
+            GL.DebugMessageCallback(callback, (IntPtr.Zero));
+
+            GL.Enable(EnableCap.DebugOutput);
+            GL.Enable(EnableCap.Blend);
+            GL.Enable(EnableCap.DepthTest);
+            GL.Enable(EnableCap.Multisample);
+            GL.Enable(EnableCap.CullFace);
+            GL.BlendFunc(BlendingFactor.SrcAlpha, BlendingFactor.OneMinusSrcAlpha);
+
+            UploadQuadMesh();
+            MatriciesUniform = new MatriciesUniform()
+            {
+                ProjectionMatrix = Matrix4x4.CreateOrthographic(3.55555f, 2, 0, 10),
+                ViewMatrix = Matrix4x4.Identity,
+                ViewPosition = Vector3.Zero
+            };
+
+            ShaderHandle = ShaderCompiler.CreateShader("TextureViewer");
+        }
+
+        static KeyboardState keyboardState, lastKeyboardState;
         private static void Update(double time)
         {
             // read button down, increment CurrentBitmap
-            var kb = Keyboard.GetState(0);
-            if(kb.IsKeyDown(Key.Space) && !downLastFrame)
+            keyboardState = Keyboard.GetState(0);
+            if (KeyPress(Key.Left))
             {
-                SetNextBitmap();
-                downLastFrame = true;
+                SetNextBitmap(-1);
             }
-            else
+            if (KeyPress(Key.Right))
             {
-                downLastFrame = false;
+                SetNextBitmap(1);
             }
 
-            if(BitmTextureIdLookup.TryGetValue(CurrentBitmap, out var handle) == false)
+            lastKeyboardState = keyboardState;
+
+            if (BitmTextureIdLookup.TryGetValue(CurrentBitmap, out var handle) == false)
             {
                 handle = textureBinder.Bind(Bitmaps[CurrentBitmap]);
                 BitmTextureIdLookup[CurrentBitmap] = handle;
@@ -98,13 +114,18 @@ namespace OpenH2.TextureViewer
             GL.BindTexture(TextureTarget.Texture2D, handle);
         }
 
-        private static void SetNextBitmap()
+        public static bool KeyPress(Key key)
+        {
+            return (keyboardState[key] && (keyboardState[key] != lastKeyboardState[key]));
+        }
+
+        private static void SetNextBitmap(int offset)
         {
             Bitmap candidate;
 
             do
             {
-                CurrentBitmap++;
+                CurrentBitmap += offset;
 
                 if (CurrentBitmap == Bitmaps.Length)
                 {
@@ -141,43 +162,6 @@ namespace OpenH2.TextureViewer
                     GL.DrawElements(PrimitiveType.Polygon, indicies.Length, DrawElementsType.UnsignedInt, 0);
                     break;
             }
-        }
-
-
-        private static DebugProc callback = DebugCallbackF;
-        public static void Setup()
-        {
-            GL.DebugMessageCallback(callback, (IntPtr.Zero));
-
-            GL.Enable(EnableCap.DebugOutput);
-            GL.Enable(EnableCap.Blend);
-            GL.Enable(EnableCap.DepthTest);
-            GL.Enable(EnableCap.Multisample);
-            GL.Enable(EnableCap.CullFace);
-            GL.BlendFunc(BlendingFactor.SrcAlpha, BlendingFactor.OneMinusSrcAlpha);
-
-
-            var n = 0;
-            GL.GetInteger(GetPName.NumExtensions, out n);
-            for (var i = 0; i < n; i++)
-            {
-                var extension = GL.GetString(StringNameIndexed.Extensions, i);
-                //Console.WriteLine("Ext: " + extension);
-            }
-
-            UploadQuadMesh();
-            MatriciesUniform = new MatriciesUniform()
-            {
-                ProjectionMatrix = Matrix4x4.CreateOrthographic(3.55555f, 2, 0, 10),
-                ViewMatrix = Matrix4x4.Identity,
-                ViewPosition = Vector3.Zero
-            };
-
-            ShaderHandle = ShaderCompiler.CreateShader("TextureViewer");
-
-            
-
-            Initialized = true;
         }
 
         public static void UploadQuadMesh()
@@ -241,7 +225,6 @@ namespace OpenH2.TextureViewer
 
         private static void SetupMatrixUniform()
         {
-
             if (MatriciesUniformHandle == default(int))
                 GL.GenBuffers(1, out MatriciesUniformHandle);
 

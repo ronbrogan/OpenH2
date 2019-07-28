@@ -8,5 +8,6 @@ namespace OpenH2.Rendering.Abstractions
     {
         void CreateWindow();
         IGraphicsAdapter GetAdapter();
+        void EnableConsoleDebug();
     }
 }
