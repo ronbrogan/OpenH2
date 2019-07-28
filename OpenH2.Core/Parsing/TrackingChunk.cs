@@ -38,5 +38,10 @@ namespace OpenH2.Core.Parsing
         {
             return new Memory<byte>(this.Span.ToArray());
         }
+
+        public byte[] ToArray()
+        {
+            return this.Span.ToArray();
+        }
     }
 }

@@ -24,24 +24,14 @@ namespace OpenH2.Translation.TagData.Processors
             {
                 var lod = bitmap.LevelsOfDetail[i];
 
-                // TODO: Implement shared map retrieval
-                if (lod.Offset.Location != DataFile.Local)
-                    continue;
-                else if (lod.Data.IsEmpty)
+                if (lod.Data.IsEmpty)
                     continue;
 
+                var ms = new MemoryStream();
+                BitmUtils.WriteTextureHeader(bitmap, ms);
+                ms.Write(lod.Data.ToArray(), 0, lod.Data.Length);
 
-
-                // Need to offset 2 bytes into data to bypass zlib header for compatibility with DeflateStream
-                using (var inputStream = new MemoryStream(lod.Data.Span.Slice(2).ToArray()))
-                using (var decompress = new DeflateStream(inputStream, CompressionMode.Decompress))
-                using (var outputStream = new MemoryStream((int)inputStream.Length))
-                {
-                    BitmUtils.WriteTextureHeader(bitmap, outputStream);
-                    decompress.CopyTo(outputStream);
-
-                    tagData.Levels[i] = new Memory<byte>(outputStream.GetBuffer()).Slice(0, (int)outputStream.Length);
-                }
+                tagData.Levels[i] = ms.ToArray();
             }
 
             return tagData;

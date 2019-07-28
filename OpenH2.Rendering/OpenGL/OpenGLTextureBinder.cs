@@ -6,7 +6,6 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.Drawing.Imaging;
 using System.IO;
-using System.IO.Compression;
 using PixelFormat = OpenTK.Graphics.OpenGL.PixelFormat;
 
 namespace OpenH2.Rendering.OpenGL
@@ -62,23 +61,11 @@ namespace OpenH2.Rendering.OpenGL
             var height = bitm.Height;
 
             var topLod = bitm.LevelsOfDetail[0];
-            byte[] lodBytes;
-
-            // TODO move decompression to Bitmap external data method
-            using (var inputStream = new MemoryStream(topLod.Data.Span.Slice(2).ToArray()))
-            using (var decompress = new DeflateStream(inputStream, CompressionMode.Decompress))
-            using (var outputStream = new MemoryStream((int)inputStream.Length))
-            {
-                decompress.CopyTo(outputStream);
-
-                outputStream.Seek(0, SeekOrigin.Begin);
-                lodBytes = outputStream.ToArray();
-            }
 
             GL.GenTextures(1, out int texHandle);
             GL.BindTexture(TextureTarget.Texture2D, texHandle);
 
-            UploadMips(lodBytes, bitm.TextureFormat, width, height, bitm.MipMapCount == 0 ? bitm.MipMapCount2 : bitm.MipMapCount);
+            UploadMips(topLod.Data, bitm.TextureFormat, width, height, bitm.MipMapCount == 0 ? bitm.MipMapCount2 : bitm.MipMapCount);
 
             SetCommonTextureParams();
             CheckTextureBindErrors();

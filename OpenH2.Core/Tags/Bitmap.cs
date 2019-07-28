@@ -1,4 +1,6 @@
 ﻿using System;
+using System.IO;
+using System.IO.Compression;
 using OpenH2.Core.Enums.Texture;
 using OpenH2.Core.Offsets;
 using OpenH2.Core.Parsing;
@@ -92,10 +94,21 @@ namespace OpenH2.Core.Tags
 
                 lod.Offset = new NormalOffset((int)this.LodOffsets[i]);
                 lod.Size = this.LodSizes[i];
-
+                
+                // TODO: support out-of-file data
                 if (lod.Offset.Location == Enums.DataFile.Local && lod.Offset.Value != 0 && lod.Offset.Value != int.MaxValue && lod.Size != 0)
                 {
-                    lod.Data = sceneReader.Chunk(lod.Offset.Value, (int)lod.Size, "Bitmap").AsMemory();
+                    // Need to offset 2 bytes into data to bypass zlib header for compatibility with DeflateStream
+                    var data = sceneReader.Chunk(lod.Offset.Value + 2, (int)lod.Size, "Bitmap").ToArray();
+
+                    using (var inputStream = new MemoryStream(data))
+                    using (var decompress = new DeflateStream(inputStream, CompressionMode.Decompress))
+                    using (var outputStream = new MemoryStream((int)inputStream.Length))
+                    {
+                        decompress.CopyTo(outputStream);
+
+                        lod.Data = new Memory<byte>(outputStream.GetBuffer()).Slice(0, (int)outputStream.Length);
+                    }
                 }
 
                 LevelsOfDetail[i] = lod;

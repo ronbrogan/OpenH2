@@ -63,7 +63,6 @@ namespace OpenH2.Translation.TagData.Processors
                         var byteStart = (indexStart + j) * 2;
 
                         mesh.Indicies[j] = faceData.ReadUInt16At(byteStart);
-
                     }
 
                     meshes.Add(mesh);
