@@ -6,11 +6,11 @@ using System.Collections.Generic;
 namespace OpenH2.Core.Representations
 {
     /// This class is the in-memory representation of a .map file
-    public class Scene
+    public class H2vMap
     {
         public Memory<byte> RawData { get; set; }
 
-        public SceneHeader Header { get; set; }
+        public H2vMapHeader Header { get; set; }
 
         public IndexHeader IndexHeader { get; set; }
 
@@ -26,7 +26,7 @@ namespace OpenH2.Core.Representations
 
         public int SecondaryMagic { get; set; }
 
-        internal Scene()
+        internal H2vMap()
         {
         }
 

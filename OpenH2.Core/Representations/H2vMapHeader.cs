@@ -2,7 +2,7 @@
 
 namespace OpenH2.Core.Representations
 {
-    public class SceneHeader
+    public class H2vMapHeader
     {
         public string FileHead { get; set; }
         public int Version { get; set; }

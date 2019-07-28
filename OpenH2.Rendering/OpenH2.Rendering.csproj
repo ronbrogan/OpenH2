@@ -13,4 +13,17 @@
     <ProjectReference Include="..\OpenH2.Foundation\OpenH2.Foundation.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Shaders\Generic\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="Shaders\TextureViewer\TextureViewer.frag">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="Shaders\TextureViewer\TextureViewer.vert">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
 </Project>

@@ -95,7 +95,7 @@ namespace OpenH2.Engine
 
             var mat = new MatriciesUniform
             {
-                ViewMatrix = cam.CalculateViewMatrix(pos, orientation),
+                ViewMatrix = cam.ViewMatrix,
                 ProjectionMatrix = cam.ProjectionMatrix,
                 ViewPosition = pos
             };
@@ -109,7 +109,7 @@ namespace OpenH2.Engine
         {
             var mapPath = @"D:\Halo 2 Vista Original Maps\ascension.map";
 
-            var factory = new SceneFactory();
+            var factory = new MapFactory();
             var map = factory.FromFile(File.OpenRead(mapPath));
 
             var translator = new TagTranslator(map);

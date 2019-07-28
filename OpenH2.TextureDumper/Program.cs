@@ -26,11 +26,11 @@ namespace OpenH2.TextureDumper
                 return;
             }
 
-            Scene scene = null;
+            H2vMap scene = null;
 
             using (var map = new FileStream(mapPath, FileMode.Open, FileAccess.Read, FileShare.Read))
             {
-                var factory = new SceneFactory();
+                var factory = new MapFactory();
                 scene = factory.FromFile(map);
             }
 

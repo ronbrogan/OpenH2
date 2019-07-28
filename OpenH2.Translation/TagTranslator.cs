@@ -8,10 +8,10 @@ namespace OpenH2.Translation
 {
     public class TagTranslator
     {
-        private readonly Scene scene;
+        private readonly H2vMap scene;
         private readonly TagDataCache cache;
 
-        public TagTranslator(Scene scene)
+        public TagTranslator(H2vMap scene)
         {
             this.scene = scene;
             this.cache = new TagDataCache();

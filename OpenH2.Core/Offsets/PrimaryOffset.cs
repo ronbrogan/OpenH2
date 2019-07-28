@@ -4,10 +4,10 @@ namespace OpenH2.Core.Offsets
 {
     public class PrimaryOffset : IOffset
     {
-        private Scene scene;
+        private H2vMap scene;
         private int offset;
 
-        public PrimaryOffset(Scene scene, int offsetValue)
+        public PrimaryOffset(H2vMap scene, int offsetValue)
         {
             this.scene = scene;
             this.offset = offsetValue;

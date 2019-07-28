@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Text;
 using OpenTK.Graphics.OpenGL;
 
@@ -50,11 +51,11 @@ in vec3 world_normal;
 in vec3 vertex_color;
 out vec4 out_color;
 
-vec3 light_pos = vec3(10, 10, 100);
+vec3 light_pos = vec3(50, 50, 500);
 vec3 light_color = vec3(1,1,1);
 
 void main() {
-    float ambientStrength = 0.1;
+    float ambientStrength = 0.2;
     vec3 ambient = ambientStrength * light_color;
 
     vec3 norm = normalize(world_normal);
@@ -68,6 +69,24 @@ void main() {
 }";
 
             return CreateShader("Standard", vertexSource, fragmentSource);
+        }
+
+        public static int CreateShader(string shaderName)
+        {
+            string vertSrc;
+            string fragSrc;
+
+            var path = Path.Combine(Directory.GetCurrentDirectory(), "Shaders", shaderName);
+
+            if(Directory.Exists(path) == false)
+            {
+                throw new Exception("Couldn't find shader folder: " + path);
+            }
+
+            vertSrc = File.ReadAllText(Path.Combine(path, shaderName + ".vert"));
+            fragSrc = File.ReadAllText(Path.Combine(path, shaderName + ".frag"));
+
+            return CreateShader(shaderName, vertSrc, fragSrc);
         }
 
         public static int CreateShader(string shaderName, string vertexSource, string fragmentSource)

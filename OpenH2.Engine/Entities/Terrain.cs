@@ -12,8 +12,6 @@ namespace OpenH2.Engine.Entities
 {
     public class Terrain : Entity
     {
-
-
         public Terrain()
         {
             var renderComponent = new RenderModelComponent(this);

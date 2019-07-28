@@ -23,7 +23,7 @@ namespace OpenH2.Core.Tests
         {
             var mapStream = new FileStream(ascensionPath, FileMode.Open, FileAccess.Read, FileShare.Read);
 
-            var factory = new SceneFactory();
+            var factory = new MapFactory();
 
             var sw = new Stopwatch();
             sw.Restart();
@@ -54,7 +54,7 @@ namespace OpenH2.Core.Tests
         {
             var mapStream = new FileStream(ascensionPath, FileMode.Open, FileAccess.Read, FileShare.Read);
 
-            var factory = new SceneFactory();
+            var factory = new MapFactory();
 
             var scene = factory.FromFile(mapStream);
 

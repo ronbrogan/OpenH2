@@ -22,7 +22,7 @@ namespace OpenH2.ScenarioExplorer.ViewModels
 
         public ScenarioViewModel() { }
 
-        public ScenarioViewModel(Scene scene)
+        public ScenarioViewModel(H2vMap scene)
         {
             var sceneData = scene.RawData.Span;
 

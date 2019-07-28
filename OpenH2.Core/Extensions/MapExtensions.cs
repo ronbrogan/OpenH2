@@ -3,9 +3,9 @@ using OpenH2.Core.Representations;
 
 namespace OpenH2.Core.Extensions
 {
-    public static class SceneExtensions
+    public static class MapExtensions
     {
-        public static PrimaryOffset PrimaryOffset(this Scene scene, int value)
+        public static PrimaryOffset PrimaryOffset(this H2vMap scene, int value)
         {
             return new PrimaryOffset(scene, value);
         }
