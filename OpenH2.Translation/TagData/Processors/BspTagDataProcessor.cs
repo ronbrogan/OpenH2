@@ -28,9 +28,6 @@ namespace OpenH2.Translation.TagData.Processors
                 var chunk = bsp.RenderChunks[c];
                 var verts = ProcessVerticies(chunk);
 
-                var meshes = new List<Mesh>();
-
-
                 if (chunk.Resources.Length < 9)
                 {
                     // TODO investigate when differing amount of resources
@@ -38,55 +35,38 @@ namespace OpenH2.Translation.TagData.Processors
                     continue;
                 }
 
-                var meshResource = chunk.Resources[1];
-                var meshData = meshResource.Data.Span;
+                var partResource = chunk.Resources[0];
+                var partData = partResource.Data.Span;
+                var partCount = partData.Length / 72;
 
                 // Process face data
                 var faceResource = chunk.Resources[2];
                 var faceData = faceResource.Data.Span;
 
+                var meshes = new List<Mesh>(partCount);
 
-                var lastMeshId = 0;
-                List<int> currentIndicies = new List<int>(chunk.TriangleCount * 3);
-
-                // Entry size is 8
-                for (var i = 0; i < meshResource.Size / 8; i++)
+                for (var i = 0; i < partCount; i++)
                 {
-                    var start = i * 8;
-                    var indexStart = meshData.ReadUInt16At(start);
-                    var indexCount = meshData.ReadUInt16At(start + 2);
-                    var meshId = meshData.ReadInt16At(start + 6);
+                    var start = i * 72;
 
-                    if(currentIndicies.Any() && meshId != lastMeshId)
-                    {
-                        var mesh = new Mesh();
-                        mesh.Verticies = verts;
-                        mesh.Indicies = currentIndicies.ToArray();
-                        mesh.MaterialIdentifier = lastMeshId;
-                        meshes.Add(mesh);
+                    var matId = partData.ReadUInt16At(start + 4);
+                    var indexStart = partData.ReadUInt16At(start + 6);
+                    var indexCount = partData.ReadUInt16At(start + 8);
 
-                        currentIndicies.Clear();
-                    }
-
-                    lastMeshId = meshId;
-
-                    for (var s = 0; s < indexCount; s++)
-                    {
-                        var indicesStart = (indexStart * 2) + (s * 2);
-
-                        currentIndicies.Add(faceData.ReadUInt16At(indicesStart));
-                    }
-                }
-
-                if (currentIndicies.Any())
-                {
                     var mesh = new Mesh();
                     mesh.Verticies = verts;
-                    mesh.Indicies = currentIndicies.ToArray();
-                    mesh.MaterialIdentifier = lastMeshId;
-                    meshes.Add(mesh);
+                    mesh.Indicies = new int[indexCount];
+                    mesh.MaterialIdentifier = matId;
 
-                    currentIndicies.Clear();
+                    for(var j = 0; j < indexCount; j++)
+                    {
+                        var byteStart = (indexStart + j) * 2;
+
+                        mesh.Indicies[j] = faceData.ReadUInt16At(byteStart);
+
+                    }
+
+                    meshes.Add(mesh);
                 }
 
                 var model = new BspTagData.RenderModel();
