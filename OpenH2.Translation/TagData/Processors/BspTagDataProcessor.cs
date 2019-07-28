@@ -1,12 +1,9 @@
-﻿using System;
+﻿using OpenH2.Core.Extensions;
 using OpenH2.Core.Tags;
-using OpenH2.Core.Types;
+using OpenH2.Foundation;
+using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Numerics;
-using OpenH2.Core.Extensions;
-using System.Collections.Concurrent;
-using OpenH2.Foundation;
 
 namespace OpenH2.Translation.TagData.Processors
 {
@@ -21,9 +18,17 @@ namespace OpenH2.Translation.TagData.Processors
                 throw new ArgumentException("Tag must be a Bsp", nameof(tag));
 
             var tagData = new BspTagData(bsp);
+
+            ProcessRenderChunks(bsp, tagData);
+
+            return tagData;
+        }
+
+        private static void ProcessRenderChunks(Bsp bsp, BspTagData tagData)
+        {
             tagData.RenderModels = new BspTagData.RenderModel[bsp.RenderChunks.Length];
 
-            for(var c = 0; c < bsp.RenderChunks.Length; c++)
+            for (var c = 0; c < bsp.RenderChunks.Length; c++)
             {
                 var chunk = bsp.RenderChunks[c];
                 var verts = ProcessVerticies(chunk);
@@ -58,7 +63,7 @@ namespace OpenH2.Translation.TagData.Processors
                     mesh.Indicies = new int[indexCount];
                     mesh.MaterialIdentifier = matId;
 
-                    for(var j = 0; j < indexCount; j++)
+                    for (var j = 0; j < indexCount; j++)
                     {
                         var byteStart = (indexStart + j) * 2;
 
@@ -72,9 +77,8 @@ namespace OpenH2.Translation.TagData.Processors
                 model.Meshes = meshes;
                 tagData.RenderModels[c] = model;
             }
-
-            return tagData;
         }
+
 
         private static VertexFormat[] ProcessVerticies(Bsp.RenderChunk chunk)
         {

@@ -12,6 +12,7 @@ using OpenH2.Engine.Components;
 using OpenH2.Engine.Entities;
 using OpenH2.Engine.Stores;
 using OpenH2.Engine.Systems;
+using OpenH2.Foundation.Engine;
 using OpenH2.Rendering;
 using OpenH2.Rendering.Abstractions;
 using OpenH2.Rendering.OpenGL;

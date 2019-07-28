@@ -4,6 +4,8 @@ using OpenH2.Translation;
 using System;
 using System.IO;
 using OpenH2.Translation.TagData;
+using System.Linq;
+using OpenH2.Core.Tags;
 
 namespace OpenH2.TextureDumper
 {
@@ -37,14 +39,14 @@ namespace OpenH2.TextureDumper
 
             var translator = new TagTranslator(scene);
 
-            var bitmaps = translator.GetAll<BitmapTagData>();
+            var bitmaps = scene.Tags.Where(t => t.Value is Bitmap).Select(t => t.Value as Bitmap);
 
             var processed = 0;
 
-            foreach(var bitmTag in bitmaps)
+            foreach(var bitmap in bitmaps)
             {
-                var writePath = Path.Combine(outPath, Path.GetDirectoryName(bitmTag.Name));
-                var writeName = Path.GetFileName(bitmTag.Name) + ".dds";
+                var writePath = Path.Combine(outPath, Path.GetDirectoryName(bitmap.Name));
+                var writeName = Path.GetFileName(bitmap.Name) + ".dds";
 
                 if(Directory.Exists(writePath) == false)
                 {
@@ -53,7 +55,18 @@ namespace OpenH2.TextureDumper
 
                 Console.WriteLine($"Writing {writeName} to {writePath}");
 
-                File.WriteAllBytes(Path.Combine(writePath, writeName), bitmTag.Levels[0].ToArray());
+                // Decompress and synthesize texture headers
+                for (var i = 0; i < bitmap.LevelsOfDetail.Length; i++)
+                {
+                    var lod = bitmap.LevelsOfDetail[i];
+
+                    if (lod.Data.IsEmpty)
+                        continue;
+
+                    var ms = File.OpenWrite(Path.Combine(writePath, writeName));
+                    WriteTextureHeader(bitmap, ms);
+                    ms.Write(lod.Data.ToArray(), 0, lod.Data.Length);
+                }
 
                 processed++;
             }
@@ -61,6 +74,21 @@ namespace OpenH2.TextureDumper
             Console.WriteLine($"Processed {processed} bitmaps from {Path.GetFileName(mapPath)}");
             Console.WriteLine("Press any key to exit");
             Console.ReadLine();
+        }
+
+        public static void WriteTextureHeader(Bitmap bitm, Stream destination)
+        {
+            var ddsHeader = new DdsHeader(
+                bitm.TextureFormat,
+                bitm.TextureType,
+                bitm.Width,
+                bitm.Height,
+                bitm.Depth,
+                bitm.MipMapCount,
+                null,
+                null);
+
+            ddsHeader.HeaderData.CopyTo(destination);
         }
     }
 }

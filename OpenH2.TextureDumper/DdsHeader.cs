@@ -5,7 +5,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Text;
 
-namespace OpenH2.Core.Formats
+namespace OpenH2.TextureDumper
 {
     public class DdsHeader
     {

@@ -117,21 +117,14 @@ namespace OpenH2.Core.Tags
         [FixedLength(20)]
         public class ShaderInfo
         {
-
-            // TODO: [StringValue(0,4)]
-            public string Tag { get; set; }
-
             [PrimitiveValue(4)]
             public int Unknown { get; set; }
 
             [PrimitiveValue(8)]
-            public int Value1 { get; set; }
-
-            // TODO: [StringValue(12,4)]
-            public string OldTag { get; set; }
+            public ushort Value1 { get; set; }
 
             [PrimitiveValue(16)]
-            public int Value2 { get; set; }
+            public uint ShaderId { get; set; }
         }
 
         [FixedLength(68)]
