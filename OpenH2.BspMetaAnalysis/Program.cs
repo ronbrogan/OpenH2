@@ -48,7 +48,7 @@ namespace OpenH2.BspMetaAnalysis
         {
             var sb = new StringBuilder();
 
-            var alreadyGenerated = new HashSet<int>();
+            var alreadyGenerated = new HashSet<uint>();
 
             for (var i = 0; i < tag.RenderModels.Length; i++)
             {

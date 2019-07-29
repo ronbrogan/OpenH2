@@ -55,22 +55,27 @@ namespace OpenH2.Rendering.OpenGL
             return texAddr;
         }
 
-        public int Bind(Core.Tags.Bitmap bitm)
+        public int Bind(Core.Tags.Bitmap bitm, out long handle)
         {
             var width = bitm.Width;
             var height = bitm.Height;
 
             var topLod = bitm.LevelsOfDetail[0];
 
-            GL.GenTextures(1, out int texHandle);
-            GL.BindTexture(TextureTarget.Texture2D, texHandle);
+            GL.GenTextures(1, out int texId);
+            GL.BindTexture(TextureTarget.Texture2D, texId);
 
             UploadMips(topLod.Data, bitm.TextureFormat, width, height, bitm.MipMapCount == 0 ? bitm.MipMapCount2 : bitm.MipMapCount);
 
             SetCommonTextureParams();
+
+            handle = GL.Arb.GetTextureHandle(texId);
+
+            GL.Arb.MakeTextureHandleResident(handle);
+
             CheckTextureBindErrors();
 
-            return texHandle;
+            return texId;
         }
 
         private void UploadMips(Memory<byte> data, TextureFormat format, int width, int height, int mipMaps)

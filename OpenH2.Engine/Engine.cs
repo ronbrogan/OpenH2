@@ -76,27 +76,29 @@ namespace OpenH2.Engine
 
         private void Render(double timestep)
         {
-            var renderables = world.GetGlobalResource<RenderListStore>();
+            var renderList = world.GetGlobalResource<RenderListStore>();
 
-            foreach (var (mesh, mat) in renderables.Meshes())
+            foreach(var model in renderList.Models)
             {
-                RenderAccumulator.AddRigidBody(mesh, mat);
+                var modelMatrix = model.CreateTransformationMatrix();
+
+                foreach(var mesh in model.Meshes)
+                {
+                    RenderAccumulator.AddRigidBody(mesh, renderList.Materials[mesh.MaterialIdentifier], modelMatrix);
+                }
             }
 
             var cameras = world.Components<CameraComponent>();
             var cam = cameras.First();
 
             var pos = cam.PositionOffset;
-            var orientation = new Vector3();
 
             if(cam.TryGetSibling<TransformComponent>(out var xform))
             {
                 pos += xform.Position;
-
-                orientation = xform.Orientation;
             }
 
-            var matrices = new MatriciesUniform
+            var matrices = new GlobalUniform
             {
                 ViewMatrix = cam.ViewMatrix,
                 ProjectionMatrix = cam.ProjectionMatrix,

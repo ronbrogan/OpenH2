@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Numerics;
 using OpenH2.Core.Architecture;
 using OpenH2.Core.Tags;
 using OpenH2.Foundation;
@@ -11,7 +12,8 @@ namespace OpenH2.Rendering
         private readonly IGraphicsAdapter adapter;
         private Dictionary<IMaterial<Bitmap>, List<Mesh>> meshesByMaterial = new Dictionary<IMaterial<Bitmap>, List<Mesh>>();
 
-        private Dictionary<Mesh, IMaterial<Bitmap>> materialLookups = new Dictionary<Mesh, IMaterial<Bitmap>>();
+        private Dictionary<Mesh, IMaterial<Bitmap>> materials = new Dictionary<Mesh, IMaterial<Bitmap>>();
+        private Dictionary<Mesh, Matrix4x4> transforms = new Dictionary<Mesh, Matrix4x4>();
 
         public RenderAccumulator(IGraphicsAdapter graphicsAdapter)
         {
@@ -23,9 +25,10 @@ namespace OpenH2.Rendering
         /// Should be called for each object that to be drawn each frame
         /// </summary>
         /// <param name="meshes"></param>
-        public void AddRigidBody(Mesh mesh, IMaterial<Bitmap> mat)
+        public void AddRigidBody(Mesh mesh, IMaterial<Bitmap> mat, Matrix4x4 transform)
         {
-            materialLookups[mesh] = mat;
+            materials[mesh] = mat;
+            transforms[mesh] = transform;
 
             if (meshesByMaterial.TryGetValue(mat, out var meshList))
             {
@@ -52,13 +55,15 @@ namespace OpenH2.Rendering
         /// </summary>
         public void DrawAndFlush()
         {
-            foreach(var shader in meshesByMaterial.Keys)
+            foreach(var material in meshesByMaterial.Keys)
             {
-                var meshes = meshesByMaterial[shader];
+                var meshes = meshesByMaterial[material];
 
                 foreach(var mesh in meshes)
                 {
-                    this.adapter.DrawMesh(mesh, materialLookups[mesh]);
+                    var xform = transforms[mesh];
+
+                    this.adapter.DrawMesh(mesh, material, xform);
                 }
             }
 

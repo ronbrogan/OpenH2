@@ -7,6 +7,6 @@
         public MeshElementType ElementType { get; set; }
 
         // TODO: Material
-        public int MaterialIdentifier { get; set; }
+        public uint MaterialIdentifier { get; set; }
     }
 }

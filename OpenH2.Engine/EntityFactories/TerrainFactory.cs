@@ -6,10 +6,8 @@ using OpenH2.Engine.Components;
 using OpenH2.Engine.Entities;
 using OpenH2.Foundation;
 using OpenH2.Translation.TagData;
-using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 
 namespace OpenH2.Engine.EntityFactories
 {
@@ -23,14 +21,17 @@ namespace OpenH2.Engine.EntityFactories
 
             var components = new List<Component>();
 
-            var comp = new RenderModelComponent(terrain);
+            var meshes = new List<Mesh>();
 
             foreach (var model in bspData.RenderModels)
             {
-                comp.Meshes.AddRange(model.Meshes);
+                meshes.AddRange(model.Meshes);
             }
 
-            foreach(var mesh in comp.Meshes)
+            var comp = new RenderModelComponent(terrain);
+            comp.Meshes = meshes.ToArray();
+
+            foreach (var mesh in comp.Meshes)
             {
                 if(comp.Materials.ContainsKey(mesh.MaterialIdentifier))
                 {
@@ -41,14 +42,8 @@ namespace OpenH2.Engine.EntityFactories
                 mat.DiffuseColor = VectorExtensions.RandomColor();
                 comp.Materials.Add(mesh.MaterialIdentifier, mat);
 
-                if(tag.Shaders.Length <= mesh.MaterialIdentifier)
-                {
-                    continue;
-                }
-
-                var shaderRef = tag.ShaderInfo2s[mesh.MaterialIdentifier];
                 Shader shader;
-                if (map.Tags.TryGetValue(shaderRef.ShaderId, out var shaderTag) == false)
+                if (map.Tags.TryGetValue(mesh.MaterialIdentifier, out var shaderTag) == false)
                 {
                     continue;
                 }

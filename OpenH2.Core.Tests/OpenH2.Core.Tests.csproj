@@ -23,6 +23,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\OpenH2.Core\OpenH2.Core.csproj" />
+    <ProjectReference Include="..\OpenH2.TextureDumper\OpenH2.TextureDumper.csproj" />
   </ItemGroup>
 
 </Project>

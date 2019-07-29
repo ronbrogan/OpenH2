@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Numerics;
 using System.Text;
 using OpenH2.Core.Architecture;
 using OpenH2.Core.Tags;
@@ -12,7 +13,7 @@ namespace OpenH2.Rendering.Abstractions
     /// </summary>
     public interface IRenderAccumulator<TMaterialMap>
     {
-        void AddRigidBody(Mesh model, IMaterial<TMaterialMap> mat);
+        void AddRigidBody(Mesh model, IMaterial<TMaterialMap> mat, Matrix4x4 transform);
         void AddTerrain(Scenario.Terrain terrain);
         void AddSkybox(object skybox);
 

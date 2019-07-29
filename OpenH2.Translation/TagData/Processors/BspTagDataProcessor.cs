@@ -61,7 +61,7 @@ namespace OpenH2.Translation.TagData.Processors
                     var mesh = new Mesh();
                     mesh.Verticies = verts;
                     mesh.Indicies = new int[indexCount];
-                    mesh.MaterialIdentifier = matId;
+                    mesh.MaterialIdentifier = bsp.ShaderInfo2s[matId].ShaderId;
 
                     for (var j = 0; j < indexCount; j++)
                     {

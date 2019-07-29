@@ -9,25 +9,31 @@ namespace OpenH2.Engine.Stores
 {
     public class RenderListStore
     {
-        private List<(Mesh,IMaterial<Bitmap>)> meshes = new List<(Mesh, IMaterial<Bitmap>)>();
+        public Dictionary<uint, IMaterial<Bitmap>> Materials = new Dictionary<uint, IMaterial<Bitmap>>();
+        public List<Foundation.Model> Models = new List<Foundation.Model>();
 
 
         public void Clear()
         {
-            meshes.Clear();
+            Models.Clear();
+            Materials.Clear();
         }
 
         public void AddRenderModel(RenderModelComponent component)
         {
-            foreach(var mesh in component.Meshes)
+            var model = new Foundation.Model
             {
-                meshes.Add((mesh, component.Materials[mesh.MaterialIdentifier]));
-            }
-        }
+                Meshes = component.Meshes,
+                Position = component.Position,
+                Orientation = component.Orientation
+            };
 
-        public (Mesh, IMaterial<Bitmap>)[] Meshes()
-        {
-            return meshes.ToArray();
+            foreach (var mat in component.Materials)
+            {
+                Materials[mat.Key] = mat.Value;
+            }
+
+            Models.Add(model);
         }
     }
 }

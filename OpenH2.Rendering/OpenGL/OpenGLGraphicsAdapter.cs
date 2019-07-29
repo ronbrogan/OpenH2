@@ -2,6 +2,7 @@
 using OpenH2.Foundation;
 using OpenH2.Rendering.Abstractions;
 using OpenH2.Rendering.Shaders;
+using OpenH2.Rendering.Shaders.Generic;
 using OpenTK.Graphics.OpenGL;
 using System;
 using System.Collections.Generic;
@@ -12,17 +13,18 @@ namespace OpenH2.Rendering.OpenGL
     public class OpenGLGraphicsAdapter : IGraphicsAdapter
     {
         private Dictionary<Mesh, uint> meshLookup = new Dictionary<Mesh, uint>();
-        private Dictionary<Bitmap, int> textureLookup = new Dictionary<Bitmap, int>();
+        private HashSet<IMaterial<Bitmap>> boundTextures = new HashSet<IMaterial<Bitmap>>();
         private ITextureBinder textureBinder = new OpenGLTextureBinder();
         private int? defaultShader;
         int MatriciesUniformHandle;
-        private MatriciesUniform MatriciesUniform;
+        int GenericUniformHandle;
+        private GlobalUniform MatriciesUniform;
 
         public OpenGLGraphicsAdapter()
         {
         }
 
-        public void UseMatricies(MatriciesUniform matricies)
+        public void UseMatricies(GlobalUniform matricies)
         {
             MatriciesUniform = matricies;
         }
@@ -51,24 +53,45 @@ namespace OpenH2.Rendering.OpenGL
             return vao;
         }
 
-        public int UploadTexture(Bitmap map)
+        public void SetupTextures(IMaterial<Bitmap> material)
         {
-            var handle = textureBinder.Bind(map);
+            if (boundTextures.Contains(material))
+                return;
 
-            textureLookup[map] = handle;
+            if(material.DiffuseMap != null)
+            {
+                textureBinder.Bind(material.DiffuseMap, out var diffuseHandle);
+                material.DiffuseHandle = diffuseHandle;
+            }
 
-            return handle;
+            boundTextures.Add(material);
         }
 
-        public void DrawMesh(Mesh mesh, IMaterial<Bitmap> material)
+        // PERF: sort calls by material and vao and deduplicate GL calls 
+        public void DrawMesh(Mesh mesh, IMaterial<Bitmap> material, Matrix4x4 transform)
         {
+            SetupTextures(material);
             UseGenericShader();
             SetupMatrixUniform();
 
-            // TODO mesh specific uniform            
+            if (Matrix4x4.Invert(transform, out var inverted) == false)
+            {
+                throw new Exception("Couldn't invert model matrix");
+            }
+         
+            var genericUniform = new GenericUniform()
+            {
+                ModelMatrix = transform,
+                NormalMatrix = Matrix4x4.Transpose(inverted),
+                DiffuseColor = new Vector4(material.DiffuseColor, 1),
+                UseDiffuseMap = material.DiffuseHandle != default,
+                DiffuseMap = material.DiffuseHandle,
+                DiffuseAmount = 1f
+            };
+
+            SetupGenericUniform(genericUniform);
 
             BindMesh(mesh);
-            BindDiffuseTexture(material);
 
             var type = mesh.ElementType;
             var indicies = mesh.Indicies;
@@ -95,20 +118,6 @@ namespace OpenH2.Rendering.OpenGL
             }
 
             GL.UseProgram(defaultShader.Value);
-        }
-
-        private void BindDiffuseTexture(IMaterial<Bitmap> mat)
-        {
-            if (mat.DiffuseMap == null)
-                return;
-
-            if(textureLookup.TryGetValue(mat.DiffuseMap, out var handle) == false)
-            {
-                handle = UploadTexture(mat.DiffuseMap);
-            }
-
-            GL.ActiveTexture(TextureUnit.Texture0);
-            GL.BindTexture(TextureTarget.Texture2D, handle);
         }
 
         private void BindMesh(Mesh mesh)
@@ -152,9 +161,28 @@ namespace OpenH2.Rendering.OpenGL
 
             GL.BindBuffer(BufferTarget.UniformBuffer, MatriciesUniformHandle);
 
-            GL.BufferData(BufferTarget.UniformBuffer, MatriciesUniform.Size, ref MatriciesUniform, BufferUsageHint.DynamicDraw);
+            GL.BufferData(BufferTarget.UniformBuffer, GlobalUniform.Size, ref MatriciesUniform, BufferUsageHint.DynamicDraw);
 
             GL.BindBufferBase(BufferRangeTarget.UniformBuffer, 0, MatriciesUniformHandle);
+            GL.BindBuffer(BufferTarget.UniformBuffer, 0);
+        }
+
+        private void SetupGenericUniform(GenericUniform uniform)
+        {
+            if (GenericUniformHandle == default(int))
+            {
+                GL.GenBuffers(1, out GenericUniformHandle);
+                GL.BindBuffer(BufferTarget.UniformBuffer, GenericUniformHandle);
+                GL.BufferData(BufferTarget.UniformBuffer, GenericUniform.Size, IntPtr.Zero, BufferUsageHint.DynamicDraw);
+            }
+            else
+            {
+                GL.BindBuffer(BufferTarget.UniformBuffer, GenericUniformHandle);
+            }
+
+            GL.BufferSubData(BufferTarget.UniformBuffer, IntPtr.Zero, GenericUniform.Size, ref uniform);
+
+            GL.BindBufferBase(BufferRangeTarget.UniformBuffer, 1, GenericUniformHandle);
             GL.BindBuffer(BufferTarget.UniformBuffer, 0);
         }
     }

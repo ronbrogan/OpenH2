@@ -8,7 +8,7 @@ using System.Text;
 namespace OpenH2.Rendering.Shaders
 {
     [StructLayout(LayoutKind.Explicit)]
-    public struct MatriciesUniform
+    public struct GlobalUniform
     {
         [FieldOffset(0)]
         public Matrix4x4 ViewMatrix;
@@ -19,7 +19,7 @@ namespace OpenH2.Rendering.Shaders
         [FieldOffset(128)]
         public System.Numerics.Vector3 ViewPosition;
 
-        public static readonly int Size = BlittableValueType<MatriciesUniform>.Stride;
+        public static readonly int Size = BlittableValueType<GlobalUniform>.Stride;
 
     }
 }

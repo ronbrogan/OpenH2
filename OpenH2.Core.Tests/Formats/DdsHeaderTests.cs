@@ -1,5 +1,5 @@
 ﻿using OpenH2.Core.Enums.Texture;
-using OpenH2.Core.Formats;
+using OpenH2.TextureDumper;
 using System;
 using Xunit;
 using Xunit.Abstractions;

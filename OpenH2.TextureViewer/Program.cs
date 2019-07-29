@@ -25,7 +25,7 @@ namespace OpenH2.TextureViewer
         private static Dictionary<int, int> BitmTextureIdLookup = new Dictionary<int, int>();
 
         public static int MatriciesUniformHandle;
-        public static MatriciesUniform MatriciesUniform;
+        public static GlobalUniform MatriciesUniform;
         private static uint QuadMeshId;
         private static Mesh quadMesh;
         private static int ShaderHandle;
@@ -78,7 +78,7 @@ namespace OpenH2.TextureViewer
             GL.BlendFunc(BlendingFactor.SrcAlpha, BlendingFactor.OneMinusSrcAlpha);
 
             UploadQuadMesh();
-            MatriciesUniform = new MatriciesUniform()
+            MatriciesUniform = new GlobalUniform()
             {
                 ProjectionMatrix = Matrix4x4.CreateOrthographic(3.55555f, 2, 0, 10),
                 ViewMatrix = Matrix4x4.Identity,
@@ -106,7 +106,7 @@ namespace OpenH2.TextureViewer
 
             if (BitmTextureIdLookup.TryGetValue(CurrentBitmap, out var handle) == false)
             {
-                handle = textureBinder.Bind(Bitmaps[CurrentBitmap]);
+                handle = textureBinder.Bind(Bitmaps[CurrentBitmap], out var _);
                 BitmTextureIdLookup[CurrentBitmap] = handle;
             }
 
@@ -230,7 +230,7 @@ namespace OpenH2.TextureViewer
 
             GL.BindBuffer(BufferTarget.UniformBuffer, MatriciesUniformHandle);
 
-            GL.BufferData(BufferTarget.UniformBuffer, MatriciesUniform.Size, ref MatriciesUniform, BufferUsageHint.DynamicDraw);
+            GL.BufferData(BufferTarget.UniformBuffer, GlobalUniform.Size, ref MatriciesUniform, BufferUsageHint.DynamicDraw);
 
             GL.BindBufferBase(BufferRangeTarget.UniformBuffer, 0, MatriciesUniformHandle);
             GL.BindBuffer(BufferTarget.UniformBuffer, 0);

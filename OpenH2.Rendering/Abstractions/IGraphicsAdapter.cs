@@ -3,6 +3,7 @@ using OpenH2.Foundation;
 using OpenH2.Rendering.Shaders;
 using System;
 using System.Collections.Generic;
+using System.Numerics;
 using System.Text;
 
 namespace OpenH2.Rendering.Abstractions
@@ -12,7 +13,7 @@ namespace OpenH2.Rendering.Abstractions
     /// </summary>
     public interface IGraphicsAdapter
     {
-        void UseMatricies(MatriciesUniform matricies);
-        void DrawMesh(Mesh mesh, IMaterial<Bitmap> material);
+        void UseMatricies(GlobalUniform matricies);
+        void DrawMesh(Mesh mesh, IMaterial<Bitmap> material, Matrix4x4 transform);
     }
 }

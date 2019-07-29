@@ -8,12 +8,43 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using Newtonsoft.Json;
 using OpenH2.Core.Tags;
+using Newtonsoft.Json.Serialization;
+using OpenH2.Foundation;
+using OpenH2.Core.Types;
 
 namespace OpenH2.ScenarioExplorer.ViewModels
 {
+    public class FriendlyContractResolver : DefaultContractResolver
+    {
+        private HashSet<Type> bannedTypes = new HashSet<Type>()
+        {
+            typeof(VertexFormat[]),
+            typeof(Vertex[])
+        };
+
+        public override JsonContract ResolveContract(Type type)
+        {
+            var contract = base.CreateContract(type);
+
+            if(bannedTypes.Contains(type))
+            {
+                contract.Converter = null;
+            }
+
+            return contract;
+        }
+    }
+
     [AddINotifyPropertyChangedInterface]
     public class TagViewModel
     {
+        private static IContractResolver resolver = new FriendlyContractResolver();
+
+        private static JsonSerializerSettings serializerSettings = new JsonSerializerSettings()
+        {
+            ContractResolver = resolver
+        };
+
         public TagViewModel(uint id, string tag, string name)
         {
             this.Id = id;
@@ -40,7 +71,7 @@ namespace OpenH2.ScenarioExplorer.ViewModels
 
                 if(value != null)
                 {
-                    OriginalTagJson = JsonConvert.SerializeObject(value, Formatting.Indented);
+                    OriginalTagJson = JsonConvert.SerializeObject(value, Formatting.Indented, serializerSettings);
                 }
             }
         }
