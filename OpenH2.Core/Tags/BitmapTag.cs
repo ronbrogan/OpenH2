@@ -11,11 +11,11 @@ using OpenH2.Core.Tags.Layout;
 namespace OpenH2.Core.Tags
 {
     [TagLabel("bitm")]
-    public class Bitmap : BaseTag
+    public class BitmapTag : BaseTag
     {
         public override string Name { get; set; }
 
-        public Bitmap(uint id) : base(id)
+        public BitmapTag(uint id) : base(id)
         {
         }
 

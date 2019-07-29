@@ -13,7 +13,7 @@ namespace OpenH2.Rendering.OpenGL
     public class OpenGLGraphicsAdapter : IGraphicsAdapter
     {
         private Dictionary<Mesh, uint> meshLookup = new Dictionary<Mesh, uint>();
-        private HashSet<IMaterial<Bitmap>> boundTextures = new HashSet<IMaterial<Bitmap>>();
+        private HashSet<IMaterial<BitmapTag>> boundTextures = new HashSet<IMaterial<BitmapTag>>();
         private ITextureBinder textureBinder = new OpenGLTextureBinder();
         private int? defaultShader;
         int MatriciesUniformHandle;
@@ -53,7 +53,7 @@ namespace OpenH2.Rendering.OpenGL
             return vao;
         }
 
-        public void SetupTextures(IMaterial<Bitmap> material)
+        public void SetupTextures(IMaterial<BitmapTag> material)
         {
             if (boundTextures.Contains(material))
                 return;
@@ -68,7 +68,7 @@ namespace OpenH2.Rendering.OpenGL
         }
 
         // PERF: sort calls by material and vao and deduplicate GL calls 
-        public void DrawMesh(Mesh mesh, IMaterial<Bitmap> material, Matrix4x4 transform)
+        public void DrawMesh(Mesh mesh, IMaterial<BitmapTag> material, Matrix4x4 transform)
         {
             SetupTextures(material);
             UseGenericShader();

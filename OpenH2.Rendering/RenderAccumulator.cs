@@ -7,12 +7,12 @@ using OpenH2.Rendering.Abstractions;
 
 namespace OpenH2.Rendering
 {
-    public class RenderAccumulator : IRenderAccumulator<Bitmap>
+    public class RenderAccumulator : IRenderAccumulator<BitmapTag>
     {
         private readonly IGraphicsAdapter adapter;
-        private Dictionary<IMaterial<Bitmap>, List<Mesh>> meshesByMaterial = new Dictionary<IMaterial<Bitmap>, List<Mesh>>();
+        private Dictionary<IMaterial<BitmapTag>, List<Mesh>> meshesByMaterial = new Dictionary<IMaterial<BitmapTag>, List<Mesh>>();
 
-        private Dictionary<Mesh, IMaterial<Bitmap>> materials = new Dictionary<Mesh, IMaterial<Bitmap>>();
+        private Dictionary<Mesh, IMaterial<BitmapTag>> materials = new Dictionary<Mesh, IMaterial<BitmapTag>>();
         private Dictionary<Mesh, Matrix4x4> transforms = new Dictionary<Mesh, Matrix4x4>();
 
         public RenderAccumulator(IGraphicsAdapter graphicsAdapter)
@@ -25,7 +25,7 @@ namespace OpenH2.Rendering
         /// Should be called for each object that to be drawn each frame
         /// </summary>
         /// <param name="meshes"></param>
-        public void AddRigidBody(Mesh mesh, IMaterial<Bitmap> mat, Matrix4x4 transform)
+        public void AddRigidBody(Mesh mesh, IMaterial<BitmapTag> mat, Matrix4x4 transform)
         {
             materials[mesh] = mat;
             transforms[mesh] = transform;
@@ -40,7 +40,7 @@ namespace OpenH2.Rendering
             }
         }
 
-        public void AddTerrain(Scenario.Terrain terrain)
+        public void AddTerrain(ScenarioTag.Terrain terrain)
         {
             
         }

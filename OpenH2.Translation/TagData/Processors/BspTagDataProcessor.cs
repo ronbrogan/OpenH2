@@ -12,7 +12,7 @@ namespace OpenH2.Translation.TagData.Processors
 
         public static BspTagData ProcessTag(BaseTag tag)
         {
-            var bsp = tag as Bsp;
+            var bsp = tag as BspTag;
 
             if (bsp == null)
                 throw new ArgumentException("Tag must be a Bsp", nameof(tag));
@@ -24,7 +24,7 @@ namespace OpenH2.Translation.TagData.Processors
             return tagData;
         }
 
-        private static void ProcessRenderChunks(Bsp bsp, BspTagData tagData)
+        private static void ProcessRenderChunks(BspTag bsp, BspTagData tagData)
         {
             tagData.RenderModels = new BspTagData.RenderModel[bsp.RenderChunks.Length];
 
@@ -80,7 +80,7 @@ namespace OpenH2.Translation.TagData.Processors
         }
 
 
-        private static VertexFormat[] ProcessVerticies(Bsp.RenderChunk chunk)
+        private static VertexFormat[] ProcessVerticies(BspTag.RenderChunk chunk)
         {
             var verts = new VertexFormat[chunk.VertexCount];
 
@@ -126,7 +126,7 @@ namespace OpenH2.Translation.TagData.Processors
             return verts;
         }
 
-        public BspTagData ProcessCollisionGeometry(Bsp bsp, BspTagData tagData)
+        public BspTagData ProcessCollisionGeometry(BspTag bsp, BspTagData tagData)
         {
             var block = bsp.CollisionInfos.First();
 

@@ -6,11 +6,11 @@ using System.Text;
 namespace OpenH2.Core.Tags
 {
     [TagLabel("shad")]
-    public class Shader : BaseTag
+    public class ShaderTag : BaseTag
     {
         public override string Name { get; set; }
 
-        public Shader(uint id) : base(id)
+        public ShaderTag(uint id) : base(id)
         {
         }
 

@@ -39,7 +39,7 @@ namespace OpenH2.TextureDumper
 
             var translator = new TagTranslator(scene);
 
-            var bitmaps = scene.Tags.Where(t => t.Value is Bitmap).Select(t => t.Value as Bitmap);
+            var bitmaps = scene.Tags.Where(t => t.Value is BitmapTag).Select(t => t.Value as BitmapTag);
 
             var processed = 0;
 
@@ -76,7 +76,7 @@ namespace OpenH2.TextureDumper
             Console.ReadLine();
         }
 
-        public static void WriteTextureHeader(Bitmap bitm, Stream destination)
+        public static void WriteTextureHeader(BitmapTag bitm, Stream destination)
         {
             var ddsHeader = new DdsHeader(
                 bitm.TextureFormat,

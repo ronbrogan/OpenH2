@@ -14,7 +14,7 @@ namespace OpenH2.Engine.Components
 
         public Mesh[] Meshes { get; set; }
 
-        public Dictionary<uint, IMaterial<Bitmap>> Materials { get; set; } = new Dictionary<uint, IMaterial<Bitmap>>();
+        public Dictionary<uint, IMaterial<BitmapTag>> Materials { get; set; } = new Dictionary<uint, IMaterial<BitmapTag>>();
 
         public RenderModelComponent(Entity parent) : base(parent)
         {

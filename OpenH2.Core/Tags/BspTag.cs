@@ -8,14 +8,14 @@ using OpenH2.Core.Parsing;
 namespace OpenH2.Core.Tags
 {
     [TagLabel("sbsp")]
-    public class Bsp : BaseTag
+    public class BspTag : BaseTag
     {
         [JsonIgnore]
         public byte[] RawMeta { get; set; }
 
         public override string Name { get; set; }
 
-        public Bsp(uint id) : base(id)
+        public BspTag(uint id) : base(id)
         {
         }
 

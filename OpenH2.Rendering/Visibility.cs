@@ -9,9 +9,9 @@ namespace OpenH2.Rendering
 {
     public class Visibility
     {
-        private readonly IRenderAccumulator<Bitmap> accumulator;
+        private readonly IRenderAccumulator<BitmapTag> accumulator;
 
-        public Visibility(IRenderAccumulator<Bitmap> accumulator)
+        public Visibility(IRenderAccumulator<BitmapTag> accumulator)
         {
             this.accumulator = accumulator;
         }

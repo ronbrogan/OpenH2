@@ -39,7 +39,7 @@ namespace OpenH2.ModelDumper
 
             var processed = 0;
 
-            var models = scene.Tags.Where(t => t.Value is Model).Select(t => t.Value as Model);
+            var models = scene.Tags.Where(t => t.Value is ModelTag).Select(t => t.Value as ModelTag);
 
             foreach (var modelTag in models)
             {

@@ -3,9 +3,9 @@
 namespace OpenH2.Core.Tags
 {
     [TagLabel("scnr")]
-    public class Scenario : BaseTag
+    public class ScenarioTag : BaseTag
     {
-        public Scenario(uint id) : base(id)
+        public ScenarioTag(uint id) : base(id)
         {
         }
 
@@ -29,7 +29,7 @@ namespace OpenH2.Core.Tags
         {
             [PrimitiveValue(20)]
             public uint BspId { get; set; }
-            public Bsp Bsp { get; set; }
+            public BspTag Bsp { get; set; }
 
             // TODO implement lightmap tag
             [PrimitiveValue(28)]

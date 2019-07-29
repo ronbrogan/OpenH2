@@ -55,7 +55,7 @@ namespace OpenH2.Rendering.OpenGL
             return texAddr;
         }
 
-        public int Bind(Core.Tags.Bitmap bitm, out long handle)
+        public int Bind(Core.Tags.BitmapTag bitm, out long handle)
         {
             var width = bitm.Width;
             var height = bitm.Height;

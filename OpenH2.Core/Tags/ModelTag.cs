@@ -8,9 +8,9 @@ using System.Numerics;
 namespace OpenH2.Core.Tags
 {
     [TagLabel("mode")]
-    public class Model : BaseTag
+    public class ModelTag : BaseTag
     { 
-        public Model(uint id) : base(id)
+        public ModelTag(uint id) : base(id)
         {
         }
 

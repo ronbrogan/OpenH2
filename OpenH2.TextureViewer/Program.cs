@@ -19,7 +19,7 @@ namespace OpenH2.TextureViewer
 {
     class Program
     {
-        private static Bitmap[] Bitmaps { get; set; }
+        private static BitmapTag[] Bitmaps { get; set; }
         private static int CurrentBitmap { get; set; } = 0;
 
         private static Dictionary<int, int> BitmTextureIdLookup = new Dictionary<int, int>();
@@ -55,7 +55,7 @@ namespace OpenH2.TextureViewer
                 scene = factory.FromFile(map);
             }
 
-            Bitmaps = scene.Tags.Where(t => t.Value is Bitmap).Select(t => t.Value as Bitmap).ToArray();
+            Bitmaps = scene.Tags.Where(t => t.Value is BitmapTag).Select(t => t.Value as BitmapTag).ToArray();
 
             var host = new OpenGLHost();
             host.CreateWindow();
@@ -121,7 +121,7 @@ namespace OpenH2.TextureViewer
 
         private static void SetNextBitmap(int offset)
         {
-            Bitmap candidate;
+            BitmapTag candidate;
 
             do
             {

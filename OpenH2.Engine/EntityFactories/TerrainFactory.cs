@@ -15,7 +15,7 @@ namespace OpenH2.Engine.EntityFactories
     {
         public static Terrain FromBspData(H2vMap map, BspTagData bspData)
         {
-            var tag = (Bsp)map.Tags[bspData.Id];
+            var tag = (BspTag)map.Tags[bspData.Id];
 
             var terrain = new Terrain();
 
@@ -38,29 +38,29 @@ namespace OpenH2.Engine.EntityFactories
                     continue;
                 }
 
-                var mat = new Material<Bitmap>();
+                var mat = new Material<BitmapTag>();
                 mat.DiffuseColor = VectorExtensions.RandomColor();
                 comp.Materials.Add(mesh.MaterialIdentifier, mat);
 
-                Shader shader;
+                ShaderTag shader;
                 if (map.Tags.TryGetValue(mesh.MaterialIdentifier, out var shaderTag) == false)
                 {
                     continue;
                 }
 
-                shader = (Shader)shaderTag;
+                shader = (ShaderTag)shaderTag;
 
                 if (shader.BitmapInfos.Length > 0)
                 {
                     var bitms = shader.BitmapInfos[0];
 
-                    mat.DiffuseMap = map.Tags.GetValueOrDefault(bitms.DiffuseBitmapId) as Bitmap;
+                    mat.DiffuseMap = map.Tags.GetValueOrDefault(bitms.DiffuseBitmapId) as BitmapTag;
 
                     var bitmRefs = shader.Parameters.SelectMany(p => p.BitmapParameter1s.Select(b => b.BitmapId));
 
                     foreach (var bitmRef in bitmRefs)
                     {
-                        var bitm = map.Tags.GetValueOrDefault(bitmRef) as Bitmap;
+                        var bitm = map.Tags.GetValueOrDefault(bitmRef) as BitmapTag;
 
                         if (bitm != null && bitm.TextureUsage == Core.Enums.Texture.TextureUsage.Bump)
                         {

@@ -29,7 +29,7 @@ namespace OpenH2.Engine
         IGraphicsHost graphicsHost;
         IGraphicsAdapter graphicsAdapter;
         IGameLoopSource gameLoop;
-        public IRenderAccumulator<Bitmap> RenderAccumulator;
+        public IRenderAccumulator<BitmapTag> RenderAccumulator;
 
 
         private World world;

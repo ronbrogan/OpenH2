@@ -9,10 +9,10 @@ namespace OpenH2.Core.Tags.Serialization
 {
     public static class BitmapTagProcessor
     {
-        public static Bitmap ProcessBitm(uint id, string name, TagIndexEntry index, TrackingChunk chunk, TrackingReader sceneReader)
+        public static BitmapTag ProcessBitm(uint id, string name, TagIndexEntry index, TrackingChunk chunk, TrackingReader sceneReader)
         {
             var span = chunk.Span;
-            var tag = new Bitmap(id)
+            var tag = new BitmapTag(id)
             {
                 Name = name,
                 TextureType = (TextureType)span.ReadInt16At(0),
@@ -32,7 +32,7 @@ namespace OpenH2.Core.Tags.Serialization
                 MipMapCount2 = span.ReadInt16At(100),
                 PixelOffset = span.ReadInt16At(102),
 
-                LevelsOfDetail = new Bitmap.BitmapLevelOfDetail[6]
+                LevelsOfDetail = new BitmapTag.BitmapLevelOfDetail[6]
             };
 
             var offsetsStart = 108;

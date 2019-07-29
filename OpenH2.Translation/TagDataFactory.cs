@@ -11,7 +11,7 @@ namespace OpenH2.Translation
         private delegate BaseTagData ProcessMeta(BaseTag meta);
         private static Dictionary<Type, ProcessMeta> Translators = new Dictionary<Type, ProcessMeta>
         {
-            { typeof(Bsp), BspTagDataProcessor.ProcessTag }
+            { typeof(BspTag), BspTagDataProcessor.ProcessTag }
         };
 
         private static ProcessMeta GetTranslator(Type tagType)
