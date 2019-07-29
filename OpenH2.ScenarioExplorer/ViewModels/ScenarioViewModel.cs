@@ -30,15 +30,14 @@ namespace OpenH2.ScenarioExplorer.ViewModels
 
             foreach (var tagEntry in scene.TagIndex)
             {
-                var vm = new TagViewModel(tagEntry.ID, tagEntry.Tag, scene.Tags[tagEntry.ID]?.Name)
+                scene.TryGetTag<BaseTag>(tagEntry.ID, out var tag);
+
+                var vm = new TagViewModel(tagEntry.ID, tagEntry.Tag, tag?.Name)
                 {
                     InternalOffsetStart = tagEntry.Offset.OriginalValue,
                     InternalOffsetEnd = tagEntry.Offset.OriginalValue + tagEntry.MetaSize,
                     Data = sceneData.Slice(tagEntry.Offset.Value, tagEntry.MetaSize).ToArray(),
                 };
-
-                BaseTag tag = null;
-                scene.Tags.TryGetValue(tagEntry.ID, out tag);
 
                 vm.OriginalTag = tag;
 

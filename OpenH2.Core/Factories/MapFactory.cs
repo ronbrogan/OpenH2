@@ -70,14 +70,14 @@ namespace OpenH2.Core.Factories
 
         private H2vMap CreateNonPlayableMap(H2vReader reader)
         {
-            var scene = new H2vMap();
+            var scene = new H2vMap(mainMenu, mpShared, spShared);
             this.ExtractMetadata(scene, reader);
             return scene;
         }
 
         private H2vMap InternalFromFile(H2vReader reader)
         {
-            var scene = new H2vMap();
+            var scene = new H2vMap(mainMenu, mpShared, spShared);
             scene.RawData = reader.MapReader.Memory;
 
             this.ExtractMetadata(scene, reader);

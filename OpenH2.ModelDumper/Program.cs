@@ -33,13 +33,13 @@ namespace OpenH2.ModelDumper
 
             using (var map = new FileStream(mapPath, FileMode.Open, FileAccess.Read, FileShare.Read))
             {
-                var factory = new MapFactory();
+                var factory = new MapFactory(Path.GetDirectoryName(mapPath));
                 scene = factory.FromFile(map);
             }
 
             var processed = 0;
 
-            var models = scene.Tags.Where(t => t.Value is ModelTag).Select(t => t.Value as ModelTag);
+            var models = scene.GetLocalTagsOfType<ModelTag>();
 
             foreach (var modelTag in models)
             {

@@ -43,7 +43,7 @@ namespace OpenH2.Core.Tests
 
             //Assert.Equal(scene.IndexHeader.ObjectCount, scene.TagIndex.Count);
 
-            var scnr = scene.Tags.Values.First(v => v.GetType() == typeof(ScenarioTag)) as ScenarioTag;
+            var scnr = scene.GetLocalTagsOfType<ScenarioTag>().First();
 
             output.WriteLine($"Scene parsing took: {sw.ElapsedMilliseconds}ms and covered: {coverage.PercentCovered.ToString("0.00")}%");
         }

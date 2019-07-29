@@ -32,14 +32,14 @@ namespace OpenH2.TextureDumper
 
             using (var map = new FileStream(mapPath, FileMode.Open, FileAccess.Read, FileShare.Read))
             {
-                var factory = new MapFactory();
+                var factory = new MapFactory(Path.GetDirectoryName(mapPath));
                 scene = factory.FromFile(map);
             }
 
 
             var translator = new TagTranslator(scene);
 
-            var bitmaps = scene.Tags.Where(t => t.Value is BitmapTag).Select(t => t.Value as BitmapTag);
+            var bitmaps = scene.GetLocalTagsOfType<BitmapTag>();
 
             var processed = 0;
 

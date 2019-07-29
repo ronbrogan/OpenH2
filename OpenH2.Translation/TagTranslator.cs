@@ -19,7 +19,7 @@ namespace OpenH2.Translation
             foreach(var entry in scene.TagIndex)
             {
                 // TODO: Tag can be null here because we don't process all tags yet
-                if(scene.Tags.TryGetValue(entry.ID, out var tag) && tag != null)
+                if(scene.TryGetTag<BaseTag>(entry.ID, out var tag) && tag != null)
                 {
                     this.AddTag(tag);
                 }

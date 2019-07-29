@@ -55,7 +55,7 @@ namespace OpenH2.TextureViewer
                 scene = factory.FromFile(map);
             }
 
-            Bitmaps = scene.Tags.Where(t => t.Value is BitmapTag).Select(t => t.Value as BitmapTag).ToArray();
+            Bitmaps = scene.GetLocalTagsOfType<BitmapTag>().ToArray();
 
             var host = new OpenGLHost();
             host.CreateWindow();
