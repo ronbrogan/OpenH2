@@ -69,7 +69,7 @@ namespace OpenH2.ScenarioExplorer
         {
             using (var file = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read))
             {
-                var factory = new MapFactory();
+                var factory = new MapFactory(Path.GetDirectoryName(path));
                 var scene = factory.FromFile(file);
                 var vm = new ScenarioViewModel(scene);
 

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using System.IO;
 using System.IO.Compression;
 using Newtonsoft.Json;
@@ -89,7 +90,7 @@ namespace OpenH2.Core.Tags
             public Memory<byte> Data { get; set; } = Memory<byte>.Empty;
         }
 
-        public override void PopulateExternalData(TrackingReader sceneReader)
+        public override void PopulateExternalData(H2vReader sceneReader)
         {
             LevelsOfDetail = new BitmapLevelOfDetail[6];
 
@@ -100,19 +101,27 @@ namespace OpenH2.Core.Tags
                 lod.Offset = new NormalOffset((int)this.LodOffsets[i]);
                 lod.Size = this.LodSizes[i];
                 
-                // TODO: support out-of-file data
-                if (lod.Offset.Location == Enums.DataFile.Local && lod.Offset.Value != 0 && lod.Offset.Value != int.MaxValue && lod.Size != 0)
+                if (lod.Offset.Value != 0 && lod.Offset.Value != int.MaxValue && lod.Size != 0)
                 {
                     // Need to offset 2 bytes into data to bypass zlib header for compatibility with DeflateStream
-                    var data = sceneReader.Chunk(lod.Offset.Value + 2, (int)lod.Size, "Bitmap").ToArray();
+                    var data = sceneReader.Chunk(lod.Offset, (int)lod.Size, "Bitmap").Span;
 
-                    using (var inputStream = new MemoryStream(data))
-                    using (var decompress = new DeflateStream(inputStream, CompressionMode.Decompress))
-                    using (var outputStream = new MemoryStream((int)inputStream.Length))
+                    if(this.Properties.HasFlag(TextureProperties.Compressed))
                     {
-                        decompress.CopyTo(outputStream);
+                        var zlibData = data.Slice(2).ToArray();
 
-                        lod.Data = new Memory<byte>(outputStream.GetBuffer()).Slice(0, (int)outputStream.Length);
+                        using (var inputStream = new MemoryStream(zlibData))
+                        using (var decompress = new DeflateStream(inputStream, CompressionMode.Decompress))
+                        using (var outputStream = new MemoryStream((int)inputStream.Length))
+                        {
+                            decompress.CopyTo(outputStream);
+
+                            lod.Data = new Memory<byte>(outputStream.GetBuffer()).Slice(0, (int)outputStream.Length);
+                        }
+                    }
+                    else
+                    {
+                        lod.Data = data.ToArray();
                     }
                 }
 

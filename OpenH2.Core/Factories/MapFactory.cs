@@ -13,57 +13,103 @@ namespace OpenH2.Core.Factories
 {
     public class MapFactory
     {
-        public H2vMap FromFile(Stream fileStream)
+        private const string MainMenuName = "mainmenu.map";
+        private const string MultiPlayerSharedName = "shared.map";
+        private const string SinglePlayerSharedName = "single_player_shared.map";
+
+        private H2vReader baseReader;
+        private H2vMap mainMenu;
+        private H2vMap spShared;
+        private H2vMap mpShared;
+
+        public MapFactory(string mapRoot)
         {
-            var reader = new TrackingReader(fileStream.ToMemory());
+            baseReader = GetBaseReader(mapRoot);
+
+            mainMenu = InternalFromFile(new H2vReader(baseReader.MainMenu, baseReader));
+            spShared = InternalFromFile(new H2vReader(baseReader.SpShared, baseReader));
+            mpShared = InternalFromFile(new H2vReader(baseReader.MpShared, baseReader));
+        }
+
+        private H2vReader GetBaseReader(string mapRoot)
+        {
+            using (var mm = File.OpenRead(Path.Combine(mapRoot, MainMenuName)))
+            using (var mp = File.OpenRead(Path.Combine(mapRoot, MultiPlayerSharedName)))
+            using (var sp = File.OpenRead(Path.Combine(mapRoot, SinglePlayerSharedName)))
+            {
+                var mmReader = new TrackingReader(mm.ToMemory());
+                var mpReader = new TrackingReader(mp.ToMemory());
+                var spReader = new TrackingReader(sp.ToMemory());
+
+                return new H2vReader(mmReader, mpReader, spReader);
+            }
+        }
+
+        public H2vMap FromFile(FileStream fileStream)
+        {
+            var reader = FromFileStream(fileStream);
 
             return this.InternalFromFile(reader);
         }
 
-        public H2vMap FromFile(Stream fileStream, out CoverageReport coverage)
+        public H2vMap FromFile(FileStream fileStream, out CoverageReport coverage)
         {
-            var reader = new TrackingReader(fileStream.ToMemory());
+            var reader = FromFileStream(fileStream);
 
             var scene = this.InternalFromFile(reader);
-            coverage = reader.GenerateReport();
+            coverage = reader.MapReader.GenerateReport();
             return scene;
         }
 
-        private H2vMap InternalFromFile(TrackingReader reader)
+        private H2vReader FromFileStream(FileStream fileStream)
+        {
+            var mapReader = new TrackingReader(fileStream.ToMemory());
+
+            return new H2vReader(mapReader, baseReader);
+        }
+
+        private H2vMap CreateNonPlayableMap(H2vReader reader)
         {
             var scene = new H2vMap();
-            scene.RawData = reader.Memory;
+            this.ExtractMetadata(scene, reader);
+            return scene;
+        }
+
+        private H2vMap InternalFromFile(H2vReader reader)
+        {
+            var scene = new H2vMap();
+            scene.RawData = reader.MapReader.Memory;
 
             this.ExtractMetadata(scene, reader);
             
             return scene;
         }
 
-        private void ExtractMetadata(H2vMap scene, TrackingReader reader)
+        private void ExtractMetadata(H2vMap scene, H2vReader reader)
         {
-            scene.Header = GetSceneHeader(scene, reader);
-            scene.IndexHeader = GetIndexHeader(scene, reader);
+            scene.Header = GetSceneHeader(scene, reader.MapReader);
+            scene.IndexHeader = GetIndexHeader(scene, reader.MapReader);
             scene.PrimaryMagic = CalculatePrimaryMagic(scene.IndexHeader);
-            scene.TagIndex = GetObjectIndexList(scene, reader);
+            scene.TagIndex = GetObjectIndexList(scene, reader.MapReader);
             scene.SecondaryMagic = CalculateSecondaryMagic(scene.Header, scene.TagIndex.First());
 
             scene.Tags = GetTags(scene, reader);
         }
 
-        private Dictionary<uint, BaseTag> GetTags(H2vMap scene, TrackingReader reader)
+        private Dictionary<uint, BaseTag> GetTags(H2vMap scene, H2vReader reader)
         {
             var dict = new Dictionary<uint, BaseTag>();
             var index = scene.TagIndex;
 
-            var fileIndex = reader.Chunk(scene.Header.FilesIndex, scene.Header.FileCount * 4, "FileIndex").Span;
-            var fileTable = reader.Chunk(scene.Header.FileTableOffset, scene.Header.FileTableSize, "FileTable").Span;
+            var fileIndex = reader.MapReader.Chunk(scene.Header.FilesIndex, scene.Header.FileCount * 4, "FileIndex").Span;
+            var fileTable = reader.MapReader.Chunk(scene.Header.FileTableOffset, scene.Header.FileTableSize, "FileTable").Span;
 
             foreach(var item in index)
             {
                 if (item == null || item.MetaSize == 0 || item.Offset.OriginalValue == 0)
                     continue;
 
-                var chunk = reader.Chunk(item.Offset.Value, item.MetaSize, "Tag");
+                var chunk = reader.MapReader.Chunk(item.Offset.Value, item.MetaSize, "Tag");
 
                 var nameIndex = (short)(item.ID & 0x0000FFFF);
                 var nameStart = fileIndex.ReadInt32At(4 * nameIndex);

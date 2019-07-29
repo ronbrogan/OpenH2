@@ -11,7 +11,7 @@ namespace OpenH2.Core.Tests
     public class SceneFactoryTests
     {
         private readonly ITestOutputHelper output;
-        private readonly string ascensionPath = @"D:\Halo 2 Vista Original Maps\ascension.map";
+        private readonly string ascensionPath = @"D:\H2vMaps\ascension.map";
 
         public SceneFactoryTests(ITestOutputHelper output)
         {
@@ -23,7 +23,7 @@ namespace OpenH2.Core.Tests
         {
             var mapStream = new FileStream(ascensionPath, FileMode.Open, FileAccess.Read, FileShare.Read);
 
-            var factory = new MapFactory();
+            var factory = new MapFactory(Path.GetDirectoryName(ascensionPath));
 
             var sw = new Stopwatch();
             sw.Restart();
@@ -54,7 +54,7 @@ namespace OpenH2.Core.Tests
         {
             var mapStream = new FileStream(ascensionPath, FileMode.Open, FileAccess.Read, FileShare.Read);
 
-            var factory = new MapFactory();
+            var factory = new MapFactory(Path.GetDirectoryName(ascensionPath));
 
             var scene = factory.FromFile(mapStream);
 

@@ -14,7 +14,7 @@ namespace OpenH2.Core.Factories
     {
         private static TagCreatorGenerator generator = new TagCreatorGenerator();
 
-        public static BaseTag CreateTag(uint id, string name, TagIndexEntry index, TrackingChunk chunk, TrackingReader sceneReader)
+        public static BaseTag CreateTag(uint id, string name, TagIndexEntry index, TrackingChunk chunk, H2vReader reader)
         {
             var tagType = GetTypeForTag(index.Tag);
 
@@ -25,7 +25,7 @@ namespace OpenH2.Core.Factories
 
             var tag = tagCreator(id, name, chunk.Span, index.Offset.OriginalValue) as BaseTag;
 
-            tag.PopulateExternalData(sceneReader);
+            tag.PopulateExternalData(reader);
 
             return tag as BaseTag;
         }

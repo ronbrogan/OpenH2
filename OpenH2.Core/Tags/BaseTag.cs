@@ -17,6 +17,6 @@ namespace OpenH2.Core.Tags
             this.Id = id;
         }
 
-        public virtual void PopulateExternalData(TrackingReader sceneReader) { }
+        public virtual void PopulateExternalData(H2vReader reader) { }
     }
 }

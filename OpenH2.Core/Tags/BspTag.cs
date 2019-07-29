@@ -100,15 +100,15 @@ namespace OpenH2.Core.Tags
         //public object[] MiscObject23Cao { get; set; }
 
 
-        public override void PopulateExternalData(TrackingReader sceneReader)
+        public override void PopulateExternalData(H2vReader sceneReader)
         {
             foreach(var chunk in RenderChunks)
             {
-                var chunkResourceChunkStart = chunk.DataBlockRawOffset + 8 + chunk.DataPreambleSize;
-
                 foreach(var resource in chunk.Resources)
                 {
-                    var data = sceneReader.Chunk((int)(chunkResourceChunkStart + resource.Offset), resource.Size, "Bsp Render Data");
+                    var offset = new NormalOffset((int)(chunk.DataBlockRawOffset + 8 + chunk.DataPreambleSize + resource.Offset));
+
+                    var data = sceneReader.Chunk(offset, resource.Size, "Bsp Render Data");
 
                     resource.Data = data.AsMemory();
                 }

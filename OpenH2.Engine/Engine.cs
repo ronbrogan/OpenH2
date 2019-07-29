@@ -112,9 +112,9 @@ namespace OpenH2.Engine
 
         public void LoadMap(Scene destination)
         {
-            var mapPath = @"D:\Halo 2 Vista Original Maps\ascension.map";
+            var mapPath = @"D:\H2vMaps\ascension.map";
 
-            var factory = new MapFactory();
+            var factory = new MapFactory(Path.GetDirectoryName(mapPath));
             var map = factory.FromFile(File.OpenRead(mapPath));
 
             var translator = new TagTranslator(map);

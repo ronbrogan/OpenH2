@@ -1,4 +1,6 @@
-﻿using OpenH2.Core.Extensions;
+﻿using OpenH2.Core.Enums;
+using OpenH2.Core.Extensions;
+using OpenH2.Core.Offsets;
 using OpenH2.Core.Parsing;
 using OpenH2.Core.Tags.Layout;
 using OpenH2.Core.Types;
@@ -40,20 +42,16 @@ namespace OpenH2.Core.Tags
         [InternalReferenceValue(96)]
         public Shader[] Shaders { get; set; }
 
-        public override void PopulateExternalData(TrackingReader sceneReader)
+        public override void PopulateExternalData(H2vReader sceneReader)
         {
             foreach(var part in Parts)
             {
-                part.Data = sceneReader.Chunk((int)part.DataOffset, (int)part.DataSize).AsMemory();
+                var offset = new NormalOffset((int)part.DataOffset);
+
+                part.Data = sceneReader.Chunk(offset, (int)part.DataSize).AsMemory();
                 var data = part.Data.Span;
 
                 var mesh = new ModeMesh();
-
-                // HACK: Once we get data from shared files, this can be removed
-                //if (data.ReadStringFrom(0, 5) == "ERROR")
-                //{
-                //    return mesh;
-                //}
 
                 mesh.ShaderCount = data.ReadUInt32At(8);
                 mesh.UnknownCount = data.ReadUInt32At(16);

@@ -51,7 +51,7 @@ namespace OpenH2.TextureViewer
 
             using (var map = new FileStream(mapPath, FileMode.Open, FileAccess.Read, FileShare.Read))
             {
-                var factory = new MapFactory();
+                var factory = new MapFactory(Path.GetDirectoryName(mapPath));
                 scene = factory.FromFile(map);
             }
 
@@ -136,7 +136,7 @@ namespace OpenH2.TextureViewer
             }
             while (candidate.LevelsOfDetail[0].Data.Length == 0);
 
-            Console.WriteLine("Bitm index: " + CurrentBitmap + ", " + candidate.Name);
+            Console.WriteLine("[" + CurrentBitmap + "] @ " + candidate.ID + ", " + candidate.Name);
         }
 
         private static void Render(double time)

@@ -16,12 +16,12 @@ namespace OpenH2.BspMetaAnalysis
         {
             var mapNames = new string[]
             {
-                @"D:\Halo 2 Vista Original Maps\ascension.map"
+                @"D:\H2vMaps\ascension.map"
             };
 
             var metas = mapNames.Select(s =>
             {
-                var fac = new MapFactory();
+                var fac = new MapFactory(Path.GetDirectoryName(s));
                 using (var fs = new FileStream(s, FileMode.Open))
                     return fac.FromFile(fs);
             }).ToDictionary(s => s.Header.Name, s => s);

@@ -63,7 +63,7 @@ namespace OpenH2.Core.Tests.Tags
 
             public SubTag FirstSubValue { get; set; }
 
-            public override void PopulateExternalData(TrackingReader sceneReader)
+            public override void PopulateExternalData(H2vReader sceneReader)
             {
                 FirstSubValue = SubValues[0];
             }

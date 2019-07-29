@@ -57,7 +57,19 @@ namespace OpenH2.ScenarioExplorer.ViewModels
 
         public Memory<byte> Data { get; set; }
 
-        public string OriginalTagJson { get; private set; }
+        private string _tagJson;
+        public string OriginalTagJson { get
+            {
+                if(_tagJson == null)
+                {
+                    return JsonConvert.SerializeObject(_originalTag, Formatting.Indented, serializerSettings);
+                }
+                else
+                {
+                    return _tagJson;
+                }
+            }
+        }
 
         private BaseTag _originalTag;
 
@@ -71,7 +83,7 @@ namespace OpenH2.ScenarioExplorer.ViewModels
 
                 if(value != null)
                 {
-                    OriginalTagJson = JsonConvert.SerializeObject(value, Formatting.Indented, serializerSettings);
+                    _tagJson = null;
                 }
             }
         }
