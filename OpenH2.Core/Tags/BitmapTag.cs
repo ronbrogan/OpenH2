@@ -103,25 +103,18 @@ namespace OpenH2.Core.Tags
                 
                 if (lod.Offset.Value != 0 && lod.Offset.Value != int.MaxValue && lod.Size != 0)
                 {
-                    // Need to offset 2 bytes into data to bypass zlib header for compatibility with DeflateStream
                     var data = sceneReader.Chunk(lod.Offset, (int)lod.Size, "Bitmap").Span;
 
-                    if(this.Properties.HasFlag(TextureProperties.Compressed))
-                    {
-                        var zlibData = data.Slice(2).ToArray();
+                    // Need to offset 2 bytes into data to bypass zlib header for compatibility with DeflateStream
+                    var zlibData = data.Slice(2).ToArray();
 
-                        using (var inputStream = new MemoryStream(zlibData))
-                        using (var decompress = new DeflateStream(inputStream, CompressionMode.Decompress))
-                        using (var outputStream = new MemoryStream((int)inputStream.Length))
-                        {
-                            decompress.CopyTo(outputStream);
-
-                            lod.Data = new Memory<byte>(outputStream.GetBuffer()).Slice(0, (int)outputStream.Length);
-                        }
-                    }
-                    else
+                    using (var inputStream = new MemoryStream(zlibData))
+                    using (var decompress = new DeflateStream(inputStream, CompressionMode.Decompress))
+                    using (var outputStream = new MemoryStream((int)inputStream.Length))
                     {
-                        lod.Data = data.ToArray();
+                        decompress.CopyTo(outputStream);
+
+                        lod.Data = new Memory<byte>(outputStream.GetBuffer()).Slice(0, (int)outputStream.Length);
                     }
                 }
 
