@@ -3,8 +3,10 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using OpenH2.Core.Tags;
+using OpenH2.Core.Extensions;
 using Xunit;
 using Xunit.Abstractions;
+using OpenH2.Core.Representations;
 
 namespace OpenH2.Core.Tests
 {
@@ -54,13 +56,16 @@ namespace OpenH2.Core.Tests
         {
             var mapStream = new FileStream(ascensionPath, FileMode.Open, FileAccess.Read, FileShare.Read);
 
+            var raw = mapStream.ToMemory();
+            mapStream.Seek(0, SeekOrigin.Begin);
+
             var factory = new MapFactory(Path.GetDirectoryName(ascensionPath));
 
             var scene = factory.FromFile(mapStream);
 
             mapStream.Dispose();
 
-            var sig = scene.CalculateSignature();
+            var sig = H2vMap.CalculateSignature(raw);
 
             Assert.Equal(scene.Header.StoredSignature, sig);
         }

@@ -69,9 +69,12 @@ namespace OpenH2.ScenarioExplorer
         {
             using (var file = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read))
             {
+                var rawData = file.ToMemory();
+                file.Seek(0, SeekOrigin.Begin);
+
                 var factory = new MapFactory(Path.GetDirectoryName(path));
                 var scene = factory.FromFile(file);
-                var vm = new ScenarioViewModel(scene);
+                var vm = new ScenarioViewModel(scene, rawData);
 
                 DataCtx.LoadedScenario = vm;
             }

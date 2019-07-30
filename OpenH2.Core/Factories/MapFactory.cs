@@ -18,17 +18,19 @@ namespace OpenH2.Core.Factories
         private const string SinglePlayerSharedName = "single_player_shared.map";
 
         private H2vReader baseReader;
-        private H2vMap mainMenu;
-        private H2vMap spShared;
-        private H2vMap mpShared;
+        private H2vLazyLoadingMap mainMenu;
+        private H2vLazyLoadingMap spShared;
+        private H2vLazyLoadingMap mpShared;
 
+        // TODO: If sp maps only reference spShared and mp maps only reference mpShared, 
+        // only load the relevant maps when a playable map is loaded
         public MapFactory(string mapRoot)
         {
             baseReader = GetBaseReader(mapRoot);
 
-            mainMenu = InternalFromFile(new H2vReader(baseReader.MainMenu, baseReader));
-            spShared = InternalFromFile(new H2vReader(baseReader.SpShared, baseReader));
-            mpShared = InternalFromFile(new H2vReader(baseReader.MpShared, baseReader));
+            mainMenu = LazyLoadingMapFromReader(new H2vReader(baseReader.MainMenu, baseReader));
+            spShared = LazyLoadingMapFromReader(new H2vReader(baseReader.SpShared, baseReader));
+            mpShared = LazyLoadingMapFromReader(new H2vReader(baseReader.MpShared, baseReader));
         }
 
         private H2vReader GetBaseReader(string mapRoot)
@@ -68,32 +70,41 @@ namespace OpenH2.Core.Factories
             return new H2vReader(mapReader, baseReader);
         }
 
-        private H2vMap CreateNonPlayableMap(H2vReader reader)
+        private H2vMap InternalFromFile(H2vReader reader, bool lazyLoadTags = false)
         {
-            var scene = new H2vMap(mainMenu, mpShared, spShared);
-            this.ExtractMetadata(scene, reader);
-            return scene;
-        }
+            var scene = new H2vMap(reader, mainMenu, mpShared, spShared);
 
-        private H2vMap InternalFromFile(H2vReader reader)
-        {
-            var scene = new H2vMap(mainMenu, mpShared, spShared);
-            scene.RawData = reader.MapReader.Memory;
+            this.LoadMetadata(scene, reader);
 
-            this.ExtractMetadata(scene, reader);
+            if(lazyLoadTags == false)
+            {
+                LoadAllTags(scene, reader);
+            }
             
             return scene;
         }
 
-        private void ExtractMetadata(H2vMap scene, H2vReader reader)
+        private H2vLazyLoadingMap LazyLoadingMapFromReader(H2vReader reader)
+        {
+            var scene = new H2vLazyLoadingMap(reader);
+
+            this.LoadMetadata(scene, reader);
+
+            return scene;
+        }
+
+        private void LoadMetadata(H2vBaseMap scene, H2vReader reader)
         {
             scene.Header = GetSceneHeader(scene, reader.MapReader);
             scene.IndexHeader = GetIndexHeader(scene, reader.MapReader);
             scene.PrimaryMagic = CalculatePrimaryMagic(scene.IndexHeader);
-            scene.TagIndex = GetObjectIndexList(scene, reader.MapReader);
+            scene.TagIndex = GetTagIndex(scene, reader.MapReader);
             scene.SecondaryMagic = CalculateSecondaryMagic(scene.Header, scene.TagIndex.First());
+        }
 
-            scene.Tags = GetTags(scene, reader);
+        private void LoadAllTags(H2vMap scene, H2vReader reader)
+        {
+            scene.SetTags(GetTags(scene, reader));
         }
 
         private Dictionary<uint, BaseTag> GetTags(H2vMap scene, H2vReader reader)
@@ -101,27 +112,29 @@ namespace OpenH2.Core.Factories
             var dict = new Dictionary<uint, BaseTag>();
             var index = scene.TagIndex;
 
-            var fileIndex = reader.MapReader.Chunk(scene.Header.FilesIndex, scene.Header.FileCount * 4, "FileIndex").Span;
-            var fileTable = reader.MapReader.Chunk(scene.Header.FileTableOffset, scene.Header.FileTableSize, "FileTable").Span;
-
             foreach(var item in index)
             {
-                if (item == null || item.MetaSize == 0 || item.Offset.OriginalValue == 0)
+                if (item == null || item.DataSize == 0 || item.Offset.OriginalValue == 0)
                     continue;
 
-                var chunk = reader.MapReader.Chunk(item.Offset.Value, item.MetaSize, "Tag");
-
-                var nameIndex = (short)(item.ID & 0x0000FFFF);
-                var nameStart = fileIndex.ReadInt32At(4 * nameIndex);
-                var name = fileTable.ReadStringStarting(nameStart);
-
-                dict[item.ID] = TagFactory.CreateTag(item.ID, name, item, chunk, reader);
+                dict[item.ID] = GetTag(item, scene.Header, reader);
             }
 
             return dict;
         }
 
-        private H2vMapHeader GetSceneHeader(H2vMap scene, TrackingReader reader)
+        public static BaseTag GetTag(TagIndexEntry entry, H2vMapHeader header, H2vReader reader)
+        {
+            var nameIndexOffset = (short)(entry.ID & 0x0000FFFF) * 4;
+            var nameStart = reader.MapReader.Span.ReadInt32At(header.FilesIndex + nameIndexOffset);
+            var name = reader.MapReader.Span.ReadStringStarting(header.FileTableOffset + nameStart);
+
+            var chunk = reader.MapReader.Chunk(entry.Offset.Value, entry.DataSize, "Tag");
+
+            return TagFactory.CreateTag(entry.ID, name, entry, chunk, reader);
+        }
+
+        private H2vMapHeader GetSceneHeader(H2vBaseMap scene, TrackingReader reader)
         {
             var head = new H2vMapHeader();
             var span = reader.Chunk(H2vMapHeader.Layout.Offset, H2vMapHeader.Layout.Length, "Header").Span;
@@ -150,7 +163,7 @@ namespace OpenH2.Core.Factories
             return head;
         }
 
-        public IndexHeader GetIndexHeader(H2vMap scene, TrackingReader reader)
+        public IndexHeader GetIndexHeader(H2vBaseMap scene, TrackingReader reader)
         {
             var header = scene.Header;
             var span = reader.Chunk(header.IndexOffset.Value, IndexHeader.Length, "IndexHeader").Span;
@@ -160,53 +173,30 @@ namespace OpenH2.Core.Factories
             index.FileRawOffset =         /**/  header.IndexOffset;
             index.PrimaryMagicConstant =  /**/  span.ReadInt32At(0);
             index.TagListCount =          /**/  span.ReadInt32At(4);
-            index.ObjectIndexOffset =     /**/  scene.PrimaryOffset(span.ReadInt32At(8));
+            index.TagIndexOffset =     /**/  scene.PrimaryOffset(span.ReadInt32At(8));
             index.ScenarioID =            /**/  span.ReadInt32At(12);
             index.TagIDStart =            /**/  span.ReadInt32At(16);
             index.Unknown1 =              /**/  span.ReadInt32At(20);
-            index.ObjectCount =           /**/  span.ReadInt32At(24);
+            index.TagIndexCount =           /**/  span.ReadInt32At(24);
             index.TagsLabel =             /**/  span.ReadStringFrom(28, 4);
 
             return index;
         }
 
-        public TagTree GetTagList(IndexHeader index, TrackingReader reader)
-        {
-            var span = reader.Chunk(index.FileRawOffset.Value + IndexHeader.Length, index.TagListCount * 12, "TagTree").Span;
-
-            var tree = new TagTree();
-            var nullVal = new string(new byte[] { 0xFF, 0xFF, 0xFF, 0xFF }.Select(b => (char)b).ToArray());
-
-            for (var i = 0; i < index.TagListCount; i++)
-            {
-                var entryBase = i * 12;
-
-                var c = span.ReadStringFrom(entryBase, 4).Reverse();
-                var p = span.ReadStringFrom(entryBase + 4, 4).Reverse();
-                if (p == nullVal)
-                    p = null;
-                var gp = span.ReadStringFrom(entryBase + 8, 4).Reverse();
-                if (gp == nullVal)
-                    gp = null;
-
-                tree.Add(c, p, gp);
-            }
-
-            return tree;
-        }
-
-        public List<TagIndexEntry> GetObjectIndexList(H2vMap scene, TrackingReader reader)
+        public TagIndexEntry[] GetTagIndex(H2vBaseMap scene, TrackingReader reader)
         {
             var index = scene.IndexHeader;
-            var listBytes = reader.Chunk(index.ObjectIndexOffset.Value, index.ObjectCount * TagIndexEntry.Size, "ObjectIndexList").Span;
+            var listBytes = reader.Chunk(index.TagIndexOffset.Value, index.TagIndexCount * TagIndexEntry.Size, "TagIndex").Span;
             var nullObjTag = new string(new byte[] { 0xFF, 0xFF, 0xFF, 0xFF }.Select(b => (char)b).ToArray());
 
-            var list = new List<TagIndexEntry>(index.ObjectCount);
+            var list = new List<TagIndexEntry>(index.TagIndexCount);
 
-            for (var i = 0; i < index.ObjectCount; i++)
+            for (var i = 0; i < index.TagIndexCount; i++)
             {
                 var entryBase = i * 16;
 
+                // PERF: determine how frequent nullTags are, this could be a waste
+                // It could be a waste no matter what, 2 string allocs when only one is needed
                 var tag = listBytes.ReadStringFrom(entryBase, 4).Reverse();
 
                 if (tag == nullObjTag)
@@ -217,16 +207,16 @@ namespace OpenH2.Core.Factories
                     Tag = tag,
                     ID = listBytes.ReadUInt32At(entryBase + 4),
                     Offset = new SecondaryOffset(scene, listBytes.ReadInt32At(entryBase + 8)),
-                    MetaSize = listBytes.ReadInt32At(entryBase + 12)
+                    DataSize = listBytes.ReadInt32At(entryBase + 12)
                 };
 
-                if (entry.MetaSize == 0)
+                if (entry.DataSize == 0)
                     continue;
 
                 list.Add(entry);
             }
 
-            return list;
+            return list.ToArray();
         }
 
         public int CalculatePrimaryMagic(IndexHeader index)

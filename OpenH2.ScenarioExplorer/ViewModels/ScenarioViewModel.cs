@@ -22,11 +22,9 @@ namespace OpenH2.ScenarioExplorer.ViewModels
 
         public ScenarioViewModel() { }
 
-        public ScenarioViewModel(H2vMap scene)
+        public ScenarioViewModel(H2vMap scene, Memory<byte> sceneData)
         {
-            var sceneData = scene.RawData.Span;
-
-            this.Tags = new List<TagViewModel>(scene.TagIndex.Count);
+            this.Tags = new List<TagViewModel>(scene.TagIndex.Length);
 
             foreach (var tagEntry in scene.TagIndex)
             {
@@ -35,8 +33,8 @@ namespace OpenH2.ScenarioExplorer.ViewModels
                 var vm = new TagViewModel(tagEntry.ID, tagEntry.Tag, tag?.Name)
                 {
                     InternalOffsetStart = tagEntry.Offset.OriginalValue,
-                    InternalOffsetEnd = tagEntry.Offset.OriginalValue + tagEntry.MetaSize,
-                    Data = sceneData.Slice(tagEntry.Offset.Value, tagEntry.MetaSize).ToArray(),
+                    InternalOffsetEnd = tagEntry.Offset.OriginalValue + tagEntry.DataSize,
+                    Data = sceneData.Slice(tagEntry.Offset.Value, tagEntry.DataSize).ToArray(),
                 };
 
                 vm.OriginalTag = tag;

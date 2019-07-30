@@ -5,7 +5,7 @@ namespace OpenH2.Core.Extensions
 {
     public static class MapExtensions
     {
-        public static PrimaryOffset PrimaryOffset(this H2vMap scene, int value)
+        public static PrimaryOffset PrimaryOffset(this H2vBaseMap scene, int value)
         {
             return new PrimaryOffset(scene, value);
         }
