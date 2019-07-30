@@ -31,7 +31,7 @@ namespace OpenH2.Core.Representations
 
             if (entry != null)
             {
-                tag = MapFactory.GetTag(entry, this.Header, this.reader) as T;
+                tag = MapFactory.GetTag(this, entry, this.reader) as T;
                 return true;
             }
 

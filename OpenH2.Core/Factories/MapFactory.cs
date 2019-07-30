@@ -117,21 +117,19 @@ namespace OpenH2.Core.Factories
                 if (item == null || item.DataSize == 0 || item.Offset.OriginalValue == 0)
                     continue;
 
-                dict[item.ID] = GetTag(item, scene.Header, reader);
+                dict[item.ID] = GetTag(scene, item, reader);
             }
 
             return dict;
         }
 
-        public static BaseTag GetTag(TagIndexEntry entry, H2vMapHeader header, H2vReader reader)
+        public static BaseTag GetTag(H2vBaseMap scene, TagIndexEntry entry, H2vReader reader)
         {
             var nameIndexOffset = (short)(entry.ID & 0x0000FFFF) * 4;
-            var nameStart = reader.MapReader.Span.ReadInt32At(header.FilesIndex + nameIndexOffset);
-            var name = reader.MapReader.Span.ReadStringStarting(header.FileTableOffset + nameStart);
+            var nameStart = reader.MapReader.Span.ReadInt32At(scene.Header.FilesIndex + nameIndexOffset);
+            var name = reader.MapReader.Span.ReadStringStarting(scene.Header.FileTableOffset + nameStart);
 
-            var chunk = reader.MapReader.Chunk(entry.Offset.Value, entry.DataSize, "Tag");
-
-            return TagFactory.CreateTag(entry.ID, name, entry, chunk, reader);
+            return TagFactory.CreateTag(entry.ID, name, entry, scene.SecondaryMagic, reader);
         }
 
         private H2vMapHeader GetSceneHeader(H2vBaseMap scene, TrackingReader reader)

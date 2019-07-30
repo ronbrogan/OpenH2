@@ -307,13 +307,6 @@ namespace OpenH2.Core.Tags.Serialization.SerializerEmit
             gen.Emit(OpCodes.Newobj, resultCtor);
             gen.Emit(OpCodes.Stloc, result);
 
-            // TODO when deserializing is non-local only, this shouldn't be necessary anymore
-            // If offset is negative, bypass entity creation
-            gen.Emit(OpCodes.Ldloc, offset);
-            gen.Emit(OpCodes.Ldc_I4_0);
-            gen.Emit(OpCodes.Clt);
-            gen.Emit(OpCodes.Brtrue, loopEnd);
-
             // var i = 0; goto loopcheck
             gen.Emit(OpCodes.Ldc_I4_0);
             gen.Emit(OpCodes.Stloc, i);
@@ -331,7 +324,7 @@ namespace OpenH2.Core.Tags.Serialization.SerializerEmit
                 gen.Emit(OpCodes.Ldarg, TagCreatorArguments.GetArgumentLocation(TagCreatorArguments.Name.Id)); // load id
                 gen.Emit(OpCodes.Ldarg, TagCreatorArguments.GetArgumentLocation(TagCreatorArguments.Name.Name)); // load name
                 gen.Emit(OpCodes.Ldarg, TagCreatorArguments.GetArgumentLocation(TagCreatorArguments.Name.Data)); // load span
-                gen.Emit(OpCodes.Ldarg, TagCreatorArguments.GetArgumentLocation(TagCreatorArguments.Name.Magic)); // load magic
+                gen.Emit(OpCodes.Ldarg, TagCreatorArguments.GetArgumentLocation(TagCreatorArguments.Name.SecondaryMagic)); // load magic
 
                 // offset + (i * length)
                 gen.Emit(OpCodes.Ldloc, offset);
@@ -400,7 +393,7 @@ namespace OpenH2.Core.Tags.Serialization.SerializerEmit
             gen.Emit(OpCodes.Ldc_I4, prop.LayoutAttribute.Offset); // Load offset onto evalstack
             gen.Emit(OpCodes.Add); // start + offset
 
-            gen.Emit(OpCodes.Ldarg, TagCreatorArguments.GetArgumentLocation(TagCreatorArguments.Name.Magic)); // load magic
+            gen.Emit(OpCodes.Ldarg, TagCreatorArguments.GetArgumentLocation(TagCreatorArguments.Name.SecondaryMagic)); // load magic
 
             gen.Emit(OpCodes.Call, MI.SpanByte.ReadMetaCaoAt); // consume count from above and InternalOffset
 

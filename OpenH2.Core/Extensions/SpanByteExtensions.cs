@@ -159,7 +159,7 @@ namespace OpenH2.Core.Extensions
 
         public static CountAndOffset ReadMetaCaoAt(this Span<byte> data, int offset, int magic)
         {
-            return new CountAndOffset(data.ReadInt32At(offset), new TagInternalOffset(magic, data.ReadInt32At(offset + 4)));
+            return new CountAndOffset(data.ReadInt32At(offset), new SecondaryOffset(magic, data.ReadInt32At(offset + 4)));
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

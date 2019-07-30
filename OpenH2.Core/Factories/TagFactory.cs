@@ -14,7 +14,7 @@ namespace OpenH2.Core.Factories
     {
         private static TagCreatorGenerator generator = new TagCreatorGenerator();
 
-        public static BaseTag CreateTag(uint id, string name, TagIndexEntry index, TrackingChunk chunk, H2vReader reader)
+        public static BaseTag CreateTag(uint id, string name, TagIndexEntry index, int secondaryMagic, H2vReader reader)
         {
             var tagType = GetTypeForTag(index.Tag);
 
@@ -23,7 +23,11 @@ namespace OpenH2.Core.Factories
 
             var tagCreator = generator.GetTagCreator(tagType);
 
-            var tag = tagCreator(id, name, chunk.Span, index.Offset.OriginalValue) as BaseTag;
+            var mapData = reader.MapReader.Span;
+
+            // Instead of locally offset chunk span, we'll pass a span of the whole file so that
+            // basic SecondaryOffsets can be used to jump around without crazy logic
+            var tag = tagCreator(id, name, mapData, secondaryMagic, index.Offset.Value) as BaseTag;
 
             tag.PopulateExternalData(reader);
 

@@ -15,7 +15,7 @@ namespace OpenH2.Core.Tags.Serialization.SerializerEmit
             Id,
             Name,
             Data,
-            Magic,
+            SecondaryMagic,
             StartAt
         }
 
@@ -24,7 +24,7 @@ namespace OpenH2.Core.Tags.Serialization.SerializerEmit
             { Name.Id, typeof(uint) },
             { Name.Name, typeof(string) },
             { Name.Data, typeof(Span<byte>) },
-            { Name.Magic, typeof(int) },
+            { Name.SecondaryMagic, typeof(int) },
             { Name.StartAt, typeof(int) }
         };
 
