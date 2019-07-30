@@ -52,11 +52,18 @@ namespace OpenH2.Engine.EntityFactories
                 {
                     var bitms = shader.BitmapInfos[0];
 
+                    if (bitms == null)
+                        continue;
+
                     map.TryGetTag<BitmapTag>(bitms.DiffuseBitmapId, out var diffuse);
 
                     mat.DiffuseMap = diffuse;
 
-                    var bitmRefs = shader.Parameters.SelectMany(p => p.BitmapParameter1s.Select(b => b.BitmapId));
+                    // TODO: investigate why these are null on 0a_oldmombossa
+                    var bitmRefs = shader.Parameters
+                        .SelectMany(p => p.BitmapParameter1s.Select(b => b?.BitmapId))
+                        .Where(r => r.HasValue)
+                        .Select(r => r.Value);
 
                     foreach (var bitmRef in bitmRefs)
                     {

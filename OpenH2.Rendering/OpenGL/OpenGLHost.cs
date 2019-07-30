@@ -25,7 +25,7 @@ namespace OpenH2.Rendering.OpenGL
 
         public void CreateWindow()
         {
-            window = new GameWindow(800, 450, GraphicsMode.Default, "OpenH2", GameWindowFlags.Default, DisplayDevice.Default, 4, 0, GraphicsContextFlags.Debug);
+            window = new GameWindow(1600, 900, GraphicsMode.Default, "OpenH2", GameWindowFlags.Default, DisplayDevice.Default, 4, 0, GraphicsContextFlags.Debug);
 
             GL.Enable(EnableCap.DepthTest);
         }
@@ -35,7 +35,9 @@ namespace OpenH2.Rendering.OpenGL
             window.UpdateFrame += (s, e) => updateCallback(e.Time);
             window.RenderFrame += (s, e) =>
             {
+                GL.ClearColor(0.2f, 0.2f, 0.2f, 1f);
                 GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
+
 
                 renderCallback(e.Time);
                 window.SwapBuffers();

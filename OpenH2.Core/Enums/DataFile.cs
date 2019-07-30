@@ -9,6 +9,6 @@ namespace OpenH2.Core.Enums
         Local = 0b0,
         MainMenu = 0b100,
         Shared = 0b1000,
-        SinglePlayerShared = 0b1
+        SinglePlayerShared = 0b1100
     }
 }

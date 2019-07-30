@@ -63,7 +63,7 @@ void main() {
 		diffuse_color = texture(Data.DiffuseMap, texcoord);
 	}
 
-    float ambientStrength = 0.2;
+    float ambientStrength = 0.4;
     vec4 ambient = ambientStrength * ambient_color;
 
     vec3 norm = normalize(world_normal);

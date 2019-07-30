@@ -1,18 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Numerics;
-using System.Runtime.InteropServices;
-using System.Text;
-using OpenH2.Core.Architecture;
+﻿using OpenH2.Core.Architecture;
 using OpenH2.Core.Factories;
 using OpenH2.Core.Tags;
 using OpenH2.Engine.Components;
 using OpenH2.Engine.Entities;
 using OpenH2.Engine.EntityFactories;
 using OpenH2.Engine.Stores;
-using OpenH2.Engine.Systems;
 using OpenH2.Foundation.Engine;
 using OpenH2.Rendering;
 using OpenH2.Rendering.Abstractions;
@@ -20,7 +12,8 @@ using OpenH2.Rendering.OpenGL;
 using OpenH2.Rendering.Shaders;
 using OpenH2.Translation;
 using OpenH2.Translation.TagData;
-using OpenTK.Graphics.OpenGL;
+using System.IO;
+using System.Linq;
 
 namespace OpenH2.Engine
 {
@@ -31,9 +24,7 @@ namespace OpenH2.Engine
         IGameLoopSource gameLoop;
         public IRenderAccumulator<BitmapTag> RenderAccumulator;
 
-
         private World world;
-
 
         public Engine()
         {
@@ -50,8 +41,6 @@ namespace OpenH2.Engine
         {
             graphicsHost.CreateWindow();
 
-            
-
             world = new RealtimeWorld(this);
 
             var scene = new Scene();
@@ -66,11 +55,6 @@ namespace OpenH2.Engine
 
         private void Update(double timestep)
         {
-
-            // process all non-render systems in correct order
-
-
-
             world.Update(timestep);
         }
 
@@ -105,14 +89,14 @@ namespace OpenH2.Engine
                 ViewPosition = pos
             };
 
-            graphicsAdapter.UseMatricies(matrices);
+            graphicsAdapter.BeginFrame(matrices);
 
             RenderAccumulator.DrawAndFlush();
         }
 
         public void LoadMap(Scene destination)
         {
-            var mapPath = @"D:\H2vMaps\ascension.map";
+            var mapPath = @"D:\H2vMaps\zanzibar.map";
 
             var factory = new MapFactory(Path.GetDirectoryName(mapPath));
             var map = factory.FromFile(File.OpenRead(mapPath));

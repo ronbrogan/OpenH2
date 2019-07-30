@@ -13,7 +13,8 @@ namespace OpenH2.Rendering.Abstractions
     /// </summary>
     public interface IGraphicsAdapter
     {
-        void UseMatricies(GlobalUniform matricies);
+        void BeginFrame(GlobalUniform matricies);
         void DrawMesh(Mesh mesh, IMaterial<BitmapTag> material, Matrix4x4 transform);
+        void EndFrame();
     }
 }

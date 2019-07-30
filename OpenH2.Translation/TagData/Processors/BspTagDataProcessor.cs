@@ -31,14 +31,18 @@ namespace OpenH2.Translation.TagData.Processors
             for (var c = 0; c < bsp.RenderChunks.Length; c++)
             {
                 var chunk = bsp.RenderChunks[c];
-                var verts = ProcessVerticies(chunk);
 
                 if (chunk.Resources.Length < 9)
                 {
                     // TODO investigate when differing amount of resources
                     // Skip if we don't have the right data setup
+                    var skipModel = new BspTagData.RenderModel();
+                    skipModel.Meshes = new List<Mesh>();
+                    tagData.RenderModels[c] = skipModel;
                     continue;
                 }
+
+                var verts = ProcessVerticies(chunk);
 
                 var partResource = chunk.Resources[0];
                 var partData = partResource.Data.Span;

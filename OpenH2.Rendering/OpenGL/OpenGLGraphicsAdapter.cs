@@ -18,15 +18,17 @@ namespace OpenH2.Rendering.OpenGL
         private int? defaultShader;
         int MatriciesUniformHandle;
         int GenericUniformHandle;
-        private GlobalUniform MatriciesUniform;
+        private GlobalUniform GlobalUniform;
 
         public OpenGLGraphicsAdapter()
         {
         }
 
-        public void UseMatricies(GlobalUniform matricies)
+        public void BeginFrame(GlobalUniform global)
         {
-            MatriciesUniform = matricies;
+            GlobalUniform = global;
+            UseGenericShader();
+            SetupGlobalUniform();
         }
 
         public uint UploadMesh(Mesh mesh)
@@ -53,6 +55,10 @@ namespace OpenH2.Rendering.OpenGL
             return vao;
         }
 
+        public void EndFrame()
+        {
+        }
+
         public void SetupTextures(IMaterial<BitmapTag> material)
         {
             if (boundTextures.Contains(material))
@@ -71,9 +77,7 @@ namespace OpenH2.Rendering.OpenGL
         public void DrawMesh(Mesh mesh, IMaterial<BitmapTag> material, Matrix4x4 transform)
         {
             SetupTextures(material);
-            UseGenericShader();
-            SetupMatrixUniform();
-
+            
             if (Matrix4x4.Invert(transform, out var inverted) == false)
             {
                 throw new Exception("Couldn't invert model matrix");
@@ -117,6 +121,7 @@ namespace OpenH2.Rendering.OpenGL
                 defaultShader = ShaderCompiler.CreateStandardShader();
             }
 
+            // PERF: dedupe shader uses
             GL.UseProgram(defaultShader.Value);
         }
 
@@ -127,6 +132,7 @@ namespace OpenH2.Rendering.OpenGL
                 vaoId = UploadMesh(mesh);
             }
 
+            // PERF: dedupe vao bindings
             GL.BindVertexArray(vaoId);
         }
 
@@ -153,15 +159,20 @@ namespace OpenH2.Rendering.OpenGL
             GL.VertexAttribPointer(4, 3, VertexAttribPointerType.Float, false, VertexFormat.Size, 44);
         }
 
-        private void SetupMatrixUniform()
+        private void SetupGlobalUniform()
         {
-            
-            if(MatriciesUniformHandle == default(int))
+            if (MatriciesUniformHandle == default(int))
+            {
                 GL.GenBuffers(1, out MatriciesUniformHandle);
+                GL.BindBuffer(BufferTarget.UniformBuffer, MatriciesUniformHandle);
+                GL.BufferData(BufferTarget.UniformBuffer, GlobalUniform.Size, IntPtr.Zero, BufferUsageHint.DynamicDraw);
+            }
+            else
+            {
+                GL.BindBuffer(BufferTarget.UniformBuffer, MatriciesUniformHandle);
+            }
 
-            GL.BindBuffer(BufferTarget.UniformBuffer, MatriciesUniformHandle);
-
-            GL.BufferData(BufferTarget.UniformBuffer, GlobalUniform.Size, ref MatriciesUniform, BufferUsageHint.DynamicDraw);
+            GL.BufferSubData(BufferTarget.UniformBuffer, IntPtr.Zero, GlobalUniform.Size, ref GlobalUniform);
 
             GL.BindBufferBase(BufferRangeTarget.UniformBuffer, 0, MatriciesUniformHandle);
             GL.BindBuffer(BufferTarget.UniformBuffer, 0);
