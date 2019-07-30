@@ -59,12 +59,7 @@ namespace OpenH2.Engine.EntityFactories
 
                     mat.DiffuseMap = diffuse;
 
-                    // TODO: investigate why these are null on 0a_oldmombossa
-                    var bitmRefs = shader.Parameters
-                        .SelectMany(p => p.BitmapParameter1s.Select(b => b?.BitmapId))
-                        .Where(r => r.HasValue)
-                        .Select(r => r.Value);
-
+                    var bitmRefs = shader.Parameters.SelectMany(p => p.BitmapParameter1s.Select(b => b.BitmapId));
                     foreach (var bitmRef in bitmRefs)
                     {
                         if(map.TryGetTag<BitmapTag>(bitmRef, out var bitm) && bitm.TextureUsage == Core.Enums.Texture.TextureUsage.Bump)
