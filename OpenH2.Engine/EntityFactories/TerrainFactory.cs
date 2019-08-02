@@ -5,7 +5,6 @@ using OpenH2.Core.Tags;
 using OpenH2.Engine.Components;
 using OpenH2.Engine.Entities;
 using OpenH2.Foundation;
-using OpenH2.Translation.TagData;
 using System.Collections.Generic;
 using System.Linq;
 

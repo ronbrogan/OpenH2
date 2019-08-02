@@ -109,6 +109,10 @@ namespace OpenH2.Core.CodeGenTests
 
         public class TestTag : BaseTag
         {
+            public TestTag(uint id) : base(id)
+            {
+            }
+
             [PrimitiveValue(0)]
             public int Value1 { get; set; }
 

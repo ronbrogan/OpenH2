@@ -1,19 +1,17 @@
 ﻿using OpenH2.Core.Factories;
 using OpenH2.Core.Representations;
+using OpenH2.Core.Tags;
+using OpenH2.Foundation;
 using OpenH2.Rendering.OpenGL;
-using OpenH2.Translation;
-using OpenH2.Translation.TagData;
+using OpenH2.Rendering.Shaders;
+using OpenTK.Graphics.OpenGL;
+using OpenTK.Input;
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using OpenTK.Graphics.OpenGL;
-using OpenH2.Foundation;
 using System.Numerics;
-using OpenH2.Rendering.Shaders;
-using OpenH2.Core.Tags;
 using System.Runtime.InteropServices;
-using OpenTK.Input;
-using System.Collections.Generic;
 
 namespace OpenH2.TextureViewer
 {
@@ -157,9 +155,6 @@ namespace OpenH2.TextureViewer
                     break;
                 case MeshElementType.TriangleStrip:
                     GL.DrawElements(PrimitiveType.TriangleStrip, indicies.Length, DrawElementsType.UnsignedInt, 0);
-                    break;
-                case MeshElementType.PolygonList:
-                    GL.DrawElements(PrimitiveType.Polygon, indicies.Length, DrawElementsType.UnsignedInt, 0);
                     break;
             }
         }

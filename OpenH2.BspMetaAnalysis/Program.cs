@@ -2,11 +2,10 @@
 using System.IO;
 using System.Linq;
 using System.Text;
-using OpenH2.Translation;
-using OpenH2.Translation.TagData;
 using System.Drawing;
 using System;
 using System.Collections.Generic;
+using OpenH2.Core.Tags;
 
 namespace OpenH2.BspMetaAnalysis
 {
@@ -28,9 +27,7 @@ namespace OpenH2.BspMetaAnalysis
 
             var ascension = metas["ascension"];
 
-            var translator = new TagTranslator(ascension);
-
-            var bsps = translator.GetAll<BspTagData>().ToList();
+            var bsps = ascension.GetLocalTagsOfType<BspTag>().ToArray();
 
             for(var i = 0; i < bsps.Count(); i++)
             {
@@ -44,15 +41,15 @@ namespace OpenH2.BspMetaAnalysis
             }
         }
 
-        public static string CreateMtlFileForBsp(BspTagData tag)
+        public static string CreateMtlFileForBsp(BspTag tag)
         {
             var sb = new StringBuilder();
 
             var alreadyGenerated = new HashSet<uint>();
 
-            for (var i = 0; i < tag.RenderModels.Length; i++)
+            for (var i = 0; i < tag.RenderChunks.Length; i++)
             {
-                var model = tag.RenderModels[i];
+                var model = tag.RenderChunks[i].Model;
 
                 foreach (var mesh in model.Meshes)
                 {
@@ -99,15 +96,15 @@ namespace OpenH2.BspMetaAnalysis
             return color;
         }
 
-        public static string CreatObjFileForBsp(BspTagData tag)
+        public static string CreatObjFileForBsp(BspTag tag)
         {
             var sb = new StringBuilder();
 
             var vertsWritten = 1;
 
-            for(var i = 0; i < tag.RenderModels.Length; i++)
+            for(var i = 0; i < tag.RenderChunks.Length; i++)
             {
-                var model = tag.RenderModels[i];
+                var model = tag.RenderChunks[i].Model;
                 sb.AppendLine($"o BspChunk.{i}");
 
                 var verts = model.Meshes.First().Verticies;

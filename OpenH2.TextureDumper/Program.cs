@@ -1,11 +1,8 @@
 ﻿using OpenH2.Core.Factories;
 using OpenH2.Core.Representations;
-using OpenH2.Translation;
+using OpenH2.Core.Tags;
 using System;
 using System.IO;
-using OpenH2.Translation.TagData;
-using System.Linq;
-using OpenH2.Core.Tags;
 
 namespace OpenH2.TextureDumper
 {
@@ -35,9 +32,6 @@ namespace OpenH2.TextureDumper
                 var factory = new MapFactory(Path.GetDirectoryName(mapPath));
                 scene = factory.FromFile(map);
             }
-
-
-            var translator = new TagTranslator(scene);
 
             var bitmaps = scene.GetLocalTagsOfType<BitmapTag>();
 

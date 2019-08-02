@@ -57,61 +57,6 @@ namespace OpenH2.Core.Tags
                 var meshes = ModelResouceContainerProcessor.ProcessContainer(part, ModelShaderReferences);
                 part.Model = new MeshCollection(meshes);
             }
-
-            //foreach(var part in Parts)
-            //{
-            //    var offset = new NormalOffset((int)part.DataOffset);
-
-            //    part.Data = sceneReader.Chunk(offset, (int)part.DataSize).AsMemory();
-            //    var data = part.Data.Span;
-
-            //    var mesh = new ModeMesh();
-
-            //    mesh.ShaderCount = data.ReadUInt32At(8);
-            //    mesh.UnknownCount = data.ReadUInt32At(16);
-            //    mesh.IndiciesCount = data.ReadUInt32At(40);
-            //    mesh.BoneCount = data.ReadUInt32At(108);
-
-            //    mesh.ShaderData = new Memory<byte>[mesh.ShaderCount];
-            //    for (var i = 0; i < mesh.ShaderCount; i++)
-            //    {
-            //        mesh.ShaderData[i] = new Memory<byte>(
-            //            data.Slice(mesh.ShaderDataOffset + (i * mesh.ShaderChunkSize), 4 + (int)(mesh.ShaderCount * mesh.ShaderChunkSize))
-            //            .ToArray());
-            //    }
-
-            //    mesh.UnknownData = new Memory<byte>[mesh.UnknownCount];
-            //    for (var i = 0; i < mesh.UnknownCount; i++)
-            //    {
-            //        mesh.UnknownData[i] = new Memory<byte>(
-            //            data.Slice(mesh.UnknownDataOffset + (i * mesh.UnknownChunkSize), 4 + (int)(mesh.UnknownCount * mesh.UnknownChunkSize))
-            //            .ToArray());
-            //    }
-
-            //    mesh.Indicies = new int[mesh.IndiciesCount];
-            //    for (var i = 0; i < mesh.IndiciesCount; i++)
-            //    {
-            //        mesh.Indicies[i] = data.ReadUInt16At(mesh.IndiciesDataOffset + 4 + (2 * i));
-            //    }
-
-            //    mesh.Verticies = new VertexFormat[part.VertexCount];
-            //    for (var i = 0; i < part.VertexCount; i++)
-            //    {
-            //        var basis = mesh.VertexDataOffset + 4 + (i * 12);
-
-            //        var vert = new VertexFormat();
-            //        vert.Position = new Vector3(
-            //            data.ReadFloatAt(basis),
-            //            data.ReadFloatAt(basis + 4),
-            //            data.ReadFloatAt(basis + 8));
-
-            //        mesh.Verticies[i] = vert;
-            //    }
-
-            //    part.Mesh = mesh;
-            //}
-
-
         }
 
         [FixedLength(56)]

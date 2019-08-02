@@ -10,8 +10,6 @@ using OpenH2.Rendering;
 using OpenH2.Rendering.Abstractions;
 using OpenH2.Rendering.OpenGL;
 using OpenH2.Rendering.Shaders;
-using OpenH2.Translation;
-using OpenH2.Translation.TagData;
 using System.IO;
 using System.Linq;
 
