@@ -80,6 +80,8 @@ namespace OpenH2.ScenarioExplorer
             }
         }
 
+        
+
         private void CreateMenu(ScenarioExplorerViewModel vm)
         {
             /*

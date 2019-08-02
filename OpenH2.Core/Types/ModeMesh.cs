@@ -1,4 +1,5 @@
-﻿using System;
+﻿using OpenH2.Foundation;
+using System;
 using System.Collections.Generic;
 using System.Text;
 
@@ -16,9 +17,9 @@ namespace OpenH2.Core.Types
         
         public Memory<byte>[] UnknownData { get; set; }
         
-        public ushort[] Indicies { get; set; }
+        public int[] Indicies { get; set; }
         
-        public Vertex[] Verticies { get; set; }
+        public VertexFormat[] Verticies { get; set; }
 
 
         public int ShaderChunkSize => 72;

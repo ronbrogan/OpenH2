@@ -12,7 +12,7 @@ namespace OpenH2.Engine.Components
 
         public Vector3 Orientation { get; set; } = Vector3.Zero;
 
-        public Mesh[] Meshes { get; set; }
+        public Mesh[] Meshes { get; set; } = new Mesh[0];
 
         public Dictionary<uint, IMaterial<BitmapTag>> Materials { get; set; } = new Dictionary<uint, IMaterial<BitmapTag>>();
 

@@ -52,6 +52,11 @@ namespace OpenH2.Engine.Systems
 
             var speed = 0.1f;
 
+            if(kb[Key.LControl])
+            {
+                speed = 1.0f;
+            }
+
             var keyMap = new Dictionary<Key, Action>
             {
                 { Key.W, () => UpdateMovers(movers, new Vector3(0, speed, 0)) },

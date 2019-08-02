@@ -2,8 +2,10 @@
 using OpenH2.Core.Extensions;
 using OpenH2.Core.Offsets;
 using OpenH2.Core.Parsing;
+using OpenH2.Core.Tags.Common;
 using OpenH2.Core.Tags.Layout;
 using OpenH2.Core.Types;
+using OpenH2.Foundation;
 using System;
 using System.Numerics;
 
@@ -40,62 +42,74 @@ namespace OpenH2.Core.Tags
         public Marker[] Markers { get; set; }
 
         [InternalReferenceValue(96)]
-        public Shader[] Shaders { get; set; }
+        public ModelShaderReference[] ModelShaderReferences { get; set; }
 
         public override void PopulateExternalData(H2vReader sceneReader)
         {
             foreach(var part in Parts)
             {
-                var offset = new NormalOffset((int)part.DataOffset);
-
-                part.Data = sceneReader.Chunk(offset, (int)part.DataSize).AsMemory();
-                var data = part.Data.Span;
-
-                var mesh = new ModeMesh();
-
-                mesh.ShaderCount = data.ReadUInt32At(8);
-                mesh.UnknownCount = data.ReadUInt32At(16);
-                mesh.IndiciesCount = data.ReadUInt32At(40);
-                mesh.BoneCount = data.ReadUInt32At(108);
-
-                mesh.ShaderData = new Memory<byte>[mesh.ShaderCount];
-                for (var i = 0; i < mesh.ShaderCount; i++)
+                foreach(var resource in part.Resources)
                 {
-                    mesh.ShaderData[i] = new Memory<byte>(
-                        data.Slice(mesh.ShaderDataOffset + (i * mesh.ShaderChunkSize), 4 + (int)(mesh.ShaderCount * mesh.ShaderChunkSize))
-                        .ToArray());
+                    var dataOffset = part.DataBlockRawOffset + 8 + part.DataPreambleSize + resource.Offset;
+                    resource.Data = sceneReader.Chunk(new NormalOffset((int)dataOffset), resource.Size, "ModelMesh").AsMemory();
                 }
 
-                mesh.UnknownData = new Memory<byte>[mesh.UnknownCount];
-                for (var i = 0; i < mesh.UnknownCount; i++)
-                {
-                    mesh.UnknownData[i] = new Memory<byte>(
-                        data.Slice(mesh.UnknownDataOffset + (i * mesh.UnknownChunkSize), 4 + (int)(mesh.UnknownCount * mesh.UnknownChunkSize))
-                        .ToArray());
-                }
-
-                mesh.Indicies = new ushort[mesh.IndiciesCount];
-                for (var i = 0; i < mesh.IndiciesCount; i++)
-                {
-                    mesh.Indicies[i] = data.ReadUInt16At(mesh.IndiciesDataOffset + 4 + (2 * i));
-                }
-
-                mesh.Verticies = new Vertex[part.VertexCount];
-                for (var i = 0; i < part.VertexCount; i++)
-                {
-                    var basis = mesh.VertexDataOffset + 4 + (i * 12);
-
-                    var vert = new Vertex();
-                    vert.Position = new Vector3(
-                        data.ReadFloatAt(basis),
-                        data.ReadFloatAt(basis + 4),
-                        data.ReadFloatAt(basis + 8));
-
-                    mesh.Verticies[i] = vert;
-                }
-
-                part.Mesh = mesh;
+                var meshes = ModelResouceContainerProcessor.ProcessContainer(part, ModelShaderReferences);
+                part.Model = new MeshCollection(meshes);
             }
+
+            //foreach(var part in Parts)
+            //{
+            //    var offset = new NormalOffset((int)part.DataOffset);
+
+            //    part.Data = sceneReader.Chunk(offset, (int)part.DataSize).AsMemory();
+            //    var data = part.Data.Span;
+
+            //    var mesh = new ModeMesh();
+
+            //    mesh.ShaderCount = data.ReadUInt32At(8);
+            //    mesh.UnknownCount = data.ReadUInt32At(16);
+            //    mesh.IndiciesCount = data.ReadUInt32At(40);
+            //    mesh.BoneCount = data.ReadUInt32At(108);
+
+            //    mesh.ShaderData = new Memory<byte>[mesh.ShaderCount];
+            //    for (var i = 0; i < mesh.ShaderCount; i++)
+            //    {
+            //        mesh.ShaderData[i] = new Memory<byte>(
+            //            data.Slice(mesh.ShaderDataOffset + (i * mesh.ShaderChunkSize), 4 + (int)(mesh.ShaderCount * mesh.ShaderChunkSize))
+            //            .ToArray());
+            //    }
+
+            //    mesh.UnknownData = new Memory<byte>[mesh.UnknownCount];
+            //    for (var i = 0; i < mesh.UnknownCount; i++)
+            //    {
+            //        mesh.UnknownData[i] = new Memory<byte>(
+            //            data.Slice(mesh.UnknownDataOffset + (i * mesh.UnknownChunkSize), 4 + (int)(mesh.UnknownCount * mesh.UnknownChunkSize))
+            //            .ToArray());
+            //    }
+
+            //    mesh.Indicies = new int[mesh.IndiciesCount];
+            //    for (var i = 0; i < mesh.IndiciesCount; i++)
+            //    {
+            //        mesh.Indicies[i] = data.ReadUInt16At(mesh.IndiciesDataOffset + 4 + (2 * i));
+            //    }
+
+            //    mesh.Verticies = new VertexFormat[part.VertexCount];
+            //    for (var i = 0; i < part.VertexCount; i++)
+            //    {
+            //        var basis = mesh.VertexDataOffset + 4 + (i * 12);
+
+            //        var vert = new VertexFormat();
+            //        vert.Position = new Vector3(
+            //            data.ReadFloatAt(basis),
+            //            data.ReadFloatAt(basis + 4),
+            //            data.ReadFloatAt(basis + 8));
+
+            //        mesh.Verticies[i] = vert;
+            //    }
+
+            //    part.Mesh = mesh;
+            //}
 
 
         }
@@ -170,7 +184,7 @@ namespace OpenH2.Core.Tags
         }
 
         [FixedLength(92)]
-        public class Part
+        public class Part : IModelResourceContainer
         {
             [PrimitiveValue(0)]
             public uint Type { get; set; } // TODO: make an enum with types
@@ -178,30 +192,36 @@ namespace OpenH2.Core.Tags
             [PrimitiveValue(4)]
             public ushort VertexCount { get; set; }
 
+            [PrimitiveValue(6)]
+            public ushort TriangleCount { get; set; }
+
             [PrimitiveValue(20)]
             public ushort BoneCount { get; set; }
 
             [PrimitiveValue(56)]
-            public uint DataOffset { get; set; }
+            public uint DataBlockRawOffset { get; set; }
 
             [PrimitiveValue(60)]
-            public uint DataSize { get; set; }
-
-            public Memory<byte> Data { get; set; }
+            public uint DataBlockSize { get; set; }
 
             [PrimitiveValue(64)]
-            public uint DataHeaderSize { get; set; }
+            public uint DataPreambleSize { get; set; }
 
             [PrimitiveValue(68)]
             public uint DataBodySize { get; set; }
+
+            public Memory<byte> Data { get; set; }
+
+            [InternalReferenceValue(72)]
+            public ModelResource[] Resources { get; set; }
 
             [PrimitiveValue(80)]
             public uint ResourceSize { get; set; }
 
             [PrimitiveValue(84)]
-            public uint ResouceOffset { get; set; }
+            public uint ResourceOffset { get; set; }
 
-            public ModeMesh Mesh { get; set; }
+            public MeshCollection Model { get; set; }
         }
 
         // TODO, I think bones are just always after parts, without explicit reference...
@@ -275,13 +295,6 @@ namespace OpenH2.Core.Tags
 
             [PrimitiveValue(56)]
             public float Roll { get; set; }
-        }
-
-        [FixedLength(32)]
-        public class Shader
-        {
-            [PrimitiveValue(12)]
-            public uint ShaderId { get; set; }
         }
     }
 }

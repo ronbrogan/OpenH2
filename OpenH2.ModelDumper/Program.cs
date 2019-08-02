@@ -1,6 +1,7 @@
 ﻿using OpenH2.Core.Factories;
 using OpenH2.Core.Representations;
 using OpenH2.Core.Tags;
+using OpenH2.Core.Tags.Common;
 using OpenH2.Core.Types;
 using System;
 using System.Collections.Generic;
@@ -57,7 +58,7 @@ namespace OpenH2.ModelDumper
                     Console.WriteLine($"Writing {writeName} to {writePath}");
 
                     //File.WriteAllBytes(writePathAndName + ".model", modelTag.Parts[i].RawData);
-                    File.WriteAllText(writePathAndName + ".obj", CreatObjFileForMesh(modelTag.Parts[0].Mesh));
+                    File.WriteAllText(writePathAndName + ".obj", CreatObjFileForMesh(modelTag.Parts[0].Model));
 
                     processed++;
                 }
@@ -68,46 +69,80 @@ namespace OpenH2.ModelDumper
             Console.ReadLine();
         }
 
-        public static string CreatObjFileForMesh(ModeMesh mesh)
+        public static string CreatObjFileForMesh(MeshCollection model)
         {
-            var triangles = new List<(int, int, int)>();
-
-            for (int i = 0; i < mesh.Indicies.Length - 2; i++)
-            {
-                (int, int, int) triangle = default((int, int, int));
-
-                if(i % 2 == 0)
-                {
-                    triangle = (
-                        mesh.Indicies[i] + 1,
-                        mesh.Indicies[i + 1] + 1,
-                        mesh.Indicies[i + 2] + 1
-                    );
-                }
-                else
-                {
-                    triangle = (
-                        mesh.Indicies[i] + 1,
-                        mesh.Indicies[i + 2] + 1,
-                        mesh.Indicies[i + 1] + 1
-                    );
-                }
-
-
-                triangles.Add(triangle);
-            }
+            var verts = model.Meshes[0].Verticies;
 
             var sb = new StringBuilder();
 
-            foreach(var vert in mesh.Verticies)
+            foreach (var vert in verts)
             {
                 sb.AppendLine($"v {vert.Position.X.ToString("0.000000")} {vert.Position.Y.ToString("0.000000")} {vert.Position.Z.ToString("0.000000")}");
             }
 
-            foreach(var tri in triangles)
+            foreach (var vert in verts)
             {
-                sb.AppendLine($"f {tri.Item1} {tri.Item2} {tri.Item3}");
+                sb.AppendLine($"vt {vert.TexCoords.X.ToString("0.000000")} {vert.TexCoords.Y.ToString("0.000000")}");
             }
+
+            foreach (var vert in verts)
+            {
+                sb.AppendLine($"vn {vert.Normal.X.ToString("0.000000")} {vert.Normal.Y.ToString("0.000000")} {vert.Normal.Z.ToString("0.000000")}");
+            }
+
+            var vertsWritten = 1;
+
+            foreach (var mesh in model.Meshes)
+            {
+                var matId = mesh.MaterialIdentifier + 1;
+
+                sb.AppendLine($"g BspChunk.{matId}");
+                sb.AppendLine($"usemtl {matId}");
+
+                for (var j = 0; j < mesh.Indicies.Length; j += 3)
+                {
+                    var indicies = (mesh.Indicies[j], mesh.Indicies[j + 1], mesh.Indicies[j + 2]);
+
+                    sb.Append("f");
+                    sb.Append($" {indicies.Item1 + vertsWritten}/{indicies.Item1 + vertsWritten}/{indicies.Item1 + vertsWritten}");
+                    sb.Append($" {indicies.Item2 + vertsWritten}/{indicies.Item2 + vertsWritten}/{indicies.Item2 + vertsWritten}");
+                    sb.Append($" {indicies.Item3 + vertsWritten}/{indicies.Item3 + vertsWritten}/{indicies.Item3 + vertsWritten}");
+
+                    sb.AppendLine("");
+                }
+            }
+
+            
+
+            //var triangles = new List<(int, int, int)>();
+
+            
+
+            //for (int i = 0; i < mesh.Indicies.Length - 2; i++)
+            //{
+            //    (int, int, int) triangle = default((int, int, int));
+
+            //    if(i % 2 == 0)
+            //    {
+            //        triangle = (
+            //            mesh.Indicies[i] + 1,
+            //            mesh.Indicies[i + 1] + 1,
+            //            mesh.Indicies[i + 2] + 1
+            //        );
+            //    }
+            //    else
+            //    {
+            //        triangle = (
+            //            mesh.Indicies[i] + 1,
+            //            mesh.Indicies[i + 2] + 1,
+            //            mesh.Indicies[i + 1] + 1
+            //        );
+            //    }
+
+
+            //    triangles.Add(triangle);
+            //}
+
 
             return sb.ToString();
         }

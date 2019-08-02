@@ -5,11 +5,12 @@ namespace OpenH2.Core.Tags
     [TagLabel("scnr")]
     public class ScenarioTag : BaseTag
     {
+        public override string Name { get; set; }
         public ScenarioTag(uint id) : base(id)
         {
         }
 
-        public override string Name { get; set; }
+        
 
         [InternalReferenceValue(8)]
         public SkyboxReference[] SkyboxReferences { get; set; }

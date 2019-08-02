@@ -65,37 +65,41 @@
       <TabControl>
         <TabItem Header="Offset">
           <StackPanel Orientation="Vertical" DataContext="{Binding SelectedOffsetData}" Margin="15">
-            <StackPanel Orientation="Horizontal" >
+            <StackPanel Orientation="Horizontal" VerticalAlignment="Center" >
+              <TextBlock Text="Offset: "></TextBlock>
+              <Button Command="{Binding CopyData}" CommandParameter="{Binding SelectedOffset}" Content="{Binding SelectedOffset}" Padding="0" Background="Transparent" Foreground="Blue"></Button>
+            </StackPanel>
+            <StackPanel Orientation="Horizontal" VerticalAlignment="Center" >
               <TextBlock Text="Internal Offset: "></TextBlock>
-              <TextBlock Text="{Binding InternalOffset}"></TextBlock>
+              <Button Command="{Binding CopyData}" CommandParameter="{Binding InternalOffset}" Content="{Binding InternalOffset}" Padding="0" Background="Transparent" Foreground="Blue"></Button>
             </StackPanel>
-            <StackPanel Orientation="Horizontal" >
+            <StackPanel Orientation="Horizontal" VerticalAlignment="Center" >
               <TextBlock Text="Byte: "></TextBlock>
-              <TextBlock Text="{Binding Byte}"></TextBlock>
+              <Button Command="{Binding CopyData}" CommandParameter="{Binding Byte}" Content="{Binding Byte}" Padding="0" Background="Transparent" Foreground="Blue"></Button>
             </StackPanel>
-            <StackPanel Orientation="Horizontal" >
+            <StackPanel Orientation="Horizontal" VerticalAlignment="Center" >
               <TextBlock Text="Short: "></TextBlock>
-              <TextBlock Text="{Binding Short}"></TextBlock>
+              <Button Command="{Binding CopyData}" CommandParameter="{Binding Short}" Content="{Binding SelectedOffset}" Padding="0" Background="Transparent" Foreground="Blue"></Button>
             </StackPanel>
-            <StackPanel Orientation="Horizontal" >
+            <StackPanel Orientation="Horizontal" VerticalAlignment="Center" >
               <TextBlock Text="UShort: "></TextBlock>
-              <TextBlock Text="{Binding UShort}"></TextBlock>
+              <Button Command="{Binding CopyData}" CommandParameter="{Binding UShort}" Content="{Binding UShort}" Padding="0" Background="Transparent" Foreground="Blue"></Button>
             </StackPanel>
-            <StackPanel Orientation="Horizontal" >
+            <StackPanel Orientation="Horizontal" VerticalAlignment="Center" >
               <TextBlock Text="Int: "></TextBlock>
-              <TextBlock Text="{Binding Int}"></TextBlock>
+              <Button Command="{Binding CopyData}" CommandParameter="{Binding Int}" Content="{Binding Int}" Padding="0" Background="Transparent" Foreground="Blue"></Button>
             </StackPanel>
-            <StackPanel Orientation="Horizontal" >
+            <StackPanel Orientation="Horizontal" VerticalAlignment="Center" >
               <TextBlock Text="UInt: "></TextBlock>
-              <TextBlock Text="{Binding UInt}"></TextBlock>
+              <Button Command="{Binding CopyData}" CommandParameter="{Binding UInt}" Content="{Binding UInt}" Padding="0" Background="Transparent" Foreground="Blue"></Button>
             </StackPanel>
-            <StackPanel Orientation="Horizontal" >
+            <StackPanel Orientation="Horizontal" VerticalAlignment="Center" >
               <TextBlock Text="Float: "></TextBlock>
-              <TextBlock Text="{Binding Float}"></TextBlock>
+              <Button Command="{Binding CopyData}" CommandParameter="{Binding Float}" Content="{Binding Float}" Padding="0" Background="Transparent" Foreground="Blue"></Button>
             </StackPanel>
-            <StackPanel Orientation="Horizontal" >
+            <StackPanel Orientation="Horizontal" VerticalAlignment="Center" >
               <TextBlock Text="String: "></TextBlock>
-              <TextBlock Text="{Binding String}"></TextBlock>
+              <Button Command="{Binding CopyData}" CommandParameter="{Binding String}" Content="{Binding String}" Padding="0" Background="Transparent" Foreground="Blue"></Button>
             </StackPanel>
           </StackPanel>
         </TabItem>

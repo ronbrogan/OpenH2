@@ -4,6 +4,7 @@ using PropertyChanged;
 using System.ComponentModel;
 using System.Linq;
 using Avalonia.Controls;
+using System;
 
 namespace OpenH2.ScenarioExplorer.ViewModels
 {
@@ -66,6 +67,5 @@ namespace OpenH2.ScenarioExplorer.ViewModels
         public DataPreviewViewModel SelectedOffsetData { get; set; }
 
         public bool DisableHexViewer { get; set; }
-
     }
 }

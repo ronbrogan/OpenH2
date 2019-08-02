@@ -4,6 +4,8 @@ using System.Collections.Generic;
 using Newtonsoft.Json;
 using OpenH2.Core.Tags.Layout;
 using OpenH2.Core.Parsing;
+using OpenH2.Core.Tags.Common;
+using OpenH2.Foundation;
 
 namespace OpenH2.Core.Tags
 {
@@ -49,7 +51,7 @@ namespace OpenH2.Core.Tags
         public RenderChunk[] RenderChunks { get; set; }
 
         [InternalReferenceValue(164)]
-        public ShaderInfo2[] ShaderInfo2s { get; set; } 
+        public ModelShaderReference[] ModelShaderReferences { get; set; } 
 
         //[InternalReferenceValue(172)]
         //public object[] MiscObject8Cao { get; set; } 
@@ -102,16 +104,16 @@ namespace OpenH2.Core.Tags
 
         public override void PopulateExternalData(H2vReader sceneReader)
         {
-            foreach(var chunk in RenderChunks)
+            foreach (var part in RenderChunks)
             {
-                foreach(var resource in chunk.Resources)
+                foreach (var resource in part.Resources)
                 {
-                    var offset = new NormalOffset((int)(chunk.DataBlockRawOffset + 8 + chunk.DataPreambleSize + resource.Offset));
-
-                    var data = sceneReader.Chunk(offset, resource.Size, "Bsp Render Data");
-
-                    resource.Data = data.AsMemory();
+                    var dataOffset = part.DataBlockRawOffset + 8 + part.DataPreambleSize + resource.Offset;
+                    resource.Data = sceneReader.Chunk(new NormalOffset((int)dataOffset), resource.Size, "Bsp Render Data").AsMemory();
                 }
+
+                var meshes = ModelResouceContainerProcessor.ProcessContainer(part, ModelShaderReferences);
+                part.Model = new MeshCollection(meshes);
             }
         }
 
@@ -283,9 +285,9 @@ namespace OpenH2.Core.Tags
                 public int edge { get; set; }
             }
         }
-        
+
         [FixedLength(176)]
-        public class RenderChunk
+        public class RenderChunk : IModelResourceContainer
         {
             [PrimitiveValue(0)]
             public ushort VertexCount { get; set; }
@@ -306,40 +308,9 @@ namespace OpenH2.Core.Tags
             public uint ResourceSubsectionSize { get; set; }
 
             [InternalReferenceValue(56)]
-            public Resource[] Resources { get; set; }
+            public ModelResource[] Resources { get; set; }
 
-            [FixedLength(16)]
-            public class Resource
-            {
-                [PrimitiveValue(0)]
-                public ResourceType Type { get; set; }
-
-                [PrimitiveValue(8)]
-                public int Size { get; set; }
-
-                [PrimitiveValue(12)]
-                public int Offset { get; set; }
-
-                public Memory<byte> Data { get; set; }
-
-                [Flags]
-                public enum ResourceType : byte
-                {
-                    One = 1,
-                    Two = 2,
-                    Three = 4
-                }
-            }
-        }
-
-        [FixedLength(32)]
-        public class ShaderInfo2
-        {
-            [PrimitiveValue(12)]
-            public uint ShaderId { get; set; }
-
-            [PrimitiveValue(20)]
-            public uint Offset { get; set; }
+            public MeshCollection Model { get; set; }
         }
     }
 }

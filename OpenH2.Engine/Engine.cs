@@ -96,15 +96,24 @@ namespace OpenH2.Engine
 
         public void LoadMap(Scene destination)
         {
-            var mapPath = @"D:\H2vMaps\zanzibar.map";
+            var mapPath = @"D:\H2vMaps\03a_oldmombasa.map";
 
             var factory = new MapFactory(Path.GetDirectoryName(mapPath));
             var map = factory.FromFile(File.OpenRead(mapPath));
 
-            var translator = new TagTranslator(map);
-            var bsps = translator.GetAll<BspTagData>();
+            var bsps = map.GetLocalTagsOfType<BspTag>();
 
-            destination.AddEntity(TerrainFactory.FromBspData(map, bsps.First()));
+            foreach(var bsp in bsps)
+            {
+                destination.AddEntity(TerrainFactory.FromBspData(map, bsp));
+            }
+
+            var scenery = map.GetLocalTagsOfType<SceneryTag>();
+
+            foreach(var scen in scenery)
+            {
+                destination.AddEntity(SceneryFactory.FromTag(map, scen));
+            }
         }
     }
 }

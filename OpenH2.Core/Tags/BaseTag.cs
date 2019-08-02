@@ -8,10 +8,6 @@ namespace OpenH2.Core.Tags
 
         public readonly uint Id;
 
-        public BaseTag()
-        {
-        }
-
         public BaseTag(uint id)
         {
             this.Id = id;

@@ -61,11 +61,13 @@ namespace OpenH2.Translation.TagData.Processors
                     var matId = partData.ReadUInt16At(start + 4);
                     var indexStart = partData.ReadUInt16At(start + 6);
                     var indexCount = partData.ReadUInt16At(start + 8);
+                    var elementType = (MeshElementType)partData.ReadUInt16At(start + 2);
 
                     var mesh = new Mesh();
                     mesh.Verticies = verts;
                     mesh.Indicies = new int[indexCount];
-                    mesh.MaterialIdentifier = bsp.ShaderInfo2s[matId].ShaderId;
+                    mesh.MaterialIdentifier = bsp.ModelShaderReferences[matId].ShaderId;
+                    mesh.ElementType = elementType;
 
                     for (var j = 0; j < indexCount; j++)
                     {

@@ -4,10 +4,9 @@ using System.Text;
 
 namespace OpenH2.Foundation
 {
-    public enum MeshElementType
+    public enum MeshElementType : ushort
     {
-        TriangleList,
-        TriangleStrip,
-        PolygonList
+        TriangleList = 11,
+        TriangleStrip = 3,
     }
 }

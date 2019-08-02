@@ -35,6 +35,7 @@ namespace OpenH2.ScenarioExplorer.ViewModels
                     InternalOffsetStart = tagEntry.Offset.OriginalValue,
                     InternalOffsetEnd = tagEntry.Offset.OriginalValue + tagEntry.DataSize,
                     Data = sceneData.Slice(tagEntry.Offset.Value, tagEntry.DataSize).ToArray(),
+                    RawOffset = tagEntry.Offset.Value
                 };
 
                 vm.OriginalTag = tag;

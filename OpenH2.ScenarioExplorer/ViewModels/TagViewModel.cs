@@ -11,6 +11,7 @@ using OpenH2.Core.Tags;
 using Newtonsoft.Json.Serialization;
 using OpenH2.Foundation;
 using OpenH2.Core.Types;
+using OpenH2.Core.Tags.Common;
 
 namespace OpenH2.ScenarioExplorer.ViewModels
 {
@@ -19,7 +20,8 @@ namespace OpenH2.ScenarioExplorer.ViewModels
         private HashSet<Type> bannedTypes = new HashSet<Type>()
         {
             typeof(VertexFormat[]),
-            typeof(Vertex[])
+            typeof(Vertex[]),
+            typeof(MeshCollection)
         };
 
         public override JsonContract ResolveContract(Type type)
@@ -95,6 +97,7 @@ namespace OpenH2.ScenarioExplorer.ViewModels
         public int InternalOffsetEnd { get; set; }
 
         public List<CaoViewModel> Caos { get; set; } = new List<CaoViewModel>();
+        public int RawOffset { get; internal set; }
 
         public void GeneratePointsOfInterest()
         {

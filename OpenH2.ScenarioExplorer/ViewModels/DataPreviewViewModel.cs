@@ -21,7 +21,8 @@ namespace OpenH2.ScenarioExplorer.ViewModels
             this.Float = data.ReadFloatAt(offset);
             this.String = data.ReadStringFrom(offset, 32);
 
-            this.InternalOffset = (uint)(data.ReadUInt32At(offset) - tag.InternalOffsetStart);
+            this.InternalOffset = (long)data.ReadUInt32At(offset) - tag.InternalOffsetStart;
+            this.SelectedOffset = tag.RawOffset + offset;
         }
 
         public byte Byte { get; set; }
@@ -38,6 +39,13 @@ namespace OpenH2.ScenarioExplorer.ViewModels
 
         public string String { get; set; }
 
-        public uint InternalOffset { get; set; }
+        public long InternalOffset { get; set; }
+
+        public long SelectedOffset { get; set; }
+
+        public void CopyData(string data)
+        {
+            App.Current.Clipboard.SetTextAsync(data);
+        }
     }
 }
