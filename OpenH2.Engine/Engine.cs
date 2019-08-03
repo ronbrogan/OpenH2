@@ -10,6 +10,7 @@ using OpenH2.Rendering;
 using OpenH2.Rendering.Abstractions;
 using OpenH2.Rendering.OpenGL;
 using OpenH2.Rendering.Shaders;
+using System;
 using System.IO;
 using System.Linq;
 
@@ -66,6 +67,7 @@ namespace OpenH2.Engine
 
                 foreach(var mesh in model.Meshes)
                 {
+                    mesh.Note = model.Note;
                     RenderAccumulator.AddRigidBody(mesh, renderList.Materials[mesh.MaterialIdentifier], modelMatrix);
                 }
             }
@@ -94,10 +96,12 @@ namespace OpenH2.Engine
 
         public void LoadMap(Scene destination)
         {
-            var mapPath = @"D:\H2vMaps\03a_oldmombasa.map";
+            var mapPath = @"D:\H2vMaps\zanzibar.map";
 
             var factory = new MapFactory(Path.GetDirectoryName(mapPath));
             var map = factory.FromFile(File.OpenRead(mapPath));
+
+            var scenario = map.GetLocalTagsOfType<ScenarioTag>().First();
 
             var bsps = map.GetLocalTagsOfType<BspTag>();
 
@@ -106,12 +110,12 @@ namespace OpenH2.Engine
                 destination.AddEntity(TerrainFactory.FromBspData(map, bsp));
             }
 
-            var scenery = map.GetLocalTagsOfType<SceneryTag>();
-
-            foreach(var scen in scenery)
+            foreach(var scen in scenario.SceneryInstances)
             {
-                destination.AddEntity(SceneryFactory.FromTag(map, scen));
+                destination.AddEntity(SceneryFactory.FromTag(map, scenario, scen));
             }
+
+            PositioningEntities.AddLocators(map, destination);
         }
     }
 }

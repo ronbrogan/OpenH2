@@ -19,7 +19,7 @@ namespace OpenH2.Core.Tags
         public int Type { get; set; }
 
         [PrimitiveValue(4)]
-        public float Scale_maybe { get; set; }
+        public float UniformScale { get; set; }
 
         [PrimitiveValue(16)]
         public float Unknown { get; set; }

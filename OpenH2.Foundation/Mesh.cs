@@ -5,8 +5,8 @@
         public int[] Indicies { get; set; }
         public VertexFormat[] Verticies { get; set; }
         public MeshElementType ElementType { get; set; }
-
-        // TODO: Material
         public uint MaterialIdentifier { get; set; }
+
+        public string Note { get; set; }
     }
 }

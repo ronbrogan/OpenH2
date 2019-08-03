@@ -22,7 +22,9 @@ namespace OpenH2.Engine.Stores
             {
                 Meshes = component.Meshes,
                 Position = component.Position,
-                Orientation = component.Orientation
+                Orientation = component.Orientation,
+                Scale = component.Scale,
+                Note = component.Note
             };
 
             foreach (var mat in component.Materials)

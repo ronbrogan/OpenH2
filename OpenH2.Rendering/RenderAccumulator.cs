@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Numerics;
 using OpenH2.Core.Architecture;
 using OpenH2.Core.Tags;
@@ -10,10 +11,9 @@ namespace OpenH2.Rendering
     public class RenderAccumulator : IRenderAccumulator<BitmapTag>
     {
         private readonly IGraphicsAdapter adapter;
-        private Dictionary<IMaterial<BitmapTag>, List<Mesh>> meshesByMaterial = new Dictionary<IMaterial<BitmapTag>, List<Mesh>>();
+        private Dictionary<IMaterial<BitmapTag>, List<Guid>> renderablesByMaterial = new Dictionary<IMaterial<BitmapTag>, List<Guid>>();
 
-        private Dictionary<Mesh, IMaterial<BitmapTag>> materials = new Dictionary<Mesh, IMaterial<BitmapTag>>();
-        private Dictionary<Mesh, Matrix4x4> transforms = new Dictionary<Mesh, Matrix4x4>();
+        private Dictionary<Guid, Renderable> renderables = new Dictionary<Guid, Renderable>();
 
         public RenderAccumulator(IGraphicsAdapter graphicsAdapter)
         {
@@ -27,16 +27,24 @@ namespace OpenH2.Rendering
         /// <param name="meshes"></param>
         public void AddRigidBody(Mesh mesh, IMaterial<BitmapTag> mat, Matrix4x4 transform)
         {
-            materials[mesh] = mat;
-            transforms[mesh] = transform;
+            var id = Guid.NewGuid();
 
-            if (meshesByMaterial.TryGetValue(mat, out var meshList))
+            var renderable = new Renderable()
             {
-                meshList.Add(mesh);
+                Material = mat,
+                Mesh = mesh,
+                Transform = transform
+            };
+
+            renderables[id] = renderable;
+
+            if (renderablesByMaterial.TryGetValue(mat, out var meshList))
+            {
+                meshList.Add(id);
             }
             else
             {
-                meshesByMaterial[mat] = new List<Mesh>() { mesh };
+                renderablesByMaterial[mat] = new List<Guid>() { id };
             }
         }
 
@@ -55,19 +63,27 @@ namespace OpenH2.Rendering
         /// </summary>
         public void DrawAndFlush()
         {
-            foreach(var material in meshesByMaterial.Keys)
+            foreach(var mat in renderablesByMaterial.Keys)
             {
-                var meshes = meshesByMaterial[material];
+                var ids = renderablesByMaterial[mat];
 
-                foreach(var mesh in meshes)
+                foreach(var id in ids)
                 {
-                    var xform = transforms[mesh];
+                    var renderable = renderables[id];
 
-                    this.adapter.DrawMesh(mesh, material, xform);
+                    this.adapter.DrawMesh(renderable.Mesh, renderable.Material, renderable.Transform);
                 }
             }
 
-            meshesByMaterial.Clear();
+            renderablesByMaterial.Clear();
+            renderables.Clear();
+        }
+
+        private class Renderable
+        {
+            public Mesh Mesh;
+            public IMaterial<BitmapTag> Material;
+            public Matrix4x4 Transform;
         }
     }
 }

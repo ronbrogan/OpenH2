@@ -11,12 +11,19 @@ namespace OpenH2.Foundation
 
         public Vector3 Orientation { get; set; } = Vector3.Zero;
 
+        public Vector3 Scale { get; set; } = Vector3.One;
+
+        public string Note { get; set; }
+
         public Matrix4x4 CreateTransformationMatrix()
         {
             var translate = Matrix4x4.CreateTranslation(Position);
             var rotate = Matrix4x4.CreateFromYawPitchRoll(Orientation.Z, Orientation.X, Orientation.Y);
+            var scale = Matrix4x4.CreateScale(Scale);
 
-            return Matrix4x4.Multiply(translate, rotate);
+            var scaleRotate = Matrix4x4.Multiply(scale, rotate);
+
+            return Matrix4x4.Multiply(scaleRotate, translate);
         }
     }
 }

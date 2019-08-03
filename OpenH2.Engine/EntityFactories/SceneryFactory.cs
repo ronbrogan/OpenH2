@@ -8,14 +8,18 @@ using OpenH2.Foundation;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Numerics;
 
 namespace OpenH2.Engine.EntityFactories
 {
     public class SceneryFactory
     {
-        public static Scenery FromTag(H2vMap map, SceneryTag tag)
+        public static Scenery FromTag(H2vMap map, ScenarioTag scenario,  ScenarioTag.SceneryInstance instance)
         {
             var scenery = new Scenery();
+
+            var id = scenario.SceneryReferences[instance.SceneryDefinitionIndex].SceneryId;
+            map.TryGetTag<SceneryTag>(id, out var tag);
 
             if(map.TryGetTag<PhysicalModelTag>(tag.HlmtId, out var hlmt) == false)
             {
@@ -28,8 +32,6 @@ namespace OpenH2.Engine.EntityFactories
                 return scenery;
             }
 
-            var components = new List<Component>();
-
             var meshes = new List<Mesh>();
 
             foreach(var part in model.Parts)
@@ -38,8 +40,11 @@ namespace OpenH2.Engine.EntityFactories
             }
 
             var comp = new RenderModelComponent(scenery);
+            comp.Note = $"[{tag.Id}] {tag.Name}";
             comp.Meshes = meshes.ToArray();
-            comp.Position = VectorExtensions.RandomColor() * 20;
+            comp.Position = new Vector3(instance.X, instance.Y, instance.Z);
+            comp.Orientation = new Vector3(instance.Roll, instance.Yaw, instance.Pitch);
+            comp.Scale = new Vector3(tag.UniformScale);
 
             foreach (var mesh in comp.Meshes)
             {
@@ -80,9 +85,8 @@ namespace OpenH2.Engine.EntityFactories
                 }
             }
 
+            var components = new List<Component>();
             components.Add(comp);
-
-
             scenery.SetComponents(components.ToArray());
 
             return scenery;
