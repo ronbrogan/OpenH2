@@ -80,7 +80,8 @@ namespace OpenH2.Rendering.OpenGL
             
             if (Matrix4x4.Invert(transform, out var inverted) == false)
             {
-                throw new Exception("Couldn't invert model matrix");
+                Console.WriteLine("Couldn't invert model matrix: " + mesh.Note);
+                return;
             }
          
             var genericUniform = new GenericUniform()
