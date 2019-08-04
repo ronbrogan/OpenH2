@@ -1,17 +1,15 @@
-﻿using OpenH2.Core.Parsing;
-using OpenH2.Core.Tags.Layout;
+﻿using OpenH2.Core.Tags.Layout;
 using System;
 using System.Collections.Generic;
 using System.Text;
 
 namespace OpenH2.Core.Tags
 {
-    [TagLabel("scen")]
-    public class SceneryTag : BaseTag
+    [TagLabel("bloc")]
+    public class BlocTag : BaseTag
     {
         public override string Name { get; set; }
-
-        public SceneryTag(uint id) : base(id)
+        public BlocTag(uint id) : base(id)
         {
         }
 
@@ -35,15 +33,5 @@ namespace OpenH2.Core.Tags
 
         [PrimitiveValue(88)]
         public uint FootId { get; set; }
-
-        [PrimitiveArray(120, 6)]
-        public float[] Params { get; set; }
-
-        //[InternalReferenceValue(12)]
-        //public ShaderInfo[] Shaders { get; set; }
-
-        public override void PopulateExternalData(H2vReader sceneReader)
-        {
-        }
     }
 }

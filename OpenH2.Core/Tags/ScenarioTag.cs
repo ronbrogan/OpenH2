@@ -25,19 +25,19 @@ namespace OpenH2.Core.Tags
 
         [InternalReferenceValue(176)] public Obj176[] Obj176s { get; set; }
 
-        [InternalReferenceValue(216)] public Obj216[] Obj216s { get; set; }
+        [InternalReferenceValue(216)] public SoundSceneryInstance[] SoundSceneryInstances { get; set; }
 
         [InternalReferenceValue(224)] public Obj224[] Obj224s { get; set; }
 
-        [InternalReferenceValue(232)] public Obj232[] Obj232s { get; set; }
+        [InternalReferenceValue(232)] public LightInstance[] LightInstances { get; set; }
 
         [InternalReferenceValue(240)] public Obj240[] Obj240s { get; set; }
 
-        [InternalReferenceValue(256)] public Obj256[] Obj256s { get; set; }
+        [InternalReferenceValue(256)] public PlayerSpawnMarker[] PlayerSpawnMarkers { get; set; }
 
         [InternalReferenceValue(264)] public Obj264[] Obj264s { get; set; }
 
-        [InternalReferenceValue(280)] public Obj280[] Obj280s { get; set; }
+        [InternalReferenceValue(280)] public GameModeMarker[] GameModeMarkers { get; set; }
 
         [InternalReferenceValue(288)] public Obj288[] Obj288s { get; set; }
 
@@ -67,9 +67,9 @@ namespace OpenH2.Core.Tags
 
         [InternalReferenceValue(792)] public Obj792[] Obj792s { get; set; }
 
-        [InternalReferenceValue(808)] public Obj808[] Obj808s { get; set; }
+        [InternalReferenceValue(808)] public BlocInstance[] BlocInstances { get; set; }
 
-        [InternalReferenceValue(816)] public Obj816[] Obj816s { get; set; }
+        [InternalReferenceValue(816)] public BlocDefinition[] BlocDefinitions { get; set; }
 
         [InternalReferenceValue(840)] public Obj840[] Obj840s { get; set; }
 
@@ -167,7 +167,7 @@ namespace OpenH2.Core.Tags
         }
 
         [FixedLength(80)]
-        public class Obj216
+        public class SoundSceneryInstance
         {
             [PrimitiveValue(8)]
             public float X { get; set; }
@@ -191,7 +191,7 @@ namespace OpenH2.Core.Tags
         [FixedLength(40)] public class Obj224 { }
 
         [FixedLength(108)]
-        public class Obj232
+        public class LightInstance
         {
             [PrimitiveValue(8)]
             public float X { get; set; }
@@ -215,7 +215,7 @@ namespace OpenH2.Core.Tags
         [FixedLength(40)] public class Obj240 { }
 
         [FixedLength(52)]
-        public class Obj256
+        public class PlayerSpawnMarker
         {
             [PrimitiveValue(0)]
             public float X { get; set; }
@@ -241,7 +241,7 @@ namespace OpenH2.Core.Tags
         }
 
         [FixedLength(32)]
-        public class Obj280
+        public class GameModeMarker
         {
             [PrimitiveValue(0)]
             public float X { get; set; }
@@ -278,8 +278,11 @@ namespace OpenH2.Core.Tags
         [FixedLength(816)] public class Obj792 { }
 
         [FixedLength(76)]
-        public class Obj808
+        public class BlocInstance
         {
+            [PrimitiveValue(0)]
+            public ushort SceneryDefinitionIndex { get; set; }
+
             [PrimitiveValue(8)]
             public float X { get; set; }
 
@@ -288,9 +291,22 @@ namespace OpenH2.Core.Tags
 
             [PrimitiveValue(16)]
             public float Z { get; set; }
+
+            [PrimitiveValue(20)]
+            public float Yaw { get; set; }
+
+            [PrimitiveValue(24)]
+            public float Pitch { get; set; }
+
+            [PrimitiveValue(28)]
+            public float Roll { get; set; }
         }
 
-        [FixedLength(40)] public class Obj816 { }
+        [FixedLength(40)] public class BlocDefinition
+        {
+            [PrimitiveValue(4)]
+            public uint BlocId { get; set; }
+        }
 
         [FixedLength(16)] public class Obj840 { }
 

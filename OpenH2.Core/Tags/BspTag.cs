@@ -295,6 +295,8 @@ namespace OpenH2.Core.Tags
             [PrimitiveValue(2)]
             public ushort TriangleCount { get; set; }
 
+            public ushort IndiciesIndex { get; set; } = 2;
+
             [PrimitiveValue(40)]
             public uint DataBlockRawOffset { get; set; }
 

@@ -140,6 +140,21 @@ namespace OpenH2.Core.Tags
             [PrimitiveValue(6)]
             public ushort TriangleCount { get; set; }
 
+            [PrimitiveValue(8)]
+            public ushort IndiciesIndex { get; set; }
+
+            [PrimitiveValue(10)]
+            public ushort Unknown1 { get; set; }
+
+            [PrimitiveValue(12)]
+            public ushort Unknown2 { get; set; }
+
+            [PrimitiveValue(16)]
+            public ushort Unknown3 { get; set; }
+
+            [PrimitiveValue(18)]
+            public ushort Unknown4 { get; set; }
+
             [PrimitiveValue(20)]
             public ushort BoneCount { get; set; }
 

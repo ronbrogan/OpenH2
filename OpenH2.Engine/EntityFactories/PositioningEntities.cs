@@ -44,22 +44,22 @@ namespace OpenH2.Engine.EntityFactories
                 AddAtLocation(168, pos, new Vector3(0, 1, 0), destination);
             }
 
-            foreach (var obj in scenario.Obj216s)
+            foreach (var obj in scenario.SoundSceneryInstances)
             {
                 var pos = new Vector3(obj.X, obj.Y, obj.Z);
                 AddAtLocation(216, pos, new Vector3(0, 0, 1), destination);
             }
 
-            foreach (var obj in scenario.Obj232s)
+            foreach (var obj in scenario.LightInstances)
             {
                 var pos = new Vector3(obj.X, obj.Y, obj.Z);
                 AddAtLocation(232, pos, new Vector3(1, 0, 1), destination);
             }
 
-            foreach (var obj in scenario.Obj256s)
+            foreach (var obj in scenario.PlayerSpawnMarkers)
             {
                 var pos = new Vector3(obj.X, obj.Y, obj.Z);
-                AddAtLocation(256, pos, new Vector3(1, 1, 1), destination);
+                //AddAtLocation(256, pos, new Vector3(1, 1, 1), destination);
             }
 
             foreach (var obj in scenario.Obj264s)
@@ -68,16 +68,10 @@ namespace OpenH2.Engine.EntityFactories
                 AddAtLocation(264, pos, new Vector3(0, 1, 1), destination);
             }
 
-            foreach (var obj in scenario.Obj280s)
+            foreach (var obj in scenario.GameModeMarkers)
             {
                 var pos = new Vector3(obj.X, obj.Y, obj.Z);
-                AddAtLocation(280, pos, new Vector3(1, 1, 0), destination);
-            }
-
-            foreach (var obj in scenario.Obj808s)
-            {
-                var pos = new Vector3(obj.X, obj.Y, obj.Z);
-                AddAtLocation(808, pos, new Vector3(0, 0, 0), destination);
+                //AddAtLocation(280, pos, new Vector3(1, 1, 0), destination);
             }
         }
 

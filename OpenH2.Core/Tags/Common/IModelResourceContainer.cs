@@ -8,6 +8,8 @@ namespace OpenH2.Core.Tags.Common
 
         ushort TriangleCount { get; set; }
 
+        ushort IndiciesIndex { get; set; }
+
         uint DataBlockRawOffset { get; set; }
 
         uint DataBlockSize { get; set; }

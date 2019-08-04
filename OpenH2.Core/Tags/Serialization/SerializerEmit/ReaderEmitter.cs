@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Reflection.Emit;
+using System.Runtime.InteropServices;
 
 namespace OpenH2.Core.Tags.Serialization.SerializerEmit
 {
@@ -41,11 +42,16 @@ namespace OpenH2.Core.Tags.Serialization.SerializerEmit
                 gen.Emit(OpCodes.Stloc, caoLocal);
             }
 
-            var suitableCtor = tagType.GetConstructor(new[] { typeof(uint) });
+            var suitableCtor = tagType.GetConstructor(new[] { typeof(uint) })
+                ?? tagType.GetConstructor(new Type[] { });
 
             if(UseTagConstructorIfPossible && suitableCtor != null)
             {
-                gen.Emit(OpCodes.Ldarg, TagCreatorArguments.GetArgumentLocation(TagCreatorArguments.Name.Id));
+                if(suitableCtor.GetParameters().Any())
+                {
+                    gen.Emit(OpCodes.Ldarg, TagCreatorArguments.GetArgumentLocation(TagCreatorArguments.Name.Id));
+                }
+
                 gen.Emit(OpCodes.Newobj, suitableCtor);
             }
             else
@@ -75,6 +81,27 @@ namespace OpenH2.Core.Tags.Serialization.SerializerEmit
                 gen.Emit(OpCodes.Ldloc, tagLocal);
                 gen.Emit(OpCodes.Ldarg, TagCreatorArguments.GetArgumentLocation(TagCreatorArguments.Name.Name));
                 gen.Emit(OpCodes.Callvirt, tagNameProp.GetSetMethod());
+            }
+
+            var tagOffsetProp = tagType.GetProperty(nameof(BaseTag.Offset), BindingFlags.Public | BindingFlags.Instance);
+            if (tagOffsetProp != null)
+            {
+                // Set tag offset
+                gen.Emit(OpCodes.Ldloc, tagLocal);
+                gen.Emit(OpCodes.Ldarg, TagCreatorArguments.GetArgumentLocation(TagCreatorArguments.Name.StartAt));
+                gen.Emit(OpCodes.Callvirt, tagOffsetProp.GetSetMethod());
+            }
+
+            var tagLengthProp = tagType.GetProperty(nameof(BaseTag.Length), BindingFlags.Public | BindingFlags.Instance);
+            if (tagLengthProp != null)
+            {
+                var largestProp = props.OrderByDescending(p => p.LayoutAttribute.Offset).First();
+                var propSize = largestProp.Type.IsValueType ? Marshal.SizeOf(largestProp.Type) : sizeof(ulong)  ;
+
+                // Set tag length
+                gen.Emit(OpCodes.Ldloc, tagLocal);
+                gen.Emit(OpCodes.Ldc_I4, largestProp.LayoutAttribute.Offset + propSize);
+                gen.Emit(OpCodes.Callvirt, tagLengthProp.GetSetMethod());
             }
 
             // Do first pass over "header" reagion

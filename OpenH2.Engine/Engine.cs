@@ -115,6 +115,11 @@ namespace OpenH2.Engine
                 destination.AddEntity(SceneryFactory.FromTag(map, scenario, scen));
             }
 
+            foreach (var bloc in scenario.BlocInstances)
+            {
+                destination.AddEntity(BlocFactory.FromTag(map, scenario, bloc));
+            }
+
             PositioningEntities.AddLocators(map, destination);
         }
     }

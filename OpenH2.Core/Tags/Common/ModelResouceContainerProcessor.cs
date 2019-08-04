@@ -8,9 +8,20 @@ namespace OpenH2.Core.Tags.Common
 {
     public static class ModelResouceContainerProcessor
     {
+        // TODO: figure out where this can be read from
+        private static Dictionary<int, int> indiciesIndexMapping = new Dictionary<int, int>
+        {
+            {7, 1 },
+            {8, 2 },
+            {9, 2 },
+            {10, 2 },
+            {11, 2 },
+        };
+
+
         public static Mesh[] ProcessContainer(IModelResourceContainer container, ModelShaderReference[] shaders)
         {
-            if (container.Resources.Length < 8)
+            if (container.Resources.Length < 4)
             {
                 // TODO investigate when differing amount of resources
                 // Skip if we don't have the right data setup
@@ -24,7 +35,7 @@ namespace OpenH2.Core.Tags.Common
             var partCount = partData.Length / 72;
 
             // Process face data
-            var faceResource = container.Resources[2];
+            var faceResource = container.Resources[indiciesIndexMapping[container.Resources.Length]];
             var faceData = faceResource.Data.Span;
 
             var meshes = new List<Mesh>(partCount);
@@ -37,7 +48,9 @@ namespace OpenH2.Core.Tags.Common
                 var indexStart = partData.ReadUInt16At(start + 6);
                 var indexCount = partData.ReadUInt16At(start + 8);
                 // TODO: Figure out where to get this value
-                var elementType = (MeshElementType)partData.ReadUInt16At(start + 2);
+                var elementType = container is BspTag.RenderChunk 
+                    ? MeshElementType.TriangleList
+                    : MeshElementType.TriangleStrip;
 
                 var mesh = new Mesh
                 {
