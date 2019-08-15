@@ -27,7 +27,8 @@ namespace OpenH2.Core.Factories
 
             // Instead of locally offset chunk span, we'll pass a span of the whole file so that
             // basic SecondaryOffsets can be used to jump around without crazy logic
-            var tag = tagCreator(id, name, mapData, secondaryMagic, index.Offset.Value) as BaseTag;
+            // TODO: pass data size from index for usage
+            var tag = tagCreator(id, name, mapData, secondaryMagic, index.Offset.Value, index.DataSize) as BaseTag;
 
             tag.PopulateExternalData(reader);
 

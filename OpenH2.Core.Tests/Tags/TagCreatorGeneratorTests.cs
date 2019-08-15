@@ -20,7 +20,7 @@ namespace OpenH2.Core.Tests.Tags
 
             var creator = gen.GetTagCreator<TestTag>();
 
-            var tag = creator(1, "name", testTagData, magic);
+            var tag = creator(1, "name", testTagData, magic, 0, testTagData.Length);
 
             tag.PopulateExternalData(null);
 

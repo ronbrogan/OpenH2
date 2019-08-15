@@ -22,7 +22,10 @@ namespace OpenH2.Core.Tags
         public override string Name { get; set; }
 
         [PrimitiveValue(0)]
-        public ushort NameId { get; set; }
+        public int NameId { get; set; }
+        
+        [PrimitiveValue(4)]
+        public ushort Flags { get; set; }
 
         [InternalReferenceValue(20)]
         public BoundingBox[] BoundingBoxes { get; set; }
@@ -30,7 +33,6 @@ namespace OpenH2.Core.Tags
         [InternalReferenceValue(28)]
         public LevelOfDetail[] Lods { get; set; }
 
-        
         public Permutation[] Permutations { get; set; }
 
         [InternalReferenceValue(36)]
@@ -192,8 +194,9 @@ namespace OpenH2.Core.Tags
         [FixedLength(92)]
         public class Part : IModelResourceContainer
         {
-            [PrimitiveValue(0)]
-            public uint Type { get; set; } // TODO: make an enum with types
+            #if DEBUG
+            public byte[] RawData { get; set; }
+            #endif
 
             [PrimitiveValue(4)]
             public ushort VertexCount { get; set; }
@@ -203,18 +206,6 @@ namespace OpenH2.Core.Tags
 
             [PrimitiveValue(8)]
             public ushort IndiciesIndex { get; set; }
-
-            [PrimitiveValue(10)]
-            public ushort Unknown1 { get; set; }
-
-            [PrimitiveValue(12)]
-            public ushort Unknown2 { get; set; }
-
-            [PrimitiveValue(16)]
-            public ushort Unknown3 { get; set; }
-
-            [PrimitiveValue(18)]
-            public ushort Unknown4 { get; set; }
 
             [PrimitiveValue(20)]
             public ushort BoneCount { get; set; }

@@ -42,6 +42,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OpenH2.TextureViewer", "Ope
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OpenH2.Rendering.Tests", "OpenH2.Rendering.Tests\OpenH2.Rendering.Tests.csproj", "{FFF68A06-37B8-4EBA-9995-4AA99FD3209A}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OpenH2.TagFeatureAnalysis", "OpenH2.TagFeatureAnalysis\OpenH2.TagFeatureAnalysis.csproj", "{DF9B8799-B5D5-4646-BBE2-A2451F240F70}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -100,6 +102,10 @@ Global
 		{FFF68A06-37B8-4EBA-9995-4AA99FD3209A}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{FFF68A06-37B8-4EBA-9995-4AA99FD3209A}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{FFF68A06-37B8-4EBA-9995-4AA99FD3209A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{DF9B8799-B5D5-4646-BBE2-A2451F240F70}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DF9B8799-B5D5-4646-BBE2-A2451F240F70}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DF9B8799-B5D5-4646-BBE2-A2451F240F70}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DF9B8799-B5D5-4646-BBE2-A2451F240F70}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -118,6 +124,7 @@ Global
 		{8A10B415-8977-415E-BD9E-E2CB5E1CF7C2} = {F8FDF358-B807-4FC4-AB33-13D15FB1B906}
 		{3D4EBC6C-D23D-439A-9A68-6C9074611AFF} = {D955C66F-CF2B-4A63-A95F-F8D3F98253DF}
 		{FFF68A06-37B8-4EBA-9995-4AA99FD3209A} = {F8FDF358-B807-4FC4-AB33-13D15FB1B906}
+		{DF9B8799-B5D5-4646-BBE2-A2451F240F70} = {D955C66F-CF2B-4A63-A95F-F8D3F98253DF}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {D941C8C9-2B2C-47A1-82CB-B045206BA267}

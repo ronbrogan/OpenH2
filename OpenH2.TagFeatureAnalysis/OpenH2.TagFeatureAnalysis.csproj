@@ -1,0 +1,17 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <OutputType>Exe</OutputType>
+        <TargetFramework>netcoreapp3.0</TargetFramework>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\OpenH2.Core\OpenH2.Core.csproj" />
+      <ProjectReference Include="..\OpenH2.Foundation\OpenH2.Foundation.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <PackageReference Include="Accord.Statistics" Version="3.8.2-alpha" />
+    </ItemGroup>
+
+</Project>

@@ -17,7 +17,8 @@ namespace OpenH2.Core.Tags.Serialization.SerializerEmit
             Name,
             Data,
             SecondaryMagic,
-            StartAt
+            StartAt,
+            Length
         }
 
         public static SortedDictionary<Name, Type> ArgumentInfo = new SortedDictionary<Name, Type>
@@ -26,7 +27,8 @@ namespace OpenH2.Core.Tags.Serialization.SerializerEmit
             { Name.Name, typeof(string) },
             { Name.Data, typeof(Span<byte>) },
             { Name.SecondaryMagic, typeof(int) },
-            { Name.StartAt, typeof(int) }
+            { Name.StartAt, typeof(int) },
+            { Name.Length, typeof(int) }
         };
 
         public static Type[] ArgumentTypes = ArgumentInfo.Values.ToArray();
@@ -81,9 +83,9 @@ namespace OpenH2.Core.Tags.Serialization.SerializerEmit
 
             public static MethodInfo ReadMetaCaoAt = typeof(SpanByteExtensions)
                 .GetMethod(nameof(SpanByteExtensions.ReadMetaCaoAt), new[] { typeof(Span<byte>), typeof(int), typeof(int) });
-
-            public static MethodInfo Slice = typeof(Span<byte>)
-                .GetMethod(nameof(Span<byte>.Slice), new[] { typeof(int), typeof(int) });
+            
+            public static MethodInfo ReadArray = typeof(SpanByteExtensions)
+                .GetMethod(nameof(SpanByteExtensions.ReadArray), new[] { typeof(Span<byte>), typeof(int), typeof(int) });
         }
 
         public static class Cao

@@ -174,6 +174,11 @@ namespace OpenH2.Core.Extensions
             return new Vector2(data.ReadFloatAt(offset), data.ReadFloatAt(offset + 4));
         }
 
+        public static byte[] ReadArray(this Span<byte> data, int offset, int length)
+        {
+            return data.Slice(offset, length).ToArray();
+        }
+        
         private static UInt32ToSingle floatConverter = new UInt32ToSingle();
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
