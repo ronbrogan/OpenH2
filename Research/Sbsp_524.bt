@@ -1,0 +1,24 @@
+//------------------------------------------------
+//--- 010 Editor v7.0.2 Binary Template
+//
+//      File: 
+//   Authors: 
+//   Version: 
+//   Purpose: 
+//  Category: 
+// File Mask: 
+//  ID Bytes: 
+//   History: 
+//------------------------------------------------
+struct Sbsp524 {
+    ushort max;
+    ushort index;
+
+    ushort info;
+    ushort zero;
+    
+    float posAndOrient[6];
+
+};
+
+Sbsp524 refs[27];

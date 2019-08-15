@@ -3,6 +3,7 @@ using OpenH2.Core.Offsets;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Numerics;
 using System.Reflection;
 using System.Runtime.Serialization;
 
@@ -47,7 +48,8 @@ namespace OpenH2.Core.Tags.Serialization.SerializerEmit
             { typeof(int), MI.SpanByte.ReadInt32At},
             { typeof(uint), typeof(SpanByteExtensions).GetMethod(nameof(SpanByteExtensions.ReadUInt32At)) },
             { typeof(float), typeof(SpanByteExtensions).GetMethod(nameof(SpanByteExtensions.ReadFloatAt)) },
-            { typeof(string), typeof(SpanByteExtensions).GetMethod(nameof(SpanByteExtensions.ReadStringFrom)) }
+            { typeof(string), typeof(SpanByteExtensions).GetMethod(nameof(SpanByteExtensions.ReadStringFrom)) },
+            { typeof(Vector3), typeof(SpanByteExtensions).GetMethod(nameof(SpanByteExtensions.ReadVec3At)) }
         };
 
         public static Dictionary<Type, int> PrimitiveSizes = new Dictionary<Type, int>

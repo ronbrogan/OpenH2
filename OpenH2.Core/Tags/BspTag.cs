@@ -6,6 +6,7 @@ using OpenH2.Core.Tags.Layout;
 using OpenH2.Core.Parsing;
 using OpenH2.Core.Tags.Common;
 using OpenH2.Foundation;
+using System.Numerics;
 
 namespace OpenH2.Core.Tags
 {
@@ -38,8 +39,7 @@ namespace OpenH2.Core.Tags
         //[InternalReferenceValue(84)]
         //public object[] MiscObject2Cao { get; set; }
 
-        //[InternalReferenceValue(92)]
-        //public object[] MiscObject3Cao { get; set; }
+        [InternalReferenceValue(92)] public Obj92[] Obj92s { get; set; }
 
         //[InternalReferenceValue(100)]
         //public object[] MiscObject4Cao { get; set; } 
@@ -51,7 +51,7 @@ namespace OpenH2.Core.Tags
         public RenderChunk[] RenderChunks { get; set; }
 
         [InternalReferenceValue(164)]
-        public ModelShaderReference[] ModelShaderReferences { get; set; } 
+        public ModelShaderReference[] ModelShaderReferences { get; set; }
 
         //[InternalReferenceValue(172)]
         //public object[] MiscObject8Cao { get; set; } 
@@ -61,6 +61,10 @@ namespace OpenH2.Core.Tags
 
         //[InternalReferenceValue(220)]
         //public object[] MiscObject10Cao { get; set; }
+
+        [InternalReferenceValue(244)]
+        public Decals[] Obj244s { get; set; }
+
 
         //[InternalReferenceValue(252)]
         //public object[] MiscObject11Cao { get; set; }
@@ -314,5 +318,24 @@ namespace OpenH2.Core.Tags
 
             public MeshCollection Model { get; set; }
         }
+
+        [FixedLength(16)]
+        public class Decals
+        {
+            [PrimitiveValue(0)]
+            public Vector3 Position { get; set; }
+
+            [PrimitiveValue(12)]
+            public ushort Index { get; set; }
+        }
+
+
+        [FixedLength(36)]
+        public class Obj92
+        {
+            [PrimitiveValue(8)]
+            public Vector3 Position { get; set; }
+        }
+
     }
 }

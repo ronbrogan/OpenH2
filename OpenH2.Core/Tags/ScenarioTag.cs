@@ -1,4 +1,5 @@
 ﻿using OpenH2.Core.Tags.Layout;
+using System.Numerics;
 
 namespace OpenH2.Core.Tags
 {
@@ -24,8 +25,8 @@ namespace OpenH2.Core.Tags
         [InternalReferenceValue(144)] public Obj144[] AmmoPickupInstances { get; set; }
         [InternalReferenceValue(152)] public Obj152[] Obj152s { get; set; }
         [InternalReferenceValue(160)] public Obj160[] Obj160s { get; set; }
-        [InternalReferenceValue(168)] public Obj168[] Obj168s { get; set; }
-        [InternalReferenceValue(184)] public Obj184[] Obj184s { get; set; }
+        [InternalReferenceValue(168)] public MachineryInstance[] MachineryInstances { get; set; }
+        [InternalReferenceValue(184)] public ControllerInstance[] ControllerInstances { get; set; }
         [InternalReferenceValue(192)] public Obj192[] Obj192s { get; set; }
 
         [InternalReferenceValue(176)] public Obj176[] Obj176s { get; set; }
@@ -48,7 +49,7 @@ namespace OpenH2.Core.Tags
 
         [InternalReferenceValue(296)] public Obj296[] Obj296s { get; set; }
 
-        [InternalReferenceValue(312)] public Obj312[] Obj312s { get; set; }
+        [InternalReferenceValue(312)] public DecalInstance[] DecalInstances { get; set; }
 
 
 
@@ -56,8 +57,11 @@ namespace OpenH2.Core.Tags
 
         [InternalReferenceValue(432)] public Obj432[] Obj432s { get; set; }
 
+
         [InternalReferenceValue(472)] public Obj472[] Obj472s { get; set; }
 
+        [InternalReferenceValue(480)] public Obj480[] Obj480s { get; set; }
+        [InternalReferenceValue(488)] public Obj488[] Obj488s { get; set; }
 
         [InternalReferenceValue(528)]
         public Terrain[] Terrains { get; set; }
@@ -120,22 +124,10 @@ namespace OpenH2.Core.Tags
             public ushort SceneryDefinitionIndex { get; set; }
 
             [PrimitiveValue(8)]
-            public float X { get; set; }
-
-            [PrimitiveValue(12)]
-            public float Y { get; set; }
-
-            [PrimitiveValue(16)]
-            public float Z { get; set; }
+            public Vector3 Position { get; set; }
 
             [PrimitiveValue(20)]
-            public float Yaw { get; set; }
-
-            [PrimitiveValue(24)]
-            public float Pitch { get; set; }
-
-            [PrimitiveValue(28)]
-            public float Roll { get; set; }
+            public Vector3 Orientation { get; set; }
         }
 
         [FixedLength(40)]
@@ -149,39 +141,21 @@ namespace OpenH2.Core.Tags
         public class Obj96
         {
             [PrimitiveValue(8)]
-            public float X { get; set; }
-
-            [PrimitiveValue(12)]
-            public float Y { get; set; }
-
-            [PrimitiveValue(16)]
-            public float Z { get; set; }
+            public Vector3 Position { get; set; }
         }
         [FixedLength(40)] public class Obj104 { }
         [FixedLength(84)]
         public class Obj144
         {
             [PrimitiveValue(8)]
-            public float X { get; set; }
-
-            [PrimitiveValue(12)]
-            public float Y { get; set; }
-
-            [PrimitiveValue(16)]
-            public float Z { get; set; }
+            public Vector3 Position { get; set; }
         }
         [FixedLength(40)] public class Obj160 { }
         [FixedLength(68)]
-        public class Obj184
+        public class ControllerInstance
         {
             [PrimitiveValue(8)]
-            public float X { get; set; }
-
-            [PrimitiveValue(12)]
-            public float Y { get; set; }
-
-            [PrimitiveValue(16)]
-            public float Z { get; set; }
+            public Vector3 Position { get; set; }
         }
         [FixedLength(40)] public class Obj192 { }
 
@@ -189,16 +163,10 @@ namespace OpenH2.Core.Tags
         [FixedLength(40)] public class Obj152 { }
 
         [FixedLength(72)]
-        public class Obj168
+        public class MachineryInstance
         {
             [PrimitiveValue(8)]
-            public float X { get; set; }
-
-            [PrimitiveValue(12)]
-            public float Y { get; set; }
-
-            [PrimitiveValue(16)]
-            public float Z { get; set; }
+            public Vector3 Position { get; set; }
 
             [PrimitiveValue(20)]
             public float I { get; set; }
@@ -220,13 +188,7 @@ namespace OpenH2.Core.Tags
         public class SoundSceneryInstance
         {
             [PrimitiveValue(8)]
-            public float X { get; set; }
-
-            [PrimitiveValue(12)]
-            public float Y { get; set; }
-
-            [PrimitiveValue(16)]
-            public float Z { get; set; }
+            public Vector3 Position { get; set; }
 
             [PrimitiveValue(20)]
             public float I { get; set; }
@@ -244,13 +206,7 @@ namespace OpenH2.Core.Tags
         public class LightInstance
         {
             [PrimitiveValue(8)]
-            public float X { get; set; }
-
-            [PrimitiveValue(12)]
-            public float Y { get; set; }
-
-            [PrimitiveValue(16)]
-            public float Z { get; set; }
+            public Vector3 Position { get; set; }
 
             [PrimitiveValue(20)]
             public float I { get; set; }
@@ -268,61 +224,31 @@ namespace OpenH2.Core.Tags
         public class PlayerSpawnMarker
         {
             [PrimitiveValue(0)]
-            public float X { get; set; }
-
-            [PrimitiveValue(4)]
-            public float Y { get; set; }
-
-            [PrimitiveValue(8)]
-            public float Z { get; set; }
+            public Vector3 Position { get; set; }
         }
 
         [FixedLength(68)]
         public class Obj264
         {
             [PrimitiveValue(12)]
-            public float X { get; set; }
-
-            [PrimitiveValue(16)]
-            public float Y { get; set; }
-
-            [PrimitiveValue(20)]
-            public float Z { get; set; }
+            public Vector3 Position { get; set; }
         }
 
         [FixedLength(32)]
         public class GameModeMarker
         {
             [PrimitiveValue(0)]
-            public float X { get; set; }
-
-            [PrimitiveValue(4)]
-            public float Y { get; set; }
-
-            [PrimitiveValue(8)]
-            public float Z { get; set; }
+            public Vector3 Position { get; set; }
         }
 
         [FixedLength(144)]
         public class ItemCollectionPlacement
         {
             [PrimitiveValue(64)]
-            public float X { get; set; }
-
-            [PrimitiveValue(68)]
-            public float Y { get; set; }
-
-            [PrimitiveValue(72)]
-            public float Z { get; set; }
+            public Vector3 Position { get; set; }
 
             [PrimitiveValue(76)]
-            public float Yaw { get; set; }
-
-            [PrimitiveValue(80)]
-            public float Pitch { get; set; }
-
-            [PrimitiveValue(84)]
-            public float Roll { get; set; }
+            public Vector3 Orientation { get; set; }
 
             [PrimitiveValue(92)]
             public uint ItemCollectionId { get; set; }
@@ -330,23 +256,34 @@ namespace OpenH2.Core.Tags
 
         [FixedLength(156)] public class Obj296 { }
         [FixedLength(16)]
-        public class Obj312
+        public class DecalInstance
         {
             [PrimitiveValue(0)]
             public ushort Index { get; set; }
 
             [PrimitiveValue(4)]
-            public float X { get; set; }
-
-            [PrimitiveValue(8)]
-            public float Y { get; set; }
-
-            [PrimitiveValue(12)]
-            public float Z { get; set; }
+            public Vector3 Position { get; set; }
         }
         [FixedLength(8)] public class Obj320 { }
         [FixedLength(1)] public class Obj432 { }
+
         [FixedLength(128)] public class Obj472 { }
+
+        [FixedLength(56)]
+        public class Obj480
+        {
+            [PrimitiveValue(36)]
+            public Vector3 Position { get; set; }
+        }
+        
+        [FixedLength(64)]
+        public class Obj488
+        {
+            [PrimitiveValue(36)]
+            public Vector3 Position { get; set; }
+        }
+        
+
         [FixedLength(152)] public class Obj536 { }
         [FixedLength(2)] public class Obj560 { }
         [FixedLength(20)] public class Obj568 { }
@@ -354,6 +291,7 @@ namespace OpenH2.Core.Tags
         [FixedLength(72)] public class Obj600 { }
         [FixedLength(192)] public class Obj656 { }
         [FixedLength(816)] public class Obj792 { }
+
         [FixedLength(76)]
         public class BlocInstance
         {
@@ -361,22 +299,10 @@ namespace OpenH2.Core.Tags
             public ushort SceneryDefinitionIndex { get; set; }
 
             [PrimitiveValue(8)]
-            public float X { get; set; }
-
-            [PrimitiveValue(12)]
-            public float Y { get; set; }
-
-            [PrimitiveValue(16)]
-            public float Z { get; set; }
+            public Vector3 Position { get; set; }
 
             [PrimitiveValue(20)]
-            public float Yaw { get; set; }
-
-            [PrimitiveValue(24)]
-            public float Pitch { get; set; }
-
-            [PrimitiveValue(28)]
-            public float Roll { get; set; }
+            public Vector3 Orientation { get; set; }
         }
 
         [FixedLength(40)]

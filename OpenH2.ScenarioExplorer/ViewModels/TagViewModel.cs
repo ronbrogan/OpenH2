@@ -146,6 +146,8 @@ namespace OpenH2.ScenarioExplorer.ViewModels
 
             foreach(var cao in this.Caos)
             {
+                Console.WriteLine($"{cao.Origin}\t{cao.Count}\t{cao.Offset}");
+
                 this.Features.Add(new HexViewerFeature(cao.Origin, 8, Brushes.Goldenrod));
                 var chunkFeature = new HexViewerFeature(cao.Offset, cao.Count * cao.ItemSize, Brushes.OliveDrab);
 

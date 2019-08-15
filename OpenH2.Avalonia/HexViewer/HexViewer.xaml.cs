@@ -21,7 +21,7 @@ namespace OpenH2.AvaloniaControls.HexViewer
     public class HexViewer : UserControl
     {
         public static readonly DirectProperty<HexViewer, Memory<byte>> DataProperty =
-            AvaloniaProperty.RegisterDirect<HexViewer, Memory<byte>>(nameof(Data), h => h.Data, (h,v) => h.Data = v);
+            AvaloniaProperty.RegisterDirect<HexViewer, Memory<byte>>(nameof(Data), h => h.Data, (h,v) => h.Data = v.Slice(0, Math.Min(10000, v.Length)));
 
         public static readonly DirectProperty<HexViewer, ObservableCollection<HexViewerFeature>> FeaturesProperty =
             AvaloniaProperty.RegisterDirect<HexViewer, ObservableCollection<HexViewerFeature>>(nameof(Features), h => h.Features, (h, v) => h.Features = v);

@@ -2,6 +2,7 @@
 using OpenH2.Engine.Components;
 using OpenH2.Foundation;
 using System.Collections.Generic;
+using System.Numerics;
 
 namespace OpenH2.Engine.Stores
 {

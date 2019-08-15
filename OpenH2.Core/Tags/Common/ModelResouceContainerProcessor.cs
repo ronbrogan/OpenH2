@@ -47,10 +47,9 @@ namespace OpenH2.Core.Tags.Common
                 var matId = partData.ReadUInt16At(start + 4);
                 var indexStart = partData.ReadUInt16At(start + 6);
                 var indexCount = partData.ReadUInt16At(start + 8);
+                var compressed = (partData.ReadUInt16At(start + 10) & 1) == 1;
                 // TODO: Figure out where to get this value
-                var elementType = container is BspTag.RenderChunk 
-                    ? MeshElementType.TriangleList
-                    : MeshElementType.TriangleStrip;
+                var elementType = (MeshElementType)partData.ReadUInt16At(start + 2);
 
                 var mesh = new Mesh
                 {
@@ -59,6 +58,8 @@ namespace OpenH2.Core.Tags.Common
                     MaterialIdentifier = shaders[matId].ShaderId,
                     ElementType = elementType
                 };
+
+                mesh.RawData = partData.Slice(start, 72).ToArray();
 
                 for (var j = 0; j < indexCount; j++)
                 {

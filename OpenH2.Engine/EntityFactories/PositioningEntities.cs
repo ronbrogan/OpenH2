@@ -38,72 +38,29 @@ namespace OpenH2.Engine.EntityFactories
         {
             var scenario = map.GetLocalTagsOfType<ScenarioTag>().First();
 
-            foreach (var obj in scenario.Obj312s)
-            {
-                var pos = new Vector3(obj.X, obj.Y, obj.Z);
-                AddAtLocation(312, pos, new Vector3(1, 0, 0), destination);
-            }
-
             foreach (var obj in scenario.Obj96s)
             {
-                var pos = new Vector3(obj.X, obj.Y, obj.Z);
-                AddAtLocation(96, pos, new Vector3(1, 0.7f, 0), destination);
+                AddAtLocation(96, obj.Position, new Vector3(1, 0.7f, 0), destination);
             }
 
-            foreach (var obj in scenario.AmmoPickupInstances)
+            foreach (var obj in scenario.ControllerInstances)
             {
-                var pos = new Vector3(obj.X, obj.Y, obj.Z);
-                AddAtLocation(144, pos, new Vector3(0.1f, 0.1f, 0.1f), destination);
-            }
-
-            foreach (var obj in scenario.Obj184s)
-            {
-                var pos = new Vector3(obj.X, obj.Y, obj.Z);
-                AddAtLocation(184, pos, new Vector3(1, 1, 1), destination);
-            }
-
-
-
-            foreach (var obj in scenario.Obj168s)
-            {
-                var pos = new Vector3(obj.X, obj.Y, obj.Z);
-                AddAtLocation(168, pos, new Vector3(0, 1, 0), destination);
-            }
-
-            foreach (var obj in scenario.SoundSceneryInstances)
-            {
-                var pos = new Vector3(obj.X, obj.Y, obj.Z);
-                AddAtLocation(216, pos, new Vector3(0, 0, 1), destination);
-            }
-
-            foreach (var obj in scenario.LightInstances)
-            {
-                var pos = new Vector3(obj.X, obj.Y, obj.Z);
-                AddAtLocation(232, pos, new Vector3(1, 0, 1), destination);
-            }
-
-            foreach (var obj in scenario.PlayerSpawnMarkers)
-            {
-                var pos = new Vector3(obj.X, obj.Y, obj.Z);
-                //AddAtLocation(256, pos, new Vector3(1, 1, 1), destination);
+                AddAtLocation(184, obj.Position, new Vector3(1, 1, 1), destination);
             }
 
             foreach (var obj in scenario.Obj264s)
             {
-                var pos = new Vector3(obj.X, obj.Y, obj.Z);
-                AddAtLocation(264, pos, new Vector3(0, 1, 1), destination);
+                AddAtLocation(264, obj.Position, new Vector3(0, 1, 1), destination);
             }
 
-            foreach (var obj in scenario.GameModeMarkers)
+            foreach (var obj in scenario.Obj480s)
             {
-                var pos = new Vector3(obj.X, obj.Y, obj.Z);
-                //AddAtLocation(280, pos, new Vector3(1, 1, 0), destination);
+                AddAtLocation(480, obj.Position, new Vector3(1, 1, 0), destination);
             }
 
-            foreach (var obj in scenario.ItemCollectionPlacements)
+            foreach (var obj in scenario.Obj488s)
             {
-                var pos = new Vector3(obj.X, obj.Y, obj.Z);
-                AddAtLocation(288, pos, new Vector3(0.39f, .3f, .31f), destination);
+                AddAtLocation(488, obj.Position, new Vector3(0, 0, 1), destination);
             }
         }
 

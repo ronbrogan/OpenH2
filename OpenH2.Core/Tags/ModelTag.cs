@@ -7,6 +7,7 @@ using OpenH2.Core.Tags.Layout;
 using OpenH2.Core.Types;
 using OpenH2.Foundation;
 using System;
+using System.Collections.Generic;
 using System.Numerics;
 
 namespace OpenH2.Core.Tags
@@ -21,7 +22,7 @@ namespace OpenH2.Core.Tags
         public override string Name { get; set; }
 
         [PrimitiveValue(0)]
-        public int NameId { get; set; }
+        public ushort NameId { get; set; }
 
         [InternalReferenceValue(20)]
         public BoundingBox[] BoundingBoxes { get; set; }
@@ -46,7 +47,7 @@ namespace OpenH2.Core.Tags
 
         public override void PopulateExternalData(H2vReader sceneReader)
         {
-            foreach(var part in Parts)
+            foreach (var part in Parts)
             {
                 foreach(var resource in part.Resources)
                 {
@@ -55,8 +56,66 @@ namespace OpenH2.Core.Tags
                 }
 
                 var meshes = ModelResouceContainerProcessor.ProcessContainer(part, ModelShaderReferences);
+
+                var bbIndex = 0;
+
+                var maxBounds = new Vector3(
+                    this.BoundingBoxes[bbIndex].MaxX,
+                    this.BoundingBoxes[bbIndex].MaxY,
+                    this.BoundingBoxes[bbIndex].MaxZ);
+
+                var minBounds = new Vector3(
+                    this.BoundingBoxes[bbIndex].MinX,
+                    this.BoundingBoxes[bbIndex].MinY,
+                    this.BoundingBoxes[bbIndex].MinZ);
+
+                var maxUV = new Vector2(
+                    this.BoundingBoxes[bbIndex].MaxU,
+                    this.BoundingBoxes[bbIndex].MaxV);
+
+                var minUV = new Vector2(
+                    this.BoundingBoxes[bbIndex].MinU,
+                    this.BoundingBoxes[bbIndex].MinV);
+
+                var mesh = meshes[0];
+
+                for(var i = 0; i < mesh.Verticies.Length; i++)
+                {
+                    var vert = mesh.Verticies[i];
+
+                    var newPos = part.Flags.HasFlag(Properties.CompressedVerts) ? new Vector3(
+                        Decompress(vert.Position.X, minBounds.X, maxBounds.X),
+                        Decompress(vert.Position.Y, minBounds.Y, maxBounds.Y),
+                        Decompress(vert.Position.Z, minBounds.Z, maxBounds.Z)
+                        ) : vert.Position;
+
+                    var newTex = part.Flags.HasFlag(Properties.CompressedTexCoords) ? new Vector2(
+                        Decompress(vert.TexCoords.X, minUV.X, maxUV.X),
+                        Decompress(vert.TexCoords.Y, minUV.Y, maxUV.Y)
+                        ) : vert.TexCoords;
+
+                    mesh.Verticies[i] = new VertexFormat(newPos,
+                        newTex,
+                        vert.Normal,
+                        vert.Tangent,
+                        vert.Bitangent);
+                }
+
                 part.Model = new MeshCollection(meshes);
             }
+        }
+
+        public float Decompress(float val, float min, float max)
+        {
+            return (val + 1f) / 2f * (max - min) + min;
+        }
+
+        [Flags]
+        public enum Properties : short
+        {
+            CompressedVerts             = 1 << 0,
+            CompressedTexCoords         = 1 << 1,
+            CompressedSecTexCoords      = 1 << 2,
         }
 
         [FixedLength(56)]
@@ -99,6 +158,8 @@ namespace OpenH2.Core.Tags
             [PrimitiveValue(0)]
             public int PartNameId { get; set; }
 
+            // RESEARCH: It looks like these are for different damage states, 
+            // ie a pillar gets destroyed, different permutations are used
             [InternalReferenceValue(8)]
             public Permutation[] Permutations { get; set; }
         }
@@ -157,6 +218,9 @@ namespace OpenH2.Core.Tags
 
             [PrimitiveValue(20)]
             public ushort BoneCount { get; set; }
+
+            [PrimitiveValue(26)]
+            public Properties Flags { get; set; }
 
             [PrimitiveValue(56)]
             public uint DataBlockRawOffset { get; set; }
