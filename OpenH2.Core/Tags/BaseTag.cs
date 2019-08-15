@@ -10,6 +10,10 @@ namespace OpenH2.Core.Tags
 
         public uint Offset { get; set; }
         public uint Length { get; set; }
+        
+#if DEBUG
+        public byte[] RawData { get; set; }
+#endif
 
         public BaseTag(uint id)
         {

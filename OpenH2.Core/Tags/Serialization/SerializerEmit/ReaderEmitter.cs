@@ -95,15 +95,30 @@ namespace OpenH2.Core.Tags.Serialization.SerializerEmit
             var tagLengthProp = tagType.GetProperty(nameof(BaseTag.Length), BindingFlags.Public | BindingFlags.Instance);
             if (tagLengthProp != null)
             {
-                var largestProp = props.OrderByDescending(p => p.LayoutAttribute.Offset).First();
-                var propSize = largestProp.Type.IsValueType ? Marshal.SizeOf(largestProp.Type) : sizeof(ulong)  ;
-
                 // Set tag length
                 gen.Emit(OpCodes.Ldloc, tagLocal);
-                gen.Emit(OpCodes.Ldc_I4, largestProp.LayoutAttribute.Offset + propSize);
+                gen.Emit(OpCodes.Ldarg, TagCreatorArguments.GetArgumentLocation(TagCreatorArguments.Name.Length));
                 gen.Emit(OpCodes.Callvirt, tagLengthProp.GetSetMethod());
             }
 
+#if DEBUG
+            var tagDataProp = tagType.GetProperty(nameof(BaseTag.RawData), BindingFlags.Public | BindingFlags.Instance);
+            if (tagDataProp != null)
+            {
+                // Load tag for later
+                gen.Emit(OpCodes.Ldloc, tagLocal);
+                
+                // Slice span and get array
+                gen.Emit(OpCodes.Ldarg, TagCreatorArguments.GetArgumentLocation(TagCreatorArguments.Name.Data)); // load span
+                gen.Emit(OpCodes.Ldarg, TagCreatorArguments.GetArgumentLocation(TagCreatorArguments.Name.StartAt)); // load start
+                gen.Emit(OpCodes.Ldarg, TagCreatorArguments.GetArgumentLocation(TagCreatorArguments.Name.Length)); // load length
+                gen.Emit(OpCodes.Call, MI.SpanByte.ReadArray);
+
+                // Set tag data property
+                gen.Emit(OpCodes.Callvirt, tagDataProp.GetSetMethod());
+            }
+#endif
+            
             // Do first pass over "header" reagion
             foreach (var prop in props)
             {
@@ -352,6 +367,7 @@ namespace OpenH2.Core.Tags.Serialization.SerializerEmit
                 gen.Emit(OpCodes.Ldarg, TagCreatorArguments.GetArgumentLocation(TagCreatorArguments.Name.Name)); // load name
                 gen.Emit(OpCodes.Ldarg, TagCreatorArguments.GetArgumentLocation(TagCreatorArguments.Name.Data)); // load span
                 gen.Emit(OpCodes.Ldarg, TagCreatorArguments.GetArgumentLocation(TagCreatorArguments.Name.SecondaryMagic)); // load magic
+                
 
                 // offset + (i * length)
                 gen.Emit(OpCodes.Ldloc, offset);
@@ -360,6 +376,9 @@ namespace OpenH2.Core.Tags.Serialization.SerializerEmit
                 gen.Emit(OpCodes.Mul);
                 gen.Emit(OpCodes.Add);// Load item start
 
+                // load size
+                gen.Emit(OpCodes.Ldc_I4, prop.Type.GetElementType().GetCustomAttribute<FixedLengthAttribute>().Length);
+                
                 gen.Emit(OpCodes.Call, creator);
 
                 if (elemType.IsValueType)
@@ -403,7 +422,7 @@ namespace OpenH2.Core.Tags.Serialization.SerializerEmit
         }
 
         /// <summary>
-        /// Generate Count and Offset reading, create CAO object and add to Dict<int,cao> in caoLocal
+        /// Generate Count and Offset reading, create CAO object and add to Dict&lt;int,cao&gt; in caoLocal
         /// </summary>
         /// <param name="gen"></param>
         /// <param name="caoLocal"></param>
