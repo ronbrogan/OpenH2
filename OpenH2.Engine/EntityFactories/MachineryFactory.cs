@@ -12,18 +12,24 @@ using System.Numerics;
 
 namespace OpenH2.Engine.EntityFactories
 {
-    public class BlocFactory
+    public class MachineryFactory
     {
-        public static Scenery FromTag(H2vMap map, ScenarioTag scenario,  ScenarioTag.BlocInstance instance)
+        public static Scenery FromTag(H2vMap map, ScenarioTag scenario,  ScenarioTag.MachineryInstance instance)
         {
             var scenery = new Scenery();
 
-            var id = scenario.BlocDefinitions[instance.BlocDefinitionIndex].BlocId;
-            map.TryGetTag<BlocTag>(id, out var tag);
+            var id = scenario.MachineryDefinitions[instance.MachineryDefinitionIndex].MachineryId;
+            map.TryGetTag<MachineryTag>(id, out var tag);
+
+            if(tag.HlmtId == uint.MaxValue)
+            {
+                Console.WriteLine($"No HLMT specified in MACH:{tag.Name}");
+                return scenery;
+            }
 
             if(map.TryGetTag<PhysicalModelTag>(tag.HlmtId, out var hlmt) == false)
             {
-                throw new Exception("No model found for bloc");
+                throw new Exception("No model found for MACH");
             }
 
             if (map.TryGetTag<ModelTag>(hlmt.ModelId, out var model) == false)

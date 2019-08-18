@@ -26,10 +26,11 @@ namespace OpenH2.Core.Tags
         [InternalReferenceValue(152)] public Obj152[] Obj152s { get; set; }
         [InternalReferenceValue(160)] public Obj160[] Obj160s { get; set; }
         [InternalReferenceValue(168)] public MachineryInstance[] MachineryInstances { get; set; }
+        [InternalReferenceValue(176)] public MachineryDefinition[] MachineryDefinitions { get; set; }
         [InternalReferenceValue(184)] public ControllerInstance[] ControllerInstances { get; set; }
         [InternalReferenceValue(192)] public Obj192[] Obj192s { get; set; }
 
-        [InternalReferenceValue(176)] public Obj176[] Obj176s { get; set; }
+        
 
         [InternalReferenceValue(216)] public SoundSceneryInstance[] SoundSceneryInstances { get; set; }
 
@@ -165,23 +166,20 @@ namespace OpenH2.Core.Tags
         [FixedLength(72)]
         public class MachineryInstance
         {
+            [PrimitiveValue(0)]
+            public ushort MachineryDefinitionIndex { get; set; }
+
             [PrimitiveValue(8)]
             public Vector3 Position { get; set; }
 
             [PrimitiveValue(20)]
-            public float I { get; set; }
-
-            [PrimitiveValue(24)]
-            public float J { get; set; }
-
-            [PrimitiveValue(28)]
-            public float K { get; set; }
-
+            public Vector3 Orientation { get; set; }
         }
         [FixedLength(40)]
-        public class Obj176
+        public class MachineryDefinition
         {
-
+            [PrimitiveValue(4)]
+            public uint MachineryId { get; set; }
         }
 
         [FixedLength(80)]
@@ -296,7 +294,7 @@ namespace OpenH2.Core.Tags
         public class BlocInstance
         {
             [PrimitiveValue(0)]
-            public ushort SceneryDefinitionIndex { get; set; }
+            public ushort BlocDefinitionIndex { get; set; }
 
             [PrimitiveValue(8)]
             public Vector3 Position { get; set; }

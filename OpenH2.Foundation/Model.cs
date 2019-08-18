@@ -18,7 +18,7 @@ namespace OpenH2.Foundation
         public Matrix4x4 CreateTransformationMatrix()
         {
             var translate = Matrix4x4.CreateTranslation(Position);
-            var rotate = Matrix4x4.CreateFromYawPitchRoll(Orientation.Z, Orientation.Y, Orientation.X);
+            var rotate = Matrix4x4.CreateFromYawPitchRoll(Orientation.Y, Orientation.Z, Orientation.X);
             var scale = Matrix4x4.CreateScale(Scale);
 
             var scaleRotate = Matrix4x4.Multiply(scale, rotate);

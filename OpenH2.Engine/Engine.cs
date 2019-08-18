@@ -10,7 +10,6 @@ using OpenH2.Rendering;
 using OpenH2.Rendering.Abstractions;
 using OpenH2.Rendering.OpenGL;
 using OpenH2.Rendering.Shaders;
-using System;
 using System.IO;
 using System.Linq;
 
@@ -121,6 +120,11 @@ namespace OpenH2.Engine
             foreach (var bloc in scenario.BlocInstances)
             {
                 destination.AddEntity(BlocFactory.FromTag(map, scenario, bloc));
+            }
+
+            foreach (var mach in scenario.MachineryInstances)
+            {
+                destination.AddEntity(MachineryFactory.FromTag(map, scenario, mach));
             }
 
             PositioningEntities.AddLocators(map, destination);

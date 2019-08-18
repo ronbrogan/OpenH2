@@ -16,6 +16,8 @@ namespace OpenH2.Core.Tags.Common
 
         uint DataPreambleSize { get; set; }
 
+        ModelResourceBlockHeader Header { get; set; }
+
         ModelResource[] Resources { get; set; }
     }
 }

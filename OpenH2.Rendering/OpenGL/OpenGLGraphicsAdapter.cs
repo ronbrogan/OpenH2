@@ -109,6 +109,9 @@ namespace OpenH2.Rendering.OpenGL
                 case MeshElementType.TriangleStrip:
                     GL.DrawElements(PrimitiveType.TriangleStrip, indicies.Length, DrawElementsType.UnsignedInt, 0);
                     break;
+                case MeshElementType.Other:
+                    GL.DrawElements(PrimitiveType.TriangleStripAdjacency, indicies.Length, DrawElementsType.UnsignedInt, 0);
+                    break;
             }
         }
 

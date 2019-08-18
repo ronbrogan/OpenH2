@@ -7,6 +7,7 @@ using OpenH2.Core.Parsing;
 using OpenH2.Core.Tags.Common;
 using OpenH2.Foundation;
 using System.Numerics;
+using OpenH2.Core.Extensions;
 
 namespace OpenH2.Core.Tags
 {
@@ -110,6 +111,26 @@ namespace OpenH2.Core.Tags
         {
             foreach (var part in RenderChunks)
             {
+                if (part.DataBlockRawOffset == uint.MaxValue)
+                {
+                    Console.WriteLine("Bsp part with max DataBlock offset");
+                    part.Model = new MeshCollection(new Mesh[0]);
+                    continue;
+                }
+
+                var headerData = sceneReader.Chunk(new NormalOffset((int)part.DataBlockRawOffset), (int)part.DataPreambleSize, "ModelMeshHeader").Span;
+
+                part.Header = new ModelResourceBlockHeader()
+                {
+                    PartInfoCount = headerData.ReadUInt32At(8),
+                    PartInfo2Count = headerData.ReadUInt32At(16),
+                    PartInfo3Count = headerData.ReadUInt32At(24),
+                    IndexCount = headerData.ReadUInt32At(40),
+                    UknownDataLength = headerData.ReadUInt32At(48),
+                    UknownIndiciesCount = headerData.ReadUInt32At(56),
+                    VertexComponentCount = headerData.ReadUInt32At(64)
+                };
+
                 foreach (var resource in part.Resources)
                 {
                     var dataOffset = part.DataBlockRawOffset + 8 + part.DataPreambleSize + resource.Offset;
@@ -315,6 +336,8 @@ namespace OpenH2.Core.Tags
 
             [InternalReferenceValue(56)]
             public ModelResource[] Resources { get; set; }
+
+            public ModelResourceBlockHeader Header { get; set; }
 
             public MeshCollection Model { get; set; }
         }

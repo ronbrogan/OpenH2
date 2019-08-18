@@ -28,6 +28,7 @@ namespace OpenH2.Rendering.OpenGL
             window = new GameWindow(1600, 900, GraphicsMode.Default, "OpenH2", GameWindowFlags.Default, DisplayDevice.Default, 4, 0, GraphicsContextFlags.Debug);
 
             GL.Enable(EnableCap.DepthTest);
+            GL.Enable(EnableCap.CullFace);
         }
 
         public void RegisterCallbacks(Action<double> updateCallback, Action<double> renderCallback)

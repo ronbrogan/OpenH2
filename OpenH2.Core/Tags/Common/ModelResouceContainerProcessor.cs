@@ -8,17 +8,6 @@ namespace OpenH2.Core.Tags.Common
 {
     public static class ModelResouceContainerProcessor
     {
-        // TODO: figure out where this can be read from
-        private static Dictionary<int, int> indiciesIndexMapping = new Dictionary<int, int>
-        {
-            {7, 1 },
-            {8, 2 },
-            {9, 2 },
-            {10, 2 },
-            {11, 2 },
-        };
-
-
         public static Mesh[] ProcessContainer(IModelResourceContainer container, ModelShaderReference[] shaders)
         {
             if (container.Resources.Length < 4)
@@ -30,12 +19,15 @@ namespace OpenH2.Core.Tags.Common
 
             var verts = ProcessVerticies(container);
 
+            var partCount = (int)container.Header.PartInfoCount;
             var partResource = container.Resources[0];
             var partData = partResource.Data.Span;
-            var partCount = partData.Length / 72;
+            
+
+            
 
             // Process face data
-            var faceResource = container.Resources[indiciesIndexMapping[container.Resources.Length]];
+            var faceResource = container.Resources[GetIndiciesResourceIndex(container)];
             var faceData = faceResource.Data.Span;
 
             var meshes = new List<Mesh>(partCount);
@@ -47,7 +39,6 @@ namespace OpenH2.Core.Tags.Common
                 var matId = partData.ReadUInt16At(start + 4);
                 var indexStart = partData.ReadUInt16At(start + 6);
                 var indexCount = partData.ReadUInt16At(start + 8);
-                var compressed = (partData.ReadUInt16At(start + 10) & 1) == 1;
                 // TODO: Figure out where to get this value
                 var elementType = (MeshElementType)partData.ReadUInt16At(start + 2);
 
@@ -74,21 +65,63 @@ namespace OpenH2.Core.Tags.Common
             return meshes.ToArray();
         }
 
+        private static int GetIndiciesResourceIndex(IModelResourceContainer container)
+        {
+            var header = container.Header;
+            var index = 0;
+
+            if(header.PartInfoCount > 0)
+            {
+                index++;
+            }
+
+            if (header.PartInfo2Count > 0)
+            {
+                index++;
+            }
+
+            if (header.PartInfo3Count > 0)
+            {
+                index++;
+            }
+
+            return index;
+        }
+
+        private static int GetFirstVertexComponentIndex(IModelResourceContainer container)
+        {
+            var index = GetIndiciesResourceIndex(container);
+
+            if(container.Header.UknownDataLength > 0)
+            {
+                index++;
+            }
+
+            if(container.Header.UknownIndiciesCount > 0)
+            {
+                index++;
+            }
+
+            return index + 2;
+        }
+
         private static VertexFormat[] ProcessVerticies(IModelResourceContainer container)
         {
-            int firstVertIndex = 0;
-            for(var i = 0; i < container.Resources.Length; i++)
-            {
-                if(container.Resources[i].Type == ModelResource.ResourceType.VertexAttribute)
-                {
-                    firstVertIndex = i;
-                    break;
-                }
-            }
+            //int firstVertIndex = 0;
+            //for(var i = 0; i < container.Resources.Length; i++)
+            //{
+            //    if(container.Resources[i].Type == ModelResource.ResourceType.VertexAttribute)
+            //    {
+            //        firstVertIndex = i;
+            //        break;
+            //    }
+            //}
+
+            var vertIndex = GetFirstVertexComponentIndex(container);
 
             var verts = new VertexFormat[container.VertexCount];
 
-            var posResouce = container.Resources[firstVertIndex];
+            var posResouce = container.Resources[vertIndex];
             var posData = posResouce.Data.Span;
 
             for (var i = 0; i < container.VertexCount; i++)
@@ -100,7 +133,7 @@ namespace OpenH2.Core.Tags.Common
                 verts[i] = vert;
             }
 
-            var texResouce = container.Resources[firstVertIndex + 1];
+            var texResouce = container.Resources[vertIndex + 1];
             var texData = texResouce.Data.Span;
 
             for (var i = 0; i < container.VertexCount; i++)
@@ -112,7 +145,7 @@ namespace OpenH2.Core.Tags.Common
                 verts[i] = vert;
             }
 
-            var tbnResouce = container.Resources[firstVertIndex + 2];
+            var tbnResouce = container.Resources[vertIndex + 2];
             var tbnData = tbnResouce.Data.Span;
 
             for (var i = 0; i < container.VertexCount; i++)

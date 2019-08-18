@@ -1,10 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Numerics;
-using OpenH2.Core.Architecture;
-using OpenH2.Core.Tags;
+﻿using OpenH2.Core.Tags;
 using OpenH2.Foundation;
 using OpenH2.Rendering.Abstractions;
+using System;
+using System.Collections.Generic;
+using System.Numerics;
 
 namespace OpenH2.Rendering
 {
@@ -59,7 +58,7 @@ namespace OpenH2.Rendering
         }
 
         /// <summary>
-        /// Kicks of the draw calls to the graphics adapter
+        /// Kicks off the draw calls to the graphics adapter
         /// </summary>
         public void DrawAndFlush()
         {

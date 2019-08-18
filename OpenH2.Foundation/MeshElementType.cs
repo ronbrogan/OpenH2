@@ -8,5 +8,6 @@ namespace OpenH2.Foundation
     {
         TriangleList = 11,
         TriangleStrip = 3,
+        Other = 2
     }
 }

@@ -99,9 +99,9 @@ namespace OpenH2.ModelDumper
                 sb.AppendLine($"g BspChunk.{matId}");
                 sb.AppendLine($"usemtl {matId}");
 
-                for (var j = 0; j < mesh.Indicies.Length; j += 3)
+                for (var j = 2; j < mesh.Indicies.Length; j++)
                 {
-                    var indicies = (mesh.Indicies[j], mesh.Indicies[j + 1], mesh.Indicies[j + 2]);
+                    var indicies = (mesh.Indicies[j-2], mesh.Indicies[j-1], mesh.Indicies[j]);
 
                     sb.Append("f");
                     sb.Append($" {indicies.Item1 + vertsWritten}/{indicies.Item1 + vertsWritten}/{indicies.Item1 + vertsWritten}");

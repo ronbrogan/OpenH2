@@ -6,6 +6,16 @@
     </PropertyGroup>
 
     <ItemGroup>
+      <None Remove="featureselection.py" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <Content Include="featureselection.py">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </Content>
+    </ItemGroup>
+
+    <ItemGroup>
       <ProjectReference Include="..\OpenH2.Core\OpenH2.Core.csproj" />
       <ProjectReference Include="..\OpenH2.Foundation\OpenH2.Foundation.csproj" />
     </ItemGroup>

@@ -1,13 +1,10 @@
-﻿using OpenH2.Core.Enums;
-using OpenH2.Core.Extensions;
+﻿using OpenH2.Core.Extensions;
 using OpenH2.Core.Offsets;
 using OpenH2.Core.Parsing;
 using OpenH2.Core.Tags.Common;
 using OpenH2.Core.Tags.Layout;
-using OpenH2.Core.Types;
 using OpenH2.Foundation;
 using System;
-using System.Collections.Generic;
 using System.Numerics;
 
 namespace OpenH2.Core.Tags
@@ -24,7 +21,7 @@ namespace OpenH2.Core.Tags
         [PrimitiveValue(0)]
         public int NameId { get; set; }
         
-        [PrimitiveValue(4)]
+        [PrimitiveValue(10)]
         public ushort Flags { get; set; }
 
         [InternalReferenceValue(20)]
@@ -51,6 +48,19 @@ namespace OpenH2.Core.Tags
         {
             foreach (var part in Parts)
             {
+                var headerData = sceneReader.Chunk(new NormalOffset((int)part.DataBlockRawOffset), 120, "ModelMeshHeader").Span;
+
+                part.Header = new ModelResourceBlockHeader()
+                {
+                    PartInfoCount = headerData.ReadUInt32At(8),
+                    PartInfo2Count = headerData.ReadUInt32At(16),
+                    PartInfo3Count = headerData.ReadUInt32At(24),
+                    IndexCount = headerData.ReadUInt32At(40),
+                    UknownDataLength = headerData.ReadUInt32At(48),
+                    UknownIndiciesCount = headerData.ReadUInt32At(56),
+                    VertexComponentCount = headerData.ReadUInt32At(64)
+                };
+
                 foreach(var resource in part.Resources)
                 {
                     var dataOffset = part.DataBlockRawOffset + 8 + part.DataPreambleSize + resource.Offset;
@@ -225,7 +235,7 @@ namespace OpenH2.Core.Tags
             [PrimitiveValue(68)]
             public uint DataBodySize { get; set; }
 
-            public Memory<byte> Data { get; set; }
+            public ModelResourceBlockHeader Header { get; set; }
 
             [InternalReferenceValue(72)]
             public ModelResource[] Resources { get; set; }
