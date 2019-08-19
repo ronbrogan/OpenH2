@@ -14,6 +14,54 @@ namespace OpenH2.Engine.EntityFactories
 {
     public class SceneryFactory
     {
+        public static Scenery FromInstancedGeometry(H2vMap map, BspTag bsp, BspTag.InstancedGeometryInstance instance)
+        {
+            var scenery = new Scenery();
+
+            var def = bsp.InstancedGeometryDefinitions[instance.Index];
+
+            var comp = new RenderModelComponent(scenery);
+            comp.Note = $"[{bsp.Id}] {bsp.Name}//instanced//{instance.Index}";
+            comp.Meshes = def.Model.Meshes;
+            comp.Position = instance.Position;
+            comp.Orientation = QuatFrom3x3Mat4(instance.RotationMatrix);
+            comp.Scale = new Vector3(instance.Scale);
+
+            EnsureMaterials(map, comp);
+
+            scenery.SetComponents(new[] { comp });
+
+            return scenery;
+        }
+
+        private static Quaternion QuatFrom3x3Mat4(float[] vals)
+        {
+            var mat4 = new Matrix4x4(
+                vals[0],
+                vals[1],
+                vals[2],
+                0f,
+                vals[3],
+                vals[4],
+                vals[5],
+                0f,
+                vals[6],
+                vals[7],
+                vals[8],
+                0f,
+                0f,
+                0f,
+                0f,
+                1f);
+
+            if(Matrix4x4.Decompose(mat4, out var _, out var q, out var _) == false)
+            {
+                return Quaternion.Identity;
+            }
+
+            return q;
+        }
+
         public static Scenery FromTag(H2vMap map, ScenarioTag scenario,  ScenarioTag.SceneryInstance instance)
         {
             var scenery = new Scenery();
@@ -21,7 +69,7 @@ namespace OpenH2.Engine.EntityFactories
             var id = scenario.SceneryReferences[instance.SceneryDefinitionIndex].SceneryId;
             map.TryGetTag<SceneryTag>(id, out var tag);
 
-            if(map.TryGetTag<PhysicalModelTag>(tag.HlmtId, out var hlmt) == false)
+            if (map.TryGetTag<PhysicalModelTag>(tag.HlmtId, out var hlmt) == false)
             {
                 throw new Exception("No model found for scenery");
             }
@@ -34,7 +82,7 @@ namespace OpenH2.Engine.EntityFactories
 
             var meshes = new List<Mesh>();
 
-            foreach(var lod in model.Lods)
+            foreach (var lod in model.Lods)
             {
                 var part = lod.Permutations.First().HighestPieceIndex;
                 meshes.AddRange(model.Parts[part].Model.Meshes);
@@ -44,9 +92,20 @@ namespace OpenH2.Engine.EntityFactories
             comp.Note = $"[{tag.Id}] {tag.Name}";
             comp.Meshes = meshes.ToArray();
             comp.Position = instance.Position;
-            comp.Orientation = instance.Orientation;
+            comp.Orientation = instance.Orientation.ToQuaternion();
             comp.Scale = new Vector3(1);
 
+            EnsureMaterials(map, comp);
+
+            var components = new List<Component>();
+            components.Add(comp);
+            scenery.SetComponents(components.ToArray());
+
+            return scenery;
+        }
+
+        private static void EnsureMaterials(H2vMap map, RenderModelComponent comp)
+        {
             foreach (var mesh in comp.Meshes)
             {
                 if (comp.Materials.ContainsKey(mesh.MaterialIdentifier))
@@ -85,12 +144,6 @@ namespace OpenH2.Engine.EntityFactories
                     }
                 }
             }
-
-            var components = new List<Component>();
-            components.Add(comp);
-            scenery.SetComponents(components.ToArray());
-
-            return scenery;
         }
     }
 }

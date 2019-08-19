@@ -21,7 +21,7 @@ namespace OpenH2.AvaloniaControls.HexViewer
     public class HexViewer : UserControl
     {
         public static readonly DirectProperty<HexViewer, Memory<byte>> DataProperty =
-            AvaloniaProperty.RegisterDirect<HexViewer, Memory<byte>>(nameof(Data), h => h.Data, (h,v) => h.Data = v.Slice(0, Math.Min(10000, v.Length)));
+            AvaloniaProperty.RegisterDirect<HexViewer, Memory<byte>>(nameof(Data), h => h.Data, (h,v) => { h.Data = v.Slice(0, Math.Min(40000, v.Length)); h.allData = v; });
 
         public static readonly DirectProperty<HexViewer, ObservableCollection<HexViewerFeature>> FeaturesProperty =
             AvaloniaProperty.RegisterDirect<HexViewer, ObservableCollection<HexViewerFeature>>(nameof(Features), h => h.Features, (h, v) => h.Features = v);
@@ -46,6 +46,7 @@ namespace OpenH2.AvaloniaControls.HexViewer
             }
         }
 
+        private Memory<byte> allData;
         private Memory<byte> _data;
         private Memory<byte> Data
         {
@@ -275,7 +276,7 @@ namespace OpenH2.AvaloniaControls.HexViewer
 
             var path = await dialog.ShowAsync(Application.Current.MainWindow);
 
-            File.WriteAllBytes(path, this.Data.ToArray());
+            File.WriteAllBytes(path, this.allData.ToArray());
         }
 
         private void GotoBox_KeyDown(object sender, Avalonia.Input.KeyEventArgs e)

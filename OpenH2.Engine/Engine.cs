@@ -107,6 +107,11 @@ namespace OpenH2.Engine
             foreach(var bsp in bsps)
             {
                 destination.AddEntity(TerrainFactory.FromBspData(map, bsp));
+
+                foreach(var instance in bsp.InstancedGeometryInstances)
+                {
+                    destination.AddEntity(SceneryFactory.FromInstancedGeometry(map, bsp, instance));
+                }
             }
 
             foreach(var scen in scenario.SceneryInstances)

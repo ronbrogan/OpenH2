@@ -21,36 +21,43 @@ namespace OpenH2.Core.Tags
         [InternalReferenceValue(88)] public SceneryDefinition[] SceneryReferences { get; set; }
 
         [InternalReferenceValue(96)] public Obj96[] Obj96s { get; set; }
-        [InternalReferenceValue(104)] public Obj104[] Obj104s { get; set; }
-        [InternalReferenceValue(144)] public Obj144[] AmmoPickupInstances { get; set; }
-        [InternalReferenceValue(152)] public Obj152[] Obj152s { get; set; }
+        [InternalReferenceValue(104)] public BipedDefinition[] BipedDefinitions { get; set; }
+        [InternalReferenceValue(144)] public AmmunitionInstance[] AmmoPickupInstances { get; set; }
+        [InternalReferenceValue(152)] public WeaponDefinition[] WeaponDefinitions { get; set; }
         [InternalReferenceValue(160)] public Obj160[] Obj160s { get; set; }
         [InternalReferenceValue(168)] public MachineryInstance[] MachineryInstances { get; set; }
         [InternalReferenceValue(176)] public MachineryDefinition[] MachineryDefinitions { get; set; }
         [InternalReferenceValue(184)] public ControllerInstance[] ControllerInstances { get; set; }
-        [InternalReferenceValue(192)] public Obj192[] Obj192s { get; set; }
+        [InternalReferenceValue(192)] public ControllerDefinition[] ControllerDefinitions { get; set; }
 
         
 
-        [InternalReferenceValue(216)] public SoundSceneryInstance[] SoundSceneryInstances { get; set; }
+        [InternalReferenceValue(216)] 
+        public SoundSceneryInstance[] SoundSceneryInstances { get; set; }
 
-        [InternalReferenceValue(224)] public Obj224[] Obj224s { get; set; }
+        [InternalReferenceValue(224)] 
+        public SoundSceneryDefinition[] SoundSceneryDefinitions { get; set; }
 
-        [InternalReferenceValue(232)] public LightInstance[] LightInstances { get; set; }
+        [InternalReferenceValue(232)] 
+        public LightInstance[] LightInstances { get; set; }
 
         [InternalReferenceValue(240)] public Obj240[] Obj240s { get; set; }
 
-        [InternalReferenceValue(256)] public PlayerSpawnMarker[] PlayerSpawnMarkers { get; set; }
+        [InternalReferenceValue(256)] 
+        public PlayerSpawnMarker[] PlayerSpawnMarkers { get; set; }
 
         [InternalReferenceValue(264)] public Obj264[] Obj264s { get; set; }
 
-        [InternalReferenceValue(280)] public GameModeMarker[] GameModeMarkers { get; set; }
+        [InternalReferenceValue(280)] 
+        public GameModeMarker[] GameModeMarkers { get; set; }
 
-        [InternalReferenceValue(288)] public ItemCollectionPlacement[] ItemCollectionPlacements { get; set; }
+        [InternalReferenceValue(288)] 
+        public ItemCollectionPlacement[] ItemCollectionPlacements { get; set; }
 
         [InternalReferenceValue(296)] public Obj296[] Obj296s { get; set; }
 
-        [InternalReferenceValue(312)] public DecalInstance[] DecalInstances { get; set; }
+        [InternalReferenceValue(312)] 
+        public DecalInstance[] DecalInstances { get; set; }
 
 
 
@@ -81,17 +88,17 @@ namespace OpenH2.Core.Tags
 
         [InternalReferenceValue(792)] public Obj792[] Obj792s { get; set; }
 
-        [InternalReferenceValue(808)] public BlocInstance[] BlocInstances { get; set; }
+        [InternalReferenceValue(808)] 
+        public BlocInstance[] BlocInstances { get; set; }
 
-        [InternalReferenceValue(816)] public BlocDefinition[] BlocDefinitions { get; set; }
+        [InternalReferenceValue(816)] 
+        public BlocDefinition[] BlocDefinitions { get; set; }
 
         [InternalReferenceValue(840)] public Obj840[] Obj840s { get; set; }
 
         [InternalReferenceValue(904)] public Obj904[] Obj904s { get; set; }
 
         [InternalReferenceValue(920)] public Obj920[] Obj920s { get; set; }
-
-        [InternalReferenceValue(984)] public Obj984[] Obj984s { get; set; }
 
 
         [FixedLength(8)]
@@ -141,27 +148,65 @@ namespace OpenH2.Core.Tags
         [FixedLength(84)]
         public class Obj96
         {
+            [PrimitiveValue(0)]
+            public ushort Index { get; set; }
+
             [PrimitiveValue(8)]
             public Vector3 Position { get; set; }
+
+            [PrimitiveValue(20)]
+            public Vector3 Orientation { get; set; }
         }
-        [FixedLength(40)] public class Obj104 { }
-        [FixedLength(84)]
-        public class Obj144
+
+        [FixedLength(40)]
+        public class BipedDefinition 
         {
+            [PrimitiveValue(4)]
+            public uint BipedId { get; set; }
+        }
+
+
+        [FixedLength(84)]
+        public class AmmunitionInstance
+        {
+            [PrimitiveValue(0)]
+            public ushort Index { get; set; }
+
             [PrimitiveValue(8)]
             public Vector3 Position { get; set; }
+
+            [PrimitiveValue(20)]
+            public Vector3 Orientation { get; set; }
         }
+
         [FixedLength(40)] public class Obj160 { }
+
         [FixedLength(68)]
         public class ControllerInstance
         {
+            [PrimitiveValue(0)]
+            public ushort Index { get; set; }
+
             [PrimitiveValue(8)]
             public Vector3 Position { get; set; }
+
+            [PrimitiveValue(20)]
+            public Vector3 Orientation { get; set; }
         }
-        [FixedLength(40)] public class Obj192 { }
+
+        [FixedLength(40)] 
+        public class ControllerDefinition 
+        {
+            [PrimitiveValue(4)]
+            public uint ControllerId { get; set; }
+        }
 
 
-        [FixedLength(40)] public class Obj152 { }
+        [FixedLength(40)] public class WeaponDefinition 
+        {
+            [PrimitiveValue(4)]
+            public uint WeaponId { get; set; }
+        }
 
         [FixedLength(72)]
         public class MachineryInstance
@@ -175,6 +220,7 @@ namespace OpenH2.Core.Tags
             [PrimitiveValue(20)]
             public Vector3 Orientation { get; set; }
         }
+
         [FixedLength(40)]
         public class MachineryDefinition
         {
@@ -185,35 +231,33 @@ namespace OpenH2.Core.Tags
         [FixedLength(80)]
         public class SoundSceneryInstance
         {
+            [PrimitiveValue(0)]
+            public ushort SoundSceneryDefinitionIndex { get; set; }
+
             [PrimitiveValue(8)]
             public Vector3 Position { get; set; }
 
             [PrimitiveValue(20)]
-            public float I { get; set; }
-
-            [PrimitiveValue(24)]
-            public float J { get; set; }
-
-            [PrimitiveValue(28)]
-            public float K { get; set; }
+            public Vector3 Orientation { get; set; }
         }
 
-        [FixedLength(40)] public class Obj224 { }
+        [FixedLength(40)] public class SoundSceneryDefinition 
+        {
+            [PrimitiveValue(4)]
+            public uint SoundSceneryId { get; set; }
+        }
 
         [FixedLength(108)]
         public class LightInstance
         {
+            [PrimitiveValue(0)]
+            public ushort Index { get; set; }
+
             [PrimitiveValue(8)]
             public Vector3 Position { get; set; }
 
             [PrimitiveValue(20)]
-            public float I { get; set; }
-
-            [PrimitiveValue(24)]
-            public float J { get; set; }
-
-            [PrimitiveValue(28)]
-            public float K { get; set; }
+            public Vector3 Orientation { get; set; }
         }
 
         [FixedLength(40)] public class Obj240 { }
@@ -284,7 +328,11 @@ namespace OpenH2.Core.Tags
 
         [FixedLength(152)] public class Obj536 { }
         [FixedLength(2)] public class Obj560 { }
-        [FixedLength(20)] public class Obj568 { }
+        [FixedLength(20)] public class Obj568 
+        {
+            [PrimitiveValue(0)]
+            public ushort Index { get; set; }
+        }
         [FixedLength(100)] public class Obj592 { }
         [FixedLength(72)] public class Obj600 { }
         [FixedLength(192)] public class Obj656 { }
@@ -301,6 +349,7 @@ namespace OpenH2.Core.Tags
 
             [PrimitiveValue(20)]
             public Vector3 Orientation { get; set; }
+
         }
 
         [FixedLength(40)]

@@ -9,7 +9,7 @@ namespace OpenH2.Foundation
 
         public Vector3 Position { get; set; } = Vector3.Zero;
 
-        public Vector3 Orientation { get; set; } = Vector3.Zero;
+        public Quaternion Orientation { get; set; } = Quaternion.Identity;
 
         public Vector3 Scale { get; set; } = Vector3.One;
 
@@ -18,7 +18,7 @@ namespace OpenH2.Foundation
         public Matrix4x4 CreateTransformationMatrix()
         {
             var translate = Matrix4x4.CreateTranslation(Position);
-            var rotate = Matrix4x4.CreateFromYawPitchRoll(Orientation.Y, Orientation.Z, Orientation.X);
+            var rotate = Matrix4x4.CreateFromQuaternion(Orientation);
             var scale = Matrix4x4.CreateScale(Scale);
 
             var scaleRotate = Matrix4x4.Multiply(scale, rotate);

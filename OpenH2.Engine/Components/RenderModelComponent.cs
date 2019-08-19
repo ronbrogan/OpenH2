@@ -1,4 +1,5 @@
 ﻿using OpenH2.Core.Architecture;
+using OpenH2.Core.Extensions;
 using OpenH2.Core.Tags;
 using OpenH2.Foundation;
 using System.Collections.Generic;
@@ -10,7 +11,7 @@ namespace OpenH2.Engine.Components
     {
         public Vector3 Position { get; set; } = Vector3.Zero;
 
-        public Vector3 Orientation { get; set; } = Vector3.Zero;
+        public Quaternion Orientation { get; set; } = Vector3.Zero.ToQuaternion();
 
         public Vector3 Scale { get; set; } = Vector3.One;
 

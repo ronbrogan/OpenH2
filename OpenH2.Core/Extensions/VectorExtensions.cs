@@ -41,6 +41,12 @@ namespace OpenH2.Core.Extensions
             return vec.Y;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static Quaternion ToQuaternion(this Vector3 vec)
+        {
+            return Quaternion.CreateFromYawPitchRoll(vec.Y, vec.Z, vec.X);
+        }
+
         public static Vector3 RandomColor(int shade = 128)
         {
             var mix = new Vector3(shade, shade, shade);

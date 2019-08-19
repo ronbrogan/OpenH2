@@ -48,7 +48,7 @@ namespace OpenH2.Engine.EntityFactories
             comp.Note = $"[{tag.Id}] {tag.Name}";
             comp.Meshes = meshes.ToArray();
             comp.Position = instance.Position;
-            comp.Orientation = instance.Orientation;
+            comp.Orientation = instance.Orientation.ToQuaternion();
             comp.Scale = new Vector3(1);
 
             foreach (var mesh in comp.Meshes)

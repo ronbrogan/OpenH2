@@ -40,10 +40,11 @@ namespace OpenH2.Core.Tags
         //[InternalReferenceValue(84)]
         //public object[] MiscObject2Cao { get; set; }
 
-        [InternalReferenceValue(92)] public Obj92[] Obj92s { get; set; }
+        [InternalReferenceValue(92)] 
+        public Obj92[] Obj92s { get; set; }
 
         //[InternalReferenceValue(100)]
-        //public object[] MiscObject4Cao { get; set; } 
+        //public Obj100[] Obj100s { get; set; } 
 
         //[InternalReferenceValue(148)]
         //public object[] MiscObject5Cao { get; set; } 
@@ -64,7 +65,7 @@ namespace OpenH2.Core.Tags
         //public object[] MiscObject10Cao { get; set; }
 
         [InternalReferenceValue(244)]
-        public Decals[] Obj244s { get; set; }
+        public DecalInstance[] DecalInstances { get; set; }
 
 
         //[InternalReferenceValue(252)]
@@ -73,11 +74,11 @@ namespace OpenH2.Core.Tags
         //[InternalReferenceValue(260)]
         //public object[] MiscObject12Cao { get; set; }
 
-        //[InternalReferenceValue(312)]
-        //public object[] MiscObject13Cao { get; set; }
+        [InternalReferenceValue(312)]
+        public InstancedGeometryDefinition[] InstancedGeometryDefinitions { get; set; }
 
-        //[InternalReferenceValue(320)]
-        //public object[] MiscObject14Cao { get; set; }
+        [InternalReferenceValue(320)] 
+        public InstancedGeometryInstance[] InstancedGeometryInstances { get; set; }
 
         //[InternalReferenceValue(328)]
         //public object[] MiscObject15Cao { get; set; }
@@ -85,14 +86,18 @@ namespace OpenH2.Core.Tags
         //[InternalReferenceValue(336)]
         //public object[] MiscObject16Cao { get; set; }
 
-        //[InternalReferenceValue(344)]
-        //public object[] MiscObject17Cao { get; set; }
+        [InternalReferenceValue(344)]
+        public Obj344[] Obj344s { get; set; }
 
         //[InternalReferenceValue(464)]
         //public object[] MiscObject18Cao { get; set; }
 
         //[InternalReferenceValue(480)]
         //public object[] MiscObject19Cao { get; set; }
+
+        [InternalReferenceValue(524)] 
+        public Obj524[] Obj524s { get; set; }
+
 
         //[InternalReferenceValue(540)]
         //public object[] MiscObject20Cao { get; set; }
@@ -139,6 +144,38 @@ namespace OpenH2.Core.Tags
 
                 var meshes = ModelResouceContainerProcessor.ProcessContainer(part, ModelShaderReferences);
                 part.Model = new MeshCollection(meshes);
+            }
+
+            foreach (var def in InstancedGeometryDefinitions)
+            {
+                if (def.DataBlockRawOffset == uint.MaxValue)
+                {
+                    Console.WriteLine("InstancedGeometry with max DataBlock offset");
+                    def.Model = new MeshCollection(new Mesh[0]);
+                    continue;
+                }
+
+                var headerData = sceneReader.Chunk(new NormalOffset((int)def.DataBlockRawOffset), (int)def.DataPreambleSize, "InstancedGeometryMeshHeader").Span;
+
+                def.Header = new ModelResourceBlockHeader()
+                {
+                    PartInfoCount = headerData.ReadUInt32At(8),
+                    PartInfo2Count = headerData.ReadUInt32At(16),
+                    PartInfo3Count = headerData.ReadUInt32At(24),
+                    IndexCount = headerData.ReadUInt32At(40),
+                    UknownDataLength = headerData.ReadUInt32At(48),
+                    UknownIndiciesCount = headerData.ReadUInt32At(56),
+                    VertexComponentCount = headerData.ReadUInt32At(64)
+                };
+
+                foreach (var resource in def.Resources)
+                {
+                    var dataOffset = def.DataBlockRawOffset + 8 + def.DataPreambleSize + resource.Offset;
+                    resource.Data = sceneReader.Chunk(new NormalOffset((int)dataOffset), resource.Size, "InstancedGeometry Render Data").AsMemory();
+                }
+
+                var meshes = ModelResouceContainerProcessor.ProcessContainer(def, ModelShaderReferences);
+                def.Model = new MeshCollection(meshes);
             }
         }
 
@@ -311,6 +348,19 @@ namespace OpenH2.Core.Tags
             }
         }
 
+        [FixedLength(36)]
+        public class Obj92
+        {
+            [PrimitiveValue(8)]
+            public Vector3 Position { get; set; }
+
+            [PrimitiveValue(20)]
+            public float Yaw { get; set; }
+        }
+
+        [FixedLength(24)]
+        public class Obj100 { }
+
         [FixedLength(176)]
         public class RenderChunk : IModelResourceContainer
         {
@@ -342,23 +392,213 @@ namespace OpenH2.Core.Tags
             public MeshCollection Model { get; set; }
         }
 
-        [FixedLength(16)]
-        public class Decals
+        [FixedLength(16)] 
+        public class DecalInstance
         {
             [PrimitiveValue(0)]
             public Vector3 Position { get; set; }
 
             [PrimitiveValue(12)]
             public ushort Index { get; set; }
+
+            [PrimitiveValue(14)]
+            public ushort Unknown { get; set; }
         }
 
-
-        [FixedLength(36)]
-        public class Obj92
+        [FixedLength(200)]
+        public class InstancedGeometryDefinition : IModelResourceContainer
         {
-            [PrimitiveValue(8)]
-            public Vector3 Position { get; set; }
+            [PrimitiveValue(0)]
+            public ushort VertexCount { get; set; }
+
+            [PrimitiveValue(2)]
+            public ushort TriangleCount { get; set; }
+
+            [PrimitiveValue(12)]
+            public ushort IndiciesIndex { get; set; }
+
+            [InternalReferenceValue(24)]
+            public Obj24[] Obj24s { get; set; }
+
+            [PrimitiveValue(40)]
+            public uint DataBlockRawOffset { get; set; }
+
+            [PrimitiveValue(44)]
+            public uint DataBlockSize { get; set; }
+
+            [PrimitiveValue(48)]
+            public uint DataPreambleSize { get; set; }
+
+            [PrimitiveValue(52)]
+            public uint DataBodySize { get; set; }
+
+            public ModelResourceBlockHeader Header { get; set; }
+
+            [InternalReferenceValue(56)]
+            public ModelResource[] Resources { get; set; }
+
+            public MeshCollection Model { get; set; }
+
+            // I think many of these objects are a half-edge structure for 
+            // the individual object like is on the BSP
+            [FixedLength(56)]
+            public class Obj24
+            {
+                [PrimitiveArray(0, 10)]
+                float[] Floats { get; set; }
+            }
+
+
+            [FixedLength(8)]
+            public class Obj112
+            {
+                [PrimitiveArray(0,4)]
+                short Shorts { get; set; }
+            }
+
+            [FixedLength(16)]
+            public class Obj120
+            {
+                [PrimitiveValue(0)]
+                public Vector3 Position { get; set; }
+
+                [PrimitiveValue(12)]
+                public float Rotation { get; set; }
+            }
+
+            [FixedLength(4)]
+            public class Obj128
+            {
+                [PrimitiveValue(0)]
+                public ushort Flags { get; set; }
+
+                [PrimitiveValue(2)]
+                public ushort Index { get; set; }
+            }
+
+            [FixedLength(4)]
+            public class Obj136
+            {
+                [PrimitiveValue(0)]
+                public ushort Index { get; set; }
+
+                [PrimitiveValue(2)]
+                public byte Unknown { get; set; }
+
+
+                [PrimitiveValue(3)]
+                public byte Flags { get; set; }
+            }
+
+            [FixedLength(16)]
+            public class Obj144
+            {
+                [PrimitiveValue(0)]
+                public Vector3 Position { get; set; }
+
+                [PrimitiveValue(12)]
+                public ushort Start { get; set; }
+
+                [PrimitiveValue(14)]
+                public ushort End { get; set; }
+            }
+
+            [FixedLength(8)]
+            public class Obj152
+            {
+                [PrimitiveValue(0)]
+                public ushort Start { get; set; }
+
+                [PrimitiveValue(2)]
+                public ushort Count { get; set; }
+
+                [PrimitiveValue(4)]
+                public uint UnusedMabye{ get; set; }
+            }
+
+            [FixedLength(12)]
+            public class Obj160
+            {
+
+            }
+
+            [FixedLength(16)]
+            public class Obj168
+            {
+
+            }
+
+            // Likely the Havok collision info
+            [FixedLength(112)]
+            public class Obj176
+            {
+
+            }
+            [FixedLength(8)]
+            public class Obj184
+            {
+
+            }
+            [FixedLength(8)]
+            public class Obj192
+            {
+
+            }
         }
+
+        [FixedLength(88)]
+        public class InstancedGeometryInstance
+        {
+            [PrimitiveValue(0)]
+            public float Scale { get; set; }
+
+            [PrimitiveArray(4, 12)]
+            public float[] RotationMatrix { get; set; }
+
+            [PrimitiveValue(40)]
+            public Vector3 Position { get; set; }
+
+            [PrimitiveValue(52)]
+            public uint Index { get; set; }
+
+            [PrimitiveValue(82)]
+            public ushort Flags { get; set; }
+        }
+
+        [FixedLength(20)]
+        public class Obj344
+        {
+            [PrimitiveValue(0)]
+            public ushort Index { get; set; }
+
+            [PrimitiveValue(2)]
+            public ushort Unknown { get; set; }
+
+            [PrimitiveArray(4, 4)]
+            public float[] Values { get; set; }
+        }
+
+        [FixedLength(32)] 
+        public class Obj524 
+        {
+            [PrimitiveValue(0)]
+            public ushort Max { get; set; }
+
+            [PrimitiveValue(2)]
+            public ushort Index { get; set; }
+
+            [PrimitiveValue(4)]
+            public ushort Value { get; set; }
+
+            [PrimitiveValue(6)]
+            public ushort Zero { get; set; }
+
+            [PrimitiveArray(8,6)]
+            public float[] Values{ get; set; }
+        }
+
+        
+        
 
     }
 }

@@ -43,11 +43,6 @@ namespace OpenH2.Engine.EntityFactories
                 AddAtLocation(96, obj.Position, new Vector3(1, 0.7f, 0), destination);
             }
 
-            foreach (var obj in scenario.ControllerInstances)
-            {
-                AddAtLocation(184, obj.Position, new Vector3(1, 1, 1), destination);
-            }
-
             foreach (var obj in scenario.Obj264s)
             {
                 AddAtLocation(264, obj.Position, new Vector3(0, 1, 1), destination);
@@ -61,6 +56,13 @@ namespace OpenH2.Engine.EntityFactories
             foreach (var obj in scenario.Obj488s)
             {
                 AddAtLocation(488, obj.Position, new Vector3(0, 0, 1), destination);
+            }
+
+            var bsp = map.GetLocalTagsOfType<BspTag>().First();
+
+            foreach (var obj in bsp.InstancedGeometryInstances)
+            {
+                //AddAtLocation(320, obj.Position, new Vector3(1, 1, 1), destination);
             }
         }
 
