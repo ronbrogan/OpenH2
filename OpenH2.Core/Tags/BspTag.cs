@@ -552,7 +552,7 @@ namespace OpenH2.Core.Tags
             [PrimitiveValue(0)]
             public float Scale { get; set; }
 
-            [PrimitiveArray(4, 12)]
+            [PrimitiveArray(4, 9)]
             public float[] RotationMatrix { get; set; }
 
             [PrimitiveValue(40)]

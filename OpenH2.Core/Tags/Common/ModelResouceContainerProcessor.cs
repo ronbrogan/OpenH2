@@ -39,7 +39,6 @@ namespace OpenH2.Core.Tags.Common
                 var matId = partData.ReadUInt16At(start + 4);
                 var indexStart = partData.ReadUInt16At(start + 6);
                 var indexCount = partData.ReadUInt16At(start + 8);
-                // TODO: Figure out where to get this value
                 var elementType = (MeshElementType)partData.ReadUInt16At(start + 2);
 
                 var mesh = new Mesh

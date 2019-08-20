@@ -6,6 +6,7 @@ using System.Drawing;
 using System;
 using System.Collections.Generic;
 using OpenH2.Core.Tags;
+using OpenH2.Core.Parsing;
 
 namespace OpenH2.BspMetaAnalysis
 {
@@ -15,7 +16,7 @@ namespace OpenH2.BspMetaAnalysis
         {
             var mapNames = new string[]
             {
-                @"D:\H2vMaps\ascension.map"
+                @"D:\H2vMaps\zanzibar.map"
             };
 
             var metas = mapNames.Select(s =>
@@ -25,7 +26,14 @@ namespace OpenH2.BspMetaAnalysis
                     return fac.FromFile(fs);
             }).ToDictionary(s => s.Header.Name, s => s);
 
-            var ascension = metas["ascension"];
+            var file = File.OpenRead(mapNames[0]);
+
+            BlkhScanner.ScanBlocks(file);
+
+            Console.ReadLine();
+            return;
+
+            var ascension = metas["zanzibar"];
 
             var bsps = ascension.GetLocalTagsOfType<BspTag>().ToArray();
 

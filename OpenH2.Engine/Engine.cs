@@ -12,6 +12,7 @@ using OpenH2.Rendering.OpenGL;
 using OpenH2.Rendering.Shaders;
 using System.IO;
 using System.Linq;
+using System.Numerics;
 
 namespace OpenH2.Engine
 {
