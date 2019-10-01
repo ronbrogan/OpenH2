@@ -73,6 +73,11 @@ namespace OpenH2.Engine.EntityFactories
 
                     mat.DiffuseMap = diffuse;
 
+                    if (map.TryGetTag<BitmapTag>(bitms.AlphaBitmapId, out var alpha))
+                    {
+                        mat.AlphaMap = alpha;
+                    }
+
                     var bitmRefs = shader.Parameters.SelectMany(p => p.BitmapParameter1s.Select(b => b.BitmapId));
                     foreach (var bitmRef in bitmRefs)
                     {

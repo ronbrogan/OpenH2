@@ -49,6 +49,9 @@ namespace OpenH2.Core.Tags
 
             [PrimitiveValue(28)]
             public float Param4 { get; set; }
+
+            [PrimitiveValue(48)]
+            public uint AlphaBitmapId { get; set; }
         }
 
         [FixedLength(124)]

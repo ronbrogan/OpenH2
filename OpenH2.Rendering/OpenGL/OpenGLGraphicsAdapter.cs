@@ -70,6 +70,12 @@ namespace OpenH2.Rendering.OpenGL
                 material.DiffuseHandle = diffuseHandle;
             }
 
+            if(material.AlphaMap != null)
+            {
+                textureBinder.Bind(material.AlphaMap, out var alphaHandle);
+                material.AlphaHandle = alphaHandle;
+            }
+
             boundTextures.Add(material);
         }
 
@@ -83,15 +89,19 @@ namespace OpenH2.Rendering.OpenGL
                 Console.WriteLine("Couldn't invert model matrix: " + mesh.Note);
                 return;
             }
-         
+
             var genericUniform = new GenericUniform()
             {
                 ModelMatrix = transform,
                 NormalMatrix = Matrix4x4.Transpose(inverted),
                 DiffuseColor = new Vector4(material.DiffuseColor, 1),
-                UseDiffuseMap = material.DiffuseHandle != default,
-                DiffuseMap = material.DiffuseHandle,
-                DiffuseAmount = 1f
+                UseDiffuse = material.DiffuseHandle != default,
+                DiffuseHandle = material.DiffuseHandle,
+                DiffuseAmount = 1f,
+
+                AlphaHandle = material.AlphaHandle,
+                UseAlpha = material.AlphaHandle != default,
+                AlphaAmount = 1f
             };
 
             SetupGenericUniform(genericUniform);

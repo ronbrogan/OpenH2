@@ -19,6 +19,10 @@ layout(std140, binding = 1) uniform GenericUniform
 	sampler2D DiffuseMap;
 	vec4 DiffuseColor;
 	
+	bool UseAlpha;
+    float AlphaAmount;
+    sampler2D AlphaHandle;
+
 	bool UseSpecularMap;
 	float SpecularAmount;
 	sampler2D SpecularMap;

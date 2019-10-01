@@ -14,6 +14,9 @@ namespace OpenH2.Foundation
         TTexture DiffuseMap { get; set; }
         long DiffuseHandle { get; set; }
 
+        TTexture AlphaMap { get; set; }
+        long AlphaHandle { get; set; }
+
         TTexture SpecularMap { get; set; }
         long SpecularHandle { get; set; }
 
@@ -38,6 +41,8 @@ namespace OpenH2.Foundation
 
         public TTexture DiffuseMap { get; set; }
         public long DiffuseHandle { get; set; }
+        public TTexture AlphaMap { get; set; }
+        public long AlphaHandle { get; set; }
         public TTexture EmissiveMap { get; set; }
         public long EmissiveHandle { get; set; }
         public TTexture NormalMap { get; set; }

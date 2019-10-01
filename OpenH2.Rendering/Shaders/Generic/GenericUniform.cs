@@ -17,14 +17,18 @@ namespace OpenH2.Rendering.Shaders.Generic
         public Matrix4x4 ModelMatrix;
         public Matrix4x4 NormalMatrix;
 
-        public bool UseDiffuseMap;
+        public bool UseDiffuse;
         public float DiffuseAmount;
-        public long DiffuseMap;
+        public long DiffuseHandle;
         public Vector4 DiffuseColor;
 
-        public bool UseSpecularMap;
+        public bool UseAlpha;
+        public float AlphaAmount;
+        public long AlphaHandle;
+
+        public bool UseSpecular;
         public float SpecularAmount;
-        public long SpecularMap;
+        public long SpecularHandle;
         public Vector4 SpecularColor;
 
         public bool UseNormalMap;

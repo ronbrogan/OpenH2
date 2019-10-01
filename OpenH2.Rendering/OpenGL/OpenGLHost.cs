@@ -29,6 +29,9 @@ namespace OpenH2.Rendering.OpenGL
 
             GL.Enable(EnableCap.DepthTest);
             GL.Enable(EnableCap.CullFace);
+            GL.Enable(EnableCap.AlphaTest);
+            GL.Enable(EnableCap.Blend);
+            GL.BlendFunc(BlendingFactor.SrcAlpha, BlendingFactor.OneMinusSrcAlpha);
         }
 
         public void RegisterCallbacks(Action<double> updateCallback, Action<double> renderCallback)

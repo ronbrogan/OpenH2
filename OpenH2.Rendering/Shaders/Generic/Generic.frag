@@ -18,7 +18,11 @@ layout(std140, binding = 1) uniform GenericUniform
 	float DiffuseAmount;
 	sampler2D DiffuseMap;
 	vec4 DiffuseColor;
-	
+		
+	bool UseAlpha;
+    float AlphaAmount;
+    sampler2D AlphaHandle;
+
 	bool UseSpecularMap;
 	float SpecularAmount;
 	sampler2D SpecularMap;
@@ -73,5 +77,18 @@ void main() {
     vec4 diffuse = diffStrength * diffuse_color;
 
     vec4 result = ambient + diffuse;
-    out_color = result;
+
+	float alpha = 1f;
+
+	if(Data.UseAlpha)
+	{
+		alpha = texture(Data.AlphaHandle, texcoord).a;
+		
+		if(alpha < 0.5)
+		{
+			discard;
+		}
+	}
+
+    out_color = vec4(result.xyz, alpha);
 }
