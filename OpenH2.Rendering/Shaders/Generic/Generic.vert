@@ -36,13 +36,13 @@ layout(std140, binding = 1) uniform GenericUniform
 	float EmissiveMapAmount;
 	sampler2D EmissiveMap;
 	
-	bool UseDetailMap0;
-	float DetailMapAmount0;
-	sampler2D DetailMap0;
-
 	bool UseDetailMap1;
-	float DetailMapAmount1;
+	float DetailMap1Scale;
 	sampler2D DetailMap1;
+
+	bool UseDetailMap2;
+	float DetailMap2Scale;
+	sampler2D DetailMap2;
 
 } Data;
 

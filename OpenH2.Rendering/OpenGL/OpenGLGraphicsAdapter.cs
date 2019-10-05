@@ -70,7 +70,19 @@ namespace OpenH2.Rendering.OpenGL
                 material.DiffuseHandle = diffuseHandle;
             }
 
-            if(material.AlphaMap != null)
+            if (material.DetailMap1 != null)
+            {
+                textureBinder.Bind(material.DetailMap1, out var handle);
+                material.Detail1Handle = handle;
+            }
+
+            if (material.DetailMap2 != null)
+            {
+                textureBinder.Bind(material.DetailMap2, out var handle);
+                material.Detail2Handle = handle;
+            }
+
+            if (material.AlphaMap != null)
             {
                 textureBinder.Bind(material.AlphaMap, out var alphaHandle);
                 material.AlphaHandle = alphaHandle;
@@ -98,6 +110,14 @@ namespace OpenH2.Rendering.OpenGL
                 UseDiffuse = material.DiffuseHandle != default,
                 DiffuseHandle = material.DiffuseHandle,
                 DiffuseAmount = 1f,
+
+                UseDetailMap1 = material.Detail1Handle != default,
+                DetailMap1Handle = material.Detail1Handle,
+                DetailMap1Scale = material.Detail1Scale,
+
+                UseDetailMap2 = material.Detail2Handle != default,
+                DetailMap2Handle = material.Detail2Handle,
+                DetailMap2Scale = material.Detail2Scale,
 
                 AlphaHandle = material.AlphaHandle,
                 UseAlpha = material.AlphaHandle != default,

@@ -104,7 +104,8 @@ namespace OpenH2.TextureViewer
 
             if (BitmTextureIdLookup.TryGetValue(CurrentBitmap, out var handle) == false)
             {
-                handle = textureBinder.Bind(Bitmaps[CurrentBitmap], out var _);
+                var bitm = Bitmaps[CurrentBitmap];
+                handle = textureBinder.Bind(bitm, out var _);
                 BitmTextureIdLookup[CurrentBitmap] = handle;
             }
 
@@ -128,6 +129,11 @@ namespace OpenH2.TextureViewer
                 if (CurrentBitmap == Bitmaps.Length)
                 {
                     CurrentBitmap = 0;
+                }
+
+                if (CurrentBitmap == -1)
+                {
+                    CurrentBitmap = Bitmaps.Length - 1;
                 }
 
                 candidate = Bitmaps[CurrentBitmap];

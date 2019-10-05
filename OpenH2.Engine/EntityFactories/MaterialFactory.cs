@@ -1,0 +1,77 @@
+﻿using OpenH2.Core.Enums.Texture;
+using OpenH2.Core.Representations;
+using OpenH2.Core.Tags;
+using OpenH2.Foundation;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+
+namespace OpenH2.Engine.EntityFactories
+{
+    public class MaterialFactory
+    {
+        public static void PopulateMaterial(H2vMap map, Material<BitmapTag> mat, ShaderTag shader)
+        {
+            PopulateFromBitmapReferences(map, mat, shader);
+            PopulateFromBitmapInfos(map, mat, shader);
+        }
+
+        private static void PopulateFromBitmapInfos(H2vMap map, Material<BitmapTag> mat, ShaderTag shader)
+        {
+            if (shader.BitmapInfos.Length > 0)
+            {
+                var bitms = shader.BitmapInfos[0];
+
+                if (bitms == null)
+                    return;
+
+                if(map.TryGetTag<BitmapTag>(bitms.DiffuseBitmapId, out var diffuse))
+                {
+                    mat.DiffuseMap = diffuse;
+                }
+
+                if (map.TryGetTag<BitmapTag>(bitms.AlphaBitmapId, out var alpha))
+                {
+                    mat.AlphaMap = alpha;
+                }
+            }
+        }
+
+        private static void PopulateFromBitmapReferences(H2vMap map, Material<BitmapTag> mat, ShaderTag shader)
+        {
+            var bitmRefs = shader.Parameters.First().BitmapParameter1s;
+
+
+            foreach (var bitmRef in bitmRefs)
+            {
+                if (map.TryGetTag<BitmapTag>(bitmRef.BitmapId, out var bitm) == false)
+                {
+                    continue;
+                }
+
+                if (bitm.TextureUsage == TextureUsage.Bump)
+                {
+                    mat.NormalMap = bitm;
+                }
+
+                if(bitm.TextureUsage == TextureUsage.Diffuse)
+                {
+                    if (mat.DiffuseMap == null)
+                    {
+                        mat.DiffuseMap = bitm;
+                    }
+                }
+
+                if (bitm.TextureUsage == TextureUsage.Detail)
+                {
+                    if (mat.DetailMap1 == null)
+                    {
+                        mat.DetailMap1 = bitm;
+                        mat.Detail1Scale = bitmRef.ValueB;
+                    }
+                }
+            }
+        }
+    }
+}

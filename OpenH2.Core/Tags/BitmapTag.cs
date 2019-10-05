@@ -1,13 +1,12 @@
-﻿using System;
-using System.Diagnostics;
-using System.IO;
-using System.IO.Compression;
-using Newtonsoft.Json;
+﻿using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 using OpenH2.Core.Enums.Texture;
 using OpenH2.Core.Offsets;
 using OpenH2.Core.Parsing;
 using OpenH2.Core.Tags.Layout;
+using System;
+using System.IO;
+using System.IO.Compression;
 
 namespace OpenH2.Core.Tags
 {

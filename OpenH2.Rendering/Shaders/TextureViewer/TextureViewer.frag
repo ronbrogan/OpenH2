@@ -9,5 +9,7 @@ layout (binding = 0) uniform sampler2D diffuse_map;
 
 
 void main() {
-    out_color = texture(diffuse_map, texcoord);
+    vec4 color = texture(diffuse_map, texcoord.xy);
+
+	out_color = color.rgba;
 }

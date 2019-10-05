@@ -63,10 +63,14 @@ namespace OpenH2.Core.Tags
             [InternalReferenceValue(4)]
             public BitmapParameter1[] BitmapParameter1s { get; set; }
 
-            //[ExternalReferenceValue(12)]
+            [InternalReferenceValue(12)]
+            public BitmapParameter2[] BitmapParamter2s { get; set; }
 
             [InternalReferenceValue(20)]
-            public BitmapParameter2[] BitmapParamter2s { get; set; }
+            public BitmapParameter3[] BitmapParamter3s { get; set; }
+
+            [InternalReferenceValue(28)]
+            public BitmapParameter4[] BitmapParamter4s { get; set; }
         }
 
         [FixedLength(12)]
@@ -82,8 +86,18 @@ namespace OpenH2.Core.Tags
             public float ValueB { get; set; }
         }
 
-        [FixedLength(16)]
+        [FixedLength(4)]
         public class BitmapParameter2
+        {
+            [PrimitiveValue(0)]
+            public ushort ValueA { get; set; }
+
+            [PrimitiveValue(0)]
+            public ushort ValueB { get; set; }
+        }
+
+        [FixedLength(16)]
+        public class BitmapParameter3
         {
             [PrimitiveValue(0)]
             public float ValueA { get; set; }
@@ -96,6 +110,16 @@ namespace OpenH2.Core.Tags
 
             [PrimitiveValue(12)]
             public float ValueD { get; set; }
+        }
+
+        [FixedLength(6)]
+        public class BitmapParameter4
+        {
+            [PrimitiveValue(0)]
+            public ushort ValueA { get; set; }
+
+            [PrimitiveValue(0)]
+            public ushort ValueB { get; set; }
         }
 
         [FixedLength(8)]

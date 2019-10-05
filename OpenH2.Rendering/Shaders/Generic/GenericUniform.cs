@@ -7,7 +7,7 @@ using Vector4 = System.Numerics.Vector4;
 namespace OpenH2.Rendering.Shaders.Generic
 {
     // Be careful moving/adding/removing properties
-    // Sequential layout pads to the size of the current field
+    // Sequential layout ensures that the offset of a field occurs at a multiple of the size
     // For example, float then long would be float@0, then 4 bytes of padding, then long@8
     // Thus the struct size would be 16 instead of the expected 12
 
@@ -39,13 +39,13 @@ namespace OpenH2.Rendering.Shaders.Generic
         public float EmissiveMapAmount;
         public long EmissiveMap;
 
-        public bool UseDetailMap0;
-        public float DetailMapAmount0;
-        public long DetailMap0;
-
         public bool UseDetailMap1;
-        public float DetailMapAmount1;
-        public long DetailMap1;
+        public float DetailMap1Scale;
+        public long DetailMap1Handle;
+
+        public bool UseDetailMap2;
+        public float DetailMap2Scale;
+        public long DetailMap2Handle;
 
         public static readonly int Size = BlittableValueType<GenericUniform>.Stride;
     }

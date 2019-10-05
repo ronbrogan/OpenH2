@@ -96,7 +96,7 @@ namespace OpenH2.Engine
 
         public void LoadMap(Scene destination)
         {
-            var mapPath = @"D:\H2vMaps\zanzibar.map";
+            var mapPath = @"D:\H2vMaps\03a_oldmombasa.map";
 
             var factory = new MapFactory(Path.GetDirectoryName(mapPath));
             var map = factory.FromFile(File.OpenRead(mapPath));
@@ -115,7 +115,15 @@ namespace OpenH2.Engine
                 }
             }
 
-            foreach(var scen in scenario.SceneryInstances)
+            foreach (var sky in scenario.SkyboxInstances)
+            {
+                if (sky.SkyboxId == uint.MaxValue)
+                    continue;
+
+                destination.AddEntity(SkyboxFactory.FromTag(map, scenario, sky));
+            }
+
+            foreach (var scen in scenario.SceneryInstances)
             {
                 if (scen.SceneryDefinitionIndex == ushort.MaxValue)
                     continue;

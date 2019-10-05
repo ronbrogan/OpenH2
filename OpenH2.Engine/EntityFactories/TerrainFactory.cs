@@ -39,36 +39,9 @@ namespace OpenH2.Engine.EntityFactories
                 mat.DiffuseColor = VectorExtensions.RandomColor();
                 comp.Materials.Add(mesh.MaterialIdentifier, mat);
 
-
-                if (map.TryGetTag<ShaderTag>(mesh.MaterialIdentifier, out var shader) == false)
+                if (map.TryGetTag<ShaderTag>(mesh.MaterialIdentifier, out var shader))
                 {
-                    continue;
-                }
-
-                if (shader.BitmapInfos.Length > 0)
-                {
-                    var bitms = shader.BitmapInfos[0];
-
-                    if (bitms == null)
-                        continue;
-
-                    map.TryGetTag<BitmapTag>(bitms.DiffuseBitmapId, out var diffuse);
-
-                    mat.DiffuseMap = diffuse;
-
-                    if(map.TryGetTag<BitmapTag>(bitms.AlphaBitmapId, out var alpha))
-                    {
-                        mat.AlphaMap = alpha;
-                    }
-
-                    var bitmRefs = shader.Parameters.SelectMany(p => p.BitmapParameter1s.Select(b => b.BitmapId));
-                    foreach (var bitmRef in bitmRefs)
-                    {
-                        if(map.TryGetTag<BitmapTag>(bitmRef, out var bitm) && bitm.TextureUsage == Core.Enums.Texture.TextureUsage.Bump)
-                        {
-                            mat.NormalMap = bitm;
-                        }
-                    }
+                    MaterialFactory.PopulateMaterial(map, mat, shader);
                 }
             }
 

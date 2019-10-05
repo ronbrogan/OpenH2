@@ -12,29 +12,17 @@ using System.Numerics;
 
 namespace OpenH2.Engine.EntityFactories
 {
-    public class MachineryFactory
+    public class SkyboxFactory
     {
-        public static Scenery FromTag(H2vMap map, ScenarioTag scenario,  ScenarioTag.MachineryInstance instance)
+        public static Scenery FromTag(H2vMap map, ScenarioTag scenario,  ScenarioTag.SkyboxInstance instance)
         {
             var scenery = new Scenery();
 
-            var id = scenario.MachineryDefinitions[instance.MachineryDefinitionIndex].MachineryId;
-            map.TryGetTag<MachineryTag>(id, out var tag);
+            map.TryGetTag<SkyboxTag>(instance.SkyboxId, out var tag);
 
-            if(tag.HlmtId == uint.MaxValue)
+            if (map.TryGetTag<ModelTag>(tag.ModelTagId, out var model) == false)
             {
-                Console.WriteLine($"No HLMT specified in MACH:{tag.Name}");
-                return scenery;
-            }
-
-            if(map.TryGetTag<PhysicalModelTag>(tag.HlmtId, out var hlmt) == false)
-            {
-                throw new Exception("No model found for MACH");
-            }
-
-            if (map.TryGetTag<ModelTag>(hlmt.ModelId, out var model) == false)
-            {
-                Console.WriteLine($"No MODE[{hlmt.ModelId}] found for HLMT[{hlmt.Id}]");
+                Console.WriteLine($"No MODE[{tag.ModelTagId}] found for SKY[{instance.SkyboxId}]");
                 return scenery;
             }
 
@@ -47,8 +35,8 @@ namespace OpenH2.Engine.EntityFactories
             var comp = new RenderModelComponent(scenery);
             comp.Note = $"[{tag.Id}] {tag.Name}";
             comp.Meshes = meshes.ToArray();
-            comp.Position = instance.Position;
-            comp.Orientation = instance.Orientation.ToQuaternion();
+            comp.Position = Vector3.Zero;
+            comp.Orientation = Quaternion.Identity;
             comp.Scale = new Vector3(1);
 
             foreach (var mesh in comp.Meshes)

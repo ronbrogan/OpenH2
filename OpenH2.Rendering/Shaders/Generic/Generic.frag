@@ -36,13 +36,13 @@ layout(std140, binding = 1) uniform GenericUniform
 	float EmissiveMapAmount;
 	sampler2D EmissiveMap;
 	
-	bool UseDetailMap0;
-	float DetailMapAmount0;
-	sampler2D DetailMap0;
-
 	bool UseDetailMap1;
-	float DetailMapAmount1;
+	float DetailMap1Scale;
 	sampler2D DetailMap1;
+
+	bool UseDetailMap2;
+	float DetailMap2Scale;
+	sampler2D DetailMap2;
 
 } Data;
 
@@ -58,17 +58,32 @@ vec3 light_color = vec3(1,1,1);
 
 void main() {
 
-	vec4 ambient_color = Data.DiffuseColor;
 	vec4 diffuse_color = Data.DiffuseColor;
 
 	if(Data.UseDiffuseMap)
 	{
-		ambient_color = texture(Data.DiffuseMap, texcoord);
 		diffuse_color = texture(Data.DiffuseMap, texcoord);
 	}
 
+	if(Data.UseDetailMap1)
+	{
+		vec4 det1_color = texture(Data.DetailMap1, texcoord * Data.DetailMap1Scale);
+
+		diffuse_color = diffuse_color * det1_color * 2;
+	}
+
+	if(Data.UseDetailMap2)
+	{
+		vec4 det2_color = texture(Data.DetailMap2, texcoord * Data.DetailMap2Scale);
+
+		diffuse_color = diffuse_color * det2_color * 2;
+	}
+
+	diffuse_color = diffuse_color;
+	
+
     float ambientStrength = 0.4;
-    vec4 ambient = ambientStrength * ambient_color;
+    vec4 ambient = ambientStrength * diffuse_color;
 
     vec3 norm = normalize(world_normal);
     vec3 lightDir = normalize(light_pos - world_pos);  

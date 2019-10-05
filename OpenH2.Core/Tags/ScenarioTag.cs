@@ -12,7 +12,7 @@ namespace OpenH2.Core.Tags
         }
 
         [InternalReferenceValue(8)]
-        public SkyboxReference[] SkyboxReferences { get; set; }
+        public SkyboxInstance[] SkyboxInstances { get; set; }
 
 
         [InternalReferenceValue(72)] public Obj72[] Obj72s { get; set; }
@@ -102,7 +102,7 @@ namespace OpenH2.Core.Tags
 
 
         [FixedLength(8)]
-        public class SkyboxReference
+        public class SkyboxInstance
         {
             [PrimitiveValue(4)]
             public uint SkyboxId { get; set; }
