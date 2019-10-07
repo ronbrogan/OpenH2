@@ -31,6 +31,18 @@
   <ItemGroup>
     <ProjectReference Include="..\OpenH2.Avalonia\OpenH2.AvaloniaControls.csproj" />
     <ProjectReference Include="..\OpenH2.Core\OpenH2.Core.csproj" />
+    <ProjectReference Include="..\OpenH2.Rendering\OpenH2.Rendering.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="../lib/HLSLcc.exe">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <DependentUpon>Dependencies</DependentUpon>
+    </None>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Dependencies\" />
   </ItemGroup>
 
 </Project>

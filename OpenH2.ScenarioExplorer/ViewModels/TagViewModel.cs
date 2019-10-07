@@ -64,7 +64,10 @@ namespace OpenH2.ScenarioExplorer.ViewModels
             {
                 if(_tagJson == null)
                 {
-                    return JsonConvert.SerializeObject(_originalTag, Formatting.Indented, serializerSettings);
+                    var json = JsonConvert.SerializeObject(_originalTag, Formatting.Indented, serializerSettings);
+
+                    _tagJson = json;
+                    return _tagJson;
                 }
                 else
                 {
@@ -82,6 +85,7 @@ namespace OpenH2.ScenarioExplorer.ViewModels
             set
             {
                 _originalTag = value;
+                this.TagPreview = TagPreviewFactory.GetPreview(_originalTag);
 
                 if(value != null)
                 {
@@ -89,6 +93,8 @@ namespace OpenH2.ScenarioExplorer.ViewModels
                 }
             }
         }
+
+        public TagPreviewViewModel TagPreview { get; set; }
 
         public ObservableCollection<HexViewerFeature> Features { get; set; } = new ObservableCollection<HexViewerFeature>();
 

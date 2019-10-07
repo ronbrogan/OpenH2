@@ -132,6 +132,9 @@ namespace OpenH2.Core.CodeGenTests
                 [InternalReferenceValue(4)]
                 public SubSubTag[] SubSubTags { get; set; }
 
+                [InternalReferenceValue(12)]
+                public byte[] RawBytes { get; set; }
+
                 [FixedLength(4)]
                 public struct SubSubTag
                 {

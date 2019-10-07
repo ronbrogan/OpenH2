@@ -59,7 +59,9 @@ namespace OpenH2.ScenarioExplorer.ViewModels
 
         public ObservableCollection<string> RecentFiles { get; set; } = new ObservableCollection<string>
         {
-            "D:\\ascension.map"
+            "D:\\H2vMaps\\shared.map",
+            "D:\\H2vMaps\\zanzibar.map",
+            "D:\\H2vMaps\\ascension.map"
         };
 
         public Control[] MenuItems { get; set; }

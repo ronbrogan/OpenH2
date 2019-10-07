@@ -1,0 +1,77 @@
+//------------------------------------------------
+//--- 010 Editor v7.0.2 Binary Template
+//
+//      File: 
+//   Authors: 
+//   Version: 
+//   Purpose: 
+//  Category: 
+// File Mask: 
+//  ID Bytes: 
+//   History: 
+//------------------------------------------------
+local int internalSecondaryStart <hidden=true> = 21402684;
+local int internalSecondaryEnd <hidden=true> = 21439560;
+
+
+local int internalSecondaryMagic <hidden=true>;
+internalSecondaryMagic = 21402684;
+
+string internalSecondaryOffsetRead(int value)
+{
+    string s;
+	SPrintf(s, "%u", value - internalSecondaryMagic);
+	return s;
+}
+
+typedef int InternalOffset <read=internalSecondaryOffsetRead, fgcolor=0xFF4400>;
+
+
+struct Header 
+{
+    int zero[4];
+    int one; 
+    int zero2[2];
+  
+    int wrapper1Count;
+    InternalOffset wrapper1Offset;
+};
+
+struct Wrapper1
+{
+    int wrapper2Count;
+    InternalOffset wrapper2Offset;
+};
+
+struct Wrapper2
+{
+    int unkn[63];
+    char vrtx[4];
+    uint vertexShaderId;
+
+    int unkn2[12];
+    int uknn3;
+
+    int shaderGroup1Count;
+    InternalOffset shaderGroup1Offset;
+
+    int shaderGroup2Count;
+    InternalOffset shaderGroup2Offset;
+
+    int shaderGroup3Count;
+    InternalOffset shaderGroup3Offset;
+};
+
+
+Header header;
+
+FSeek(header.wrapper1Offset - internalSecondaryMagic);
+Wrapper1 wrapper1s[header.wrapper1Count];
+
+local int i <hidden=true> = 0;
+
+for(i = 0; i < header.wrapper1Count; i++)
+{
+    FSeek((header.wrapper1Offset - internalSecondaryMagic) + 8 * i);
+    Wrapper2 wrapper2s[header.wrapper1Count];
+}

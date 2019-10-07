@@ -1,6 +1,7 @@
 ﻿using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Markup.Xaml;
+using Avalonia.Media;
 using OpenH2.Core.Extensions;
 using OpenH2.Core.Factories;
 using OpenH2.ScenarioExplorer.ViewModels;
@@ -39,6 +40,71 @@ namespace OpenH2.ScenarioExplorer
         private void InitializeComponent()
         {
             AvaloniaXamlLoader.Load(this);
+
+            this.Get<TextBox>("gotoTagBox").KeyDown += this.GotoTagBoxKeyDown;
+
+            var flipVertically = Matrix.CreateScale(1, -1);
+            this.Get<Image>("bitmPreviewImage").RenderTransform = new MatrixTransform(flipVertically);
+        }
+
+        private void GotoTagBoxKeyDown(object sender, Avalonia.Input.KeyEventArgs e)
+        {
+            var box = (TextBox)sender;
+
+            if (e.Key == Avalonia.Input.Key.Enter)
+            {
+                if (uint.TryParse(box.Text, out var id))
+                {
+                    var roots = DataCtx.LoadedScenario.TreeRoots;
+                    
+                    foreach(var root in roots)
+                    {
+                        if(root.Id == id)
+                        {
+                            DataCtx.SelectedEntry = root;
+                            break;
+                        }
+                        else
+                        {
+                            var found = TryFindChild(root, id, out var item);
+
+                            if (found)
+                            {
+                                DataCtx.SelectedEntry = item;
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+
+            bool TryFindChild(TagTreeEntryViewModel model, uint id, out TagTreeEntryViewModel result)
+            {
+                if(model.Children == null)
+                {
+                    result = null;
+                    return false;
+                }
+
+                foreach(var child in model.Children)
+                {
+                    if (child.Id == id)
+                    {
+                        result = child;
+                        return true;
+                    }
+                    else
+                    {
+                        if(TryFindChild(child, id, out result))
+                        {
+                            return true;
+                        }
+                    }
+                }
+
+                result = null;
+                return false;
+            }
         }
 
         private async Task FileOpenClick()

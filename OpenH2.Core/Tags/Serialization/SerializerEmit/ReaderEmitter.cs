@@ -15,6 +15,11 @@ namespace OpenH2.Core.Tags.Serialization.SerializerEmit
 
         private static MethodInfo GenerateNestedTagCreatorMethod(Type nestedTagType, SerializerEmitContext context)
         {
+            if (MI.PrimitiveSpanReaders.TryGetValue(nestedTagType, out var readerMethod))
+            {
+                return readerMethod;
+            }
+
             var newContext = context.GetNestedContext(nestedTagType);
 
             GenerateTagCreator(nestedTagType, newContext);
@@ -337,6 +342,7 @@ namespace OpenH2.Core.Tags.Serialization.SerializerEmit
             gen.Emit(OpCodes.Callvirt, MI.Cao.CountGetter); // Get Cao count
             gen.Emit(OpCodes.Stloc, count);
 
+
             var i = gen.DeclareLocal(typeof(int));
             var loop = gen.DefineLabel();
             var loopCheck = gen.DefineLabel();
@@ -363,11 +369,19 @@ namespace OpenH2.Core.Tags.Serialization.SerializerEmit
                 var elemType = prop.Type.GetElementType();
                 var typeLength = TagTypeMetadataProvider.GetFixedLength(elemType);
 
-                gen.Emit(OpCodes.Ldarg, TagCreatorArguments.GetArgumentLocation(TagCreatorArguments.Name.Id)); // load id
-                gen.Emit(OpCodes.Ldarg, TagCreatorArguments.GetArgumentLocation(TagCreatorArguments.Name.Name)); // load name
-                gen.Emit(OpCodes.Ldarg, TagCreatorArguments.GetArgumentLocation(TagCreatorArguments.Name.Data)); // load span
-                gen.Emit(OpCodes.Ldarg, TagCreatorArguments.GetArgumentLocation(TagCreatorArguments.Name.SecondaryMagic)); // load magic
-                
+
+                if (elemType.IsPrimitive)
+                {
+                    gen.Emit(OpCodes.Ldarg, TagCreatorArguments.GetArgumentLocation(TagCreatorArguments.Name.Data)); // load span
+                }
+                else
+                {
+                    gen.Emit(OpCodes.Ldarg, TagCreatorArguments.GetArgumentLocation(TagCreatorArguments.Name.Id)); // load id
+                    gen.Emit(OpCodes.Ldarg, TagCreatorArguments.GetArgumentLocation(TagCreatorArguments.Name.Name)); // load name
+                    gen.Emit(OpCodes.Ldarg, TagCreatorArguments.GetArgumentLocation(TagCreatorArguments.Name.Data)); // load span
+                    gen.Emit(OpCodes.Ldarg, TagCreatorArguments.GetArgumentLocation(TagCreatorArguments.Name.SecondaryMagic)); // load magic
+                }
+
 
                 // offset + (i * length)
                 gen.Emit(OpCodes.Ldloc, offset);
@@ -376,14 +390,22 @@ namespace OpenH2.Core.Tags.Serialization.SerializerEmit
                 gen.Emit(OpCodes.Mul);
                 gen.Emit(OpCodes.Add);// Load item start
 
-                // load size
-                gen.Emit(OpCodes.Ldc_I4, prop.Type.GetElementType().GetCustomAttribute<FixedLengthAttribute>().Length);
+                if (elemType.IsPrimitive == false)
+                {
+                    // load size
+                    gen.Emit(OpCodes.Ldc_I4, typeLength);
+                }
                 
                 gen.Emit(OpCodes.Call, creator);
 
                 if (elemType.IsValueType)
                 {
-                    gen.Emit(OpCodes.Unbox_Any, elemType);
+                    // Unbox structs when returned by tag generator as object
+                    if (creator.ReturnType.IsValueType == false)
+                    {
+                        gen.Emit(OpCodes.Unbox_Any, elemType);
+                    }
+
                     gen.Emit(OpCodes.Stelem, elemType);
                 }
                 else

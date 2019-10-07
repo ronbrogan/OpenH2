@@ -23,9 +23,11 @@ namespace OpenH2.Rendering.OpenGL
             return adapter;
         }
 
-        public void CreateWindow()
+        public void CreateWindow(System.Numerics.Vector2 size, bool hidden = false)
         {
-            window = new GameWindow(1600, 900, GraphicsMode.Default, "OpenH2", GameWindowFlags.Default, DisplayDevice.Default, 4, 0, GraphicsContextFlags.Debug);
+            window = new GameWindow((int)size.X, (int)size.Y, GraphicsMode.Default, "OpenH2", GameWindowFlags.Default, DisplayDevice.Default, 4, 0, GraphicsContextFlags.Debug);
+
+            window.Visible = !hidden;
 
             GL.Enable(EnableCap.DepthTest);
             GL.Enable(EnableCap.CullFace);

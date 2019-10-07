@@ -38,7 +38,7 @@ namespace OpenH2.Engine
 
         public void Start(EngineStartParameters parameters)
         {
-            graphicsHost.CreateWindow();
+            graphicsHost.CreateWindow(new Vector2(1600, 900));
 
             world = new RealtimeWorld(this);
 
@@ -96,7 +96,7 @@ namespace OpenH2.Engine
 
         public void LoadMap(Scene destination)
         {
-            var mapPath = @"D:\H2vMaps\03a_oldmombasa.map";
+            var mapPath = @"D:\H2vMaps\zanzibar.map";
 
             var factory = new MapFactory(Path.GetDirectoryName(mapPath));
             var map = factory.FromFile(File.OpenRead(mapPath));

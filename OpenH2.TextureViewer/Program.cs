@@ -56,7 +56,7 @@ namespace OpenH2.TextureViewer
             Bitmaps = scene.GetLocalTagsOfType<BitmapTag>().ToArray();
 
             var host = new OpenGLHost();
-            host.CreateWindow();
+            host.CreateWindow(new Vector2(1600, 900));
             Setup();
 
             host.RegisterCallbacks(Update, Render);
@@ -145,7 +145,7 @@ namespace OpenH2.TextureViewer
 
         private static void Render(double time)
         {
-             GL.UseProgram(ShaderHandle);
+            GL.UseProgram(ShaderHandle);
 
             SetupMatrixUniform();
 

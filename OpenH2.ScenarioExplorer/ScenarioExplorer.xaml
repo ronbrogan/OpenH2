@@ -9,11 +9,9 @@
 
   <Grid Name="mainGrid">
     <Grid.ColumnDefinitions>
+      <ColumnDefinition Width="550" />
+      <ColumnDefinition Width="Auto" />
       <ColumnDefinition Width="*" />
-      <ColumnDefinition Width="Auto" />
-      <ColumnDefinition Width="520" MinWidth="520" />
-      <ColumnDefinition Width="Auto" />
-      <ColumnDefinition Width="250" />
     </Grid.ColumnDefinitions>
     <Grid.RowDefinitions>
       <RowDefinition Height="25" />
@@ -31,87 +29,120 @@
                   Width="5">
     </GridSplitter>
 
-    <GridSplitter Grid.Row="1"
-                  Grid.Column="3"
-                  HorizontalAlignment="Center"
-                  VerticalAlignment="Stretch"
-                  Background="Gray"
-                  Width="5"/>
+    <Grid Grid.Column="0" Grid.Row="1">
+      <Grid.RowDefinitions>
+        <RowDefinition Height="35" />
+        <RowDefinition Height="*" />
+      </Grid.RowDefinitions>
+
+      <StackPanel Grid.Row="0" Orientation="Horizontal">
+        <TextBlock Text="Goto Tag" Margin="10" />
+        <TextBox MinWidth="80" TextWrapping="NoWrap" AcceptsReturn="False" Name="gotoTagBox" Height="26"  />
+      </StackPanel>
+      
+      <TreeView Grid.Row="1" Items="{Binding Path=LoadedScenario.TreeRoots}" SelectedItem="{Binding SelectedEntry, Mode=TwoWay}" AutoScrollToSelectedItem="True">
+        <TreeView.ItemTemplate>
+          <TreeDataTemplate ItemsSource="{Binding Children}">
+            <StackPanel Orientation="Horizontal">
+              <TextBlock Text="{Binding Description}"></TextBlock>
+            </StackPanel>
+          </TreeDataTemplate>
+          
+        </TreeView.ItemTemplate>
+      </TreeView>
+
+    </Grid>
     
-    <TreeView Grid.Column="0" Grid.Row="1" Items="{Binding Path=LoadedScenario.TreeRoots}" SelectedItem="{Binding SelectedEntry}">
-      <TreeView.ItemTemplate>
-        <TreeDataTemplate ItemsSource="{Binding Children}">
-          <StackPanel Orientation="Horizontal">
-            <TextBlock Text="{Binding Description}"></TextBlock>
-          </StackPanel>
-        </TreeDataTemplate>
-      </TreeView.ItemTemplate>
-    </TreeView>
+    
     <Grid Grid.Column="2" Grid.Row="1">
       <Grid.RowDefinitions>
         <RowDefinition Height="*"/>
         <RowDefinition Height="25"/>
       </Grid.RowDefinitions>
+      <Grid.ColumnDefinitions>
+        <ColumnDefinition Width="520" />
+        <ColumnDefinition Width="*" />
+      </Grid.ColumnDefinitions>
 
-      <ctrls:HexViewer Grid.Row="0"
+      <ctrls:HexViewer Grid.Row="0" Grid.Column="0"
           IsDisabled="{Binding DisableHexViewer}"
           Data="{Binding CurrentTag.Data}"
           Features="{Binding CurrentTag.Features}"
-          SelectedOffset="{Binding SelectedOffset}"></ctrls:HexViewer>
-      <CheckBox Grid.Row="1" IsChecked="{Binding DisableHexViewer}">Disable Hex Viewer</CheckBox>
-    </Grid>
-    
-    <Panel Grid.Column="4" Grid.Row="1">
-      <TabControl>
-        <TabItem Header="Offset">
-          <StackPanel Orientation="Vertical" DataContext="{Binding SelectedOffsetData}" Margin="15">
-            <StackPanel Orientation="Horizontal" VerticalAlignment="Center" >
-              <TextBlock Text="Offset: "></TextBlock>
-              <Button Command="{Binding CopyData}" CommandParameter="{Binding SelectedOffset}" Content="{Binding SelectedOffset}" Padding="0" Background="Transparent" Foreground="Blue"></Button>
+          SelectedOffset="{Binding SelectedOffset}"
+                       BorderBrush="DarkGray" BorderThickness="0,0,5,0"></ctrls:HexViewer>
+      <CheckBox Grid.Row="1" Grid.Column="0" IsChecked="{Binding DisableHexViewer}">Disable Hex Viewer</CheckBox>
+      
+      <Panel Grid.Column="1" Grid.Row="0" Grid.RowSpan="2">
+        <TabControl>
+          <TabItem Header="Offset">
+            <StackPanel Orientation="Vertical" DataContext="{Binding SelectedOffsetData}" Margin="15">
+              <StackPanel Orientation="Horizontal" VerticalAlignment="Center" >
+                <TextBlock Text="Offset: "></TextBlock>
+                <Button Command="{Binding CopyData}" CommandParameter="{Binding SelectedOffset}" Content="{Binding SelectedOffset}" Padding="0" Background="Transparent" Foreground="Blue"></Button>
+              </StackPanel>
+              <StackPanel Orientation="Horizontal" VerticalAlignment="Center" >
+                <TextBlock Text="Internal Offset: "></TextBlock>
+                <Button Command="{Binding CopyData}" CommandParameter="{Binding InternalOffset}" Content="{Binding InternalOffset}" Padding="0" Background="Transparent" Foreground="Blue"></Button>
+              </StackPanel>
+              <StackPanel Orientation="Horizontal" VerticalAlignment="Center" >
+                <TextBlock Text="Byte: "></TextBlock>
+                <Button Command="{Binding CopyData}" CommandParameter="{Binding Byte}" Content="{Binding Byte}" Padding="0" Background="Transparent" Foreground="Blue"></Button>
+              </StackPanel>
+              <StackPanel Orientation="Horizontal" VerticalAlignment="Center" >
+                <TextBlock Text="Short: "></TextBlock>
+                <Button Command="{Binding CopyData}" CommandParameter="{Binding Short}" Content="{Binding SelectedOffset}" Padding="0" Background="Transparent" Foreground="Blue"></Button>
+              </StackPanel>
+              <StackPanel Orientation="Horizontal" VerticalAlignment="Center" >
+                <TextBlock Text="UShort: "></TextBlock>
+                <Button Command="{Binding CopyData}" CommandParameter="{Binding UShort}" Content="{Binding UShort}" Padding="0" Background="Transparent" Foreground="Blue"></Button>
+              </StackPanel>
+              <StackPanel Orientation="Horizontal" VerticalAlignment="Center" >
+                <TextBlock Text="Int: "></TextBlock>
+                <Button Command="{Binding CopyData}" CommandParameter="{Binding Int}" Content="{Binding Int}" Padding="0" Background="Transparent" Foreground="Blue"></Button>
+              </StackPanel>
+              <StackPanel Orientation="Horizontal" VerticalAlignment="Center" >
+                <TextBlock Text="UInt: "></TextBlock>
+                <Button Command="{Binding CopyData}" CommandParameter="{Binding UInt}" Content="{Binding UInt}" Padding="0" Background="Transparent" Foreground="Blue"></Button>
+              </StackPanel>
+              <StackPanel Orientation="Horizontal" VerticalAlignment="Center" >
+                <TextBlock Text="Float: "></TextBlock>
+                <Button Command="{Binding CopyData}" CommandParameter="{Binding Float}" Content="{Binding Float}" Padding="0" Background="Transparent" Foreground="Blue"></Button>
+              </StackPanel>
+              <StackPanel Orientation="Horizontal" VerticalAlignment="Center" >
+                <TextBlock Text="String: "></TextBlock>
+                <Button Command="{Binding CopyData}" CommandParameter="{Binding String}" Content="{Binding String}" Padding="0" Background="Transparent" Foreground="Blue"></Button>
+              </StackPanel>
             </StackPanel>
-            <StackPanel Orientation="Horizontal" VerticalAlignment="Center" >
-              <TextBlock Text="Internal Offset: "></TextBlock>
-              <Button Command="{Binding CopyData}" CommandParameter="{Binding InternalOffset}" Content="{Binding InternalOffset}" Padding="0" Background="Transparent" Foreground="Blue"></Button>
-            </StackPanel>
-            <StackPanel Orientation="Horizontal" VerticalAlignment="Center" >
-              <TextBlock Text="Byte: "></TextBlock>
-              <Button Command="{Binding CopyData}" CommandParameter="{Binding Byte}" Content="{Binding Byte}" Padding="0" Background="Transparent" Foreground="Blue"></Button>
-            </StackPanel>
-            <StackPanel Orientation="Horizontal" VerticalAlignment="Center" >
-              <TextBlock Text="Short: "></TextBlock>
-              <Button Command="{Binding CopyData}" CommandParameter="{Binding Short}" Content="{Binding SelectedOffset}" Padding="0" Background="Transparent" Foreground="Blue"></Button>
-            </StackPanel>
-            <StackPanel Orientation="Horizontal" VerticalAlignment="Center" >
-              <TextBlock Text="UShort: "></TextBlock>
-              <Button Command="{Binding CopyData}" CommandParameter="{Binding UShort}" Content="{Binding UShort}" Padding="0" Background="Transparent" Foreground="Blue"></Button>
-            </StackPanel>
-            <StackPanel Orientation="Horizontal" VerticalAlignment="Center" >
-              <TextBlock Text="Int: "></TextBlock>
-              <Button Command="{Binding CopyData}" CommandParameter="{Binding Int}" Content="{Binding Int}" Padding="0" Background="Transparent" Foreground="Blue"></Button>
-            </StackPanel>
-            <StackPanel Orientation="Horizontal" VerticalAlignment="Center" >
-              <TextBlock Text="UInt: "></TextBlock>
-              <Button Command="{Binding CopyData}" CommandParameter="{Binding UInt}" Content="{Binding UInt}" Padding="0" Background="Transparent" Foreground="Blue"></Button>
-            </StackPanel>
-            <StackPanel Orientation="Horizontal" VerticalAlignment="Center" >
-              <TextBlock Text="Float: "></TextBlock>
-              <Button Command="{Binding CopyData}" CommandParameter="{Binding Float}" Content="{Binding Float}" Padding="0" Background="Transparent" Foreground="Blue"></Button>
-            </StackPanel>
-            <StackPanel Orientation="Horizontal" VerticalAlignment="Center" >
-              <TextBlock Text="String: "></TextBlock>
-              <Button Command="{Binding CopyData}" CommandParameter="{Binding String}" Content="{Binding String}" Padding="0" Background="Transparent" Foreground="Blue"></Button>
-            </StackPanel>
-          </StackPanel>
-        </TabItem>
-        <TabItem Header="Object">
-          
-            <TextBox Text="{Binding CurrentTag.OriginalTagJson}" IsReadOnly="True" 
+          </TabItem>
+          <TabItem Header="Object">
+
+            <TextBox Text="{Binding CurrentTag.OriginalTagJson}" IsReadOnly="True"
                      
               ScrollViewer.HorizontalScrollBarVisibility="Auto"
               ScrollViewer.VerticalScrollBarVisibility="Auto"></TextBox>
-          
-        </TabItem>
-      </TabControl>
-    </Panel>
+
+          </TabItem>
+
+          <TabItem Header="Preview">
+
+            <Grid DataContext="{Binding CurrentTag.TagPreview}">
+              <Grid.RowDefinitions>
+                <RowDefinition Height="80"/>
+                <RowDefinition Height="*"/>
+              </Grid.RowDefinitions>
+
+              <ListBox Items="{Binding PreviewItems}" SelectedItem="{Binding SelectedPreviewItem}" Grid.Row="0"></ListBox>
+              
+              <TextBox Text="{Binding SelectedPreviewItemObject}" IsReadOnly="True" Grid.Row="1"
+                ScrollViewer.HorizontalScrollBarVisibility="Auto"
+                ScrollViewer.VerticalScrollBarVisibility="Auto"></TextBox>
+
+              <Image Source="{Binding SelectedPreviewItemObject}" Name="bitmPreviewImage" Grid.Row="1" Stretch="None" HorizontalAlignment="Left" VerticalAlignment="Top" ></Image>
+              
+            </Grid>
+          </TabItem>
+        </TabControl>
+      </Panel>
+    </Grid>
   </Grid>
 </Window>

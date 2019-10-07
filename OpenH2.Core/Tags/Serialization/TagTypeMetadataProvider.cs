@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Reflection;
+using System.Runtime.InteropServices;
 
 namespace OpenH2.Core.Tags.Serialization
 {
@@ -53,14 +54,23 @@ namespace OpenH2.Core.Tags.Serialization
 
             var attr = type.GetCustomAttribute<FixedLengthAttribute>();
 
-            if (attr == null)
+            if (attr != null)
             {
-                throw new Exception($"Type {{{type.Name}}} does not have a 'FixedLength' attribute, but should");
+                length = attr.Length;
+            }
+            else
+            {
+                if (type.IsPrimitive == false)
+                {
+                    throw new Exception($"Type {{{type.Name}}} does not have a 'FixedLength' attribute, but should");
+                }
+
+                length = Marshal.SizeOf(type);
             }
 
-            CachedFixedLengths[type] = attr.Length;
+            CachedFixedLengths[type] = length;
 
-            return attr.Length;
+            return length;
         }
     }
 }
