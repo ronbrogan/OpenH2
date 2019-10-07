@@ -50,6 +50,11 @@ namespace OpenH2.Engine.EntityFactories
                     continue;
                 }
 
+                if(bitm == mat.DiffuseMap)
+                {
+                    continue;
+                }
+
                 if (bitm.TextureUsage == TextureUsage.Bump)
                 {
                     mat.NormalMap = bitm;
@@ -60,15 +65,23 @@ namespace OpenH2.Engine.EntityFactories
                     if (mat.DiffuseMap == null)
                     {
                         mat.DiffuseMap = bitm;
+                        continue;
                     }
                 }
 
-                if (bitm.TextureUsage == TextureUsage.Detail)
+                if (bitm.TextureUsage == TextureUsage.Diffuse || bitm.TextureUsage == TextureUsage.Detail)
                 {
                     if (mat.DetailMap1 == null)
                     {
                         mat.DetailMap1 = bitm;
                         mat.Detail1Scale = bitmRef.ValueB;
+                        continue;
+                    }
+                    else if (mat.DetailMap2 == null)
+                    {
+                        mat.DetailMap2 = bitm;
+                        mat.Detail2Scale = bitmRef.ValueB;
+                        continue;
                     }
                 }
             }

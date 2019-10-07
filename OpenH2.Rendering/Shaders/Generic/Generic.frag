@@ -65,23 +65,18 @@ void main() {
 		diffuse_color = texture(Data.DiffuseMap, texcoord);
 	}
 
-	if(Data.UseDetailMap1)
+	vec4 detailColor = diffuse_color;
+
+	if(Data.UseDetailMap1 && Data.UseDetailMap2)
 	{
 		vec4 det1_color = texture(Data.DetailMap1, texcoord * Data.DetailMap1Scale);
-
-		diffuse_color = diffuse_color * det1_color * 2;
-	}
-
-	if(Data.UseDetailMap2)
-	{
 		vec4 det2_color = texture(Data.DetailMap2, texcoord * Data.DetailMap2Scale);
 
-		diffuse_color = diffuse_color * det2_color * 2;
+		detailColor = mix(det1_color, det2_color, diffuse_color.a);
 	}
 
-	diffuse_color = diffuse_color;
+	diffuse_color = vec4((diffuse_color * detailColor * 2.5).rgb, 1);
 	
-
     float ambientStrength = 0.4;
     vec4 ambient = ambientStrength * diffuse_color;
 
