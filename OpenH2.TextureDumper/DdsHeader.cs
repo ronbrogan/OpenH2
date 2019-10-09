@@ -15,7 +15,7 @@ namespace OpenH2.TextureDumper
 
         public Stream HeaderData = new MemoryStream(128);
 
-        public DdsHeader(TextureFormat format, TextureType type, int width, int height, int? depth, int? mipMapCount, int? pitch, int? linearSize)
+        public DdsHeader(TextureFormat2 format, TextureType type, int width, int height, int? depth, int? mipMapCount, int? pitch, int? linearSize)
         {
             HeaderData.WriteInt32(Magic);
             HeaderData.WriteInt32(Length - 4); // Remove 4 from length for magic size
@@ -108,7 +108,7 @@ namespace OpenH2.TextureDumper
         {
             public Stream Data = new MemoryStream(32);
 
-            public DdsPixelFormat(TextureFormat format)
+            public DdsPixelFormat(TextureFormat2 format)
             {
                 Data.WriteInt32(32);
                 Data.WriteInt32((int)FlagLookup[format]);
@@ -116,52 +116,68 @@ namespace OpenH2.TextureDumper
                 Data.WriteInt32(BppLookup[format]);
 
                 var masks = RgbaMaskLookup[format];
-                Data.WriteInt32(masks.Item1);
-                Data.WriteInt32(masks.Item2);
-                Data.WriteInt32(masks.Item3);
-                Data.WriteInt32(masks.Item4);
+                Data.WriteUInt32(masks.Item1);
+                Data.WriteUInt32(masks.Item2);
+                Data.WriteUInt32(masks.Item3);
+                Data.WriteUInt32(masks.Item4);
 
                 Data.Seek(0, SeekOrigin.Begin);
             }
 
-            private static Dictionary<TextureFormat, PixelFormatFlags> FlagLookup = new Dictionary<TextureFormat, PixelFormatFlags>
+            private static Dictionary<TextureFormat2, PixelFormatFlags> FlagLookup = new Dictionary<TextureFormat2, PixelFormatFlags>
             {
-                { TextureFormat.DXT1, PixelFormatFlags.CompressedRGB },
-                { TextureFormat.DXT23, PixelFormatFlags.CompressedRGB },
-                { TextureFormat.DXT45, PixelFormatFlags.CompressedRGB },
-                { TextureFormat.SixteenBit, PixelFormatFlags.UncompressedRGB | PixelFormatFlags.AlphaPixels },
-                { TextureFormat.ThirtyTwoBit, PixelFormatFlags.UncompressedRGB | PixelFormatFlags.AlphaPixels },
-                { TextureFormat.Monochrome, PixelFormatFlags.Luminance }
+                { TextureFormat2.A8, PixelFormatFlags.Alpha },
+                { TextureFormat2.L8, PixelFormatFlags.Luminance },
+                { TextureFormat2.A8L8, PixelFormatFlags.Luminance | PixelFormatFlags.AlphaPixels},
+                { TextureFormat2.U8V8, PixelFormatFlags.BumpDuDv },
+                { TextureFormat2.A4R4G4B4, PixelFormatFlags.UncompressedRGB | PixelFormatFlags.AlphaPixels },
+                { TextureFormat2.R8G8B8, PixelFormatFlags.UncompressedRGB },
+                { TextureFormat2.A8R8G8B8, PixelFormatFlags.UncompressedRGB | PixelFormatFlags.AlphaPixels },
+                { TextureFormat2.DXT1, PixelFormatFlags.CompressedRGB  },
+                { TextureFormat2.DXT23,PixelFormatFlags.CompressedRGB  },
+                { TextureFormat2.DXT45,PixelFormatFlags.CompressedRGB  },
             };
 
-            private static Dictionary<TextureFormat, string> FourCCLookup = new Dictionary<TextureFormat, string>
-            {
-                { TextureFormat.DXT1, "DXT1" },
-                { TextureFormat.DXT23, "DXT3" },
-                { TextureFormat.DXT45, "DXT5" },
-                { TextureFormat.SixteenBit, "\0\0\0\0" },
-                { TextureFormat.ThirtyTwoBit, "\0\0\0\0" },
-                { TextureFormat.Monochrome, "\0\0\0\0" }
+            private static Dictionary<TextureFormat2, string> FourCCLookup = new Dictionary<TextureFormat2, string>
+            { 
+                { TextureFormat2.A8, "\0\0\0\0"},
+                { TextureFormat2.L8, "\0\0\0\0"},
+                { TextureFormat2.A8L8, "\0\0\0\0"},
+                { TextureFormat2.U8V8, "\0\0\0\0" },
+                { TextureFormat2.A4R4G4B4, "\0\0\0\0"},
+                { TextureFormat2.R8G8B8, "\0\0\0\0"},
+                { TextureFormat2.A8R8G8B8, "\0\0\0\0"},
+                { TextureFormat2.DXT1, "DXT1" },
+                { TextureFormat2.DXT23, "DXT3" },
+                { TextureFormat2.DXT45, "DXT5" },
             };
 
-            private static Dictionary<TextureFormat, int> BppLookup = new Dictionary<TextureFormat, int>
+            private static Dictionary<TextureFormat2, int> BppLookup = new Dictionary<TextureFormat2, int>
             {
-                { TextureFormat.DXT1, 0 },
-                { TextureFormat.DXT23, 0 },
-                { TextureFormat.DXT45, 0 },
-                { TextureFormat.SixteenBit, 16 },
-                { TextureFormat.ThirtyTwoBit, 32 },
-                { TextureFormat.Monochrome, 8 }
+                { TextureFormat2.A8, 8},
+                { TextureFormat2.L8, 8},
+                { TextureFormat2.A8L8, 16},
+                { TextureFormat2.U8V8, 16 },
+                { TextureFormat2.A4R4G4B4, 16},
+                { TextureFormat2.R8G8B8, 32},
+                { TextureFormat2.A8R8G8B8, 32},
+                { TextureFormat2.DXT1, 0 },
+                { TextureFormat2.DXT23, 0 },
+                { TextureFormat2.DXT45, 0 },
             };
 
-            private static Dictionary<TextureFormat, (int, int, int, int)> RgbaMaskLookup = new Dictionary<TextureFormat, (int, int, int, int)>
+            private static Dictionary<TextureFormat2, (uint, uint, uint, uint)> RgbaMaskLookup = new Dictionary<TextureFormat2, (uint, uint, uint, uint)>
             {
-                { TextureFormat.DXT1, (0, 0, 0, 0) },
-                { TextureFormat.DXT23, (0, 0, 0, 0) },
-                { TextureFormat.DXT45, (0, 0, 0, 0) },
-                { TextureFormat.SixteenBit, (0x0000F0, 0x00000F, 0x000000F0, 0x0000000F)  },
-                { TextureFormat.ThirtyTwoBit, (0xFF, 0x00FF, 0x0000FF, 0x000000FF) },
-                { TextureFormat.Monochrome, (0xFF, 0, 0, 0) }
+                { TextureFormat2.A8, (0x00, 0x00, 0x00, 0xff)},
+                { TextureFormat2.L8, (0xff, 0x00, 0x00, 0x00)},
+                { TextureFormat2.A8L8, (0x00ff, 0x0000, 0x0000, 0xff00)},
+                { TextureFormat2.U8V8, (0x00ff, 0xff00, 0x0000, 0x0000)},
+                { TextureFormat2.A4R4G4B4, (0x00000f00, 0x000000f0, 0x0000000f, 0x0000f000)},
+                { TextureFormat2.R8G8B8, (0x00ff0000, 0x0000ff00, 0x000000ff, 0x00000000)},
+                { TextureFormat2.A8R8G8B8, (0x00ff0000, 0x0000ff00, 0x000000ff, 0xff000000)},
+                { TextureFormat2.DXT1, (0, 0, 0, 0) },
+                { TextureFormat2.DXT23, (0, 0, 0, 0) },
+                { TextureFormat2.DXT45, (0, 0, 0, 0) },
             };
 
             [Flags]
@@ -172,7 +188,8 @@ namespace OpenH2.TextureDumper
                 CompressedRGB = 0x4, // Dictates that FourCC is provided
                 UncompressedRGB = 0x40, // Count and maks contain data
                 Yuv = 0x200, // Count and maks contain data
-                Luminance = 0x2000
+                Luminance = 0x2000,
+                BumpDuDv = 0x00080000
             }
         }
     }

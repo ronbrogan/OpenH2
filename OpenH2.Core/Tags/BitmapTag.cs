@@ -50,7 +50,7 @@ namespace OpenH2.Core.Tags
         public short Type { get; set; }
 
         [PrimitiveValue(92)]
-        public short Format { get; set; }
+        public TextureFormat2 Format { get; set; }
 
         [PrimitiveValue(94)]
         public TextureProperties Properties { get; set; }

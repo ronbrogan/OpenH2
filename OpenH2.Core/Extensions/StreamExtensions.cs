@@ -27,6 +27,14 @@ namespace OpenH2.Core.Extensions
             stream.WriteByte((byte)(value >> 24));
         }
 
+        public static void WriteUInt32(this Stream stream, uint value)
+        {
+            stream.WriteByte((byte)value);
+            stream.WriteByte((byte)(value >> 8));
+            stream.WriteByte((byte)(value >> 16));
+            stream.WriteByte((byte)(value >> 24));
+        }
+
         public static void WriteInt16(this Stream stream, int value)
         {
             stream.WriteByte((byte)value);

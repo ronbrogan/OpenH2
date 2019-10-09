@@ -12,24 +12,31 @@ namespace OpenH2.Rendering.OpenGL
 {
     public class OpenGLTextureBinder : ITextureBinder
     {
-        private static Dictionary<TextureFormat, (SizedInternalFormat, PixelFormat)> FormatMappings = new Dictionary<TextureFormat, (SizedInternalFormat, PixelFormat)>
+        private static Dictionary<TextureFormat2, (SizedInternalFormat, PixelFormat)> FormatMappings = new Dictionary<TextureFormat2, (SizedInternalFormat, PixelFormat)>
         {
-            { TextureFormat.DXT1, ((SizedInternalFormat)InternalFormat.CompressedRgbS3tcDxt1Ext, (PixelFormat)InternalFormat.CompressedRgbS3tcDxt1Ext) },
-            { TextureFormat.DXT23, ((SizedInternalFormat)InternalFormat.CompressedRgbaS3tcDxt3Ext, (PixelFormat)InternalFormat.CompressedRgbaS3tcDxt3Ext) },
-            { TextureFormat.DXT45, ((SizedInternalFormat)InternalFormat.CompressedRgbaS3tcDxt5Ext, (PixelFormat)InternalFormat.CompressedRgbaS3tcDxt5Ext) },
-            { TextureFormat.ThirtyTwoBit, (SizedInternalFormat.Rgba8, PixelFormat.Bgra) },
-            { TextureFormat.SixteenBit, (SizedInternalFormat.R16, PixelFormat.Rg) },
-            { TextureFormat.Monochrome, (SizedInternalFormat.R8, PixelFormat.Red) },
+            { TextureFormat2.A8, (SizedInternalFormat.R8, PixelFormat.Red)},
+            { TextureFormat2.L8, (SizedInternalFormat.R8, PixelFormat.Red)},
+            { TextureFormat2.A8L8, (SizedInternalFormat.Rg16, PixelFormat.Rg)},
+            { TextureFormat2.U8V8, (SizedInternalFormat.Rg16, PixelFormat.Rg) },
+            { TextureFormat2.A4R4G4B4, ((SizedInternalFormat)InternalFormat.Rgba4, PixelFormat.Bgra)},
+            { TextureFormat2.R8G8B8, (SizedInternalFormat.Rgba8, PixelFormat.Bgra)},
+            { TextureFormat2.A8R8G8B8, (SizedInternalFormat.Rgba8, PixelFormat.Bgra)},
+            { TextureFormat2.DXT1, ((SizedInternalFormat)InternalFormat.CompressedRgbS3tcDxt1Ext, (PixelFormat)InternalFormat.CompressedRgbS3tcDxt1Ext) },
+            { TextureFormat2.DXT23, ((SizedInternalFormat)InternalFormat.CompressedRgbaS3tcDxt3Ext, (PixelFormat)InternalFormat.CompressedRgbaS3tcDxt3Ext) },
+            { TextureFormat2.DXT45, ((SizedInternalFormat)InternalFormat.CompressedRgbaS3tcDxt5Ext, (PixelFormat)InternalFormat.CompressedRgbaS3tcDxt5Ext) },
         };
 
-        private static Dictionary<TextureFormat, Func<int, int, int>> MipSizeFuncs = new Dictionary<TextureFormat, Func<int, int, int>>
+        private static Dictionary<TextureFormat2, Func<int, int, int>> MipSizeFuncs = new Dictionary<TextureFormat2, Func<int, int, int>>
         {
-            { TextureFormat.DXT1, (w,h) => ((w + 3) / 4) * ((h + 3) / 4) * 8 },
-            { TextureFormat.DXT23, (w,h) => ((w + 3) / 4) * ((h + 3) / 4) * 16 },
-            { TextureFormat.DXT45, (w,h) => ((w + 3) / 4) * ((h + 3) / 4) * 16 },
-            { TextureFormat.ThirtyTwoBit, (w,h) => w*h*4 },
-            { TextureFormat.SixteenBit, (w,h) => w*h*2 },
-            { TextureFormat.Monochrome, (w,h) => w*h },
+            { TextureFormat2.A8, (w,h) => w*h},
+            { TextureFormat2.L8, (w,h) => w*h},
+            { TextureFormat2.A8L8, (w,h) => w*h*2},
+            { TextureFormat2.A4R4G4B4, (w,h) => w*h*4},
+            { TextureFormat2.R8G8B8, (w,h) => w*h*4},
+            { TextureFormat2.A8R8G8B8, (w,h) => w*h*4},
+            { TextureFormat2.DXT1, (w,h) => ((w + 3) / 4) * ((h + 3) / 4) * 8 },
+            { TextureFormat2.DXT23, (w,h) => ((w + 3) / 4) * ((h + 3) / 4) * 16 },
+            { TextureFormat2.DXT45, (w,h) => ((w + 3) / 4) * ((h + 3) / 4) * 16 }
         };
 
         public int Bind(string filename)
@@ -60,12 +67,18 @@ namespace OpenH2.Rendering.OpenGL
             var width = bitm.Width;
             var height = bitm.Height;
 
+            if(width == 0 || height == 0)
+            {
+                handle = long.MaxValue;
+                return int.MaxValue;
+            }
+
             var topLod = bitm.LevelsOfDetail[0];
 
             GL.GenTextures(1, out int texId);
             GL.BindTexture(TextureTarget.Texture2D, texId);
 
-            UploadMips(topLod.Data, bitm.TextureFormat, width, height, bitm.MipMapCount == 0 ? bitm.MipMapCount2 : bitm.MipMapCount);
+            UploadMips(topLod.Data, bitm.TextureFormat, bitm.Format, width, height, bitm.MipMapCount == 0 ? bitm.MipMapCount2 : bitm.MipMapCount);
 
             SetCommonTextureParams();
 
@@ -78,16 +91,42 @@ namespace OpenH2.Rendering.OpenGL
             return texId;
         }
 
-        private void UploadMips(Memory<byte> data, TextureFormat format, int width, int height, int mipMaps)
+        private void UploadMips(Memory<byte> data, TextureFormat format, TextureFormat2 format2, int width, int height, int mipMaps)
         {
             int offset = 0;
-            var (sizedFormat, pixelFormat) = FormatMappings[format];
+
+            var (sizedFormat, pixelFormat) = FormatMappings[format2];
             var size = 0;
 
             if (mipMaps == 0)
                 mipMaps = 1;
 
             GL.TexStorage2D(TextureTarget2d.Texture2D, mipMaps, sizedFormat, width, height);
+
+            switch (format2)
+            {
+                case TextureFormat2.A8:
+                {
+                    var alpha = (int)PixelFormat.Alpha;
+                    GL.TexParameterI(TextureTarget.Texture2D, TextureParameterName.TextureSwizzleRgba,  new[] { alpha, alpha, alpha, alpha });
+                    break;
+                }
+
+                case TextureFormat2.L8:
+                {
+                    var red = (int)PixelFormat.Red;
+                    GL.TexParameterI(TextureTarget.Texture2D, TextureParameterName.TextureSwizzleRgba, new[] { red, red, red, red });
+                    break;
+                }
+
+                case TextureFormat2.A8L8:
+                {
+                    var red = (int)PixelFormat.Red;
+                    var alpha = (int)PixelFormat.Alpha;
+                    GL.TexParameterI(TextureTarget.Texture2D, TextureParameterName.TextureSwizzleRgba, new[] { red, red, red, alpha });
+                    break;
+                }
+            }
 
             for (var i = 0; i < mipMaps; i++)
             {
@@ -96,7 +135,7 @@ namespace OpenH2.Rendering.OpenGL
                 if (height == 0)
                     height = 1;
 
-                size = MipSizeFuncs[format](width, height);
+                size = MipSizeFuncs[format2](width, height);
                  
                 // Handle corrupt images
                 if(data.Length < offset || data.Length < offset+size)

@@ -73,7 +73,7 @@ namespace OpenH2.TextureDumper
         public static void WriteTextureHeader(BitmapTag bitm, Stream destination)
         {
             var ddsHeader = new DdsHeader(
-                bitm.TextureFormat,
+                bitm.Format,
                 bitm.TextureType,
                 bitm.Width,
                 bitm.Height,

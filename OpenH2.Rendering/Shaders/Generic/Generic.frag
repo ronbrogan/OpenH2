@@ -58,33 +58,38 @@ vec3 light_color = vec3(1,1,1);
 
 void main() {
 
-	vec4 diffuse_color = Data.DiffuseColor;
+	vec4 detail1Tex = texture(Data.DetailMap1, texcoord * Data.DetailMap1Scale);
+	vec4 detail2Tex = texture(Data.DetailMap2, texcoord * Data.DetailMap2Scale);
+	vec4 diffuseTex = texture(Data.DiffuseMap, texcoord);
 
-	if(Data.UseDiffuseMap)
-	{
-		diffuse_color = texture(Data.DiffuseMap, texcoord);
-	}
-
-	vec4 detailColor = diffuse_color;
+	vec4 diffuseColor = Data.UseDiffuseMap ? diffuseTex : Data.DiffuseColor;
+	vec4 detailColor;
 
 	if(Data.UseDetailMap1 && Data.UseDetailMap2)
 	{
-		vec4 det1_color = texture(Data.DetailMap1, texcoord * Data.DetailMap1Scale);
-		vec4 det2_color = texture(Data.DetailMap2, texcoord * Data.DetailMap2Scale);
-
-		detailColor = mix(det1_color, det2_color, diffuse_color.a);
+		detailColor = mix(detail1Tex, detail2Tex, diffuseColor.a);
+	}
+	else if(!Data.UseDetailMap1 && !Data.UseDetailMap2)
+	{
+		// Set to nop for later multiply
+		detailColor = vec4(0.4);
+	}
+	else
+	{
+		// If one is empty (vec4(0)), detailColor will be set to the other
+		detailColor = detail1Tex + detail2Tex;
 	}
 
-	diffuse_color = vec4((diffuse_color * detailColor * 2.5).rgb, 1);
+	diffuseColor = vec4((diffuseColor * detailColor * 2.5).rgb, 1);
 	
     float ambientStrength = 0.4;
-    vec4 ambient = ambientStrength * diffuse_color;
+    vec4 ambient = ambientStrength * diffuseColor;
 
     vec3 norm = normalize(world_normal);
     vec3 lightDir = normalize(light_pos - world_pos);  
 
     float diffStrength = max(dot(norm, lightDir), 0.0);
-    vec4 diffuse = diffStrength * diffuse_color;
+    vec4 diffuse = diffStrength * diffuseColor;
 
     vec4 result = ambient + diffuse;
 

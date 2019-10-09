@@ -18,7 +18,7 @@ namespace OpenH2.Core.Tests.Formats
         [Fact]
         public void DdsHeader_creates_128_length_stream()
         {
-            var header = new DdsHeader(TextureFormat.DXT45, TextureType.TwoDimensional, 128, 128, 1, 1, null, 16384);
+            var header = new DdsHeader(TextureFormat2.DXT45, TextureType.TwoDimensional, 128, 128, 1, 1, null, 16384);
 
             Assert.Equal(128, header.HeaderData.Length);
 
