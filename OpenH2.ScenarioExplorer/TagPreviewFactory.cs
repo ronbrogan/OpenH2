@@ -119,13 +119,13 @@ namespace OpenH2.ScenarioExplorer
 
             var shaderCount = 0;
 
-            foreach(var wrapper in spas.Wrapper1s)
+            foreach (var wrapper in spas.Wrapper1s)
             {
-                foreach(var wrapper2 in wrapper.Wrapper2s)
+                foreach (var wrapper2 in wrapper.Wrapper2s)
                 {
-                    foreach(var shader in wrapper2.ShaderReferenceGroups1)
+                    foreach (var shader in wrapper2.ShaderReferenceGroups1)
                     {
-                        if(shader.ShaderData1.Length > 0)
+                        if (shader.ShaderData1.Length > 0)
                             preview.AddItem($"Shader {shaderCount++}", shader.ShaderData1, GetShaderPreview);
 
                         if (shader.ShaderData2.Length > 0)
@@ -143,7 +143,9 @@ namespace OpenH2.ScenarioExplorer
             {
                 var output = new StringBuilder();
 
-                var path = Path.Combine(Directory.GetCurrentDirectory(), "HLSLcc.exe");
+                var utilsPath = Path.Combine(Environment.GetEnvironmentVariable("DXSDK_DIR", EnvironmentVariableTarget.Machine), "Utilities\\bin\\x64");
+
+                var path = Path.Combine(utilsPath, "psa.exe");
 
                 var shadIn = Path.GetTempFileName();
                 File.WriteAllBytes(shadIn, shaderData);
@@ -151,7 +153,7 @@ namespace OpenH2.ScenarioExplorer
                 var shadOut = Path.GetTempFileName();
                 var shadReflect = Path.GetTempFileName();
 
-                var start = new ProcessStartInfo(path, $"-in=\"{shadIn}\" -out=\"{shadOut}\" -reflect=\"{shadReflect}\" -lang=\"glsl\"");
+                var start = new ProcessStartInfo(path, $"/nologo \"{shadIn}\" /Fc \"{shadOut}\"");
                 start.RedirectStandardOutput = true;
                 start.RedirectStandardError = true;
                 start.UseShellExecute = false;
@@ -166,11 +168,12 @@ namespace OpenH2.ScenarioExplorer
                 proc.BeginOutputReadLine();
                 proc.BeginErrorReadLine();
 
-                if(proc.WaitForExit(1000))
+                if (proc.WaitForExit(1000))
                 {
                     var sb = new StringBuilder();
-                    sb.AppendLine(File.ReadAllText(shadOut));
-                    sb.AppendLine(File.ReadAllText(shadReflect));
+                    var shadAsm = File.ReadAllText(shadOut);
+                    sb.AppendLine(shadAsm);
+                    sb.AppendLine(ShaderCodeGeneration.TranslateAsmShaderToPseudocode(shadAsm));
                     sb.Append(output);
 
                     output = sb;
@@ -184,7 +187,7 @@ namespace OpenH2.ScenarioExplorer
                 File.Delete(shadIn);
                 File.Delete(shadOut);
                 File.Delete(shadReflect);
-                
+
                 return output.ToString().Replace("\t", "    ");
             }
         }
