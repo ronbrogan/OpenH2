@@ -240,7 +240,7 @@ namespace OpenH2.AvaloniaControls.HexViewer
             return (topLeft.TextPosition - size, bottomRight.TextPosition + size);
         }
 
-        private void HexBox_PointerPressed(object sender, global::Avalonia.Input.PointerPressedEventArgs e)
+        private void HexBox_PointerPressed(object sender, Avalonia.Input.PointerPressedEventArgs e)
         {
             var clientRelative = e.GetPosition(this.HexBox);
 

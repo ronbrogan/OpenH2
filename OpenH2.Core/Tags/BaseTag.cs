@@ -6,7 +6,7 @@ namespace OpenH2.Core.Tags
     {
         public abstract string Name { get; set; }
 
-        public readonly uint Id;
+        public uint Id { get; private set; }
 
         public uint Offset { get; set; }
         public uint Length { get; set; }

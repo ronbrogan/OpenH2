@@ -1,4 +1,5 @@
-﻿using OpenH2.Core.Tags.Layout;
+﻿using OpenH2.Core.Representations;
+using OpenH2.Core.Tags.Layout;
 using System.Numerics;
 
 namespace OpenH2.Core.Tags
@@ -105,7 +106,7 @@ namespace OpenH2.Core.Tags
         public class SkyboxInstance
         {
             [PrimitiveValue(4)]
-            public uint SkyboxId { get; set; }
+            public TagRef<SkyboxTag> Skybox { get; set; }
         }
 
         [FixedLength(68)]
@@ -225,7 +226,7 @@ namespace OpenH2.Core.Tags
         public class MachineryDefinition
         {
             [PrimitiveValue(4)]
-            public uint MachineryId { get; set; }
+            public TagRef<MachineryTag> Machinery { get; set; }
         }
 
         [FixedLength(80)]
@@ -356,7 +357,7 @@ namespace OpenH2.Core.Tags
         public class BlocDefinition
         {
             [PrimitiveValue(4)]
-            public uint BlocId { get; set; }
+            public TagRef<BlocTag> Bloc { get; set; }
         }
 
         [FixedLength(16)] public class Obj840 { }

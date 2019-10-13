@@ -1,4 +1,5 @@
 ﻿using OpenH2.Core.Parsing;
+using OpenH2.Core.Representations;
 using OpenH2.Core.Tags.Layout;
 using System;
 using System.Collections.Generic;
@@ -25,10 +26,10 @@ namespace OpenH2.Core.Tags
         public float Unknown { get; set; }
 
         [PrimitiveValue(56)]
-        public uint HlmtId { get; set; }
+        public TagRef<PhysicalModelTag> PhysicalModel { get; set; }
 
         [PrimitiveValue(64)]
-        public uint BlocId { get; set; }
+        public TagRef<BlocTag> Bloc { get; set; }
 
         [PrimitiveValue(80)]
         public uint EffectId { get; set; }

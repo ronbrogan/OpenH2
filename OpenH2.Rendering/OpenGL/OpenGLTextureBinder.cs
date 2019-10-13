@@ -12,31 +12,33 @@ namespace OpenH2.Rendering.OpenGL
 {
     public class OpenGLTextureBinder : ITextureBinder
     {
-        private static Dictionary<TextureFormat2, (SizedInternalFormat, PixelFormat)> FormatMappings = new Dictionary<TextureFormat2, (SizedInternalFormat, PixelFormat)>
+        private static Dictionary<TextureFormat, (SizedInternalFormat, PixelFormat)> FormatMappings = new Dictionary<TextureFormat, (SizedInternalFormat, PixelFormat)>
         {
-            { TextureFormat2.A8, (SizedInternalFormat.R8, PixelFormat.Red)},
-            { TextureFormat2.L8, (SizedInternalFormat.R8, PixelFormat.Red)},
-            { TextureFormat2.A8L8, (SizedInternalFormat.Rg16, PixelFormat.Rg)},
-            { TextureFormat2.U8V8, (SizedInternalFormat.Rg16, PixelFormat.Rg) },
-            { TextureFormat2.A4R4G4B4, ((SizedInternalFormat)InternalFormat.Rgba4, PixelFormat.Bgra)},
-            { TextureFormat2.R8G8B8, (SizedInternalFormat.Rgba8, PixelFormat.Bgra)},
-            { TextureFormat2.A8R8G8B8, (SizedInternalFormat.Rgba8, PixelFormat.Bgra)},
-            { TextureFormat2.DXT1, ((SizedInternalFormat)InternalFormat.CompressedRgbS3tcDxt1Ext, (PixelFormat)InternalFormat.CompressedRgbS3tcDxt1Ext) },
-            { TextureFormat2.DXT23, ((SizedInternalFormat)InternalFormat.CompressedRgbaS3tcDxt3Ext, (PixelFormat)InternalFormat.CompressedRgbaS3tcDxt3Ext) },
-            { TextureFormat2.DXT45, ((SizedInternalFormat)InternalFormat.CompressedRgbaS3tcDxt5Ext, (PixelFormat)InternalFormat.CompressedRgbaS3tcDxt5Ext) },
+            { TextureFormat.A8, (SizedInternalFormat.R8, PixelFormat.Red)},
+            { TextureFormat.L8, (SizedInternalFormat.R8, PixelFormat.Red)},
+            { TextureFormat.A8L8, (SizedInternalFormat.Rg16, PixelFormat.Rg)},
+            { TextureFormat.U8V8, (SizedInternalFormat.Rg16, PixelFormat.Rg) },
+            { TextureFormat.R5G6B5, ((SizedInternalFormat)InternalFormat.Rgb4, PixelFormat.Bgr) },
+            { TextureFormat.A4R4G4B4, ((SizedInternalFormat)InternalFormat.Rgba4, PixelFormat.Bgra)},
+            { TextureFormat.R8G8B8, (SizedInternalFormat.Rgba8, PixelFormat.Bgra)},
+            { TextureFormat.A8R8G8B8, (SizedInternalFormat.Rgba8, PixelFormat.Bgra)},
+            { TextureFormat.DXT1, ((SizedInternalFormat)InternalFormat.CompressedRgbS3tcDxt1Ext, (PixelFormat)InternalFormat.CompressedRgbS3tcDxt1Ext) },
+            { TextureFormat.DXT23, ((SizedInternalFormat)InternalFormat.CompressedRgbaS3tcDxt3Ext, (PixelFormat)InternalFormat.CompressedRgbaS3tcDxt3Ext) },
+            { TextureFormat.DXT45, ((SizedInternalFormat)InternalFormat.CompressedRgbaS3tcDxt5Ext, (PixelFormat)InternalFormat.CompressedRgbaS3tcDxt5Ext) },
         };
 
-        private static Dictionary<TextureFormat2, Func<int, int, int>> MipSizeFuncs = new Dictionary<TextureFormat2, Func<int, int, int>>
+        private static Dictionary<TextureFormat, Func<int, int, int>> MipSizeFuncs = new Dictionary<TextureFormat, Func<int, int, int>>
         {
-            { TextureFormat2.A8, (w,h) => w*h},
-            { TextureFormat2.L8, (w,h) => w*h},
-            { TextureFormat2.A8L8, (w,h) => w*h*2},
-            { TextureFormat2.A4R4G4B4, (w,h) => w*h*4},
-            { TextureFormat2.R8G8B8, (w,h) => w*h*4},
-            { TextureFormat2.A8R8G8B8, (w,h) => w*h*4},
-            { TextureFormat2.DXT1, (w,h) => ((w + 3) / 4) * ((h + 3) / 4) * 8 },
-            { TextureFormat2.DXT23, (w,h) => ((w + 3) / 4) * ((h + 3) / 4) * 16 },
-            { TextureFormat2.DXT45, (w,h) => ((w + 3) / 4) * ((h + 3) / 4) * 16 }
+            { TextureFormat.A8, (w,h) => w*h},
+            { TextureFormat.L8, (w,h) => w*h},
+            { TextureFormat.A8L8, (w,h) => w*h*2},
+            { TextureFormat.R5G6B5, (w,h) => w*h*4 },
+            { TextureFormat.A4R4G4B4, (w,h) => w*h*4},
+            { TextureFormat.R8G8B8, (w,h) => w*h*4},
+            { TextureFormat.A8R8G8B8, (w,h) => w*h*4},
+            { TextureFormat.DXT1, (w,h) => ((w + 3) / 4) * ((h + 3) / 4) * 8 },
+            { TextureFormat.DXT23, (w,h) => ((w + 3) / 4) * ((h + 3) / 4) * 16 },
+            { TextureFormat.DXT45, (w,h) => ((w + 3) / 4) * ((h + 3) / 4) * 16 }
         };
 
         public int Bind(string filename)
@@ -91,7 +93,7 @@ namespace OpenH2.Rendering.OpenGL
             return texId;
         }
 
-        private void UploadMips(Memory<byte> data, TextureFormat format, TextureFormat2 format2, int width, int height, int mipMaps)
+        private void UploadMips(Memory<byte> data, TextureCompressionFormat format, TextureFormat format2, int width, int height, int mipMaps)
         {
             int offset = 0;
 
@@ -105,21 +107,21 @@ namespace OpenH2.Rendering.OpenGL
 
             switch (format2)
             {
-                case TextureFormat2.A8:
+                case TextureFormat.A8:
                 {
                     var alpha = (int)PixelFormat.Alpha;
                     GL.TexParameterI(TextureTarget.Texture2D, TextureParameterName.TextureSwizzleRgba,  new[] { alpha, alpha, alpha, alpha });
                     break;
                 }
 
-                case TextureFormat2.L8:
+                case TextureFormat.L8:
                 {
                     var red = (int)PixelFormat.Red;
                     GL.TexParameterI(TextureTarget.Texture2D, TextureParameterName.TextureSwizzleRgba, new[] { red, red, red, red });
                     break;
                 }
 
-                case TextureFormat2.A8L8:
+                case TextureFormat.A8L8:
                 {
                     var red = (int)PixelFormat.Red;
                     var alpha = (int)PixelFormat.Alpha;
@@ -147,14 +149,14 @@ namespace OpenH2.Rendering.OpenGL
 
                 switch (format)
                 {
-                    case TextureFormat.DXT1:
-                    case TextureFormat.DXT23:
-                    case TextureFormat.DXT45:
+                    case TextureCompressionFormat.DXT1:
+                    case TextureCompressionFormat.DXT23:
+                    case TextureCompressionFormat.DXT45:
                         GL.CompressedTexSubImage2D(TextureTarget.Texture2D, i, 0, 0, width, height, pixelFormat, size, bytes);
                         break;
-                    case TextureFormat.SixteenBit:
-                    case TextureFormat.ThirtyTwoBit:
-                    case TextureFormat.Monochrome:
+                    case TextureCompressionFormat.SixteenBit:
+                    case TextureCompressionFormat.ThirtyTwoBit:
+                    case TextureCompressionFormat.Monochrome:
                         GL.TexSubImage2D(TextureTarget.Texture2D, i, 0, 0, width, height, pixelFormat, PixelType.UnsignedByte, bytes);
                         break;
                 }

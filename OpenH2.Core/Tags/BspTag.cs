@@ -8,6 +8,7 @@ using OpenH2.Core.Tags.Common;
 using OpenH2.Foundation;
 using System.Numerics;
 using OpenH2.Core.Extensions;
+using OpenH2.Core.Representations;
 
 namespace OpenH2.Core.Tags
 {
@@ -189,7 +190,7 @@ namespace OpenH2.Core.Tags
             public ushort Value1 { get; set; }
 
             [PrimitiveValue(16)]
-            public uint ShaderId { get; set; }
+            public TagRef<ShaderTag> Shader { get; set; }
         }
 
         [FixedLength(68)]
@@ -445,7 +446,7 @@ namespace OpenH2.Core.Tags
             public class Obj24
             {
                 [PrimitiveArray(0, 10)]
-                float[] Floats { get; set; }
+                public float[] Floats { get; set; }
             }
 
 
@@ -453,7 +454,7 @@ namespace OpenH2.Core.Tags
             public class Obj112
             {
                 [PrimitiveArray(0,4)]
-                short Shorts { get; set; }
+                public short Shorts { get; set; }
             }
 
             [FixedLength(16)]

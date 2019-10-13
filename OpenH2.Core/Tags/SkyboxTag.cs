@@ -1,7 +1,5 @@
-﻿using OpenH2.Core.Tags.Layout;
-using System;
-using System.Collections.Generic;
-using System.Text;
+﻿using OpenH2.Core.Representations;
+using OpenH2.Core.Tags.Layout;
 
 namespace OpenH2.Core.Tags
 {
@@ -14,8 +12,7 @@ namespace OpenH2.Core.Tags
         {
         }
 
-
         [PrimitiveValue(4)]
-        public uint ModelTagId { get; set; }
+        public TagRef<ModelTag> Model { get; set; }
     }
 }

@@ -18,23 +18,23 @@ namespace OpenH2.Engine.EntityFactories
         {
             var scenery = new Scenery();
 
-            var id = scenario.MachineryDefinitions[instance.MachineryDefinitionIndex].MachineryId;
-            map.TryGetTag<MachineryTag>(id, out var tag);
+            var id = scenario.MachineryDefinitions[instance.MachineryDefinitionIndex].Machinery;
+            map.TryGetTag(id, out var tag);
 
-            if(tag.HlmtId == uint.MaxValue)
+            if(tag.PhysicalModel == uint.MaxValue)
             {
                 Console.WriteLine($"No HLMT specified in MACH:{tag.Name}");
                 return scenery;
             }
 
-            if(map.TryGetTag<PhysicalModelTag>(tag.HlmtId, out var hlmt) == false)
+            if(map.TryGetTag(tag.PhysicalModel, out var hlmt) == false)
             {
                 throw new Exception("No model found for MACH");
             }
 
-            if (map.TryGetTag<ModelTag>(hlmt.ModelId, out var model) == false)
+            if (map.TryGetTag(hlmt.Model, out var model) == false)
             {
-                Console.WriteLine($"No MODE[{hlmt.ModelId}] found for HLMT[{hlmt.Id}]");
+                Console.WriteLine($"No MODE[{hlmt.Model}] found for HLMT[{hlmt.Id}]");
                 return scenery;
             }
 

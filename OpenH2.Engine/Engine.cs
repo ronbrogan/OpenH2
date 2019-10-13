@@ -117,7 +117,7 @@ namespace OpenH2.Engine
 
             foreach (var sky in scenario.SkyboxInstances)
             {
-                if (sky.SkyboxId == uint.MaxValue)
+                if (sky.Skybox == uint.MaxValue)
                     continue;
 
                 destination.AddEntity(SkyboxFactory.FromTag(map, scenario, sky));

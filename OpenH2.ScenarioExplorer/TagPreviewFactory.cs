@@ -52,6 +52,8 @@ namespace OpenH2.ScenarioExplorer
 
             object GetBitmapPreview(BitmapTag bitm)
             {
+                if (bitm.Width == 0 || bitm.Height == 0)
+                    return null;
 
                 var textureBinder = new OpenGLTextureBinder();
                 var window = new GameWindow(bitm.Width, bitm.Height, GraphicsMode.Default, "OpenH2", GameWindowFlags.Default, DisplayDevice.Default, 4, 0, GraphicsContextFlags.Debug);

@@ -57,7 +57,7 @@ namespace OpenH2.Core.Tags.Serialization
                       .Substring(t.FullName.LastIndexOf('.') + 1)
                       .Replace("+", "_");
 
-                    var methodBuilder = type.DefineMethod("Read" + name,
+                    var methodBuilder = type.DefineMethod("Read" + name + "_" + Guid.NewGuid().ToString().Substring(0, 4),
                         MethodAttributes.Public | MethodAttributes.Static,
                         typeof(object),
                         TagCreatorArguments.ArgumentTypes);

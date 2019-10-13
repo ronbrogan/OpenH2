@@ -124,7 +124,7 @@ namespace OpenH2.Core.Tags.Serialization.SerializerEmit
             }
 #endif
             
-            // Do first pass over "header" reagion
+            // Do first pass over "header" region
             foreach (var prop in props)
             {
                 switch (prop.LayoutAttribute)
@@ -477,7 +477,16 @@ namespace OpenH2.Core.Tags.Serialization.SerializerEmit
                 type = Enum.GetUnderlyingType(type);
             }
 
-            if (MI.PrimitiveSpanReaders.TryGetValue(type, out var readerMethod))
+            var readerLookupType = type;
+
+            // Special case to deal with TagRef<TTag> properties. 
+            // TODO: evaluate moving this out of GeneratePrimitiveProperty to its own metho
+            if (readerLookupType.IsGenericType)
+            {
+                readerLookupType = readerLookupType.GetGenericTypeDefinition();
+            }
+
+            if (MI.PrimitiveSpanReaders.TryGetValue(readerLookupType, out var readerMethod))
             {
                 // Load tag onto evalstack for later
                 if (tagType.IsClass)
@@ -497,6 +506,29 @@ namespace OpenH2.Core.Tags.Serialization.SerializerEmit
                 gen.Emit(OpCodes.Add);
 
                 gen.Emit(OpCodes.Call, readerMethod); // Consume span and offset
+
+                // Cast if types dont' match
+                if(readerMethod.ReturnType != type)
+                {
+                    var sourceType = readerMethod.ReturnType;
+
+
+                    var cast = type.GetMethod("op_Implicit", BindingFlags.Static | BindingFlags.Public,
+                        null, new[] { sourceType }, Array.Empty<ParameterModifier>());
+
+                    if(cast == null)
+                    {
+                        cast = type.GetMethod("op_Explicit", BindingFlags.Static | BindingFlags.Public,
+                            null, new[] { sourceType }, Array.Empty<ParameterModifier>());
+                    }
+
+                    if(cast == null)
+                    {
+                        throw new Exception($"Unable to find cast method [{type}] => [{sourceType}]");
+                    }
+
+                    gen.Emit(OpCodes.Call, cast);
+                }
 
                 // Consume tag and returned value args, set tag val
                 gen.Emit(OpCodes.Call, prop.Setter);

@@ -1,4 +1,5 @@
-﻿using OpenH2.Core.Tags.Layout;
+﻿using OpenH2.Core.Representations;
+using OpenH2.Core.Tags.Layout;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -15,7 +16,7 @@ namespace OpenH2.Core.Tags
         }
 
         [PrimitiveValue(4)]
-        public uint ModelId { get; set; }
+        public TagRef<ModelTag> Model { get; set; }
 
         [PrimitiveValue(12)]
         public uint ColliderId { get; set; }

@@ -26,12 +26,12 @@ namespace OpenH2.Engine.EntityFactories
                 if (bitms == null)
                     return;
 
-                if(map.TryGetTag<BitmapTag>(bitms.DiffuseBitmapId, out var diffuse))
+                if(map.TryGetTag(bitms.DiffuseBitmap, out var diffuse))
                 {
                     mat.DiffuseMap = diffuse;
                 }
 
-                if (map.TryGetTag<BitmapTag>(bitms.AlphaBitmapId, out var alpha))
+                if (map.TryGetTag(bitms.AlphaBitmap, out var alpha))
                 {
                     mat.AlphaMap = alpha;
                 }
@@ -45,7 +45,7 @@ namespace OpenH2.Engine.EntityFactories
 
             foreach (var bitmRef in bitmRefs)
             {
-                if (map.TryGetTag<BitmapTag>(bitmRef.BitmapId, out var bitm) == false)
+                if (map.TryGetTag(bitmRef.Bitmap, out var bitm) == false)
                 {
                     continue;
                 }

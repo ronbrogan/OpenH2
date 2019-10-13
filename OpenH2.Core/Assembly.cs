@@ -1,3 +1,3 @@
 ﻿using System.Runtime.CompilerServices;
 
-[assembly: InternalsVisibleToAttribute("OpenH2.Core.CodeGenTests")]
+[assembly: InternalsVisibleTo("OpenH2.Core.CodeGenTests")]

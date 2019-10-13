@@ -69,14 +69,14 @@ namespace OpenH2.Engine.EntityFactories
             var id = scenario.SceneryReferences[instance.SceneryDefinitionIndex].SceneryId;
             map.TryGetTag<SceneryTag>(id, out var tag);
 
-            if (map.TryGetTag<PhysicalModelTag>(tag.HlmtId, out var hlmt) == false)
+            if (map.TryGetTag(tag.PhysicalModel, out var hlmt) == false)
             {
                 throw new Exception("No model found for scenery");
             }
 
-            if (map.TryGetTag<ModelTag>(hlmt.ModelId, out var model) == false)
+            if (map.TryGetTag(hlmt.Model, out var model) == false)
             {
-                Console.WriteLine($"No MODE[{hlmt.ModelId}] found for HLMT[{hlmt.Id}]");
+                Console.WriteLine($"No MODE[{hlmt.Model}] found for HLMT[{hlmt.Id}]");
                 return scenery;
             }
 

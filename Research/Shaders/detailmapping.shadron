@@ -1,0 +1,25 @@
+
+// This example converts an image with white background to a semi-transparent image, so that it is identical to the original when displayed on a white background
+// Author: Viktor Chlumsky, 2018
+
+image diffuse = file();
+image detail1 = file();
+image detail2 = file();
+
+glsl vec3 detailmapping(vec2 pos) {
+    // Get diffuse pixel
+    vec4 orig = texture(diffuse, pos);
+
+    vec4 det1 = texture(detail1, pos*5);
+    vec4 det2 = texture(detail2, pos*5);
+
+    vec3 outColor = orig.xyz;
+
+    vec3 mixed = mix(det1, det2, orig.a).rgb;
+
+    outColor = orig.xyz * mixed * 2.5;
+
+    return outColor;
+}
+
+image Output = glsl(detailmapping, sizeof(diffuse)*2);

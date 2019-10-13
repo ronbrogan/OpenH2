@@ -15,7 +15,7 @@ namespace OpenH2.Core.Architecture
 
         public bool TryGetSibling<T>(out T component) where T : Component
         {
-            return this.Parent.TryGetChild<T>(out component);
+            return this.Parent.TryGetChild(out component);
         }
     }
 }

@@ -25,7 +25,7 @@ namespace OpenH2.Core.Tags
 
         [PrimitiveValue(2)]
         [JsonConverter(typeof(StringEnumConverter))]
-        public TextureFormat TextureFormat { get; set; }
+        public TextureCompressionFormat TextureFormat { get; set; }
 
         [PrimitiveValue(4)]
         [JsonConverter(typeof(StringEnumConverter))]
@@ -50,7 +50,7 @@ namespace OpenH2.Core.Tags
         public short Type { get; set; }
 
         [PrimitiveValue(92)]
-        public TextureFormat2 Format { get; set; }
+        public TextureFormat Format { get; set; }
 
         [PrimitiveValue(94)]
         public TextureProperties Properties { get; set; }

@@ -18,11 +18,11 @@ namespace OpenH2.Engine.EntityFactories
         {
             var scenery = new Scenery();
 
-            map.TryGetTag<SkyboxTag>(instance.SkyboxId, out var tag);
+            map.TryGetTag(instance.Skybox, out var tag);
 
-            if (map.TryGetTag<ModelTag>(tag.ModelTagId, out var model) == false)
+            if (map.TryGetTag(tag.Model, out var model) == false)
             {
-                Console.WriteLine($"No MODE[{tag.ModelTagId}] found for SKY[{instance.SkyboxId}]");
+                Console.WriteLine($"No MODE[{tag.Model}] found for SKY[{instance.Skybox}]");
                 return scenery;
             }
 

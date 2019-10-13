@@ -1,4 +1,5 @@
-﻿using OpenH2.Core.Tags.Layout;
+﻿using OpenH2.Core.Representations;
+using OpenH2.Core.Tags.Layout;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -47,7 +48,7 @@ namespace OpenH2.Core.Tags
         public class ShaderPassReference
         {
             [PrimitiveValue(4)]
-            public uint ShaderPassId { get; set; }
+            public TagRef<ShaderPassTag> ShaderPass { get; set; }
         }
 
         [FixedLength(12)]

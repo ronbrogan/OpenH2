@@ -18,17 +18,17 @@ namespace OpenH2.Engine.EntityFactories
         {
             var scenery = new Scenery();
 
-            var id = scenario.BlocDefinitions[instance.BlocDefinitionIndex].BlocId;
-            map.TryGetTag<BlocTag>(id, out var tag);
+            var bloc = scenario.BlocDefinitions[instance.BlocDefinitionIndex].Bloc;
+            map.TryGetTag(bloc, out var tag);
 
-            if(map.TryGetTag<PhysicalModelTag>(tag.HlmtId, out var hlmt) == false)
+            if(map.TryGetTag(tag.PhysicalModel, out var hlmt) == false)
             {
                 throw new Exception("No model found for bloc");
             }
 
-            if (map.TryGetTag<ModelTag>(hlmt.ModelId, out var model) == false)
+            if (map.TryGetTag(hlmt.Model, out var model) == false)
             {
-                Console.WriteLine($"No MODE[{hlmt.ModelId}] found for HLMT[{hlmt.Id}]");
+                Console.WriteLine($"No MODE[{hlmt.Model}] found for HLMT[{hlmt.Id}]");
                 return scenery;
             }
 

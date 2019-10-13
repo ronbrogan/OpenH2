@@ -65,7 +65,11 @@ namespace OpenH2.Core.Representations
             return false;
         }
 
-        
+        public bool TryGetTag<T>(TagRef<T> tagref, out T tag) where T : BaseTag
+        {
+            return TryGetTag(tagref.Id, out tag);
+        }
+
 
         public static int CalculateSignature(Memory<byte> sceneData)
         {

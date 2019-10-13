@@ -1,4 +1,5 @@
-﻿using OpenH2.Core.Tags.Layout;
+﻿using OpenH2.Core.Representations;
+using OpenH2.Core.Tags.Layout;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -18,7 +19,7 @@ namespace OpenH2.Core.Tags
         public string StemTag { get; set; }
 
         [PrimitiveValue(4)]
-        public uint StemTagId { get; set; }
+        public TagRef<ShaderTemplateTag> ShaderTemplate { get; set; }
 
         [InternalReferenceValue(12)]
         public BitmapInfo[] BitmapInfos { get; set; }
@@ -33,10 +34,10 @@ namespace OpenH2.Core.Tags
         public class BitmapInfo
         {
             [PrimitiveValue(4)]
-            public uint DiffuseBitmapId { get; set; }
+            public TagRef<BitmapTag> DiffuseBitmap { get; set; }
 
             [PrimitiveValue(12)]
-            public uint EmissiveBitmapId { get; set; }
+            public TagRef<BitmapTag> EmissiveBitmap { get; set; }
 
             [PrimitiveValue(16)]
             public float Param1 { get; set; }
@@ -51,7 +52,7 @@ namespace OpenH2.Core.Tags
             public float Param4 { get; set; }
 
             [PrimitiveValue(48)]
-            public uint AlphaBitmapId { get; set; }
+            public TagRef<BitmapTag> AlphaBitmap { get; set; }
         }
 
         [FixedLength(124)]
@@ -77,7 +78,7 @@ namespace OpenH2.Core.Tags
         public class BitmapParameter1
         {
             [PrimitiveValue(0)]
-            public uint BitmapId { get; set; }
+            public TagRef<BitmapTag> Bitmap { get; set; }
 
             [PrimitiveValue(4)]
             public float ValueA { get; set; }

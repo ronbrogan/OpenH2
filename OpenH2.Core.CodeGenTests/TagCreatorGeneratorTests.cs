@@ -56,7 +56,7 @@ namespace OpenH2.Core.CodeGenTests
 
             var writer = new StringWriter();
 
-            var pStart = new ProcessStartInfo(peverify, assyPath);
+            var pStart = new ProcessStartInfo(peverify, assyPath + " /hresult /ignore=0x80131040");
             pStart.RedirectStandardOutput = true;
             pStart.UseShellExecute = false;
 

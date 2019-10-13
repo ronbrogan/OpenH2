@@ -15,9 +15,9 @@ namespace OpenH2.ScenarioExplorer
 
         public static string TranslateAsmShaderToPseudocode(string shaderAsm)
         {
-            var paramStart = shaderAsm.IndexOf("//\r\n//\r\n");
-            var registersStart = shaderAsm.IndexOf("//\r\n//\r\n", paramStart + 2);
-            var codeStart = shaderAsm.IndexOf("//\r\n\r\n", registersStart + 2);
+            var paramStart = Math.Max(shaderAsm.IndexOf("//\r\n//\r\n"), 0);
+            var registersStart = Math.Max(shaderAsm.IndexOf("//\r\n//\r\n", paramStart + 2), 0);
+            var codeStart = Math.Max(shaderAsm.IndexOf("//\r\n\r\n", registersStart + 2), 0);
 
             var paramLines = ParamPattern.Matches(shaderAsm.Substring(paramStart, registersStart - paramStart));
             var registerLines = RegisterPattern.Matches(shaderAsm.Substring(registersStart, codeStart - registersStart));
