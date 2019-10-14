@@ -74,13 +74,13 @@ namespace OpenH2.Engine.EntityFactories
                     if (mat.DetailMap1 == null)
                     {
                         mat.DetailMap1 = bitm;
-                        mat.Detail1Scale = bitmRef.ValueB;
+                        mat.Detail1Scale = bitmRef.Something.X;
                         continue;
                     }
                     else if (mat.DetailMap2 == null)
                     {
                         mat.DetailMap2 = bitm;
-                        mat.Detail2Scale = bitmRef.ValueB;
+                        mat.Detail2Scale = bitmRef.Something.X;
                         continue;
                     }
                 }
