@@ -5,7 +5,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Reflection.Emit;
-using System.Runtime.InteropServices;
 
 namespace OpenH2.Core.Tags.Serialization.SerializerEmit
 {
@@ -107,6 +106,17 @@ namespace OpenH2.Core.Tags.Serialization.SerializerEmit
             }
 
 #if DEBUG
+            var tagMagicProp = tagType.GetProperty(nameof(BaseTag.InternalSecondaryMagic), BindingFlags.Public | BindingFlags.Instance);
+            if (tagMagicProp != null)
+            {
+                // Set tag offset
+                gen.Emit(OpCodes.Ldloc, tagLocal);
+                gen.Emit(OpCodes.Ldarg, TagCreatorArguments.GetArgumentLocation(TagCreatorArguments.Name.SecondaryMagic));
+                gen.Emit(OpCodes.Ldarg, TagCreatorArguments.GetArgumentLocation(TagCreatorArguments.Name.StartAt));
+                gen.Emit(OpCodes.Add);
+                gen.Emit(OpCodes.Callvirt, tagMagicProp.GetSetMethod());
+            }
+
             var tagDataProp = tagType.GetProperty(nameof(BaseTag.RawData), BindingFlags.Public | BindingFlags.Instance);
             if (tagDataProp != null)
             {
@@ -369,8 +379,9 @@ namespace OpenH2.Core.Tags.Serialization.SerializerEmit
                 var elemType = prop.Type.GetElementType();
                 var typeLength = TagTypeMetadataProvider.GetFixedLength(elemType);
 
+                var isPrimitiveReader = MI.PrimitiveSpanReaders.ContainsKey(elemType);
 
-                if (elemType.IsPrimitive)
+                if (isPrimitiveReader)
                 {
                     gen.Emit(OpCodes.Ldarg, TagCreatorArguments.GetArgumentLocation(TagCreatorArguments.Name.Data)); // load span
                 }
@@ -390,7 +401,7 @@ namespace OpenH2.Core.Tags.Serialization.SerializerEmit
                 gen.Emit(OpCodes.Mul);
                 gen.Emit(OpCodes.Add);// Load item start
 
-                if (elemType.IsPrimitive == false)
+                if (isPrimitiveReader == false)
                 {
                     // load size
                     gen.Emit(OpCodes.Ldc_I4, typeLength);
@@ -480,7 +491,7 @@ namespace OpenH2.Core.Tags.Serialization.SerializerEmit
             var readerLookupType = type;
 
             // Special case to deal with TagRef<TTag> properties. 
-            // TODO: evaluate moving this out of GeneratePrimitiveProperty to its own metho
+            // TODO: evaluate moving this out of GeneratePrimitiveProperty to its own method
             if (readerLookupType.IsGenericType)
             {
                 readerLookupType = readerLookupType.GetGenericTypeDefinition();

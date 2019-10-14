@@ -32,7 +32,7 @@ namespace OpenH2.Core.Factories
 
             tag.PopulateExternalData(reader);
 
-            return tag as BaseTag;
+            return tag;
         }
 
         private static Dictionary<string, Type> cachedTagTypes = null;

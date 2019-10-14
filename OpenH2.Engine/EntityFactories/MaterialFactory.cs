@@ -40,7 +40,7 @@ namespace OpenH2.Engine.EntityFactories
 
         private static void PopulateFromBitmapReferences(H2vMap map, Material<BitmapTag> mat, ShaderTag shader)
         {
-            var bitmRefs = shader.Parameters.First().BitmapParameter1s;
+            var bitmRefs = shader.Arguments.First().ShaderMaps;
 
 
             foreach (var bitmRef in bitmRefs)

@@ -52,7 +52,9 @@ namespace OpenH2.Core.Tags.Serialization.SerializerEmit
             { typeof(uint), typeof(SpanByteExtensions).GetMethod(nameof(SpanByteExtensions.ReadUInt32At)) },
             { typeof(float), typeof(SpanByteExtensions).GetMethod(nameof(SpanByteExtensions.ReadFloatAt)) },
             { typeof(string), typeof(SpanByteExtensions).GetMethod(nameof(SpanByteExtensions.ReadStringFrom)) },
+            { typeof(Vector2), typeof(SpanByteExtensions).GetMethod(nameof(SpanByteExtensions.ReadVec2At)) },
             { typeof(Vector3), typeof(SpanByteExtensions).GetMethod(nameof(SpanByteExtensions.ReadVec3At)) },
+            { typeof(Vector4), typeof(SpanByteExtensions).GetMethod(nameof(SpanByteExtensions.ReadVec4At)) },
 
             { typeof(TagRef), typeof(SpanByteExtensions).GetMethod(nameof(SpanByteExtensions.ReadTagRefAt)) },
             { typeof(TagRef<>), typeof(SpanByteExtensions).GetMethod(nameof(SpanByteExtensions.ReadTagRefAt)) },

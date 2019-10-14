@@ -1,8 +1,6 @@
 ﻿using OpenH2.Core.Representations;
 using OpenH2.Core.Tags.Layout;
-using System;
-using System.Collections.Generic;
-using System.Text;
+using System.Numerics;
 
 namespace OpenH2.Core.Tags
 {
@@ -25,7 +23,7 @@ namespace OpenH2.Core.Tags
         public BitmapInfo[] BitmapInfos { get; set; }
 
         [InternalReferenceValue(32)]
-        public ParameterSet[] Parameters { get; set; }
+        public ShaderArguments[] Arguments { get; set; }
 
         [InternalReferenceValue(44)]
         public BitmapReferenceSetting[] BitmapReferenceSettings { get; set; }
@@ -56,35 +54,32 @@ namespace OpenH2.Core.Tags
         }
 
         [FixedLength(124)]
-        public class ParameterSet
+        public class ShaderArguments
         {
             [PrimitiveValue(0)]
             public uint Id { get; set; }
 
             [InternalReferenceValue(4)]
-            public BitmapParameter1[] BitmapParameter1s { get; set; }
+            public ShaderMaps[] ShaderMaps { get; set; }
 
             [InternalReferenceValue(12)]
             public BitmapParameter2[] BitmapParamter2s { get; set; }
 
             [InternalReferenceValue(20)]
-            public BitmapParameter3[] BitmapParamter3s { get; set; }
+            public Vector4[] ShaderInputs { get; set; }
 
             [InternalReferenceValue(28)]
             public BitmapParameter4[] BitmapParamter4s { get; set; }
         }
 
         [FixedLength(12)]
-        public class BitmapParameter1
+        public class ShaderMaps
         {
             [PrimitiveValue(0)]
             public TagRef<BitmapTag> Bitmap { get; set; }
 
             [PrimitiveValue(4)]
-            public float ValueA { get; set; }
-
-            [PrimitiveValue(8)]
-            public float ValueB { get; set; }
+            public Vector2 Something { get; set; }
         }
 
         [FixedLength(4)]
@@ -95,22 +90,6 @@ namespace OpenH2.Core.Tags
 
             [PrimitiveValue(0)]
             public ushort ValueB { get; set; }
-        }
-
-        [FixedLength(16)]
-        public class BitmapParameter3
-        {
-            [PrimitiveValue(0)]
-            public float ValueA { get; set; }
-
-            [PrimitiveValue(4)]
-            public float ValueB { get; set; }
-
-            [PrimitiveValue(8)]
-            public float ValueC { get; set; }
-
-            [PrimitiveValue(12)]
-            public float ValueD { get; set; }
         }
 
         [FixedLength(6)]

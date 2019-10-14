@@ -113,15 +113,11 @@ namespace OpenH2.Core.Tags
         public class Terrain
         {
             [PrimitiveValue(20)]
-            public uint BspId { get; set; }
-
-            public BspTag Bsp { get; set; }
+            public TagRef<BspTag> Bsp { get; set; }
 
             // TODO implement lightmap tag
             [PrimitiveValue(28)]
             public uint LightmapId { get; set; }
-
-            public BaseTag Lightmap { get; set; }
         }
 
         [FixedLength(36)] public class Obj72 { }
@@ -143,7 +139,7 @@ namespace OpenH2.Core.Tags
         public class SceneryDefinition
         {
             [PrimitiveValue(4)]
-            public uint SceneryId { get; set; }
+            public TagRef<SceneryTag> Scenery { get; set; }
         }
 
         [FixedLength(84)]

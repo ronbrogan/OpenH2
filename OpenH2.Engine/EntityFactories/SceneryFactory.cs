@@ -66,8 +66,8 @@ namespace OpenH2.Engine.EntityFactories
         {
             var scenery = new Scenery();
 
-            var id = scenario.SceneryReferences[instance.SceneryDefinitionIndex].SceneryId;
-            map.TryGetTag<SceneryTag>(id, out var tag);
+            var id = scenario.SceneryReferences[instance.SceneryDefinitionIndex].Scenery;
+            map.TryGetTag(id, out var tag);
 
             if (map.TryGetTag(tag.PhysicalModel, out var hlmt) == false)
             {

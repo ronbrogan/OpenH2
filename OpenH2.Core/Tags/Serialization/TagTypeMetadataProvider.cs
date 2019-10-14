@@ -60,7 +60,7 @@ namespace OpenH2.Core.Tags.Serialization
             }
             else
             {
-                if (type.IsPrimitive == false)
+                if (type.IsClass)
                 {
                     throw new Exception($"Type {{{type.Name}}} does not have a 'FixedLength' attribute, but should");
                 }

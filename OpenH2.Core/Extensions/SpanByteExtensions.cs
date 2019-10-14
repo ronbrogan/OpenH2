@@ -169,15 +169,21 @@ namespace OpenH2.Core.Extensions
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static Vector2 ReadVec2At(this Span<byte> data, int offset)
+        {
+            return new Vector2(data.ReadFloatAt(offset), data.ReadFloatAt(offset + 4));
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Vector3 ReadVec3At(this Span<byte> data, int offset)
         {
             return new Vector3(data.ReadFloatAt(offset), data.ReadFloatAt(offset + 4), data.ReadFloatAt(offset + 8));
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static Vector2 ReadVec2At(this Span<byte> data, int offset)
+        public static Vector4 ReadVec4At(this Span<byte> data, int offset)
         {
-            return new Vector2(data.ReadFloatAt(offset), data.ReadFloatAt(offset + 4));
+            return new Vector4(data.ReadFloatAt(offset), data.ReadFloatAt(offset + 4), data.ReadFloatAt(offset + 8), data.ReadFloatAt(offset + 12));
         }
 
         public static byte[] ReadArray(this Span<byte> data, int offset, int length)

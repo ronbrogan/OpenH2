@@ -1,4 +1,5 @@
-﻿using OpenH2.Core.Tags.Layout;
+﻿using OpenH2.Core.Representations;
+using OpenH2.Core.Tags.Layout;
 
 namespace OpenH2.Core.Tags
 {
@@ -24,7 +25,7 @@ namespace OpenH2.Core.Tags
         public class Wrapper2
         {
             [PrimitiveValue(256)]
-            public uint VertexShaderId { get; set; }
+            public TagRef<VertexShaderTag> VertexShaderId { get; set; }
 
             [InternalReferenceValue(306)]
             public ShaderReferenceGroup[] ShaderReferenceGroups1 { get; set; }

@@ -1,4 +1,5 @@
-﻿using OpenH2.Core.Tags.Layout;
+﻿using OpenH2.Core.Representations;
+using OpenH2.Core.Tags.Layout;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -9,7 +10,7 @@ namespace OpenH2.Core.Tags.Common
     public class ModelShaderReference
     {
         [PrimitiveValue(12)]
-        public uint ShaderId { get; set; }
+        public TagRef<ShaderTag> ShaderId { get; set; }
 
         [PrimitiveValue(20)]
         public uint Offset { get; set; }

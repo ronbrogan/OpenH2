@@ -5,7 +5,12 @@ using System.Text;
 
 namespace OpenH2.Core.Representations
 {
-    public readonly struct TagRef
+    public interface ITagRef
+    {
+        uint Id { get; }
+    }
+
+    public readonly struct TagRef : ITagRef
     {
         public TagRef(uint id)
         {
@@ -20,7 +25,7 @@ namespace OpenH2.Core.Representations
         }
     }
 
-    public readonly struct TagRef<TTag> where TTag : BaseTag
+    public readonly struct TagRef<TTag> : ITagRef where TTag : BaseTag 
     {
         public TagRef(uint id)
         {

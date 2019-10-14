@@ -9,9 +9,11 @@ namespace OpenH2.Core.Tags
         public uint Id { get; private set; }
 
         public uint Offset { get; set; }
-        public uint Length { get; set; }
         
+        public uint Length { get; set; }
+
 #if DEBUG
+        public int InternalSecondaryMagic { get; set; }
         public byte[] RawData { get; set; }
 #endif
 

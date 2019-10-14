@@ -35,6 +35,9 @@ namespace OpenH2.ScenarioExplorer
                 case BitmapTag bitm:
                     return GetBitmPreview(bitm);
 
+                case VertexShaderTag vert:
+                    return GetVertexPreview(vert);
+
                 default:
                     return null;
             }
@@ -115,6 +118,22 @@ namespace OpenH2.ScenarioExplorer
             }
         }
 
+        private static TagPreviewViewModel GetVertexPreview(VertexShaderTag vert)
+        {
+            var preview = new TagPreviewViewModel();
+
+            var shaderCount = 0;
+
+            foreach (var shader in vert.Shaders)
+            {
+
+                if (shader.ShaderData.Length > 0)
+                    preview.AddItem($"Shader {shaderCount++}", shader.ShaderData, GetShaderPreview);
+            }
+
+            return preview;
+        }
+
         private static TagPreviewViewModel GetSpasPreview(ShaderPassTag spas)
         {
             var preview = new TagPreviewViewModel();
@@ -140,61 +159,65 @@ namespace OpenH2.ScenarioExplorer
             }
 
             return preview;
-
-            object GetShaderPreview(byte[] shaderData)
-            {
-                var output = new StringBuilder();
-
-                var utilsPath = Path.Combine(Environment.GetEnvironmentVariable("DXSDK_DIR", EnvironmentVariableTarget.Machine), "Utilities\\bin\\x64");
-
-                var path = Path.Combine(utilsPath, "psa.exe");
-
-                var shadIn = Path.GetTempFileName();
-                File.WriteAllBytes(shadIn, shaderData);
-
-                var shadOut = Path.GetTempFileName();
-                var shadReflect = Path.GetTempFileName();
-
-                var start = new ProcessStartInfo(path, $"/nologo \"{shadIn}\" /Fc \"{shadOut}\"");
-                start.RedirectStandardOutput = true;
-                start.RedirectStandardError = true;
-                start.UseShellExecute = false;
-                start.CreateNoWindow = true;
-
-                var proc = new Process();
-                proc.StartInfo = start;
-                proc.OutputDataReceived += (s, e) => output.AppendLine(e.Data);
-                proc.ErrorDataReceived += (s, e) => output.AppendLine(e.Data);
-
-                proc.Start();
-                proc.BeginOutputReadLine();
-                proc.BeginErrorReadLine();
-
-                if (proc.WaitForExit(1000))
-                {
-                    var sb = new StringBuilder();
-                    var shadAsm = File.ReadAllText(shadOut);
-                    sb.AppendLine(shadAsm);
-                    sb.AppendLine(ShaderCodeGeneration.TranslateAsmShaderToPseudocode(shadAsm));
-                    sb.Append(output);
-
-                    output = sb;
-                }
-                else
-                {
-                    proc.Kill();
-                    output.Insert(0, "Error decompiling shader data\r\n");
-                }
-
-                File.Delete(shadIn);
-                File.Delete(shadOut);
-                File.Delete(shadReflect);
-
-                return output.ToString().Replace("\t", "    ");
-            }
         }
 
-        #region Render Helpers
+#region Shader Helpers
+        private static object GetShaderPreview(byte[] shaderData)
+        {
+            var output = new StringBuilder();
+
+            var utilsPath = Path.Combine(Environment.GetEnvironmentVariable("DXSDK_DIR", EnvironmentVariableTarget.Machine), "Utilities\\bin\\x64");
+
+            var path = Path.Combine(utilsPath, "psa.exe");
+
+            var shadIn = Path.GetTempFileName();
+            File.WriteAllBytes(shadIn, shaderData);
+
+            var shadOut = Path.GetTempFileName();
+            var shadReflect = Path.GetTempFileName();
+
+            var start = new ProcessStartInfo(path, $"/nologo \"{shadIn}\" /Fc \"{shadOut}\"");
+            start.RedirectStandardOutput = true;
+            start.RedirectStandardError = true;
+            start.UseShellExecute = false;
+            start.CreateNoWindow = true;
+
+            var proc = new Process();
+            proc.StartInfo = start;
+            proc.OutputDataReceived += (s, e) => output.AppendLine(e.Data);
+            proc.ErrorDataReceived += (s, e) => output.AppendLine(e.Data);
+
+            proc.Start();
+            proc.BeginOutputReadLine();
+            proc.BeginErrorReadLine();
+
+            if (proc.WaitForExit(1000))
+            {
+                var sb = new StringBuilder();
+                var shadAsm = File.ReadAllText(shadOut);
+                sb.AppendLine(shadAsm);
+                sb.AppendLine(ShaderCodeGeneration.TranslateAsmShaderToPseudocode(shadAsm));
+                sb.Append(output);
+
+                output = sb;
+            }
+            else
+            {
+                proc.Kill();
+                output.Insert(0, "Error decompiling shader data\r\n");
+            }
+
+            File.Delete(shadIn);
+            File.Delete(shadOut);
+            File.Delete(shadReflect);
+
+            return output.ToString().Replace("\t", "    ");
+        }
+
+#endregion
+
+
+#region Render Helpers
 
         private static DebugProc callback = DebugCallbackF;
 
@@ -260,6 +283,6 @@ namespace OpenH2.ScenarioExplorer
         }
 
 
-        #endregion
+#endregion
     }
 }
