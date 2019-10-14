@@ -37,12 +37,14 @@ layout(std140, binding = 1) uniform GenericUniform
 	sampler2D EmissiveMap;
 	
 	bool UseDetailMap1;
-	float DetailMap1Scale;
+	float DetailMap1Amount;
 	sampler2D DetailMap1;
+	vec4 DetailMap1Scale;
 
 	bool UseDetailMap2;
-	float DetailMap2Scale;
+	float DetailMap2Amount;
 	sampler2D DetailMap2;
+	vec4 DetailMap2Scale;
 
 } Data;
 
@@ -58,8 +60,8 @@ vec3 light_color = vec3(1,1,1);
 
 void main() {
 
-	vec4 detail1Tex = texture(Data.DetailMap1, texcoord * Data.DetailMap1Scale);
-	vec4 detail2Tex = texture(Data.DetailMap2, texcoord * Data.DetailMap2Scale);
+	vec4 detail1Tex = texture(Data.DetailMap1, texcoord * Data.DetailMap1Scale.xy);
+	vec4 detail2Tex = texture(Data.DetailMap2, texcoord * Data.DetailMap2Scale.xy);
 	vec4 diffuseTex = texture(Data.DiffuseMap, texcoord);
 
 	vec4 diffuseColor = Data.UseDiffuseMap ? diffuseTex : Data.DiffuseColor;

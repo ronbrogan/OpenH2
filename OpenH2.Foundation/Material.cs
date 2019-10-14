@@ -28,11 +28,11 @@ namespace OpenH2.Foundation
 
         TTexture DetailMap1 { get; set; }
         long Detail1Handle { get; set; }
-        float Detail1Scale { get; set; }
+        Vector4 Detail1Scale { get; set; }
 
         TTexture DetailMap2 { get; set; }
         long Detail2Handle { get; set; }
-        float Detail2Scale { get; set; }
+        Vector4 Detail2Scale { get; set; }
     }
 
     public class Material<TTexture> : IMaterial<TTexture>
@@ -51,10 +51,10 @@ namespace OpenH2.Foundation
         public long NormalHandle { get; set; }
         public TTexture DetailMap1 { get; set; }
         public long Detail1Handle { get; set; }
-        public float Detail1Scale { get; set; }
+        public Vector4 Detail1Scale { get; set; }
         public TTexture DetailMap2 { get; set; }
         public long Detail2Handle { get; set; }
-        public float Detail2Scale { get; set; }
+        public Vector4 Detail2Scale { get; set; }
         public TTexture SpecularMap { get; set; }
         public long SpecularHandle { get; set; }
     }

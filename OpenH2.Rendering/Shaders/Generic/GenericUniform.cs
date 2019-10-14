@@ -11,7 +11,9 @@ namespace OpenH2.Rendering.Shaders.Generic
     // For example, float then long would be float@0, then 4 bytes of padding, then long@8
     // Thus the struct size would be 16 instead of the expected 12
 
-    [StructLayout(LayoutKind.Sequential, Pack = 0)]
+    // This also has to match the std140 layout rules
+
+    [StructLayout(LayoutKind.Sequential)]
     public struct GenericUniform
     {
         public Matrix4x4 ModelMatrix;
@@ -40,12 +42,14 @@ namespace OpenH2.Rendering.Shaders.Generic
         public long EmissiveMap;
 
         public bool UseDetailMap1;
-        public float DetailMap1Scale;
+        public float DetailMap1Amount;
         public long DetailMap1Handle;
+        public Vector4 DetailMap1Scale;
 
         public bool UseDetailMap2;
-        public float DetailMap2Scale;
+        public float DetailMap2Amount;
         public long DetailMap2Handle;
+        public Vector4 DetailMap2Scale;
 
         public static readonly int Size = BlittableValueType<GenericUniform>.Stride;
     }

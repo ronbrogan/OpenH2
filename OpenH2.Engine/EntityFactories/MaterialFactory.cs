@@ -5,6 +5,7 @@ using OpenH2.Foundation;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Numerics;
 using System.Text;
 
 namespace OpenH2.Engine.EntityFactories
@@ -40,11 +41,21 @@ namespace OpenH2.Engine.EntityFactories
 
         private static void PopulateFromBitmapReferences(H2vMap map, Material<BitmapTag> mat, ShaderTag shader)
         {
-            var bitmRefs = shader.Arguments.First().ShaderMaps;
+            var args = shader.Arguments.First();
+            var bitmRefs = args.ShaderMaps;
 
 
-            foreach (var bitmRef in bitmRefs)
+            for (int i = 0; i < bitmRefs.Length; i++)
             {
+                var bitmRef = bitmRefs[i];
+
+                var scale = Vector4.One;
+
+                if(args.ShaderInputs.Length >= bitmRefs.Length)
+                {
+                    scale = args.ShaderInputs[i];
+                }
+
                 if (map.TryGetTag(bitmRef.Bitmap, out var bitm) == false)
                 {
                     continue;
@@ -74,13 +85,13 @@ namespace OpenH2.Engine.EntityFactories
                     if (mat.DetailMap1 == null)
                     {
                         mat.DetailMap1 = bitm;
-                        mat.Detail1Scale = bitmRef.Something.X;
+                        mat.Detail1Scale = scale;
                         continue;
                     }
                     else if (mat.DetailMap2 == null)
                     {
                         mat.DetailMap2 = bitm;
-                        mat.Detail2Scale = bitmRef.Something.X;
+                        mat.Detail2Scale = scale;
                         continue;
                     }
                 }

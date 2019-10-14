@@ -42,7 +42,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OpenH2.TextureViewer", "Ope
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OpenH2.Rendering.Tests", "OpenH2.Rendering.Tests\OpenH2.Rendering.Tests.csproj", "{FFF68A06-37B8-4EBA-9995-4AA99FD3209A}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OpenH2.TagFeatureAnalysis", "OpenH2.TagFeatureAnalysis\OpenH2.TagFeatureAnalysis.csproj", "{DF9B8799-B5D5-4646-BBE2-A2451F240F70}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OpenH2.TagFeatureAnalysis", "OpenH2.TagFeatureAnalysis\OpenH2.TagFeatureAnalysis.csproj", "{DF9B8799-B5D5-4646-BBE2-A2451F240F70}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

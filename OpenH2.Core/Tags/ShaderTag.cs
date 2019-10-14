@@ -57,7 +57,7 @@ namespace OpenH2.Core.Tags
         public class ShaderArguments
         {
             [PrimitiveValue(0)]
-            public uint Id { get; set; }
+            public TagRef<ShaderTemplateTag> ShaderTemplate { get; set; }
 
             [InternalReferenceValue(4)]
             public ShaderMaps[] ShaderMaps { get; set; }
