@@ -20,6 +20,7 @@ namespace OpenH2.ScenarioExplorer.ViewModels
 
         public HashSet<uint> PostprocessedTags = new HashSet<uint>();
         private readonly H2vMap scene;
+        private readonly Memory<byte> sceneData;
 
         public TagTreeEntryViewModel[] TreeRoots { get; set; }
 
@@ -46,6 +47,7 @@ namespace OpenH2.ScenarioExplorer.ViewModels
 
             TreeRoots = new[] { scenarioEntry };
             this.scene = scene;
+            this.sceneData = sceneData;
         }
 
         private void BuildExplorationTree(H2vMap scene, TagTreeEntryViewModel entry)
@@ -63,6 +65,20 @@ namespace OpenH2.ScenarioExplorer.ViewModels
             {
                 if (scene.TryGetTag<BaseTag>(child.Id, out var childTag) == false)
                     continue;
+
+                if(childTag == null)
+                {
+                    var indexEntry = scene.TagIndex.First(t => t.ID == child.Id);
+                    Console.WriteLine($"Found null tag for [{indexEntry.Tag}] tag");
+
+                    childrenVms.Add(new TagTreeEntryViewModel()
+                    {
+                        Id = child.Id,
+                        TagName = indexEntry.Tag
+                    });
+
+                    continue;
+                }
 
                 var tagLabel = childTag.GetType().GetCustomAttribute<TagLabelAttribute>().Label;
                 var tagName = tagLabel + (childTag.Name != null ? " - " + childTag.Name : string.Empty);
@@ -244,7 +260,31 @@ namespace OpenH2.ScenarioExplorer.ViewModels
 
         private TagViewModel GetExplorationTagViewModel(uint tagId)
         {
-            scene.TryGetTag<BaseTag>(tagId, out var tag);
+            if(scene.TryGetTag<BaseTag>(tagId, out var tag) == false)
+            {
+                return null;
+            }
+
+            // Handle case where we don't have a tag class yet
+            if(tag == null)
+            {
+                var indexEntry = scene.TagIndex.FirstOrDefault(t => t.ID == tagId);
+                var magicStart = indexEntry.Offset.OriginalValue + scene.SecondaryMagic;
+
+                var indexVm = new TagViewModel(tagId, indexEntry.Tag, indexEntry.Tag)
+                {
+#if DEBUG
+                    InternalOffsetStart = magicStart,
+                    InternalOffsetEnd = magicStart + indexEntry.DataSize,
+#endif
+                    Data = sceneData.Slice(indexEntry.Offset.Value, indexEntry.DataSize),
+                    RawOffset = (int)indexEntry.Offset.Value
+                };
+
+                return indexVm;
+            }
+
+
             var tagLabel = tag.GetType().GetCustomAttribute<TagLabelAttribute>().Label;
 
             var vm = new TagViewModel(tagId, tagLabel, tag?.Name)
