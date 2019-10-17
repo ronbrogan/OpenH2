@@ -2,7 +2,6 @@
 using OpenH2.Engine.Components;
 using OpenH2.Foundation;
 using System.Collections.Generic;
-using System.Numerics;
 
 namespace OpenH2.Engine.Stores
 {
@@ -25,7 +24,8 @@ namespace OpenH2.Engine.Stores
                 Position = component.Position,
                 Orientation = component.Orientation,
                 Scale = component.Scale,
-                Note = component.Note
+                Note = component.Note,
+                Flags = component.Flags
             };
 
             foreach (var mat in component.Materials)

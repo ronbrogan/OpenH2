@@ -18,6 +18,12 @@ namespace OpenH2.Engine.EntityFactories
         {
             var scenery = new Scenery();
 
+            if(instance.MachineryDefinitionIndex == ushort.MaxValue)
+            {
+                Console.WriteLine($"MACH index out of range");
+                return scenery;
+            }
+
             var id = scenario.MachineryDefinitions[instance.MachineryDefinitionIndex].Machinery;
             map.TryGetTag(id, out var tag);
 
@@ -42,14 +48,16 @@ namespace OpenH2.Engine.EntityFactories
 
             var partIndex = model.Lods.First().Permutations.First().HighestPieceIndex;
             meshes.AddRange(model.Parts[partIndex].Model.Meshes);
-            
 
-            var comp = new RenderModelComponent(scenery);
-            comp.Note = $"[{tag.Id}] {tag.Name}";
-            comp.Meshes = meshes.ToArray();
-            comp.Position = instance.Position;
-            comp.Orientation = instance.Orientation.ToQuaternion();
-            comp.Scale = new Vector3(1);
+
+            var comp = new RenderModelComponent(scenery)
+            {
+                Note = $"[{tag.Id}] {tag.Name}",
+                Meshes = meshes.ToArray(),
+                Position = instance.Position,
+                Orientation = instance.Orientation.ToQuaternion(),
+                Flags = ModelFlags.Diffuse | ModelFlags.CastsShadows | ModelFlags.ReceivesShadows
+            };
 
             foreach (var mesh in comp.Meshes)
             {

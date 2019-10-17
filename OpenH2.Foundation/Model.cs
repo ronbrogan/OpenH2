@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Numerics;
 
 namespace OpenH2.Foundation
@@ -15,6 +16,8 @@ namespace OpenH2.Foundation
 
         public string Note { get; set; }
 
+        public ModelFlags Flags { get; set; }
+
         public Matrix4x4 CreateTransformationMatrix()
         {
             var translate = Matrix4x4.CreateTranslation(Position);
@@ -25,5 +28,16 @@ namespace OpenH2.Foundation
 
             return Matrix4x4.Multiply(scaleRotate, translate);
         }
+    }
+
+    [Flags]
+    public enum ModelFlags
+    {
+        Diffuse         = 1<<0,
+        CastsShadows    = 1 << 1,
+        ReceivesShadows = 1 << 2,
+        IsStatic        = 1 << 3,
+        IsSkybox        = 1 << 4,
+        IsTransparent   = 1 << 5
     }
 }

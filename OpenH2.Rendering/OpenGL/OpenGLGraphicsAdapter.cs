@@ -3,6 +3,7 @@ using OpenH2.Foundation;
 using OpenH2.Rendering.Abstractions;
 using OpenH2.Rendering.Shaders;
 using OpenH2.Rendering.Shaders.Generic;
+using OpenH2.Rendering.Shaders.Skybox;
 using OpenTK.Graphics.OpenGL;
 using System;
 using System.Collections.Generic;
@@ -15,9 +16,12 @@ namespace OpenH2.Rendering.OpenGL
         private Dictionary<Mesh, uint> meshLookup = new Dictionary<Mesh, uint>();
         private HashSet<IMaterial<BitmapTag>> boundTextures = new HashSet<IMaterial<BitmapTag>>();
         private ITextureBinder textureBinder = new OpenGLTextureBinder();
-        private int? defaultShader;
-        int MatriciesUniformHandle;
-        int GenericUniformHandle;
+
+        private Shader activeShader;
+        private Dictionary<Shader, int> shaderHandles = new Dictionary<Shader, int>();
+        private Dictionary<Shader, int> uniformHandles = new Dictionary<Shader, int>();
+
+        private int GlobalUniformHandle;
         private GlobalUniform GlobalUniform;
 
         public OpenGLGraphicsAdapter()
@@ -27,8 +31,25 @@ namespace OpenH2.Rendering.OpenGL
         public void BeginFrame(GlobalUniform global)
         {
             GlobalUniform = global;
-            UseGenericShader();
             SetupGlobalUniform();
+        }
+
+        public void UseShader(Shader shader)
+        {
+            if (shaderHandles.TryGetValue(shader, out var handle) == false)
+            {
+                handle = ShaderCompiler.CreateShader(shader);
+                shaderHandles[shader] = handle;
+            }
+
+            GL.UseProgram(handle);
+
+            activeShader = shader;
+
+            if(shaderBeginActions.TryGetValue(shader, out var action))
+            {
+                action();
+            }
         }
 
         public uint UploadMesh(Mesh mesh)
@@ -95,36 +116,8 @@ namespace OpenH2.Rendering.OpenGL
         public void DrawMesh(Mesh mesh, IMaterial<BitmapTag> material, Matrix4x4 transform)
         {
             SetupTextures(material);
-            
-            if (Matrix4x4.Invert(transform, out var inverted) == false)
-            {
-                Console.WriteLine("Couldn't invert model matrix: " + mesh.Note);
-                return;
-            }
 
-            var genericUniform = new GenericUniform()
-            {
-                ModelMatrix = transform,
-                NormalMatrix = Matrix4x4.Transpose(inverted),
-                DiffuseColor = new Vector4(material.DiffuseColor, 1),
-                UseDiffuse = material.DiffuseHandle != default,
-                DiffuseHandle = material.DiffuseHandle,
-                DiffuseAmount = 1f,
-
-                UseDetailMap1 = material.Detail1Handle != default,
-                DetailMap1Handle = material.Detail1Handle,
-                DetailMap1Scale = material.Detail1Scale,
-
-                UseDetailMap2 = material.Detail2Handle != default,
-                DetailMap2Handle = material.Detail2Handle,
-                DetailMap2Scale = material.Detail2Scale,
-
-                AlphaHandle = material.AlphaHandle,
-                UseAlpha = material.AlphaHandle != default,
-                AlphaAmount = 1f
-            };
-
-            SetupGenericUniform(genericUniform);
+            CreateAndBindShaderUniform(mesh, material, transform);
 
             BindMesh(mesh);
 
@@ -148,15 +141,31 @@ namespace OpenH2.Rendering.OpenGL
             }
         }
 
-        private void UseGenericShader()
+        private void CreateAndBindShaderUniform(Mesh mesh, IMaterial<BitmapTag> material, Matrix4x4 transform)
         {
-            if (defaultShader.HasValue == false)
+            if (Matrix4x4.Invert(transform, out var inverted) == false)
             {
-                defaultShader = ShaderCompiler.CreateStandardShader();
+                Console.WriteLine("Couldn't invert model matrix: " + mesh.Note);
+                return;
             }
 
-            // PERF: dedupe shader uses
-            GL.UseProgram(defaultShader.Value);
+            switch (activeShader)
+            {
+                case Shader.Skybox:
+                    SetupGenericUniform(
+                        activeShader,
+                        new SkyboxUniform(material, transform, inverted),
+                        SkyboxUniform.Size);
+                    break;
+                case Shader.Generic:
+                    SetupGenericUniform(
+                        activeShader, 
+                        new GenericUniform(material, transform, inverted), 
+                        GenericUniform.Size);
+                    break;
+                case Shader.TextureViewer:
+                    break;
+            }
         }
 
         private void BindMesh(Mesh mesh)
@@ -195,40 +204,57 @@ namespace OpenH2.Rendering.OpenGL
 
         private void SetupGlobalUniform()
         {
-            if (MatriciesUniformHandle == default(int))
+            if (GlobalUniformHandle == default(int))
             {
-                GL.GenBuffers(1, out MatriciesUniformHandle);
-                GL.BindBuffer(BufferTarget.UniformBuffer, MatriciesUniformHandle);
+                GL.GenBuffers(1, out GlobalUniformHandle);
+                GL.BindBuffer(BufferTarget.UniformBuffer, GlobalUniformHandle);
                 GL.BufferData(BufferTarget.UniformBuffer, GlobalUniform.Size, IntPtr.Zero, BufferUsageHint.DynamicDraw);
             }
             else
             {
-                GL.BindBuffer(BufferTarget.UniformBuffer, MatriciesUniformHandle);
+                GL.BindBuffer(BufferTarget.UniformBuffer, GlobalUniformHandle);
             }
 
             GL.BufferSubData(BufferTarget.UniformBuffer, IntPtr.Zero, GlobalUniform.Size, ref GlobalUniform);
 
-            GL.BindBufferBase(BufferRangeTarget.UniformBuffer, 0, MatriciesUniformHandle);
+            GL.BindBufferBase(BufferRangeTarget.UniformBuffer, 0, GlobalUniformHandle);
             GL.BindBuffer(BufferTarget.UniformBuffer, 0);
         }
 
-        private void SetupGenericUniform(GenericUniform uniform)
+        private void SetupGenericUniform<T>(Shader shader, T uniform, int size) where T : struct
         {
-            if (GenericUniformHandle == default(int))
+            if (uniformHandles.TryGetValue(shader, out var handle) == false)
             {
-                GL.GenBuffers(1, out GenericUniformHandle);
-                GL.BindBuffer(BufferTarget.UniformBuffer, GenericUniformHandle);
-                GL.BufferData(BufferTarget.UniformBuffer, GenericUniform.Size, IntPtr.Zero, BufferUsageHint.DynamicDraw);
+                GL.GenBuffers(1, out handle);
+                GL.BindBuffer(BufferTarget.UniformBuffer, handle);
+                GL.BufferData(BufferTarget.UniformBuffer, size, IntPtr.Zero, BufferUsageHint.DynamicDraw);
+
+                uniformHandles[shader] = handle;
             }
             else
             {
-                GL.BindBuffer(BufferTarget.UniformBuffer, GenericUniformHandle);
+                GL.BindBuffer(BufferTarget.UniformBuffer, handle);
             }
 
-            GL.BufferSubData(BufferTarget.UniformBuffer, IntPtr.Zero, GenericUniform.Size, ref uniform);
+            GL.BufferSubData(BufferTarget.UniformBuffer, IntPtr.Zero, size, ref uniform);
 
-            GL.BindBufferBase(BufferRangeTarget.UniformBuffer, 1, GenericUniformHandle);
+            GL.BindBufferBase(BufferRangeTarget.UniformBuffer, 1, handle);
             GL.BindBuffer(BufferTarget.UniformBuffer, 0);
         }
+
+        private Dictionary<Shader, Action> shaderBeginActions = new Dictionary<Shader, Action>()
+        {
+            { Shader.Skybox, () => {
+                GL.Disable(EnableCap.DepthTest);
+            }},
+            { Shader.Generic, () => {
+                GL.Enable(EnableCap.DepthTest);
+            }}
+        };
+
+        private Dictionary<Shader, Action> shaderEndActions = new Dictionary<Shader, Action>()
+        {
+            
+        };
     }
 }

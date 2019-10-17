@@ -25,8 +25,11 @@ namespace OpenH2.Engine.EntityFactories
                 meshes.AddRange(chunk.Model.Meshes);
             }
 
-            var comp = new RenderModelComponent(terrain);
-            comp.Meshes = meshes.ToArray();
+            var comp = new RenderModelComponent(terrain)
+            {
+                Meshes = meshes.ToArray(),
+                Flags = ModelFlags.Diffuse | ModelFlags.ReceivesShadows | ModelFlags.IsStatic
+            };
 
             foreach (var mesh in comp.Meshes)
             {

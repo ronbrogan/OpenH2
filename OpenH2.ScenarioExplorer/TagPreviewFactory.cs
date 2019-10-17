@@ -79,7 +79,7 @@ namespace OpenH2.ScenarioExplorer
                     ViewPosition = Vector3.Zero
                 };
 
-                var shader = ShaderCompiler.CreateShader("TextureViewer");
+                var shader = ShaderCompiler.CreateShader(Shader.TextureViewer);
 
                 var handle = textureBinder.Bind(bitm, out var _);
                 GL.ActiveTexture(TextureUnit.Texture0);

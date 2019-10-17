@@ -18,14 +18,20 @@ namespace OpenH2.Engine.EntityFactories
         {
             var scenery = new Scenery();
 
+            if (instance.Index >= bsp.InstancedGeometryDefinitions.Length)
+                return scenery;
+
             var def = bsp.InstancedGeometryDefinitions[instance.Index];
 
-            var comp = new RenderModelComponent(scenery);
-            comp.Note = $"[{bsp.Id}] {bsp.Name}//instanced//{instance.Index}";
-            comp.Meshes = def.Model.Meshes;
-            comp.Position = instance.Position;
-            comp.Orientation = QuatFrom3x3Mat4(instance.RotationMatrix);
-            comp.Scale = new Vector3(instance.Scale);
+            var comp = new RenderModelComponent(scenery)
+            {
+                Note = $"[{bsp.Id}] {bsp.Name}//instanced//{instance.Index}",
+                Meshes = def.Model.Meshes,
+                Position = instance.Position,
+                Orientation = QuatFrom3x3Mat4(instance.RotationMatrix),
+                Scale = new Vector3(instance.Scale),
+                Flags = ModelFlags.Diffuse | ModelFlags.CastsShadows | ModelFlags.ReceivesShadows
+            };
 
             EnsureMaterials(map, comp);
 
@@ -71,12 +77,13 @@ namespace OpenH2.Engine.EntityFactories
 
             if (map.TryGetTag(tag.PhysicalModel, out var hlmt) == false)
             {
-                throw new Exception("No model found for scenery");
+                Console.WriteLine($"No HLMT[{tag.PhysicalModel.Id}] found for SCNR[{tag.Id}]");
+                return scenery;
             }
 
             if (map.TryGetTag(hlmt.Model, out var model) == false)
             {
-                Console.WriteLine($"No MODE[{hlmt.Model}] found for HLMT[{hlmt.Id}]");
+                Console.WriteLine($"No MODE[{hlmt.Model.Id}] found for HLMT[{hlmt.Id}]");
                 return scenery;
             }
 

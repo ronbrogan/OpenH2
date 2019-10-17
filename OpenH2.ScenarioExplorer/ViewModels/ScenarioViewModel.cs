@@ -34,7 +34,7 @@ namespace OpenH2.ScenarioExplorer.ViewModels
                 TagName = "scnr"
             };
 
-            var discoveryMode = false;
+            var discoveryMode = true;
             if(discoveryMode)
             {
                 PreProcessTags(scene, sceneData);
@@ -234,7 +234,7 @@ namespace OpenH2.ScenarioExplorer.ViewModels
 
         public TagViewModel GetTagViewModel(uint tagId)
         {
-            var discoveryMode = false;
+            var discoveryMode = true;
             if (discoveryMode)
             {
                 return GetDiscoveryTagViewModel(tagId);
@@ -292,8 +292,8 @@ namespace OpenH2.ScenarioExplorer.ViewModels
 #if DEBUG
                 InternalOffsetStart = tag.InternalSecondaryMagic,
                 InternalOffsetEnd = tag.InternalSecondaryMagic + tag.RawData.Length,
-#endif
                 Data = tag.RawData,
+#endif
                 RawOffset = (int)tag.Offset
             };
 

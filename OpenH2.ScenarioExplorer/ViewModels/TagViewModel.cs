@@ -152,6 +152,9 @@ namespace OpenH2.ScenarioExplorer.ViewModels
 
             foreach(var cao in this.Caos)
             {
+                if (cao.Origin > 2048)
+                    break;
+
                 Console.WriteLine($"{cao.Origin}\t{cao.Count}\t{cao.Offset}");
 
                 this.Features.Add(new HexViewerFeature(cao.Origin, 8, Brushes.Goldenrod));

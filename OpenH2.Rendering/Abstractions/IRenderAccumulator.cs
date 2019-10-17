@@ -13,7 +13,7 @@ namespace OpenH2.Rendering.Abstractions
     /// </summary>
     public interface IRenderAccumulator<TMaterialMap>
     {
-        void AddRigidBody(Mesh model, IMaterial<TMaterialMap> mat, Matrix4x4 transform);
+        void AddRigidBody(Mesh model, IMaterial<TMaterialMap> mat, Matrix4x4 transform, ModelFlags flags);
         void AddTerrain(ScenarioTag.Terrain terrain);
         void AddSkybox(object skybox);
 

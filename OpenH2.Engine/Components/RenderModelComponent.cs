@@ -11,7 +11,7 @@ namespace OpenH2.Engine.Components
     {
         public Vector3 Position { get; set; } = Vector3.Zero;
 
-        public Quaternion Orientation { get; set; } = Vector3.Zero.ToQuaternion();
+        public Quaternion Orientation { get; set; } = Quaternion.Identity;
 
         public Vector3 Scale { get; set; } = Vector3.One;
 
@@ -20,6 +20,8 @@ namespace OpenH2.Engine.Components
         public Dictionary<uint, IMaterial<BitmapTag>> Materials { get; set; } = new Dictionary<uint, IMaterial<BitmapTag>>();
 
         public string Note { get; set; }
+
+        public ModelFlags Flags { get; set; }
 
         public RenderModelComponent(Entity parent) : base(parent)
         {

@@ -8,13 +8,9 @@ namespace OpenH2.Rendering.Shaders
 {
     public static class ShaderCompiler
     {
-        public static int CreateStandardShader()
+        public static int CreateShader(Shader shader)
         {
-            return CreateShader("Generic");
-        }
-
-        public static int CreateShader(string shaderName)
-        {
+            var shaderName = shader.ToString();
             string vertSrc;
             string fragSrc;
 
