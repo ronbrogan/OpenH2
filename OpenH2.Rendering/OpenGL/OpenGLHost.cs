@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using OpenH2.Foundation.Engine;
 using OpenH2.Rendering.Abstractions;
@@ -29,10 +30,12 @@ namespace OpenH2.Rendering.OpenGL
 
             window.Visible = !hidden;
 
+            //foreach (var ext in ListSupportedExtensions())
+            //    Console.WriteLine(ext);
+
             GL.Enable(EnableCap.DepthTest);
             GL.Enable(EnableCap.CullFace);
             GL.Enable(EnableCap.AlphaTest);
-            GL.Enable(EnableCap.Blend);
             GL.BlendFunc(BlendingFactor.SrcAlpha, BlendingFactor.OneMinusSrcAlpha);
         }
 
@@ -70,6 +73,14 @@ namespace OpenH2.Rendering.OpenGL
 
             string msg = Marshal.PtrToStringAnsi(message, length);
             Console.WriteLine(msg);
+        }
+
+        public IEnumerable<string> ListSupportedExtensions()
+        {
+            var count = GL.GetInteger(GetPName.NumExtensions);
+
+            for(var i = 0; i < count; i++)
+                yield return GL.GetString(StringNameIndexed.Extensions, i);
         }
     }
 }
