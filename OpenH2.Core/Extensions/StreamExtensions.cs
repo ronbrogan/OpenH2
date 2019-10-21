@@ -99,12 +99,13 @@ namespace OpenH2.Core.Extensions
 
             while (true)
             {
-                if (data.ReadByte() == 0b0)
+                var b = (byte)data.ReadByte();
+                if (b == 0b0)
                 {
                     break;
                 }
 
-                builder.Append((char)data.ReadByte());
+                builder.Append((char)b);
             }
 
             return builder.ToString();

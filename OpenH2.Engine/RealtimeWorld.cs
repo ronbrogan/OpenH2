@@ -1,7 +1,6 @@
 ﻿using OpenH2.Core.Architecture;
 using OpenH2.Engine.Stores;
 using OpenH2.Engine.Systems;
-using System;
 using System.Collections.Generic;
 
 namespace OpenH2.Engine

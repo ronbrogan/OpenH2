@@ -1,5 +1,4 @@
 using OpenH2.Rendering.Shaders.Generic;
-using System;
 using System.Reflection;
 using System.Runtime.InteropServices;
 using Xunit;

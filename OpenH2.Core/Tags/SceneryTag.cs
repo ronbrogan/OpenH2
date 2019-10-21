@@ -1,13 +1,10 @@
 ﻿using OpenH2.Core.Parsing;
 using OpenH2.Core.Representations;
 using OpenH2.Core.Tags.Layout;
-using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace OpenH2.Core.Tags
 {
-    [TagLabel("scen")]
+    [TagLabel(TagName.scen)]
     public class SceneryTag : BaseTag
     {
         public override string Name { get; set; }

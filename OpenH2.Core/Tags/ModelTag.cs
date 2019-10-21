@@ -1,5 +1,4 @@
-﻿using OpenH2.Core.Extensions;
-using OpenH2.Core.Offsets;
+﻿using OpenH2.Core.Offsets;
 using OpenH2.Core.Parsing;
 using OpenH2.Core.Tags.Common;
 using OpenH2.Core.Tags.Layout;
@@ -9,7 +8,7 @@ using System.Numerics;
 
 namespace OpenH2.Core.Tags
 {
-    [TagLabel("mode")]
+    [TagLabel(TagName.mode)]
     public class ModelTag : BaseTag
     { 
         public ModelTag(uint id) : base(id)

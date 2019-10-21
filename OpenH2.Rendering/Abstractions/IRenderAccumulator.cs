@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Numerics;
-using System.Text;
-using OpenH2.Core.Architecture;
+﻿using System.Numerics;
 using OpenH2.Core.Tags;
 using OpenH2.Foundation;
 

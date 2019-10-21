@@ -1,5 +1,4 @@
-﻿using OpenH2.Core.Extensions;
-using OpenH2.Core.Offsets;
+﻿using OpenH2.Core.Offsets;
 using OpenH2.Core.Parsing;
 using OpenH2.Core.Representations;
 using System;

@@ -4,7 +4,7 @@ using System.Numerics;
 
 namespace OpenH2.Core.Tags
 {
-    [TagLabel("shad")]
+    [TagLabel(TagName.shad)]
     public class ShaderTag : BaseTag
     {
         public override string Name { get; set; }

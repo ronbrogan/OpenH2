@@ -1,5 +1,4 @@
 using OpenH2.Core.Extensions;
-using OpenH2.Core.Factories;
 using OpenH2.Core.Parsing;
 using OpenH2.Core.Tags;
 using System;

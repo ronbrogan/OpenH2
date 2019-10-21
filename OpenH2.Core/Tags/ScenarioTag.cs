@@ -4,7 +4,7 @@ using System.Numerics;
 
 namespace OpenH2.Core.Tags
 {
-    [TagLabel("scnr")]
+    [TagLabel(TagName.scnr)]
     public class ScenarioTag : BaseTag
     {
         public override string Name { get; set; }

@@ -1,9 +1,6 @@
 ﻿using OpenH2.Core.Architecture;
 using OpenH2.Engine.Components;
 using OpenH2.Engine.Stores;
-using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace OpenH2.Engine.Systems
 {

@@ -1,5 +1,4 @@
 ﻿using OpenH2.Core.Parsing;
-using System;
 using System.IO;
 using System.Linq;
 using Xunit;

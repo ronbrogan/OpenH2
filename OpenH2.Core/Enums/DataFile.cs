@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace OpenH2.Core.Enums
+﻿namespace OpenH2.Core.Enums
 {
     public enum DataFile
     {

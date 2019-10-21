@@ -15,7 +15,6 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Numerics;
-using System.Runtime;
 
 namespace OpenH2.Engine
 {
@@ -107,7 +106,9 @@ namespace OpenH2.Engine
             var mapPath = @"D:\H2vMaps\zanzibar.map";
 
             var factory = new MapFactory(Path.GetDirectoryName(mapPath));
-            var map = factory.FromFile(new FileStream(mapPath, FileMode.Open, FileAccess.Read, FileShare.Read, 512));
+
+            var fs = new FileStream(mapPath, FileMode.Open, FileAccess.Read, FileShare.Read, 1024);
+            var map = factory.FromFile(fs);
 
             var scenario = map.GetLocalTagsOfType<ScenarioTag>().First();
 

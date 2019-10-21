@@ -1,13 +1,10 @@
 ﻿using OpenH2.Core.Representations;
 using OpenH2.Core.Tags.Layout;
-using System;
-using System.Collections.Generic;
 using System.Numerics;
-using System.Text;
 
 namespace OpenH2.Core.Tags
 {
-    [TagLabel("lens")]
+    [TagLabel(TagName.lens)]
     public class LensFlareTag : BaseTag
     {
         public override string Name { get; set; }

@@ -1,9 +1,7 @@
 ﻿using OpenH2.Core.Factories;
 using OpenH2.Core.Parsing;
 using OpenH2.Core.Tags;
-using System;
 using System.Collections.Generic;
-using System.Text;
 
 namespace OpenH2.Core.Representations
 {

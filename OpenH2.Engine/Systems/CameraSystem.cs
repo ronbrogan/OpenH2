@@ -1,10 +1,7 @@
 ﻿using OpenH2.Core.Architecture;
 using OpenH2.Core.Extensions;
 using OpenH2.Engine.Components;
-using System;
-using System.Collections.Generic;
 using System.Numerics;
-using System.Text;
 
 namespace OpenH2.Engine.Systems
 {

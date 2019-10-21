@@ -1,10 +1,6 @@
-﻿using System.Collections.Generic;
-using System.Collections.ObjectModel;
+﻿using System.Collections.ObjectModel;
 using PropertyChanged;
-using System.ComponentModel;
-using System.Linq;
 using Avalonia.Controls;
-using System;
 
 namespace OpenH2.ScenarioExplorer.ViewModels
 {

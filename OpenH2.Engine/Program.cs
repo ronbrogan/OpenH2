@@ -1,7 +1,4 @@
-﻿using OpenH2.Rendering.OpenGL;
-using OpenTK.Graphics.OpenGL;
-
-namespace OpenH2.Engine
+﻿namespace OpenH2.Engine
 {
     class Program
     {

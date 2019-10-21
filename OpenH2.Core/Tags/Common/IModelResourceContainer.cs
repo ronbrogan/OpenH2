@@ -1,6 +1,4 @@
-﻿using OpenH2.Foundation;
-
-namespace OpenH2.Core.Tags.Common
+﻿namespace OpenH2.Core.Tags.Common
 {
     public interface IModelResourceContainer
     {

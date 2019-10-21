@@ -1,8 +1,5 @@
-﻿using OpenH2.Core.Parsing;
-using OpenH2.Core.Representations;
-using System;
+﻿using System;
 using System.Collections.Generic;
-using System.Text;
 using OpenH2.Core.Extensions;
 using System.IO;
 using OpenH2.Core.Tags.Common;

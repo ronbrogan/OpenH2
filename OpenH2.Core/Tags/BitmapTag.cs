@@ -10,7 +10,7 @@ using System.IO.Compression;
 
 namespace OpenH2.Core.Tags
 {
-    [TagLabel("bitm")]
+    [TagLabel(TagName.bitm)]
     public class BitmapTag : BaseTag
     {
         public override string Name { get; set; }

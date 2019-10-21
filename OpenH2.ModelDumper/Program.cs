@@ -2,11 +2,8 @@
 using OpenH2.Core.Representations;
 using OpenH2.Core.Tags;
 using OpenH2.Core.Tags.Common;
-using OpenH2.Core.Types;
 using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Text;
 
 namespace OpenH2.ModelDumper

@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Linq;
 using System.Reflection;
 using OpenH2.Core.Extensions;
@@ -74,7 +73,7 @@ namespace OpenH2.ScenarioExplorer.ViewModels
                     childrenVms.Add(new TagTreeEntryViewModel()
                     {
                         Id = child.Id,
-                        TagName = indexEntry.Tag
+                        TagName = indexEntry.Tag.ToString()
                     });
 
                     continue;
@@ -164,7 +163,7 @@ namespace OpenH2.ScenarioExplorer.ViewModels
             {
                 scene.TryGetTag<BaseTag>(tagEntry.ID, out var tag);
 
-                var vm = new TagViewModel(tagEntry.ID, tagEntry.Tag, tag?.Name)
+                var vm = new TagViewModel(tagEntry.ID, tagEntry.Tag.ToString(), tag?.Name)
                 {
                     InternalOffsetStart = tagEntry.Offset.OriginalValue,
                     InternalOffsetEnd = tagEntry.Offset.OriginalValue + tagEntry.DataSize,
@@ -268,7 +267,7 @@ namespace OpenH2.ScenarioExplorer.ViewModels
             var indexEntry = scene.TagIndex.FirstOrDefault(t => t.ID == tagId);
             var magicStart = indexEntry.Offset.OriginalValue + scene.SecondaryMagic;
 
-            var indexVm = new TagViewModel(tagId, indexEntry.Tag, tag?.Name ?? indexEntry.Tag)
+            var indexVm = new TagViewModel(tagId, indexEntry.Tag.ToString(), tag?.Name ?? indexEntry.Tag.ToString())
             {
 #if DEBUG
                 InternalOffsetStart = magicStart,

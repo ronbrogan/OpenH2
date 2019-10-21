@@ -1,18 +1,16 @@
 ﻿using System;
 using OpenH2.Core.Offsets;
-using System.Collections.Generic;
 using Newtonsoft.Json;
 using OpenH2.Core.Tags.Layout;
 using OpenH2.Core.Parsing;
 using OpenH2.Core.Tags.Common;
 using OpenH2.Foundation;
 using System.Numerics;
-using OpenH2.Core.Extensions;
 using OpenH2.Core.Representations;
 
 namespace OpenH2.Core.Tags
 {
-    [TagLabel("sbsp")]
+    [TagLabel(TagName.sbsp)]
     public class BspTag : BaseTag
     {
         [JsonIgnore]

@@ -1,8 +1,5 @@
 ﻿using OpenH2.Core.Offsets;
 using System;
-using System.Collections.Generic;
-using System.Runtime.CompilerServices;
-using System.Text;
 
 namespace OpenH2.Core.Parsing
 {

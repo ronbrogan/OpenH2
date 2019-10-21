@@ -1,7 +1,6 @@
 ﻿using OpenH2.Core.Tags;
 using OpenH2.ScenarioExplorer.ViewModels;
 using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Text;
@@ -18,8 +17,6 @@ using PixelFormat = OpenTK.Graphics.OpenGL.PixelFormat;
 using System.Runtime.InteropServices;
 using Avalonia.Media.Imaging;
 using Avalonia;
-using System.Drawing.Imaging;
-using System.Drawing;
 
 namespace OpenH2.ScenarioExplorer
 {
@@ -127,7 +124,7 @@ namespace OpenH2.ScenarioExplorer
             foreach (var shader in vert.Shaders)
             {
 
-                if (shader.ShaderData.Length > 0)
+                if (shader.ShaderData?.Length > 0)
                     preview.AddItem($"Shader {shaderCount++}", shader.ShaderData, GetShaderPreview);
             }
 
@@ -146,13 +143,13 @@ namespace OpenH2.ScenarioExplorer
                 {
                     foreach (var shader in wrapper2.ShaderReferenceGroups1)
                     {
-                        if (shader.ShaderData1.Length > 0)
+                        if (shader.ShaderData1?.Length > 0)
                             preview.AddItem($"Shader {shaderCount++}", shader.ShaderData1, GetShaderPreview);
 
-                        if (shader.ShaderData2.Length > 0)
+                        if (shader.ShaderData2?.Length > 0)
                             preview.AddItem($"Shader {shaderCount++}", shader.ShaderData2, GetShaderPreview);
 
-                        if (shader.ShaderData3.Length > 0)
+                        if (shader.ShaderData3?.Length > 0)
                             preview.AddItem($"Shader {shaderCount++}", shader.ShaderData3, GetShaderPreview);
                     }
                 }

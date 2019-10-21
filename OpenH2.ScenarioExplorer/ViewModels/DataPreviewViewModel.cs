@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using OpenH2.Core.Extensions;
+﻿using OpenH2.Core.Extensions;
 using PropertyChanged;
 
 namespace OpenH2.ScenarioExplorer.ViewModels

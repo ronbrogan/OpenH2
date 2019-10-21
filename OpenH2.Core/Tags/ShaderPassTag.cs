@@ -3,7 +3,7 @@ using OpenH2.Core.Tags.Layout;
 
 namespace OpenH2.Core.Tags
 {
-    [TagLabel("spas")]
+    [TagLabel(TagName.spas)]
     public class ShaderPassTag : BaseTag
     {
         public override string Name { get; set; }

@@ -1,7 +1,6 @@
 ﻿using OpenH2.Core.Tags;
 using OpenH2.Foundation;
 using OpenTK;
-using System;
 using System.Numerics;
 using System.Runtime.InteropServices;
 using Vector4 = System.Numerics.Vector4;

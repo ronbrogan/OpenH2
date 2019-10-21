@@ -1,12 +1,9 @@
 ﻿using OpenH2.Core.Representations;
 using OpenH2.Core.Tags.Layout;
-using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace OpenH2.Core.Tags
 {
-    [TagLabel("bloc")]
+    [TagLabel(TagName.bloc)]
     public class BlocTag : BaseTag
     {
         public override string Name { get; set; }

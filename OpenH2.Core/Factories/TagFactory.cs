@@ -25,9 +25,9 @@ namespace OpenH2.Core.Factories
 
             var mapData = reader.MapReader;
 
-            // Instead of locally offset chunk span, we'll pass a span of the whole file so that
-            // basic SecondaryOffsets can be used to jump around without crazy logic
-            // TODO: pass data size from index for usage
+            // Preload tag data for faster reads
+            mapData.Preload(index.Offset.Value, index.DataSize);
+            
             var tag = tagCreator(id, name, mapData, secondaryMagic, index.Offset.Value, index.DataSize) as BaseTag;
 
             tag.PopulateExternalData(reader);
@@ -35,9 +35,9 @@ namespace OpenH2.Core.Factories
             return tag;
         }
 
-        private static Dictionary<string, Type> cachedTagTypes = null;
+        private static Dictionary<TagName, Type> cachedTagTypes = null;
 
-        private static Type GetTypeForTag(string tag)
+        private static Type GetTypeForTag(TagName tag)
         {
             if(cachedTagTypes == null)
             {
@@ -48,8 +48,8 @@ namespace OpenH2.Core.Factories
                         Label = t.GetCustomAttribute<TagLabelAttribute>()?.Label,
                         Type = t
                     })
-                    .Where(e => string.IsNullOrWhiteSpace(e.Label) == false)
-                    .ToDictionary(e => e.Label, e => e.Type);
+                    .Where(e => e != null && Enum.IsDefined(typeof(TagName), e.Label.Value))
+                    .ToDictionary(e => e.Label.Value, e => e.Type);
             }
 
             if(cachedTagTypes.TryGetValue(tag, out var type))

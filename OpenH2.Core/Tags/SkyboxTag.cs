@@ -4,7 +4,7 @@ using System.Numerics;
 
 namespace OpenH2.Core.Tags
 {
-    [TagLabel("sky ")]
+    [TagLabel(TagName.sky)]
     public class SkyboxTag : BaseTag
     {
         public override string Name { get; set; }

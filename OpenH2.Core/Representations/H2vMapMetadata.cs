@@ -1,6 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
+﻿using System.Collections.Generic;
 
 namespace OpenH2.Core.Representations
 {
@@ -17,5 +15,7 @@ namespace OpenH2.Core.Representations
         public IndexHeader IndexHeader { get; internal set; }
 
         public TagIndexEntry[] TagIndex { get; internal set; }
+
+        public Dictionary<uint, string> TagNames { get; set; }
     }
 }

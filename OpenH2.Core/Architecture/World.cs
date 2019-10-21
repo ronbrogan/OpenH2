@@ -1,5 +1,4 @@
-﻿using OpenH2.Core.Architecture;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 
 namespace OpenH2.Core.Architecture
 {

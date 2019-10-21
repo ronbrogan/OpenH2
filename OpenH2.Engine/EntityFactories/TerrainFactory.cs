@@ -6,7 +6,6 @@ using OpenH2.Engine.Components;
 using OpenH2.Engine.Entities;
 using OpenH2.Foundation;
 using System.Collections.Generic;
-using System.Linq;
 
 namespace OpenH2.Engine.EntityFactories
 {

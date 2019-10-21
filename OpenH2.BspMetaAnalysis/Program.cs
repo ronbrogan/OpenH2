@@ -6,7 +6,6 @@ using System.Drawing;
 using System;
 using System.Collections.Generic;
 using OpenH2.Core.Tags;
-using OpenH2.Core.Parsing;
 
 namespace OpenH2.BspMetaAnalysis
 {
