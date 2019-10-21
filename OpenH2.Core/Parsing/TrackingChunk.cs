@@ -1,4 +1,8 @@
-﻿using System;
+﻿using OpenH2.Core.Offsets;
+using OpenH2.Core.Representations;
+using System;
+using System.Numerics;
+using System.Runtime.CompilerServices;
 
 namespace OpenH2.Core.Parsing
 {
@@ -11,8 +15,6 @@ namespace OpenH2.Core.Parsing
         private int length;
         private SliceUsageCallback logUsage;
 
-        public Span<byte> Span => this.parser.Span.Slice(this.start, this.length);
-
         public TrackingChunk(TrackingReader parentParser, int start, int length, SliceUsageCallback usageCallback)
         {
             this.parser = parentParser;
@@ -23,25 +25,93 @@ namespace OpenH2.Core.Parsing
             this.logUsage(start, length, null);
         }
 
-        public Span<byte> TrackedSlice(int offset, int length, string label = null)
-        {
-            var absoluteStart = this.start + offset;
-
-            this.logUsage(absoluteStart, length, label);
-
-            return this.parser.Span.Slice(absoluteStart, length);
-        }
-
         public int Length => this.length;
 
-        public Memory<byte> AsMemory()
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public string ReadStringFrom(int offset, int length)
         {
-            return new Memory<byte>(this.Span.ToArray());
+            return parser.ReadStringFrom(this.start + offset, length);
         }
 
-        public byte[] ToArray()
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public string ReadStringStarting(int offset)
         {
-            return this.Span.ToArray();
+            return parser.ReadStringStarting(this.start + offset);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public byte ReadByteAt(int offset)
+        {
+            return parser.ReadByteAt(this.start + offset);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public short ReadInt16At(int offset)
+        {
+            return parser.ReadInt16At(this.start + offset);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public int ReadInt32At(int offset)
+        {
+            return parser.ReadInt32At(this.start + offset);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public ushort ReadUInt16At(int offset)
+        {
+            return parser.ReadUInt16At(this.start + offset);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public uint ReadUInt32At(int offset)
+        {
+            return parser.ReadUInt32At(this.start + offset);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public TagRef ReadTagRefAt(int offset)
+        {
+            return parser.ReadTagRefAt(this.start + offset);
+        }
+
+        public CountAndOffset ReadMetaCaoAt(int offset, TagIndexEntry index)
+        {
+            return parser.ReadMetaCaoAt(this.start + offset, index);
+        }
+
+        public CountAndOffset ReadMetaCaoAt(int offset, int magic)
+        {
+            return parser.ReadMetaCaoAt(this.start + offset, magic);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public Vector2 ReadVec2At(int offset)
+        {
+            return parser.ReadVec2At(this.start + offset);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public Vector3 ReadVec3At(int offset)
+        {
+            return parser.ReadVec3At(this.start + offset);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public Vector4 ReadVec4At(int offset)
+        {
+            return parser.ReadVec4At(this.start + offset);
+        }
+
+        public byte[] ReadArray(int offset, int length)
+        {
+            return parser.ReadArray(this.start + offset, length);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public float ReadFloatAt(int offset)
+        {
+            return parser.ReadFloatAt(this.start + offset);
         }
     }
 }

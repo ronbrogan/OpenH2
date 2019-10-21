@@ -23,7 +23,7 @@ namespace OpenH2.Core.Factories
 
             var tagCreator = generator.GetTagCreator(tagType);
 
-            var mapData = reader.MapReader.Span;
+            var mapData = reader.MapReader;
 
             // Instead of locally offset chunk span, we'll pass a span of the whole file so that
             // basic SecondaryOffsets can be used to jump around without crazy logic

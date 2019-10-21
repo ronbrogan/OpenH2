@@ -69,7 +69,6 @@ namespace OpenH2.TextureViewer
             GL.DebugMessageCallback(callback, (IntPtr.Zero));
 
             GL.Enable(EnableCap.DebugOutput);
-            GL.Enable(EnableCap.Blend);
             GL.Enable(EnableCap.DepthTest);
             GL.Enable(EnableCap.Multisample);
             GL.Enable(EnableCap.CullFace);
@@ -83,7 +82,7 @@ namespace OpenH2.TextureViewer
                 ViewPosition = Vector3.Zero
             };
 
-            ShaderHandle = ShaderCompiler.CreateShader("TextureViewer");
+            ShaderHandle = ShaderCompiler.CreateShader(Shader.TextureViewer);
         }
 
         static KeyboardState keyboardState, lastKeyboardState;

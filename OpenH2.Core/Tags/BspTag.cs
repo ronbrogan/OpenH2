@@ -124,7 +124,7 @@ namespace OpenH2.Core.Tags
                     continue;
                 }
 
-                var headerData = sceneReader.Chunk(new NormalOffset((int)part.DataBlockRawOffset), (int)part.DataPreambleSize, "ModelMeshHeader").Span;
+                var headerData = sceneReader.Chunk(new NormalOffset((int)part.DataBlockRawOffset), (int)part.DataPreambleSize, "ModelMeshHeader");
 
                 part.Header = new ModelResourceBlockHeader()
                 {
@@ -140,7 +140,7 @@ namespace OpenH2.Core.Tags
                 foreach (var resource in part.Resources)
                 {
                     var dataOffset = part.DataBlockRawOffset + 8 + part.DataPreambleSize + resource.Offset;
-                    resource.Data = sceneReader.Chunk(new NormalOffset((int)dataOffset), resource.Size, "Bsp Render Data").AsMemory();
+                    resource.Data = sceneReader.Chunk(new NormalOffset((int)dataOffset), resource.Size, "Bsp Render Data").ReadArray(0, resource.Size);
                 }
 
                 var meshes = ModelResouceContainerProcessor.ProcessContainer(part, ModelShaderReferences);
@@ -156,7 +156,7 @@ namespace OpenH2.Core.Tags
                     continue;
                 }
 
-                var headerData = sceneReader.Chunk(new NormalOffset((int)def.DataBlockRawOffset), (int)def.DataPreambleSize, "InstancedGeometryMeshHeader").Span;
+                var headerData = sceneReader.Chunk(new NormalOffset((int)def.DataBlockRawOffset), (int)def.DataPreambleSize, "InstancedGeometryMeshHeader");
 
                 def.Header = new ModelResourceBlockHeader()
                 {
@@ -172,7 +172,7 @@ namespace OpenH2.Core.Tags
                 foreach (var resource in def.Resources)
                 {
                     var dataOffset = def.DataBlockRawOffset + 8 + def.DataPreambleSize + resource.Offset;
-                    resource.Data = sceneReader.Chunk(new NormalOffset((int)dataOffset), resource.Size, "InstancedGeometry Render Data").AsMemory();
+                    resource.Data = sceneReader.Chunk(new NormalOffset((int)dataOffset), resource.Size, "InstancedGeometry Render Data").ReadArray(0, resource.Size);
                 }
 
                 var meshes = ModelResouceContainerProcessor.ProcessContainer(def, ModelShaderReferences);

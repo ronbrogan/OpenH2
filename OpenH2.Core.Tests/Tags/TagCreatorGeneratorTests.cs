@@ -2,6 +2,7 @@
 using OpenH2.Core.Tags;
 using OpenH2.Core.Tags.Layout;
 using OpenH2.Core.Tags.Serialization;
+using System.IO;
 using System.Reflection.Emit;
 using Xunit;
 
@@ -20,7 +21,9 @@ namespace OpenH2.Core.Tests.Tags
 
             var creator = gen.GetTagCreator<TestTag>();
 
-            var tag = creator(1, "name", testTagData, magic, 0, testTagData.Length);
+            var reader = new TrackingReader(new MemoryStream(testTagData));
+
+            var tag = creator(1, "name", reader, magic, 0, testTagData.Length);
 
             tag.PopulateExternalData(null);
 

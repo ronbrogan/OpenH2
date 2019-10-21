@@ -1,5 +1,6 @@
 ﻿using OpenH2.Core.Extensions;
 using OpenH2.Core.Offsets;
+using OpenH2.Core.Parsing;
 using OpenH2.Core.Representations;
 using System;
 using System.Collections.Generic;
@@ -26,7 +27,7 @@ namespace OpenH2.Core.Tags.Serialization.SerializerEmit
         {
             { Name.Id, typeof(uint) },
             { Name.Name, typeof(string) },
-            { Name.Data, typeof(Span<byte>) },
+            { Name.Data, typeof(TrackingReader) },
             { Name.SecondaryMagic, typeof(int) },
             { Name.StartAt, typeof(int) },
             { Name.Length, typeof(int) }
@@ -43,21 +44,21 @@ namespace OpenH2.Core.Tags.Serialization.SerializerEmit
 
     internal static class MI
     {
-        public static Dictionary<Type, MethodInfo> PrimitiveSpanReaders = new Dictionary<Type, MethodInfo>
+        public static Dictionary<Type, MethodInfo> PrimitiveReaders = new Dictionary<Type, MethodInfo>
         {
-            { typeof(byte), typeof(SpanByteExtensions).GetMethod(nameof(SpanByteExtensions.ReadByteAt)) },
-            { typeof(short), typeof(SpanByteExtensions).GetMethod(nameof(SpanByteExtensions.ReadInt16At)) },
-            { typeof(ushort), typeof(SpanByteExtensions).GetMethod(nameof(SpanByteExtensions.ReadUInt16At)) },
-            { typeof(int), MI.SpanByte.ReadInt32At},
-            { typeof(uint), typeof(SpanByteExtensions).GetMethod(nameof(SpanByteExtensions.ReadUInt32At)) },
-            { typeof(float), typeof(SpanByteExtensions).GetMethod(nameof(SpanByteExtensions.ReadFloatAt)) },
-            { typeof(string), typeof(SpanByteExtensions).GetMethod(nameof(SpanByteExtensions.ReadStringFrom)) },
-            { typeof(Vector2), typeof(SpanByteExtensions).GetMethod(nameof(SpanByteExtensions.ReadVec2At)) },
-            { typeof(Vector3), typeof(SpanByteExtensions).GetMethod(nameof(SpanByteExtensions.ReadVec3At)) },
-            { typeof(Vector4), typeof(SpanByteExtensions).GetMethod(nameof(SpanByteExtensions.ReadVec4At)) },
+            { typeof(byte), typeof(Parsing.TrackingReader).GetMethod(nameof(Parsing.TrackingReader.ReadByteAt)) },
+            { typeof(short), typeof(Parsing.TrackingReader).GetMethod(nameof(Parsing.TrackingReader.ReadInt16At)) },
+            { typeof(ushort), typeof(Parsing.TrackingReader).GetMethod(nameof(Parsing.TrackingReader.ReadUInt16At)) },
+            { typeof(int), MI.TrackingReader.ReadInt32At},
+            { typeof(uint), typeof(Parsing.TrackingReader).GetMethod(nameof(Parsing.TrackingReader.ReadUInt32At)) },
+            { typeof(float), typeof(Parsing.TrackingReader).GetMethod(nameof(Parsing.TrackingReader.ReadFloatAt)) },
+            { typeof(string), typeof(Parsing.TrackingReader).GetMethod(nameof(Parsing.TrackingReader.ReadStringFrom)) },
+            { typeof(Vector2), typeof(Parsing.TrackingReader).GetMethod(nameof(Parsing.TrackingReader.ReadVec2At)) },
+            { typeof(Vector3), typeof(Parsing.TrackingReader).GetMethod(nameof(Parsing.TrackingReader.ReadVec3At)) },
+            { typeof(Vector4), typeof(Parsing.TrackingReader).GetMethod(nameof(Parsing.TrackingReader.ReadVec4At)) },
 
-            { typeof(TagRef), typeof(SpanByteExtensions).GetMethod(nameof(SpanByteExtensions.ReadTagRefAt)) },
-            { typeof(TagRef<>), typeof(SpanByteExtensions).GetMethod(nameof(SpanByteExtensions.ReadTagRefAt)) },
+            { typeof(TagRef), typeof(Parsing.TrackingReader).GetMethod(nameof(Parsing.TrackingReader.ReadTagRefAt)) },
+            { typeof(TagRef<>), typeof(Parsing.TrackingReader).GetMethod(nameof(Parsing.TrackingReader.ReadTagRefAt)) },
         };
 
         public static Dictionary<Type, int> PrimitiveSizes = new Dictionary<Type, int>
@@ -82,16 +83,16 @@ namespace OpenH2.Core.Tags.Serialization.SerializerEmit
                 .GetMethod(nameof(Type.GetTypeFromHandle));
         }
 
-        public static class SpanByte
+        public static class TrackingReader
         {
-            public static MethodInfo ReadInt32At = typeof(SpanByteExtensions)
-                .GetMethod(nameof(SpanByteExtensions.ReadInt32At));
+            public static MethodInfo ReadInt32At = typeof(Parsing.TrackingReader)
+                .GetMethod(nameof(Parsing.TrackingReader.ReadInt32At));
 
-            public static MethodInfo ReadMetaCaoAt = typeof(SpanByteExtensions)
-                .GetMethod(nameof(SpanByteExtensions.ReadMetaCaoAt), new[] { typeof(Span<byte>), typeof(int), typeof(int) });
+            public static MethodInfo ReadMetaCaoAt = typeof(Parsing.TrackingReader)
+                .GetMethod(nameof(Parsing.TrackingReader.ReadMetaCaoAt), new[] { typeof(int), typeof(int) });
             
-            public static MethodInfo ReadArray = typeof(SpanByteExtensions)
-                .GetMethod(nameof(SpanByteExtensions.ReadArray), new[] { typeof(Span<byte>), typeof(int), typeof(int) });
+            public static MethodInfo ReadArray = typeof(Parsing.TrackingReader)
+                .GetMethod(nameof(Parsing.TrackingReader.ReadArray), new[] { typeof(int), typeof(int) });
         }
 
         public static class Cao

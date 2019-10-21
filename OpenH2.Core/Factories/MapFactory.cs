@@ -35,16 +35,27 @@ namespace OpenH2.Core.Factories
 
         private H2vReader GetBaseReader(string mapRoot)
         {
-            using (var mm = File.OpenRead(Path.Combine(mapRoot, MainMenuName)))
-            using (var mp = File.OpenRead(Path.Combine(mapRoot, MultiPlayerSharedName)))
-            using (var sp = File.OpenRead(Path.Combine(mapRoot, SinglePlayerSharedName)))
-            {
-                var mmReader = new TrackingReader(mm.ToMemory());
-                var mpReader = new TrackingReader(mp.ToMemory());
-                var spReader = new TrackingReader(sp.ToMemory());
+            var bufferSize = 512;
+            var mm = new FileStream(Path.Combine(mapRoot, MainMenuName), FileMode.Open, FileAccess.Read, FileShare.Read, bufferSize);
+            var mp = new FileStream(Path.Combine(mapRoot, MultiPlayerSharedName), FileMode.Open, FileAccess.Read, FileShare.Read, bufferSize);
+            var sp = new FileStream(Path.Combine(mapRoot, SinglePlayerSharedName), FileMode.Open, FileAccess.Read, FileShare.Read, bufferSize);
 
-                return new H2vReader(mmReader, mpReader, spReader);
-            }
+            //var mms = new MemoryStream();
+            //var mps = new MemoryStream();
+            //var sps = new MemoryStream();
+
+            //mm.CopyTo(mms);
+            //mms.Position = 0;
+            //mp.CopyTo(mps);
+            //mps.Position = 0;
+            //sp.CopyTo(sps);
+            //sps.Position = 0;
+
+            var mmReader = new TrackingReader(mm);
+            var mpReader = new TrackingReader(mp);
+            var spReader = new TrackingReader(sp);
+
+            return new H2vReader(mmReader, mpReader, spReader);
         }
 
         public H2vMap FromFile(FileStream fileStream)
@@ -65,7 +76,12 @@ namespace OpenH2.Core.Factories
 
         private H2vReader FromFileStream(FileStream fileStream)
         {
-            var mapReader = new TrackingReader(fileStream.ToMemory());
+            //var ms = new MemoryStream();
+
+            //fileStream.CopyTo(ms);
+            //ms.Position = 0;
+
+            var mapReader = new TrackingReader(fileStream);
 
             return new H2vReader(mapReader, baseReader);
         }
@@ -126,8 +142,8 @@ namespace OpenH2.Core.Factories
         public static BaseTag GetTag(H2vBaseMap scene, TagIndexEntry entry, H2vReader reader)
         {
             var nameIndexOffset = (short)(entry.ID & 0x0000FFFF) * 4;
-            var nameStart = reader.MapReader.Span.ReadInt32At(scene.Header.FilesIndex + nameIndexOffset);
-            var name = reader.MapReader.Span.ReadStringStarting(scene.Header.FileTableOffset + nameStart);
+            var nameStart = reader.MapReader.ReadInt32At(scene.Header.FilesIndex + nameIndexOffset);
+            var name = reader.MapReader.ReadStringStarting(scene.Header.FileTableOffset + nameStart);
 
             return TagFactory.CreateTag(entry.ID, name, entry, scene.SecondaryMagic, reader);
         }
@@ -135,7 +151,7 @@ namespace OpenH2.Core.Factories
         private H2vMapHeader GetSceneHeader(H2vBaseMap scene, TrackingReader reader)
         {
             var head = new H2vMapHeader();
-            var span = reader.Chunk(H2vMapHeader.Layout.Offset, H2vMapHeader.Layout.Length, "Header").Span;
+            var span = reader.Chunk(H2vMapHeader.Layout.Offset, H2vMapHeader.Layout.Length, "Header");
 
             head.FileHead =                        /**/  span.ReadStringFrom(0, 4);
             head.Version =                         /**/  span.ReadInt32At(4);
@@ -164,7 +180,7 @@ namespace OpenH2.Core.Factories
         public IndexHeader GetIndexHeader(H2vBaseMap scene, TrackingReader reader)
         {
             var header = scene.Header;
-            var span = reader.Chunk(header.IndexOffset.Value, IndexHeader.Length, "IndexHeader").Span;
+            var span = reader.Chunk(header.IndexOffset.Value, IndexHeader.Length, "IndexHeader");
 
             var index = new IndexHeader();
 
@@ -184,7 +200,7 @@ namespace OpenH2.Core.Factories
         public TagIndexEntry[] GetTagIndex(H2vBaseMap scene, TrackingReader reader)
         {
             var index = scene.IndexHeader;
-            var listBytes = reader.Chunk(index.TagIndexOffset.Value, index.TagIndexCount * TagIndexEntry.Size, "TagIndex").Span;
+            var listBytes = reader.Chunk(index.TagIndexOffset.Value, index.TagIndexCount * TagIndexEntry.Size, "TagIndex");
             var nullObjTag = new string(new byte[] { 0xFF, 0xFF, 0xFF, 0xFF }.Select(b => (char)b).ToArray());
 
             var list = new List<TagIndexEntry>(index.TagIndexCount);

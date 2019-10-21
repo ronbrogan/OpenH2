@@ -48,7 +48,7 @@ namespace OpenH2.Core.Tags
         {
             foreach (var part in Parts)
             {
-                var headerData = sceneReader.Chunk(new NormalOffset((int)part.DataBlockRawOffset), 120, "ModelMeshHeader").Span;
+                var headerData = sceneReader.Chunk(new NormalOffset((int)part.DataBlockRawOffset), 120, "ModelMeshHeader");
 
                 part.Header = new ModelResourceBlockHeader()
                 {
@@ -64,7 +64,7 @@ namespace OpenH2.Core.Tags
                 foreach(var resource in part.Resources)
                 {
                     var dataOffset = part.DataBlockRawOffset + 8 + part.DataPreambleSize + resource.Offset;
-                    resource.Data = sceneReader.Chunk(new NormalOffset((int)dataOffset), resource.Size, "ModelMesh").AsMemory();
+                    resource.Data = sceneReader.Chunk(new NormalOffset((int)dataOffset), resource.Size, "ModelMesh").ReadArray(0, resource.Size);
                 }
 
                 var meshes = ModelResouceContainerProcessor.ProcessContainer(part, ModelShaderReferences);

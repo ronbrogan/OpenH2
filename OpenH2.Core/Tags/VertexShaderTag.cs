@@ -18,7 +18,7 @@ namespace OpenH2.Core.Tags
         [FixedLength(20)]
         public class ShaderReference
         {
-            [InternalReferenceValue(4)]
+            //[InternalReferenceValue(4)]
             public byte[] ShaderData { get; set; }
         }
     }

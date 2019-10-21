@@ -1,11 +1,12 @@
 ﻿using OpenH2.Core.Offsets;
 using System;
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 using System.Text;
 
 namespace OpenH2.Core.Parsing
 {
-    public class H2vReader
+    public class H2vReader : IDisposable
     {
         public TrackingReader MapReader { get; }
         public TrackingReader MainMenu { get; }
@@ -49,6 +50,14 @@ namespace OpenH2.Core.Parsing
             TrackingReader reader = GetReader(offset);
 
             return reader.Chunk(offset.Value, size, label);
+        }
+
+        public void Dispose()
+        {
+            this.MainMenu?.Dispose();
+            this.SpShared?.Dispose();
+            this.MpShared?.Dispose();
+            this.MapReader?.Dispose();
         }
     }
 }

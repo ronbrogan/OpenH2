@@ -54,6 +54,11 @@ namespace OpenH2.Core.CodeGenTests
         {
             var peverify = ToolLocationHelper.GetPathToDotNetFrameworkSdkFile("PEVerify.exe");
 
+            if(peverify == null)
+            {
+                peverify = @"C:\Program Files (x86)\Microsoft SDKs\Windows\v10.0A\bin\NETFX 4.8 Tools\x64\PEVerify.exe";
+            }
+
             var writer = new StringWriter();
 
             var pStart = new ProcessStartInfo(peverify, assyPath + " /hresult /ignore=0x80131040");

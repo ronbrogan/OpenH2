@@ -95,25 +95,27 @@ namespace OpenH2.Core.Tags
 
             for (int i = 0; i < 6; i++)
             {
-                var lod = new BitmapLevelOfDetail();
+                var lod = new BitmapLevelOfDetail
+                {
+                    Offset = new NormalOffset((int)this.LodOffsets[i]),
+                    Size = this.LodSizes[i]
+                };
 
-                lod.Offset = new NormalOffset((int)this.LodOffsets[i]);
-                lod.Size = this.LodSizes[i];
-                
                 if (lod.Offset.Value != 0 && lod.Offset.Value != int.MaxValue && lod.Size != 0)
                 {
-                    var data = sceneReader.Chunk(lod.Offset, (int)lod.Size, "Bitmap").Span;
+                    var inputStream = sceneReader.GetReader(lod.Offset).Data;
+                    inputStream.Position = lod.Offset.Value + 2;
 
-                    // Need to offset 2 bytes into data to bypass zlib header for compatibility with DeflateStream
-                    var zlibData = data.Slice(2).ToArray();
-
-                    using (var inputStream = new MemoryStream(zlibData))
-                    using (var decompress = new DeflateStream(inputStream, CompressionMode.Decompress))
-                    using (var outputStream = new MemoryStream((int)inputStream.Length))
+                    using (var decompress = new DeflateStream(inputStream, CompressionMode.Decompress, true))
+                    using (var outputStream = new MemoryStream())
                     {
                         decompress.CopyTo(outputStream);
 
-                        lod.Data = new Memory<byte>(outputStream.GetBuffer()).Slice(0, (int)outputStream.Length);
+                        var bytes = new byte[outputStream.Length];
+
+                        Array.Copy(outputStream.GetBuffer(), 0, bytes, 0, outputStream.Length);
+
+                        lod.Data = bytes;
                     }
                 }
 

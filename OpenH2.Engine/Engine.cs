@@ -10,9 +10,12 @@ using OpenH2.Rendering;
 using OpenH2.Rendering.Abstractions;
 using OpenH2.Rendering.OpenGL;
 using OpenH2.Rendering.Shaders;
+using System;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Numerics;
+using System.Runtime;
 
 namespace OpenH2.Engine
 {
@@ -45,7 +48,12 @@ namespace OpenH2.Engine
             var scene = new Scene();
             
             scene.AddEntity(new SpectatorCamera());
+
+            var watch = new Stopwatch();
+            watch.Start();
             LoadMap(scene);
+            watch.Stop();
+            Console.WriteLine($"Loading map took {watch.ElapsedMilliseconds / 1000f} seconds");
             world.LoadScene(scene);
 
             gameLoop.RegisterCallbacks(Update, Render);
@@ -99,7 +107,7 @@ namespace OpenH2.Engine
             var mapPath = @"D:\H2vMaps\zanzibar.map";
 
             var factory = new MapFactory(Path.GetDirectoryName(mapPath));
-            var map = factory.FromFile(File.OpenRead(mapPath));
+            var map = factory.FromFile(new FileStream(mapPath, FileMode.Open, FileAccess.Read, FileShare.Read, 512));
 
             var scenario = map.GetLocalTagsOfType<ScenarioTag>().First();
 

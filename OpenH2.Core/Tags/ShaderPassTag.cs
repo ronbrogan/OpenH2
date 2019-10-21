@@ -40,13 +40,13 @@ namespace OpenH2.Core.Tags
         [FixedLength(44)]
         public class ShaderReferenceGroup
         {
-            [InternalReferenceValue(20)]
+            //[InternalReferenceValue(20)]
             public byte[] ShaderData1 { get; set; }
 
-            [InternalReferenceValue(28)]
+            //[InternalReferenceValue(28)]
             public byte[] ShaderData2 { get; set; }
 
-            [InternalReferenceValue(36)]
+            //[InternalReferenceValue(36)]
             public byte[] ShaderData3 { get; set; }
         }
     }

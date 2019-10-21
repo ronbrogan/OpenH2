@@ -80,7 +80,7 @@ namespace OpenH2.Rendering.OpenGL
             GL.GenTextures(1, out int texId);
             GL.BindTexture(TextureTarget.Texture2D, texId);
 
-            UploadMips(topLod.Data, bitm.TextureFormat, bitm.Format, width, height, bitm.MipMapCount == 0 ? bitm.MipMapCount2 : bitm.MipMapCount);
+            UploadMips(topLod.Data.Span, bitm.TextureFormat, bitm.Format, width, height, bitm.MipMapCount == 0 ? bitm.MipMapCount2 : bitm.MipMapCount);
 
             SetCommonTextureParams();
 
@@ -93,7 +93,7 @@ namespace OpenH2.Rendering.OpenGL
             return texId;
         }
 
-        private void UploadMips(Memory<byte> data, TextureCompressionFormat format, TextureFormat format2, int width, int height, int mipMaps)
+        private void UploadMips(Span<byte> data, TextureCompressionFormat format, TextureFormat format2, int width, int height, int mipMaps)
         {
             int offset = 0;
 
@@ -130,6 +130,15 @@ namespace OpenH2.Rendering.OpenGL
                 }
             }
 
+            if (width == 0)
+                width = 1;
+            if (height == 0)
+                height = 1;
+
+            var maxSize = MipSizeFuncs[format2](width, height);
+
+            var bytes = new byte[maxSize];
+
             for (var i = 0; i < mipMaps; i++)
             {
                 if (width == 0)
@@ -145,7 +154,10 @@ namespace OpenH2.Rendering.OpenGL
                     break;
                 }
 
-                byte[] bytes = data.Slice(offset, size).ToArray();
+                for(var j = 0; j < size; j++)
+                {
+                    bytes[j] = data[offset + j];
+                }
 
                 switch (format)
                 {

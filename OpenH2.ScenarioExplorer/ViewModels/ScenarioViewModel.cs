@@ -265,41 +265,22 @@ namespace OpenH2.ScenarioExplorer.ViewModels
                 return null;
             }
 
-            // Handle case where we don't have a tag class yet
-            if(tag == null)
-            {
-                var indexEntry = scene.TagIndex.FirstOrDefault(t => t.ID == tagId);
-                var magicStart = indexEntry.Offset.OriginalValue + scene.SecondaryMagic;
+            var indexEntry = scene.TagIndex.FirstOrDefault(t => t.ID == tagId);
+            var magicStart = indexEntry.Offset.OriginalValue + scene.SecondaryMagic;
 
-                var indexVm = new TagViewModel(tagId, indexEntry.Tag, indexEntry.Tag)
-                {
-#if DEBUG
-                    InternalOffsetStart = magicStart,
-                    InternalOffsetEnd = magicStart + indexEntry.DataSize,
-#endif
-                    Data = sceneData.Slice(indexEntry.Offset.Value, indexEntry.DataSize),
-                    RawOffset = (int)indexEntry.Offset.Value
-                };
-
-                return indexVm;
-            }
-
-
-            var tagLabel = tag.GetType().GetCustomAttribute<TagLabelAttribute>().Label;
-
-            var vm = new TagViewModel(tagId, tagLabel, tag?.Name)
+            var indexVm = new TagViewModel(tagId, indexEntry.Tag, tag?.Name ?? indexEntry.Tag)
             {
 #if DEBUG
-                InternalOffsetStart = tag.InternalSecondaryMagic,
-                InternalOffsetEnd = tag.InternalSecondaryMagic + tag.RawData.Length,
-                Data = tag.RawData,
+                InternalOffsetStart = magicStart,
+                InternalOffsetEnd = magicStart + indexEntry.DataSize,
 #endif
-                RawOffset = (int)tag.Offset
+                Data = sceneData.Slice(indexEntry.Offset.Value, indexEntry.DataSize),
+                RawOffset = (int)indexEntry.Offset.Value
             };
 
-            vm.OriginalTag = tag;
+            indexVm.OriginalTag = tag;
 
-            return vm;
+            return indexVm;
         }
 
     }

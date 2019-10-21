@@ -1,5 +1,6 @@
 ﻿using OpenH2.Core.Parsing;
 using System;
+using System.IO;
 using System.Linq;
 using Xunit;
 
@@ -11,11 +12,11 @@ namespace OpenH2.Core.Tests.Parsing
         public void TrackingParser_slice()
         {
             var bytes = "testdata".Select(c => (byte)c).ToArray();
-            var data = new Memory<byte>(bytes);
+            var data = new MemoryStream(bytes);
             var parser = new TrackingReader(data);
 
-            parser.Slice(4, 3, "t");
-            parser.Slice(0, 1, "d");
+            parser.Chunk(4, 3, "t");
+            parser.Chunk(0, 1, "d");
 
             var ranges = parser.GetRanges();
 

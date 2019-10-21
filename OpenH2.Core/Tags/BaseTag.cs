@@ -14,7 +14,6 @@ namespace OpenH2.Core.Tags
 
 #if DEBUG
         public int InternalSecondaryMagic { get; set; }
-        public byte[] RawData { get; set; }
 #endif
 
         public BaseTag(uint id)

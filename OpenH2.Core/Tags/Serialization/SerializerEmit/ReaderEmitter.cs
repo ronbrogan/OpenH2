@@ -14,7 +14,7 @@ namespace OpenH2.Core.Tags.Serialization.SerializerEmit
 
         private static MethodInfo GenerateNestedTagCreatorMethod(Type nestedTagType, SerializerEmitContext context)
         {
-            if (MI.PrimitiveSpanReaders.TryGetValue(nestedTagType, out var readerMethod))
+            if (MI.PrimitiveReaders.TryGetValue(nestedTagType, out var readerMethod))
             {
                 return readerMethod;
             }
@@ -117,21 +117,6 @@ namespace OpenH2.Core.Tags.Serialization.SerializerEmit
                 gen.Emit(OpCodes.Callvirt, tagMagicProp.GetSetMethod());
             }
 
-            var tagDataProp = tagType.GetProperty(nameof(BaseTag.RawData), BindingFlags.Public | BindingFlags.Instance);
-            if (tagDataProp != null)
-            {
-                // Load tag for later
-                gen.Emit(OpCodes.Ldloc, tagLocal);
-                
-                // Slice span and get array
-                gen.Emit(OpCodes.Ldarg, TagCreatorArguments.GetArgumentLocation(TagCreatorArguments.Name.Data)); // load span
-                gen.Emit(OpCodes.Ldarg, TagCreatorArguments.GetArgumentLocation(TagCreatorArguments.Name.StartAt)); // load start
-                gen.Emit(OpCodes.Ldarg, TagCreatorArguments.GetArgumentLocation(TagCreatorArguments.Name.Length)); // load length
-                gen.Emit(OpCodes.Call, MI.SpanByte.ReadArray);
-
-                // Set tag data property
-                gen.Emit(OpCodes.Callvirt, tagDataProp.GetSetMethod());
-            }
 #endif
             
             // Do first pass over "header" region
@@ -196,7 +181,7 @@ namespace OpenH2.Core.Tags.Serialization.SerializerEmit
                 throw new Exception("StringValueAttributes must be on string properties");
             }
 
-            if (MI.PrimitiveSpanReaders.TryGetValue(type, out var readerMethod))
+            if (MI.PrimitiveReaders.TryGetValue(type, out var readerMethod))
             {
                 // Load tag onto evalstack for later
                 if (tagType.IsClass)
@@ -238,7 +223,7 @@ namespace OpenH2.Core.Tags.Serialization.SerializerEmit
                 elemType = Enum.GetUnderlyingType(elemType);
             }
 
-            if (MI.PrimitiveSpanReaders.TryGetValue(elemType, out var readerMethod) == false)
+            if (MI.PrimitiveReaders.TryGetValue(elemType, out var readerMethod) == false)
             {
                 return;
             }
@@ -379,7 +364,7 @@ namespace OpenH2.Core.Tags.Serialization.SerializerEmit
                 var elemType = prop.Type.GetElementType();
                 var typeLength = TagTypeMetadataProvider.GetFixedLength(elemType);
 
-                var isPrimitiveReader = MI.PrimitiveSpanReaders.ContainsKey(elemType);
+                var isPrimitiveReader = MI.PrimitiveReaders.ContainsKey(elemType);
 
                 if (isPrimitiveReader)
                 {
@@ -474,7 +459,7 @@ namespace OpenH2.Core.Tags.Serialization.SerializerEmit
 
             gen.Emit(OpCodes.Ldarg, TagCreatorArguments.GetArgumentLocation(TagCreatorArguments.Name.SecondaryMagic)); // load magic
 
-            gen.Emit(OpCodes.Call, MI.SpanByte.ReadMetaCaoAt); // consume count from above and InternalOffset
+            gen.Emit(OpCodes.Call, MI.TrackingReader.ReadMetaCaoAt); // consume count from above and InternalOffset
 
             gen.Emit(OpCodes.Callvirt, MI.Cao.IntDictAddMethod); // Push Prop layout offset and Cao
         }
@@ -497,7 +482,7 @@ namespace OpenH2.Core.Tags.Serialization.SerializerEmit
                 readerLookupType = readerLookupType.GetGenericTypeDefinition();
             }
 
-            if (MI.PrimitiveSpanReaders.TryGetValue(readerLookupType, out var readerMethod))
+            if (MI.PrimitiveReaders.TryGetValue(readerLookupType, out var readerMethod))
             {
                 // Load tag onto evalstack for later
                 if (tagType.IsClass)

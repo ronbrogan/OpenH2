@@ -1,4 +1,5 @@
-﻿using OpenH2.Core.Tags.Serialization.SerializerEmit;
+﻿using OpenH2.Core.Parsing;
+using OpenH2.Core.Tags.Serialization.SerializerEmit;
 using System;
 using System.Collections.Generic;
 using System.Reflection;
@@ -6,13 +7,12 @@ using System.Reflection.Emit;
 
 namespace OpenH2.Core.Tags.Serialization
 {
-    public delegate object TagCreator(uint id, string name, Span<byte> data, int secondaryMagic, int startAt, int length);
-    public delegate T TagCreator<T>(uint id, string name, Span<byte> data, int secondaryMagic, int startAt, int length);
+    public delegate object TagCreator(uint id, string name, TrackingReader data, int secondaryMagic, int startAt, int length);
+    public delegate T TagCreator<T>(uint id, string name, TrackingReader data, int secondaryMagic, int startAt, int length);
 
     public class TagCreatorGenerator
     {
-        
-        private static Dictionary<Type, TagCreator> cachedTagCreatorDelegates = new Dictionary<Type, TagCreator>();
+        private Dictionary<Type, TagCreator> cachedTagCreatorDelegates = new Dictionary<Type, TagCreator>();
 
         private Func<Type, SerializerEmitContext> builderWrapperFactory;
 
@@ -91,7 +91,7 @@ namespace OpenH2.Core.Tags.Serialization
 
             var creator = GetTagCreator(tagType);
 
-            return new TagCreator<T>((uint id, string name, Span<byte> s, int i, int o, int l) => (T)creator(id, name, s, i, o, l));
+            return new TagCreator<T>((uint id, string name, TrackingReader r, int i, int o, int l) => (T)creator(id, name, r, i, o, l));
         }
 
         public TagCreator GetTagCreator(Type tagType)
