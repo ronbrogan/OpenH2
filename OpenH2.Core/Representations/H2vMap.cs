@@ -36,6 +36,12 @@ namespace OpenH2.Core.Representations
 
         public bool TryGetTag<T>(uint id, out T tag) where T : BaseTag
         {
+            if (id == uint.MaxValue)
+            {
+                tag = null;
+                return false;
+            }
+
             if (this.Tags.TryGetValue(id, out var t))
             {
                 tag = (T)t;
@@ -60,13 +66,27 @@ namespace OpenH2.Core.Representations
                 return true;
             }
 
+            Console.WriteLine("TryGetTag miss");
+
             tag = null;
             return false;
         }
 
         public bool TryGetTag<T>(TagRef<T> tagref, out T tag) where T : BaseTag
         {
-            return TryGetTag(tagref.Id, out tag);
+            if (tagref.IsInvalid)
+            {
+                tag = null;
+                return false;
+            }
+
+            if(TryGetTag(tagref.Id, out tag))
+            {
+                return true;
+            }
+
+            Console.WriteLine("Couldn't find " + tagref);
+            return false;
         }
 
 

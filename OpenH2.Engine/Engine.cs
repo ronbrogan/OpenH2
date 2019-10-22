@@ -103,19 +103,21 @@ namespace OpenH2.Engine
 
         public void LoadMap(Scene destination)
         {
-            var mapPath = @"D:\H2vMaps\zanzibar.map";
+            var mapPath = @"D:\H2vMaps\04b_floodlab.map";
 
             var factory = new MapFactory(Path.GetDirectoryName(mapPath));
 
             var fs = new FileStream(mapPath, FileMode.Open, FileAccess.Read, FileShare.Read, 1024);
             var map = factory.FromFile(fs);
 
-            var scenario = map.GetLocalTagsOfType<ScenarioTag>().First();
+            map.TryGetTag(map.IndexHeader.ScenarioID, out var scenario);
 
-            var bsps = map.GetLocalTagsOfType<BspTag>();
+            var terrains = scenario.Terrains;
 
-            foreach(var bsp in bsps)
+            foreach (var terrain in terrains)
             {
+                map.TryGetTag(terrain.Bsp, out var bsp);
+
                 destination.AddEntity(TerrainFactory.FromBspData(map, bsp));
 
                 foreach(var instance in bsp.InstancedGeometryInstances)
