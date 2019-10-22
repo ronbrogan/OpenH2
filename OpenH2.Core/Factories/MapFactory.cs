@@ -199,7 +199,7 @@ namespace OpenH2.Core.Factories
             index.PrimaryMagicConstant =  /**/  span.ReadInt32At(0);
             index.TagListCount =          /**/  span.ReadInt32At(4);
             index.TagIndexOffset =        /**/  scene.PrimaryOffset(span.ReadInt32At(8));
-            index.ScenarioID =            /**/  span.ReadUInt32At(12);
+            index.Scenario =            /**/  span.ReadTagRefAt(12);
             index.TagIDStart =            /**/  span.ReadInt32At(16);
             index.Unknown1 =              /**/  span.ReadInt32At(20);
             index.TagIndexCount =         /**/  span.ReadInt32At(24);

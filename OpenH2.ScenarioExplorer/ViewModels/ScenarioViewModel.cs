@@ -30,8 +30,8 @@ namespace OpenH2.ScenarioExplorer.ViewModels
         {
             var scenarioEntry = new TagTreeEntryViewModel()
             {
-                Id = scene.IndexHeader.ScenarioID,
-                TagName = "scnr - " + scene.TagNames[scene.IndexHeader.ScenarioID]
+                Id = scene.IndexHeader.Scenario,
+                TagName = "scnr - " + scene.TagNames[scene.IndexHeader.Scenario]
             };
 
             if(discoveryMode)

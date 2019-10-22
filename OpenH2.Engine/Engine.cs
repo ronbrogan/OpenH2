@@ -110,7 +110,7 @@ namespace OpenH2.Engine
             var fs = new FileStream(mapPath, FileMode.Open, FileAccess.Read, FileShare.Read, 1024);
             var map = factory.FromFile(fs);
 
-            map.TryGetTag(map.IndexHeader.ScenarioID, out var scenario);
+            map.TryGetTag(map.IndexHeader.Scenario, out var scenario);
 
             var terrains = scenario.Terrains;
 
