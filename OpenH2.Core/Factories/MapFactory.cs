@@ -3,6 +3,7 @@ using OpenH2.Core.Offsets;
 using OpenH2.Core.Parsing;
 using OpenH2.Core.Representations;
 using OpenH2.Core.Tags;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -103,8 +104,8 @@ namespace OpenH2.Core.Factories
             scene.Header = GetSceneHeader(scene, reader.MapReader);
             scene.IndexHeader = GetIndexHeader(scene, reader.MapReader);
             scene.PrimaryMagic = CalculatePrimaryMagic(scene.IndexHeader);
-            scene.TagIndex = GetTagIndex(scene, reader.MapReader);
-            scene.SecondaryMagic = CalculateSecondaryMagic(scene, reader.MapReader);
+            scene.TagIndex = GetTagIndex(scene, reader.MapReader, out var firstOffset);
+            scene.SecondaryMagic = CalculateSecondaryMagic(scene.Header, firstOffset);
             scene.TagNames = GetStrings(scene, reader);
         }
 
@@ -208,8 +209,9 @@ namespace OpenH2.Core.Factories
             return index;
         }
 
-        public Dictionary<uint, TagIndexEntry> GetTagIndex(H2vBaseMap scene, TrackingReader reader)
+        public Dictionary<uint, TagIndexEntry> GetTagIndex(H2vBaseMap scene, TrackingReader reader, out int firstEntryOffset)
         {
+            firstEntryOffset = -1;
             var index = scene.IndexHeader;
             var listBytes = reader.Chunk(index.TagIndexOffset.Value, index.TagIndexCount * TagIndexEntry.Size, "TagIndex");
 
@@ -235,6 +237,9 @@ namespace OpenH2.Core.Factories
                 if (entry.DataSize == 0)
                     continue;
 
+                if(firstEntryOffset == -1)
+                    firstEntryOffset = entry.Offset.OriginalValue;
+                
                 entries[entry.ID] = entry;
             }
 
@@ -246,11 +251,9 @@ namespace OpenH2.Core.Factories
             return index.FileRawOffset.Value - index.PrimaryMagicConstant + IndexHeader.Length;
         }
 
-        public int CalculateSecondaryMagic(H2vBaseMap scene, TrackingReader reader)
+        public int CalculateSecondaryMagic(H2vMapHeader header, int firstObjOffset)
         {
-            var firstObjOffset = reader.ReadInt32At(scene.IndexHeader.TagIndexOffset.Value + 8);
-
-            return firstObjOffset - scene.Header.MetaOffset.Value;
+            return firstObjOffset - header.MetaOffset.Value;
         }
     }
 }
