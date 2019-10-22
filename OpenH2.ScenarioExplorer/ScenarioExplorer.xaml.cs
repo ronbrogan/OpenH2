@@ -140,13 +140,11 @@ namespace OpenH2.ScenarioExplorer
 
                 var factory = new MapFactory(Path.GetDirectoryName(path));
                 var scene = factory.FromFile(file);
-                var vm = new ScenarioViewModel(scene, rawData);
+                var vm = new ScenarioViewModel(scene, rawData, discoveryMode: false);
 
                 DataCtx.LoadedScenario = vm;
             }
         }
-
-        
 
         private void CreateMenu(ScenarioExplorerViewModel vm)
         {

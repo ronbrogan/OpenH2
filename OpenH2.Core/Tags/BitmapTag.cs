@@ -109,13 +109,19 @@ namespace OpenH2.Core.Tags
                     using (var decompress = new DeflateStream(inputStream, CompressionMode.Decompress, true))
                     using (var outputStream = new MemoryStream())
                     {
-                        decompress.CopyTo(outputStream);
+                        var copied = 0;
+                        var buffer = new byte[81920];
+                        var read = -1;
 
-                        var bytes = new byte[outputStream.Length];
+                        while (read != 0 && inputStream.Position < lod.Offset.Value + lod.Size)
+                        {
+                            read = decompress.Read(buffer, 0, 81920);
+                            outputStream.Write(buffer, 0, read);
 
-                        Array.Copy(outputStream.GetBuffer(), 0, bytes, 0, outputStream.Length);
+                            copied += read;
+                        }
 
-                        lod.Data = bytes;
+                        lod.Data = new Memory<byte>(outputStream.GetBuffer(), 0, (int)outputStream.Length);
                     }
                 }
 

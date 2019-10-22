@@ -20,12 +20,13 @@ namespace OpenH2.ScenarioExplorer.ViewModels
         public HashSet<uint> PostprocessedTags = new HashSet<uint>();
         private readonly H2vMap scene;
         private readonly Memory<byte> sceneData;
+        private readonly bool discoveryMode;
 
         public TagTreeEntryViewModel[] TreeRoots { get; set; }
 
         public ScenarioViewModel() { }
 
-        public ScenarioViewModel(H2vMap scene, Memory<byte> sceneData)
+        public ScenarioViewModel(H2vMap scene, Memory<byte> sceneData, bool discoveryMode = true)
         {
             var scenarioEntry = new TagTreeEntryViewModel()
             {
@@ -33,7 +34,6 @@ namespace OpenH2.ScenarioExplorer.ViewModels
                 TagName = "scnr"
             };
 
-            var discoveryMode = true;
             if(discoveryMode)
             {
                 PreProcessTags(scene, sceneData);
@@ -47,6 +47,7 @@ namespace OpenH2.ScenarioExplorer.ViewModels
             TreeRoots = new[] { scenarioEntry };
             this.scene = scene;
             this.sceneData = sceneData;
+            this.discoveryMode = discoveryMode;
         }
 
         private void BuildExplorationTree(H2vMap scene, TagTreeEntryViewModel entry)
@@ -67,7 +68,7 @@ namespace OpenH2.ScenarioExplorer.ViewModels
 
                 if(childTag == null)
                 {
-                    var indexEntry = scene.TagIndex.First(t => t.ID == child.Id);
+                    var indexEntry = scene.TagIndex[child.Id];
                     Console.WriteLine($"Found null tag for [{indexEntry.Tag}] tag");
 
                     childrenVms.Add(new TagTreeEntryViewModel()
@@ -157,9 +158,9 @@ namespace OpenH2.ScenarioExplorer.ViewModels
 
         private void PreProcessTags(H2vMap scene, Memory<byte> sceneData)
         {
-            this.Tags = new List<TagViewModel>(scene.TagIndex.Length);
+            this.Tags = new List<TagViewModel>(scene.TagIndex.Count);
 
-            foreach (var tagEntry in scene.TagIndex)
+            foreach (var tagEntry in scene.TagIndex.Values)
             {
                 scene.TryGetTag<BaseTag>(tagEntry.ID, out var tag);
 
@@ -233,7 +234,6 @@ namespace OpenH2.ScenarioExplorer.ViewModels
 
         public TagViewModel GetTagViewModel(uint tagId)
         {
-            var discoveryMode = true;
             if (discoveryMode)
             {
                 return GetDiscoveryTagViewModel(tagId);
@@ -264,7 +264,7 @@ namespace OpenH2.ScenarioExplorer.ViewModels
                 return null;
             }
 
-            var indexEntry = scene.TagIndex.FirstOrDefault(t => t.ID == tagId);
+            var indexEntry = scene.TagIndex[tagId];
             var magicStart = indexEntry.Offset.OriginalValue + scene.SecondaryMagic;
 
             var indexVm = new TagViewModel(tagId, indexEntry.Tag.ToString(), tag?.Name ?? indexEntry.Tag.ToString())

@@ -170,27 +170,34 @@ namespace OpenH2.Core.Extensions
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Vector2 ReadVec2At(this Span<byte> data, int offset)
         {
-            return new Vector2(data.ReadFloatAt(offset), data.ReadFloatAt(offset + 4));
+            data.Slice(offset, 8).CopyTo(vectorConverterBytes);
+            vectorConverter.Guid = new Guid(vectorConverterBytes);
+
+            return vectorConverter.Vec2;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Vector3 ReadVec3At(this Span<byte> data, int offset)
         {
-            return new Vector3(data.ReadFloatAt(offset), data.ReadFloatAt(offset + 4), data.ReadFloatAt(offset + 8));
+            data.Slice(offset, 12).CopyTo(vectorConverterBytes);
+            vectorConverter.Guid = new Guid(vectorConverterBytes);
+
+            return vectorConverter.Vec3;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Vector4 ReadVec4At(this Span<byte> data, int offset)
         {
-            return new Vector4(data.ReadFloatAt(offset), data.ReadFloatAt(offset + 4), data.ReadFloatAt(offset + 8), data.ReadFloatAt(offset + 12));
+            data.Slice(offset, 16).CopyTo(vectorConverterBytes);
+            vectorConverter.Guid = new Guid(vectorConverterBytes);
+
+            return vectorConverter.Vec4;
         }
 
         public static byte[] ReadArray(this Span<byte> data, int offset, int length)
         {
             return data.Slice(offset, length).ToArray();
         }
-        
-        private static UInt32ToSingle floatConverter = new UInt32ToSingle();
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static float ReadFloatAt(this Span<byte> data, int offset)
@@ -198,6 +205,27 @@ namespace OpenH2.Core.Extensions
             floatConverter.UInt32 = data.ReadUInt32At(offset);
 
             return floatConverter.Single;
+        }
+
+        private static UInt32ToSingle floatConverter = new UInt32ToSingle();
+        private static VecConverter vectorConverter = new VecConverter();
+        private static byte[] vectorConverterBytes = new byte[16];
+
+
+        [StructLayout(LayoutKind.Explicit)]
+        private struct VecConverter
+        {
+            [FieldOffset(0)]
+            public Guid Guid;
+
+            [FieldOffset(0)]
+            public Vector2 Vec2;
+
+            [FieldOffset(0)]
+            public Vector3 Vec3;
+
+            [FieldOffset(0)]
+            public Vector4 Vec4;
         }
 
         [StructLayout(LayoutKind.Explicit)]

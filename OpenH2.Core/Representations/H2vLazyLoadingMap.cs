@@ -23,18 +23,7 @@ namespace OpenH2.Core.Representations
                 return true;
             }
 
-            TagIndexEntry entry = null;
-
-            foreach (var e in this.TagIndex)
-            {
-                if (e.ID == id)
-                {
-                    entry = e;
-                    break;
-                }
-            }
-
-            if (entry != null)
+            if(this.TagIndex.TryGetValue(id, out var entry))
             {
                 tag = MapFactory.GetTag(this, entry, this.reader) as T;
                 Tags[id] = tag;
