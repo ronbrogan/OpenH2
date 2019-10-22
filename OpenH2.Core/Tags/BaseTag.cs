@@ -1,4 +1,6 @@
-﻿using OpenH2.Core.Parsing;
+﻿using OpenH2.Core.Enums;
+using OpenH2.Core.Parsing;
+using OpenH2.Core.Representations;
 
 namespace OpenH2.Core.Tags
 {
@@ -11,6 +13,10 @@ namespace OpenH2.Core.Tags
         public uint Offset { get; set; }
         
         public uint Length { get; set; }
+
+        public TagIndexEntry TagIndexEntry { get; set; }
+
+        public DataFile DataFile { get; set; }
 
 #if DEBUG
         public int InternalSecondaryMagic { get; set; }

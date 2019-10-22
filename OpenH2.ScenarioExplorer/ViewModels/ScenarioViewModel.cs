@@ -264,7 +264,7 @@ namespace OpenH2.ScenarioExplorer.ViewModels
                 return null;
             }
 
-            var indexEntry = scene.TagIndex[tagId];
+            var indexEntry = tag.TagIndexEntry;
             var magicStart = indexEntry.Offset.OriginalValue + scene.SecondaryMagic;
 
             var indexVm = new TagViewModel(tagId, indexEntry.Tag.ToString(), tag?.Name ?? indexEntry.Tag.ToString())
@@ -273,9 +273,13 @@ namespace OpenH2.ScenarioExplorer.ViewModels
                 InternalOffsetStart = magicStart,
                 InternalOffsetEnd = magicStart + indexEntry.DataSize,
 #endif
-                Data = sceneData.Slice(indexEntry.Offset.Value, indexEntry.DataSize),
                 RawOffset = (int)indexEntry.Offset.Value
             };
+
+            if(tag.DataFile == Core.Enums.DataFile.Local)
+            {
+                indexVm.Data = sceneData.Slice(indexEntry.Offset.Value, indexEntry.DataSize);
+            }
 
             indexVm.OriginalTag = tag;
 

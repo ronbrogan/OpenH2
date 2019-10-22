@@ -10,6 +10,9 @@ namespace OpenH2.ScenarioExplorer.ViewModels
         {
             var data = tag.Data.Span;
 
+            if (data.Length == 0)
+                return;
+
             this.Byte = data[offset];
             this.Short = data.ReadInt16At(offset);
             this.UShort = data.ReadUInt16At(offset);

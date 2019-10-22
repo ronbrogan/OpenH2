@@ -30,6 +30,8 @@ namespace OpenH2.Core.Factories
             
             var tag = tagCreator(id, name, mapData, secondaryMagic, index.Offset.Value, index.DataSize) as BaseTag;
 
+            tag.TagIndexEntry = index;
+            tag.DataFile = reader.GetPrimaryDataFile();
             tag.PopulateExternalData(reader);
 
             return tag;

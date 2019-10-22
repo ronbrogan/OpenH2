@@ -1,4 +1,5 @@
-﻿using OpenH2.Core.Offsets;
+﻿using OpenH2.Core.Enums;
+using OpenH2.Core.Offsets;
 using System;
 
 namespace OpenH2.Core.Parsing
@@ -29,17 +30,37 @@ namespace OpenH2.Core.Parsing
         {
             switch (offset.Location)
             {
-                case Enums.DataFile.Local:
+                case DataFile.Local:
                     return MapReader;
-                case Enums.DataFile.MainMenu:
+                case DataFile.MainMenu:
                     return MainMenu;
-                case Enums.DataFile.Shared:
+                case DataFile.Shared:
                     return MpShared;
-                case Enums.DataFile.SinglePlayerShared:
+                case DataFile.SinglePlayerShared:
                     return SpShared;
                 default:
                     return MapReader;
             }
+        }
+
+        public DataFile GetPrimaryDataFile()
+        {
+            if(this.MapReader == this.SpShared)
+            {
+                return DataFile.SinglePlayerShared;
+            } 
+
+            if(this.MapReader == this.MpShared)
+            {
+                return DataFile.Shared;
+            }
+
+            if(this.MapReader == this.MainMenu)
+            {
+                return DataFile.MainMenu;
+            }
+
+            return DataFile.Local;
         }
 
         public TrackingChunk Chunk(NormalOffset offset, int size, string label = null)
