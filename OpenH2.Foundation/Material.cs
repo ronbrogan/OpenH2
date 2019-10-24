@@ -13,26 +13,19 @@ namespace OpenH2.Foundation
     public interface IMaterial<TTexture> : IMaterial
     {
         TTexture DiffuseMap { get; set; }
-        long DiffuseHandle { get; set; }
 
         TTexture AlphaMap { get; set; }
-        long AlphaHandle { get; set; }
 
         TTexture SpecularMap { get; set; }
-        long SpecularHandle { get; set; }
 
         TTexture EmissiveMap { get; set; }
-        long EmissiveHandle { get; set; }
 
         TTexture NormalMap { get; set; }
-        long NormalHandle { get; set; }
 
         TTexture DetailMap1 { get; set; }
-        long Detail1Handle { get; set; }
         Vector4 Detail1Scale { get; set; }
 
         TTexture DetailMap2 { get; set; }
-        long Detail2Handle { get; set; }
         Vector4 Detail2Scale { get; set; }
     }
 
@@ -43,27 +36,24 @@ namespace OpenH2.Foundation
         public Vector3 SpecularColor { get; set; }
 
         public TTexture DiffuseMap { get; set; }
-        public long DiffuseHandle { get; set; }
+
         public TTexture AlphaMap { get; set; }
-        public long AlphaHandle { get; set; }
+
         public TTexture EmissiveMap { get; set; }
-        public long EmissiveHandle { get; set; }
+
         public TTexture NormalMap { get; set; }
-        public long NormalHandle { get; set; }
+
         public TTexture DetailMap1 { get; set; }
-        public long Detail1Handle { get; set; }
+
         public Vector4 Detail1Scale { get; set; }
         public TTexture DetailMap2 { get; set; }
-        public long Detail2Handle { get; set; }
+
         public Vector4 Detail2Scale { get; set; }
         public TTexture SpecularMap { get; set; }
-        public long SpecularHandle { get; set; }
 
         public override bool Equals(object obj)
         {
             return obj is Material<TTexture> material &&
-                   this.DiffuseColor.Equals(material.DiffuseColor) &&
-                   this.SpecularColor.Equals(material.SpecularColor) &&
                    EqualityComparer<TTexture>.Default.Equals(this.DiffuseMap, material.DiffuseMap) &&
                    EqualityComparer<TTexture>.Default.Equals(this.AlphaMap, material.AlphaMap) &&
                    EqualityComparer<TTexture>.Default.Equals(this.EmissiveMap, material.EmissiveMap) &&
@@ -78,8 +68,6 @@ namespace OpenH2.Foundation
         public override int GetHashCode()
         {
             var hashCode = 284558436;
-            hashCode = hashCode * -1521134295 + EqualityComparer<Vector3>.Default.GetHashCode(this.DiffuseColor);
-            hashCode = hashCode * -1521134295 + EqualityComparer<Vector3>.Default.GetHashCode(this.SpecularColor);
             hashCode = hashCode * -1521134295 + EqualityComparer<TTexture>.Default.GetHashCode(this.DiffuseMap);
             hashCode = hashCode * -1521134295 + EqualityComparer<TTexture>.Default.GetHashCode(this.AlphaMap);
             hashCode = hashCode * -1521134295 + EqualityComparer<TTexture>.Default.GetHashCode(this.EmissiveMap);

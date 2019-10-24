@@ -153,8 +153,6 @@ namespace OpenH2.Core.Tags
                    this.RegY == other.RegY &&
                    this.MipMapCount2 == other.MipMapCount2 &&
                    this.PixelOffset == other.PixelOffset &&
-                   EqualityComparer<uint[]>.Default.Equals(this.LodOffsets, other.LodOffsets) &&
-                   EqualityComparer<uint[]>.Default.Equals(this.LodSizes, other.LodSizes) &&
                    this.ID == other.ID;
         }
 
@@ -177,8 +175,6 @@ namespace OpenH2.Core.Tags
             hashCode = hashCode * -1521134295 + this.RegY.GetHashCode();
             hashCode = hashCode * -1521134295 + this.MipMapCount2.GetHashCode();
             hashCode = hashCode * -1521134295 + this.PixelOffset.GetHashCode();
-            hashCode = hashCode * -1521134295 + EqualityComparer<uint[]>.Default.GetHashCode(this.LodOffsets);
-            hashCode = hashCode * -1521134295 + EqualityComparer<uint[]>.Default.GetHashCode(this.LodSizes);
             hashCode = hashCode * -1521134295 + this.ID.GetHashCode();
             return hashCode;
         }

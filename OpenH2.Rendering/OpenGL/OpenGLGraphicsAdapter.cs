@@ -14,7 +14,7 @@ namespace OpenH2.Rendering.OpenGL
     public class OpenGLGraphicsAdapter : IGraphicsAdapter
     {
         private Dictionary<Mesh<BitmapTag>, uint> meshLookup = new Dictionary<Mesh<BitmapTag>, uint>();
-        private HashSet<IMaterial<BitmapTag>> boundTextures = new HashSet<IMaterial<BitmapTag>>();
+        private Dictionary<IMaterial<BitmapTag>, MaterialBindings> boundMaterials = new Dictionary<IMaterial<BitmapTag>, MaterialBindings>();
         private ITextureBinder textureBinder = new OpenGLTextureBinder();
 
         private Shader activeShader;
@@ -80,44 +80,50 @@ namespace OpenH2.Rendering.OpenGL
         {
         }
 
-        public void SetupTextures(IMaterial<BitmapTag> material)
+        public MaterialBindings SetupTextures(IMaterial<BitmapTag> material)
         {
-            if (boundTextures.Contains(material))
-                return;
+            if (boundMaterials.TryGetValue(material, out var bindings))
+            {
+                return bindings;
+            }
 
-            if(material.DiffuseMap != null)
+            bindings = new MaterialBindings();
+
+            if (material.DiffuseMap != null)
             {
                 textureBinder.Bind(material.DiffuseMap, out var diffuseHandle);
-                material.DiffuseHandle = diffuseHandle;
+                bindings.DiffuseHandle = diffuseHandle;
             }
 
             if (material.DetailMap1 != null)
             {
                 textureBinder.Bind(material.DetailMap1, out var handle);
-                material.Detail1Handle = handle;
+                bindings.Detail1Handle = handle;
             }
 
             if (material.DetailMap2 != null)
             {
                 textureBinder.Bind(material.DetailMap2, out var handle);
-                material.Detail2Handle = handle;
+                bindings.Detail2Handle = handle;
             }
 
             if (material.AlphaMap != null)
             {
                 textureBinder.Bind(material.AlphaMap, out var alphaHandle);
-                material.AlphaHandle = alphaHandle;
+                bindings.AlphaHandle = alphaHandle;
             }
 
-            boundTextures.Add(material);
+            boundMaterials.Add(material, bindings);
+
+            return bindings;
         }
 
         // PERF: sort calls by material and vao and deduplicate GL calls 
         public void DrawMesh(Mesh<BitmapTag> mesh, Matrix4x4 transform)
         {
-            SetupTextures(mesh.Material);
+            var bindings = SetupTextures(mesh.Material);
 
-            CreateAndBindShaderUniform(mesh, transform);
+            CreateAndBindShaderUniform(mesh, bindings, transform);
 
             BindMesh(mesh);
 
@@ -141,7 +147,7 @@ namespace OpenH2.Rendering.OpenGL
             }
         }
 
-        private void CreateAndBindShaderUniform(Mesh<BitmapTag> mesh, Matrix4x4 transform)
+        private void CreateAndBindShaderUniform(Mesh<BitmapTag> mesh, MaterialBindings bindings, Matrix4x4 transform)
         {
             if (Matrix4x4.Invert(transform, out var inverted) == false)
             {
@@ -154,13 +160,13 @@ namespace OpenH2.Rendering.OpenGL
                 case Shader.Skybox:
                     SetupGenericUniform(
                         activeShader,
-                        new SkyboxUniform(mesh.Material, transform, inverted),
+                        new SkyboxUniform(mesh.Material, bindings, transform, inverted),
                         SkyboxUniform.Size);
                     break;
                 case Shader.Generic:
                     SetupGenericUniform(
                         activeShader, 
-                        new GenericUniform(mesh.Material, transform, inverted), 
+                        new GenericUniform(mesh.Material, bindings, transform, inverted), 
                         GenericUniform.Size);
                     break;
                 case Shader.TextureViewer:

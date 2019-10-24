@@ -17,27 +17,27 @@ namespace OpenH2.Rendering.Shaders.Generic
     [StructLayout(LayoutKind.Sequential)]
     public struct GenericUniform
     {
-        public GenericUniform(IMaterial<BitmapTag> material, Matrix4x4 transform, Matrix4x4 inverted)
+        public GenericUniform(IMaterial<BitmapTag> material, MaterialBindings bindings, Matrix4x4 transform, Matrix4x4 inverted)
         {
             ModelMatrix = transform;
             NormalMatrix = Matrix4x4.Transpose(inverted);
             DiffuseColor = new Vector4(material.DiffuseColor, 1);
-            UseDiffuse = material.DiffuseHandle != default;
-            DiffuseHandle = material.DiffuseHandle;
+            UseDiffuse = bindings.DiffuseHandle != default;
+            DiffuseHandle = bindings.DiffuseHandle;
             DiffuseAmount = 1f;
 
-            UseDetailMap1 = material.Detail1Handle != default;
+            UseDetailMap1 = bindings.Detail1Handle != default;
             DetailMap1Amount = 1f;
-            DetailMap1Handle = material.Detail1Handle;
+            DetailMap1Handle = bindings.Detail1Handle;
             DetailMap1Scale = material.Detail1Scale;
 
-            UseDetailMap2 = material.Detail2Handle != default;
+            UseDetailMap2 = bindings.Detail2Handle != default;
             DetailMap2Amount = 1f;
-            DetailMap2Handle = material.Detail2Handle;
+            DetailMap2Handle = bindings.Detail2Handle;
             DetailMap2Scale = material.Detail2Scale;
 
-            AlphaHandle = material.AlphaHandle;
-            UseAlpha = material.AlphaHandle != default;
+            AlphaHandle = bindings.AlphaHandle;
+            UseAlpha = bindings.AlphaHandle != default;
             AlphaAmount = 1f;
 
             // Currently unused
