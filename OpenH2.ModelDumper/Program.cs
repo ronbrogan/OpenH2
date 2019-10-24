@@ -91,7 +91,7 @@ namespace OpenH2.ModelDumper
 
             foreach (var mesh in model.Meshes)
             {
-                var matId = mesh.MaterialIdentifier + 1;
+                var matId = mesh.Shader.Id + 1;
 
                 sb.AppendLine($"g BspChunk.{matId}");
                 sb.AppendLine($"usemtl {matId}");

@@ -13,7 +13,7 @@ namespace OpenH2.Rendering.OpenGL
 {
     public class OpenGLGraphicsAdapter : IGraphicsAdapter
     {
-        private Dictionary<Mesh, uint> meshLookup = new Dictionary<Mesh, uint>();
+        private Dictionary<Mesh<BitmapTag>, uint> meshLookup = new Dictionary<Mesh<BitmapTag>, uint>();
         private HashSet<IMaterial<BitmapTag>> boundTextures = new HashSet<IMaterial<BitmapTag>>();
         private ITextureBinder textureBinder = new OpenGLTextureBinder();
 
@@ -52,7 +52,7 @@ namespace OpenH2.Rendering.OpenGL
             }
         }
 
-        public uint UploadMesh(Mesh mesh)
+        public uint UploadMesh(Mesh<BitmapTag> mesh)
         {
             var verticies = mesh.Verticies;
             var indicies = mesh.Indicies;
@@ -113,11 +113,11 @@ namespace OpenH2.Rendering.OpenGL
         }
 
         // PERF: sort calls by material and vao and deduplicate GL calls 
-        public void DrawMesh(Mesh mesh, IMaterial<BitmapTag> material, Matrix4x4 transform)
+        public void DrawMesh(Mesh<BitmapTag> mesh, Matrix4x4 transform)
         {
-            SetupTextures(material);
+            SetupTextures(mesh.Material);
 
-            CreateAndBindShaderUniform(mesh, material, transform);
+            CreateAndBindShaderUniform(mesh, transform);
 
             BindMesh(mesh);
 
@@ -141,7 +141,7 @@ namespace OpenH2.Rendering.OpenGL
             }
         }
 
-        private void CreateAndBindShaderUniform(Mesh mesh, IMaterial<BitmapTag> material, Matrix4x4 transform)
+        private void CreateAndBindShaderUniform(Mesh<BitmapTag> mesh, Matrix4x4 transform)
         {
             if (Matrix4x4.Invert(transform, out var inverted) == false)
             {
@@ -154,13 +154,13 @@ namespace OpenH2.Rendering.OpenGL
                 case Shader.Skybox:
                     SetupGenericUniform(
                         activeShader,
-                        new SkyboxUniform(material, transform, inverted),
+                        new SkyboxUniform(mesh.Material, transform, inverted),
                         SkyboxUniform.Size);
                     break;
                 case Shader.Generic:
                     SetupGenericUniform(
                         activeShader, 
-                        new GenericUniform(material, transform, inverted), 
+                        new GenericUniform(mesh.Material, transform, inverted), 
                         GenericUniform.Size);
                     break;
                 case Shader.TextureViewer:
@@ -168,7 +168,7 @@ namespace OpenH2.Rendering.OpenGL
             }
         }
 
-        private void BindMesh(Mesh mesh)
+        private void BindMesh(Mesh<BitmapTag> mesh)
         {
             if (meshLookup.TryGetValue(mesh, out var vaoId) == false)
             {

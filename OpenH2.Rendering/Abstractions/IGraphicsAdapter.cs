@@ -13,7 +13,7 @@ namespace OpenH2.Rendering.Abstractions
         void BeginFrame(GlobalUniform matricies);
 
         void UseShader(Shader shader);
-        void DrawMesh(Mesh mesh, IMaterial<BitmapTag> material, Matrix4x4 transform);
+        void DrawMesh(Mesh<BitmapTag> mesh, Matrix4x4 transform);
         void EndFrame();
     }
 }

@@ -5,6 +5,7 @@
         Skybox,
         Generic,
         TextureViewer,
-        //etc
+        
+        ComputeGatherLights
     }
 }

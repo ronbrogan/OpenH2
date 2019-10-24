@@ -6,13 +6,13 @@ namespace OpenH2.Core.Tags.Common
 {
     public static class ModelResouceContainerProcessor
     {
-        public static Mesh[] ProcessContainer(IModelResourceContainer container, ModelShaderReference[] shaders)
+        public static ModelMesh[] ProcessContainer(IModelResourceContainer container, ModelShaderReference[] shaders)
         {
             if (container.Resources.Length < 4)
             {
                 // TODO investigate when differing amount of resources
                 // Skip if we don't have the right data setup
-                return new Mesh[0];
+                return new ModelMesh[0];
             }
 
             var verts = ProcessVerticies(container);
@@ -28,7 +28,7 @@ namespace OpenH2.Core.Tags.Common
             var faceResource = container.Resources[GetIndiciesResourceIndex(container)];
             var faceData = faceResource.Data.Span;
 
-            var meshes = new List<Mesh>(partCount);
+            var meshes = new List<ModelMesh>(partCount);
 
             for (var i = 0; i < partCount; i++)
             {
@@ -39,11 +39,11 @@ namespace OpenH2.Core.Tags.Common
                 var indexCount = partData.ReadUInt16At(start + 8);
                 var elementType = (MeshElementType)partData.ReadUInt16At(start + 2);
 
-                var mesh = new Mesh
+                var mesh = new ModelMesh
                 {
                     Verticies = verts,
                     Indicies = new int[indexCount],
-                    MaterialIdentifier = shaders[matId].ShaderId,
+                    Shader = shaders[matId].ShaderId,
                     ElementType = elementType
                 };
 

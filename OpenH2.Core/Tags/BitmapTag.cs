@@ -5,13 +5,14 @@ using OpenH2.Core.Offsets;
 using OpenH2.Core.Parsing;
 using OpenH2.Core.Tags.Layout;
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
 
 namespace OpenH2.Core.Tags
 {
     [TagLabel(TagName.bitm)]
-    public class BitmapTag : BaseTag
+    public class BitmapTag : BaseTag, IEquatable<BitmapTag>
     {
         public override string Name { get; set; }
 
@@ -126,6 +127,60 @@ namespace OpenH2.Core.Tags
 
                 LevelsOfDetail[i] = lod;
             }
+        }
+
+        public override bool Equals(object obj)
+        {
+            return this.Equals(obj as BitmapTag);
+        }
+
+        public bool Equals(BitmapTag other)
+        {
+            return other != null &&
+                   this.Name == other.Name &&
+                   this.TextureType == other.TextureType &&
+                   this.TextureFormat == other.TextureFormat &&
+                   this.TextureUsage == other.TextureUsage &&
+                   this.MipMapCount == other.MipMapCount &&
+                   this.Tag == other.Tag &&
+                   this.Width == other.Width &&
+                   this.Height == other.Height &&
+                   this.Depth == other.Depth &&
+                   this.Type == other.Type &&
+                   this.Format == other.Format &&
+                   this.Properties == other.Properties &&
+                   this.RegX == other.RegX &&
+                   this.RegY == other.RegY &&
+                   this.MipMapCount2 == other.MipMapCount2 &&
+                   this.PixelOffset == other.PixelOffset &&
+                   EqualityComparer<uint[]>.Default.Equals(this.LodOffsets, other.LodOffsets) &&
+                   EqualityComparer<uint[]>.Default.Equals(this.LodSizes, other.LodSizes) &&
+                   this.ID == other.ID;
+        }
+
+        public override int GetHashCode()
+        {
+            var hashCode = 1071719634;
+            hashCode = hashCode * -1521134295 + EqualityComparer<string>.Default.GetHashCode(this.Name);
+            hashCode = hashCode * -1521134295 + this.TextureType.GetHashCode();
+            hashCode = hashCode * -1521134295 + this.TextureFormat.GetHashCode();
+            hashCode = hashCode * -1521134295 + this.TextureUsage.GetHashCode();
+            hashCode = hashCode * -1521134295 + this.MipMapCount.GetHashCode();
+            hashCode = hashCode * -1521134295 + EqualityComparer<string>.Default.GetHashCode(this.Tag);
+            hashCode = hashCode * -1521134295 + this.Width.GetHashCode();
+            hashCode = hashCode * -1521134295 + this.Height.GetHashCode();
+            hashCode = hashCode * -1521134295 + this.Depth.GetHashCode();
+            hashCode = hashCode * -1521134295 + this.Type.GetHashCode();
+            hashCode = hashCode * -1521134295 + this.Format.GetHashCode();
+            hashCode = hashCode * -1521134295 + this.Properties.GetHashCode();
+            hashCode = hashCode * -1521134295 + this.RegX.GetHashCode();
+            hashCode = hashCode * -1521134295 + this.RegY.GetHashCode();
+            hashCode = hashCode * -1521134295 + this.MipMapCount2.GetHashCode();
+            hashCode = hashCode * -1521134295 + this.PixelOffset.GetHashCode();
+            hashCode = hashCode * -1521134295 + EqualityComparer<uint[]>.Default.GetHashCode(this.LodOffsets);
+            hashCode = hashCode * -1521134295 + EqualityComparer<uint[]>.Default.GetHashCode(this.LodSizes);
+            hashCode = hashCode * -1521134295 + this.ID.GetHashCode();
+            return hashCode;
         }
     }
 }

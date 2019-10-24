@@ -5,35 +5,33 @@ using System.Collections.Generic;
 
 namespace OpenH2.Engine.Stores
 {
+    /// <summary>
+    /// RenderListStore is responsible for storing the objects that need to be passed to the RenderingPipeline
+    /// Currently, this class is responsible for translating from engine models -> rendering models
+    /// TBD if this translation is necessary
+    /// </summary>
     public class RenderListStore
     {
-        public Dictionary<uint, IMaterial<BitmapTag>> Materials = new Dictionary<uint, IMaterial<BitmapTag>>();
-        public List<Model> Models = new List<Model>();
+        public List<Model<BitmapTag>> Models = new List<Model<BitmapTag>>();
+        public List<Light> Lights = new List<Light>();
 
         public void Clear()
         {
             Models.Clear();
-            Materials.Clear();
+            Lights.Clear();
+        }
+
+        public void AddLight()
+        {
+            Lights.Add(new Light()
+            {
+
+            });
         }
 
         public void AddRenderModel(RenderModelComponent component)
         {
-            var model = new Model
-            {
-                Meshes = component.Meshes,
-                Position = component.Position,
-                Orientation = component.Orientation,
-                Scale = component.Scale,
-                Note = component.Note,
-                Flags = component.Flags
-            };
-
-            foreach (var mat in component.Materials)
-            {
-                Materials[mat.Key] = mat.Value;
-            }
-
-            Models.Add(model);
+            Models.Add(component.RenderModel);
         }
     }
 }

@@ -5,12 +5,12 @@ namespace OpenH2.Core.Tags.Common
 {
     public class MeshCollection
     {
-        public MeshCollection(Mesh[] meshes)
+        public MeshCollection(ModelMesh[] meshes)
         {
             this.Meshes = meshes;
         }
 
         [JsonIgnore]
-        public Mesh[] Meshes { get; set; }
+        public ModelMesh[] Meshes { get; set; }
     }
 }

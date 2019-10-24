@@ -2,6 +2,7 @@
 using OpenH2.Core.Extensions;
 using OpenH2.Core.Representations;
 using OpenH2.Core.Tags;
+using OpenH2.Core.Tags.Common;
 using OpenH2.Engine.Components;
 using OpenH2.Engine.Entities;
 using OpenH2.Foundation;
@@ -23,17 +24,43 @@ namespace OpenH2.Engine.EntityFactories
 
             var def = bsp.InstancedGeometryDefinitions[instance.Index];
 
+            var renderModelMeshes = new List<Mesh<BitmapTag>>(def.Model.Meshes.Length);
+
+            foreach (var mesh in def.Model.Meshes)
+            {
+                var mat = new Material<BitmapTag>();
+                mat.DiffuseColor = VectorExtensions.RandomColor();
+
+                if (map.TryGetTag(mesh.Shader, out var shader))
+                {
+                    MaterialFactory.PopulateMaterial(map, mat, shader);
+                }
+
+                renderModelMeshes.Add(new Mesh<BitmapTag>()
+                {
+                    Compressed = mesh.Compressed,
+                    ElementType = mesh.ElementType,
+                    Indicies = mesh.Indicies,
+                    Note = mesh.Note,
+                    RawData = mesh.RawData,
+                    Verticies = mesh.Verticies,
+
+                    Material = mat
+                });
+            }
+
             var comp = new RenderModelComponent(scenery)
             {
-                Note = $"[{bsp.Id}] {bsp.Name}//instanced//{instance.Index}",
-                Meshes = def.Model.Meshes,
-                Position = instance.Position,
-                Orientation = QuatFrom3x3Mat4(instance.RotationMatrix),
-                Scale = new Vector3(instance.Scale),
-                Flags = ModelFlags.Diffuse | ModelFlags.CastsShadows | ModelFlags.ReceivesShadows
+                RenderModel = new Model<BitmapTag>
+                {
+                    Note = $"[{bsp.Id}] {bsp.Name}//instanced//{instance.Index}",
+                    Meshes = renderModelMeshes.ToArray(),
+                    Position = instance.Position,
+                    Orientation = QuatFrom3x3Mat4(instance.RotationMatrix),
+                    Scale = new Vector3(instance.Scale),
+                    Flags = ModelFlags.Diffuse | ModelFlags.CastsShadows | ModelFlags.ReceivesShadows
+                }
             };
-
-            EnsureMaterials(map, comp);
 
             scenery.SetComponents(new[] { comp });
 
@@ -87,7 +114,7 @@ namespace OpenH2.Engine.EntityFactories
                 return scenery;
             }
 
-            var meshes = new List<Mesh>();
+            var meshes = new List<ModelMesh>();
 
             foreach (var lod in model.Lods)
             {
@@ -95,40 +122,48 @@ namespace OpenH2.Engine.EntityFactories
                 meshes.AddRange(model.Parts[part].Model.Meshes);
             }
 
-            var comp = new RenderModelComponent(scenery);
-            comp.Note = $"[{tag.Id}] {tag.Name}";
-            comp.Meshes = meshes.ToArray();
-            comp.Position = instance.Position;
-            comp.Orientation = instance.Orientation.ToQuaternion();
-            comp.Scale = new Vector3(1);
+            var renderModelMeshes = new List<Mesh<BitmapTag>>(meshes.Count);
 
-            EnsureMaterials(map, comp);
+            foreach (var mesh in meshes)
+            {
+                var mat = new Material<BitmapTag>();
+                mat.DiffuseColor = VectorExtensions.RandomColor();
+
+                if (map.TryGetTag(mesh.Shader, out var shader))
+                {
+                    MaterialFactory.PopulateMaterial(map, mat, shader);
+                }
+
+                renderModelMeshes.Add(new Mesh<BitmapTag>()
+                {
+                    Compressed = mesh.Compressed,
+                    ElementType = mesh.ElementType,
+                    Indicies = mesh.Indicies,
+                    Note = mesh.Note,
+                    RawData = mesh.RawData,
+                    Verticies = mesh.Verticies,
+
+                    Material = mat
+                });
+            }
+
+            var comp = new RenderModelComponent(scenery)
+            {
+                RenderModel = new Model<BitmapTag>
+                {
+                    Note = $"[{tag.Id}] {tag.Name}",
+                    Meshes = renderModelMeshes.ToArray(),
+                    Position = instance.Position,
+                    Orientation = instance.Orientation.ToQuaternion(),
+                    Scale = new Vector3(1)
+                }
+            };
 
             var components = new List<Component>();
             components.Add(comp);
             scenery.SetComponents(components.ToArray());
 
             return scenery;
-        }
-
-        private static void EnsureMaterials(H2vMap map, RenderModelComponent comp)
-        {
-            foreach (var mesh in comp.Meshes)
-            {
-                if (comp.Materials.ContainsKey(mesh.MaterialIdentifier))
-                {
-                    continue;
-                }
-
-                var mat = new Material<BitmapTag>();
-                mat.DiffuseColor = VectorExtensions.RandomColor();
-                comp.Materials.Add(mesh.MaterialIdentifier, mat);
-
-                if (map.TryGetTag<ShaderTag>(mesh.MaterialIdentifier, out var shader))
-                {
-                    MaterialFactory.PopulateMaterial(map, mat, shader);
-                }
-            }
         }
     }
 }

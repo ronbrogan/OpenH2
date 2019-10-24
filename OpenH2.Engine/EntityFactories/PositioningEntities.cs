@@ -13,9 +13,9 @@ namespace OpenH2.Engine.EntityFactories
 {
     public static class PositioningEntities
     {
-        public static Mesh LocatorMesh(uint mat)
+        public static Mesh<BitmapTag> LocatorMesh(Vector3 color)
         {
-            return new Mesh
+            return new Mesh<BitmapTag>
             {
                 ElementType = MeshElementType.TriangleList,
                 Indicies = new[] {
@@ -29,7 +29,7 @@ namespace OpenH2.Engine.EntityFactories
                     new VertexFormat(new Vector3(0.25f, 0.5f, 0), new Vector2(), new Vector3()),
                     new VertexFormat(new Vector3(0.25f, 0.25f, 0.5f), new Vector2(), new Vector3())
                 },
-                MaterialIdentifier = mat
+                Material = new Material<BitmapTag>() { DiffuseColor = color }
             };
         }
 
@@ -65,22 +65,19 @@ namespace OpenH2.Engine.EntityFactories
             }
         }
 
-        private static Dictionary<uint, IMaterial<BitmapTag>> Materials = new Dictionary<uint, IMaterial<BitmapTag>>();
-
         private static void AddAtLocation(uint id, Vector3 position, Vector3 color, Scene destination)
         {
-            if(Materials.ContainsKey(id) == false)
-            {
-                Materials[id] = new Material<BitmapTag>() { DiffuseColor = color };
-            }
-
             var item = new Scenery();
-            var model = new RenderModelComponent(item);
-            model.Position = position;
-            model.Materials = Materials;
-            model.Meshes = new Mesh[]
+            var model = new RenderModelComponent(item)
             {
-                LocatorMesh(id)
+                RenderModel = new Model<BitmapTag>()
+                {
+                    Position = position,
+                    Meshes = new Mesh<BitmapTag>[]
+                    {
+                        LocatorMesh(color)
+                    }
+                }
             };
 
             item.SetComponents(new Component[]{
@@ -89,7 +86,7 @@ namespace OpenH2.Engine.EntityFactories
             });
 
             destination.Entities.Add(Guid.NewGuid(), item);
-            
+
         }
     }
 }

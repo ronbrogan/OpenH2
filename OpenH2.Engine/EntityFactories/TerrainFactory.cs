@@ -2,6 +2,7 @@
 using OpenH2.Core.Extensions;
 using OpenH2.Core.Representations;
 using OpenH2.Core.Tags;
+using OpenH2.Core.Tags.Common;
 using OpenH2.Engine.Components;
 using OpenH2.Engine.Entities;
 using OpenH2.Foundation;
@@ -17,35 +18,46 @@ namespace OpenH2.Engine.EntityFactories
 
             var components = new List<Component>();
 
-            var meshes = new List<Mesh>();
+            var meshes = new List<ModelMesh>();
 
             foreach (var chunk in tag.RenderChunks)
             {
                 meshes.AddRange(chunk.Model.Meshes);
             }
 
-            var comp = new RenderModelComponent(terrain)
-            {
-                Meshes = meshes.ToArray(),
-                Flags = ModelFlags.Diffuse | ModelFlags.ReceivesShadows | ModelFlags.IsStatic
-            };
+            var renderModelMeshes = new List<Mesh<BitmapTag>>(meshes.Count);
 
-            foreach (var mesh in comp.Meshes)
+            foreach (var mesh in meshes)
             {
-                if(comp.Materials.ContainsKey(mesh.MaterialIdentifier))
-                {
-                    continue;
-                }
-
                 var mat = new Material<BitmapTag>();
                 mat.DiffuseColor = VectorExtensions.RandomColor();
-                comp.Materials.Add(mesh.MaterialIdentifier, mat);
 
-                if (map.TryGetTag<ShaderTag>(mesh.MaterialIdentifier, out var shader))
+                if (map.TryGetTag(mesh.Shader, out var shader))
                 {
                     MaterialFactory.PopulateMaterial(map, mat, shader);
                 }
+
+                renderModelMeshes.Add(new Mesh<BitmapTag>()
+                {
+                    Compressed = mesh.Compressed,
+                    ElementType = mesh.ElementType,
+                    Indicies = mesh.Indicies,
+                    Note = mesh.Note,
+                    RawData = mesh.RawData,
+                    Verticies = mesh.Verticies,
+
+                    Material = mat
+                });
             }
+
+            var comp = new RenderModelComponent(terrain)
+            {
+                RenderModel = new Model<BitmapTag>
+                {
+                    Meshes = renderModelMeshes.ToArray(),
+                    Flags = ModelFlags.Diffuse | ModelFlags.ReceivesShadows | ModelFlags.IsStatic
+                }
+            };
 
             components.Add(comp);
             components.Add(new TransformComponent(terrain));

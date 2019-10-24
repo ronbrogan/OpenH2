@@ -3,9 +3,9 @@ using System.Numerics;
 
 namespace OpenH2.Foundation
 {
-    public class Model
+    public class Model<TTexture>
     {
-        public Mesh[] Meshes { get; set; }
+        public Mesh<TTexture>[] Meshes { get; set; }
 
         public Vector3 Position { get; set; } = Vector3.Zero;
 

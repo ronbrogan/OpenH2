@@ -60,7 +60,7 @@ namespace OpenH2.BspMetaAnalysis
 
                 foreach (var mesh in model.Meshes)
                 {
-                    var matId = mesh.MaterialIdentifier + 1;
+                    var matId = mesh.Shader.Id + 1;
 
                     if (alreadyGenerated.Contains(matId))
                         continue;
@@ -134,7 +134,7 @@ namespace OpenH2.BspMetaAnalysis
 
                 foreach (var mesh in model.Meshes)
                 {
-                    var matId = mesh.MaterialIdentifier+1;
+                    var matId = mesh.Shader.Id+1;
 
                     sb.AppendLine($"g BspChunk.{i}.{matId}");
                     sb.AppendLine($"usemtl {matId}");

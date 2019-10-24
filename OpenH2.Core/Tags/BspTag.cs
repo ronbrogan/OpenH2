@@ -118,7 +118,7 @@ namespace OpenH2.Core.Tags
                 if (part.DataBlockRawOffset == uint.MaxValue)
                 {
                     Console.WriteLine("Bsp part with max DataBlock offset");
-                    part.Model = new MeshCollection(new Mesh[0]);
+                    part.Model = new MeshCollection(new ModelMesh[0]);
                     continue;
                 }
 
@@ -150,7 +150,7 @@ namespace OpenH2.Core.Tags
                 if (def.DataBlockRawOffset == uint.MaxValue)
                 {
                     Console.WriteLine("InstancedGeometry with max DataBlock offset");
-                    def.Model = new MeshCollection(new Mesh[0]);
+                    def.Model = new MeshCollection(new ModelMesh[0]);
                     continue;
                 }
 

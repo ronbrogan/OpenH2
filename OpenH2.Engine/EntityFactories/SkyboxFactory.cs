@@ -2,6 +2,7 @@
 using OpenH2.Core.Extensions;
 using OpenH2.Core.Representations;
 using OpenH2.Core.Tags;
+using OpenH2.Core.Tags.Common;
 using OpenH2.Engine.Components;
 using OpenH2.Engine.Entities;
 using OpenH2.Foundation;
@@ -25,35 +26,45 @@ namespace OpenH2.Engine.EntityFactories
                 return scenery;
             }
 
-            var meshes = new List<Mesh>();
+            var meshes = new List<ModelMesh>();
 
             var partIndex = model.Lods.First().Permutations.First().HighestPieceIndex;
             meshes.AddRange(model.Parts[partIndex].Model.Meshes);
 
+            var renderModelMeshes = new List<Mesh<BitmapTag>>(meshes.Count);
 
-            var comp = new RenderModelComponent(scenery)
+            foreach (var mesh in meshes)
             {
-                Note = $"[{tag.Id}] {tag.Name}",
-                Meshes = meshes.ToArray(),
-                Flags = ModelFlags.IsSkybox
-            };
-
-            foreach (var mesh in comp.Meshes)
-            {
-                if (comp.Materials.ContainsKey(mesh.MaterialIdentifier))
-                {
-                    continue;
-                }
-
                 var mat = new Material<BitmapTag>();
                 mat.DiffuseColor = VectorExtensions.RandomColor();
-                comp.Materials.Add(mesh.MaterialIdentifier, mat);
 
-                if (map.TryGetTag<ShaderTag>(mesh.MaterialIdentifier, out var shader))
+                if (map.TryGetTag(mesh.Shader, out var shader))
                 {
                     MaterialFactory.PopulateMaterial(map, mat, shader);
                 }
+
+                renderModelMeshes.Add(new Mesh<BitmapTag>()
+                {
+                    Compressed = mesh.Compressed,
+                    ElementType = mesh.ElementType,
+                    Indicies = mesh.Indicies,
+                    Note = mesh.Note,
+                    RawData = mesh.RawData,
+                    Verticies = mesh.Verticies,
+
+                    Material = mat
+                });
             }
+
+            var comp = new RenderModelComponent(scenery)
+            {
+                RenderModel = new Model<BitmapTag>
+                {
+                    Note = $"[{tag.Id}] {tag.Name}",
+                    Meshes = renderModelMeshes.ToArray(),
+                    Flags = ModelFlags.IsSkybox
+                }
+            };
 
             var components = new List<Component>();
             components.Add(comp);

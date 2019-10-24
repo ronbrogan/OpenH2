@@ -55,5 +55,12 @@ namespace OpenH2.Core.Extensions
 
             return (mix + rando) / 512;
         }
+
+        public static Vector3 Random(int min, int max)
+        {
+            Random random = new Random();
+
+            return new Vector3(random.Next(min, max), random.Next(min, max), random.Next(min, max));
+        }
     }
 }

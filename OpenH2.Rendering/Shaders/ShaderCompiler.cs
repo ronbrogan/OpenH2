@@ -25,6 +25,11 @@ namespace OpenH2.Rendering.Shaders
             return CreateShader(shaderName, vertSrc, fragSrc);
         }
 
+        public static int CreateComputeShader(Shader shader)
+        {
+            return 0;
+        }
+
         public static int CreateShader(string shaderName, string vertexSource, string fragmentSource)
         {
             var vertexShader = 0;

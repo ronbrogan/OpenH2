@@ -1,4 +1,5 @@
-﻿using OpenH2.Core.Tags;
+﻿using OpenH2.Core.Extensions;
+using OpenH2.Core.Tags;
 using OpenH2.Foundation;
 using OpenH2.Rendering.Abstractions;
 using OpenH2.Rendering.Shaders;
@@ -8,13 +9,16 @@ using System.Numerics;
 
 namespace OpenH2.Rendering
 {
-    public class RenderAccumulator : IRenderAccumulator<BitmapTag>
+    public class ForwardRenderingPipeline : IRenderingPipeline<BitmapTag>
     {
         private readonly IGraphicsAdapter adapter;
 
-        private Dictionary<Guid, Renderable> renderables = new Dictionary<Guid, Renderable>();
+        private List<Model<BitmapTag>> renderables = new List<Model<BitmapTag>>();
 
-        public RenderAccumulator(IGraphicsAdapter graphicsAdapter)
+        // Position, color, intensity
+        private List<(Vector3, Vector3, float)> pointLights = new List<(Vector3, Vector3, float)>();
+
+        public ForwardRenderingPipeline(IGraphicsAdapter graphicsAdapter)
         {
             this.adapter = graphicsAdapter;
         }
@@ -24,19 +28,9 @@ namespace OpenH2.Rendering
         /// Should be called for each object that to be drawn each frame
         /// </summary>
         /// <param name="meshes"></param>
-        public void AddRigidBody(Mesh mesh, IMaterial<BitmapTag> mat, Matrix4x4 transform, ModelFlags flags)
+        public void AddStaticModel(Model<BitmapTag> model)
         {
-            var id = Guid.NewGuid();
-
-            var renderable = new Renderable()
-            {
-                Material = mat,
-                Mesh = mesh,
-                Transform = transform,
-                Flags = flags
-            };
-
-            renderables[id] = renderable;
+            renderables.Add(model);
         }
 
         public void AddTerrain(ScenarioTag.Terrain terrain)
@@ -49,37 +43,55 @@ namespace OpenH2.Rendering
             
         }
 
+        public void AddPointLight(Vector3 position, Vector3 color, float intensity)
+        {
+            this.pointLights.Add((position, color, intensity));
+        }
+
         /// <summary>
         /// Kicks off the draw calls to the graphics adapter
         /// </summary>
         public void DrawAndFlush()
         {
-            var passes = new RenderPasses(renderables.Values);
+            var passes = new RenderPasses(renderables);
 
             this.adapter.UseShader(Shader.Skybox);
             foreach(var skybox in passes.Skyboxes)
             {
-                this.adapter.DrawMesh(skybox.Mesh, skybox.Material, skybox.Transform);
+                var xform = skybox.CreateTransformationMatrix();
+                foreach(var mesh in skybox.Meshes)
+                {
+                    this.adapter.DrawMesh(mesh, xform);
+                }
             }
 
             this.adapter.UseShader(Shader.Generic);
             foreach (var model in passes.Diffuse)
             {
-                this.adapter.DrawMesh(model.Mesh, model.Material, model.Transform);
+                var xform = model.CreateTransformationMatrix();
+                foreach (var mesh in model.Meshes)
+                {
+                    this.adapter.DrawMesh(mesh, xform);
+                }
             }
 
             renderables.Clear();
+            pointLights.Clear();
         }
 
         private class RenderPasses
         {
-            public RenderPasses(ICollection<Renderable> renderables)
+            public RenderPasses(ICollection<Model<BitmapTag>> renderables)
             {
-                Diffuse = new List<Renderable>(renderables.Count);
-                ShadowInteractables = new List<Renderable>(renderables.Count);
+                Diffuse = new List<Model<BitmapTag>>(renderables.Count);
+                ShadowInteractables = new List<Model<BitmapTag>>(renderables.Count);
 
                 foreach(var renderable in renderables)
                 {
+                    // TODO figure out why this can be null
+                    if (renderable == null)
+                        continue;
+
                     if(renderable.Flags.HasFlag(ModelFlags.IsSkybox))
                     {
                         Skyboxes.Add(renderable);
@@ -103,20 +115,10 @@ namespace OpenH2.Rendering
             }
 
             // Assume small amount of Skybox and Transparent objects
-            public List<Renderable> Skyboxes = new List<Renderable>();
-            public List<Renderable> Transparent = new List<Renderable>();
-            public List<Renderable> ShadowInteractables;
-            public List<Renderable> Diffuse;
-        }
-
-
-
-        private class Renderable
-        {
-            public Mesh Mesh;
-            public IMaterial<BitmapTag> Material;
-            public Matrix4x4 Transform;
-            public ModelFlags Flags;
+            public List<Model<BitmapTag>> Skyboxes = new List<Model<BitmapTag>>();
+            public List<Model<BitmapTag>> Transparent = new List<Model<BitmapTag>>();
+            public List<Model<BitmapTag>> ShadowInteractables;
+            public List<Model<BitmapTag>> Diffuse;
         }
     }
 }

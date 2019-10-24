@@ -7,11 +7,12 @@ namespace OpenH2.Rendering.Abstractions
     /// <summary>
     /// Accumulates resources for each frame and orders/groups/batches calls to the <see cref="IGraphicsAdapter"/>
     /// </summary>
-    public interface IRenderAccumulator<TMaterialMap>
+    public interface IRenderingPipeline<TMaterialMap>
     {
-        void AddRigidBody(Mesh model, IMaterial<TMaterialMap> mat, Matrix4x4 transform, ModelFlags flags);
+        void AddStaticModel(Model<TMaterialMap> model);
         void AddTerrain(ScenarioTag.Terrain terrain);
         void AddSkybox(object skybox);
+        void AddPointLight(Vector3 position, Vector3 color, float intensity);
 
         //void AddUI();
 

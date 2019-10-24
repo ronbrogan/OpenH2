@@ -229,7 +229,7 @@ namespace OpenH2.ScenarioExplorer
 
         public static uint UploadQuadMesh()
         {
-            var mesh = new Mesh();
+            var mesh = new Mesh<BitmapTag>();
             mesh.Verticies = new VertexFormat[]
             {
                 new VertexFormat(new Vector3(-1,-1,1), new Vector2(0,1), Vector3.Zero),

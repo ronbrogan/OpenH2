@@ -23,7 +23,7 @@ namespace OpenH2.Engine
         IGraphicsHost graphicsHost;
         IGraphicsAdapter graphicsAdapter;
         IGameLoopSource gameLoop;
-        public IRenderAccumulator<BitmapTag> RenderAccumulator;
+        public IRenderingPipeline<BitmapTag> RenderAccumulator;
 
         private World world;
 
@@ -35,7 +35,7 @@ namespace OpenH2.Engine
             gameLoop = host;
             graphicsAdapter = host.GetAdapter();
 
-            RenderAccumulator = new RenderAccumulator(graphicsAdapter);
+            RenderAccumulator = new ForwardRenderingPipeline(graphicsAdapter);
         }
 
         public void Start(EngineStartParameters parameters)
@@ -70,13 +70,7 @@ namespace OpenH2.Engine
 
             foreach(var model in renderList.Models)
             {
-                var modelMatrix = model.CreateTransformationMatrix();
-
-                foreach(var mesh in model.Meshes)
-                {
-                    mesh.Note = model.Note;
-                    RenderAccumulator.AddRigidBody(mesh, renderList.Materials[mesh.MaterialIdentifier], modelMatrix, model.Flags);
-                }
+                RenderAccumulator.AddStaticModel(model);
             }
 
             var cameras = world.Components<CameraComponent>();
@@ -103,7 +97,7 @@ namespace OpenH2.Engine
 
         public void LoadMap(Scene destination)
         {
-            var mapPath = @"D:\H2vMaps\04b_floodlab.map";
+            var mapPath = @"D:\H2vMaps\zanzibar.map";
 
             var factory = new MapFactory(Path.GetDirectoryName(mapPath));
 
