@@ -12,6 +12,11 @@ namespace OpenH2.Core.Architecture
             this.Id = Guid.NewGuid();
         }
 
+        public void SetComponents(Component[] components)
+        {
+            this.Components = components;
+        }
+
         public bool TryGetChild<T>(out T component) where T : Component
         {
             component = null;

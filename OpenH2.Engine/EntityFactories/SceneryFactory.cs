@@ -54,15 +54,19 @@ namespace OpenH2.Engine.EntityFactories
                 RenderModel = new Model<BitmapTag>
                 {
                     Note = $"[{bsp.Id}] {bsp.Name}//instanced//{instance.Index}",
-                    Meshes = renderModelMeshes.ToArray(),
-                    Position = instance.Position,
-                    Orientation = QuatFrom3x3Mat4(instance.RotationMatrix),
-                    Scale = new Vector3(instance.Scale),
+                    Meshes = renderModelMeshes.ToArray(),                   
                     Flags = ModelFlags.Diffuse | ModelFlags.CastsShadows | ModelFlags.ReceivesShadows
                 }
             };
 
-            scenery.SetComponents(new[] { comp });
+            var xform = new TransformComponent(scenery)
+            {
+                Position = instance.Position,
+                Scale = new Vector3(instance.Scale),
+                Orientation = QuatFrom3x3Mat4(instance.RotationMatrix)
+            };
+
+            scenery.SetComponents(new Component[] { comp, xform });
 
             return scenery;
         }
@@ -153,15 +157,18 @@ namespace OpenH2.Engine.EntityFactories
                 {
                     Note = $"[{tag.Id}] {tag.Name}",
                     Meshes = renderModelMeshes.ToArray(),
-                    Position = instance.Position,
-                    Orientation = instance.Orientation.ToQuaternion(),
-                    Scale = new Vector3(1)
+                    Scale = new Vector3(1),
+                    Flags = ModelFlags.Diffuse | ModelFlags.CastsShadows | ModelFlags.ReceivesShadows
                 }
             };
 
-            var components = new List<Component>();
-            components.Add(comp);
-            scenery.SetComponents(components.ToArray());
+            var xform = new TransformComponent(scenery)
+            {
+                Position = instance.Position,
+                Orientation = Quaternion.CreateFromYawPitchRoll(instance.Orientation.Y, instance.Orientation.Z, instance.Orientation.X)
+            };
+
+            scenery.SetComponents(new Component[] { comp, xform });
 
             return scenery;
         }

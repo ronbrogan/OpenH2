@@ -40,9 +40,7 @@ namespace OpenH2.Engine.Systems
                     var yaw = mouseX_Sensitivity * mouse_delta.X;
                     var pitch = mouseY_Sensitivity * mouse_delta.Y;
 
-                    var rotation = new Vector3(pitch, 0, yaw);
-
-                    UpdateMoversRot(movers, rotation);
+                    UpdateMoversRot(movers, yaw, pitch);
                 }
             }
             inputs.MousePos = currPos;
@@ -60,11 +58,11 @@ namespace OpenH2.Engine.Systems
             var keyMap = new Dictionary<Key, Action>
             {
                 { Key.W, () => UpdateMovers(movers, new Vector3(0, speed, 0)) },
-                { Key.A, () => UpdateMovers(movers, new Vector3(speed, 0, 0)) },
                 { Key.S, () => UpdateMovers(movers, new Vector3(0, -speed, 0)) },
+                { Key.A, () => UpdateMovers(movers, new Vector3(speed, 0, 0)) },
                 { Key.D, () => UpdateMovers(movers, new Vector3(-speed, 0, 0)) },
-                { Key.LShift, () => UpdateMovers(movers, new Vector3(0, 0, speed)) },
-                { Key.Space, () => UpdateMovers(movers, new Vector3(0, 0, -speed)) },
+                { Key.Space, () => UpdateMovers(movers, new Vector3(0, 0, speed)) },
+                { Key.LShift, () => UpdateMovers(movers, new Vector3(0, 0, -speed)) },
             };
             
             foreach(var key in keyMap.Keys)
@@ -82,27 +80,31 @@ namespace OpenH2.Engine.Systems
             {
                 if(mover.TryGetSibling<TransformComponent>(out var xform))
                 {
-                    // -pi/2 is used to offset rotation from YUp to ZUp coords
-                    var mat = Matrix4x4.CreateFromYawPitchRoll(xform.Orientation.Yaw(), -(float)Math.PI / 2f, 0);
+                    var totalOrientation = Quaternion.Normalize(xform.Orientation);
 
-                    var forward = new Vector3(mat.M13, mat.M23, mat.M33);
-                    var jump = new Vector3(mat.M12, mat.M22, mat.M32);
-                    var strafe = new Vector3(mat.M11, mat.M21, mat.M31);
+                    var forward = Vector3.Transform(new Vector3(0,1,0), totalOrientation);
+                    forward = Vector3.Normalize(new Vector3(forward.X, forward.Z, 0));
 
-                    var offset = (deltap.Y * forward) + (deltap.X * strafe) + (deltap.Z * jump);
+                    var up = new Vector3(0, 0, 1);
+                    var strafe = Vector3.Cross(forward, up);
+
+                    var offset = (deltap.Y * -forward) + (deltap.X * strafe) + (deltap.Z * up);
 
                     xform.Position += offset;
                 }
             }
         }
 
-        public void UpdateMoversRot(List<MoverComponent> movers, Vector3 deltar)
+        public void UpdateMoversRot(List<MoverComponent> movers, float yaw, float pitch)
         {
+            var yawQuat = Quaternion.CreateFromAxisAngle(new Vector3(0, 0, 1), yaw);
+            var pitchQuat = Quaternion.CreateFromAxisAngle(new Vector3(1, 0, 0), pitch);
+
             foreach (var mover in movers)
             {
                 if (mover.TryGetSibling<TransformComponent>(out var xform))
                 {
-                    xform.Orientation += deltar;
+                    xform.Orientation = Quaternion.Normalize(pitchQuat * xform.Orientation * yawQuat);
                 }
             }
         }

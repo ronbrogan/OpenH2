@@ -5,7 +5,7 @@ using System.Text;
 
 namespace OpenH2.Engine.Entities
 {
-    public class PointLight : Entity
+    public class Light : Entity
     {
 
     }

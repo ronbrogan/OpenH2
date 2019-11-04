@@ -48,6 +48,16 @@ layout(std140, binding = 1) uniform GenericUniform
 
 } Data;
 
+struct PointLight {
+	vec4 Position;
+    vec4 ColorAndRange;
+};
+
+layout(std140, binding = 2) uniform LightingUniform
+{
+	PointLight[10] pointLights;
+} Lighting;
+
 layout(location = 0) in vec3 local_position;
 layout(location = 1) in vec2 in_texture;
 layout(location = 2) in vec3 local_normal;
@@ -58,17 +68,30 @@ out vec2 texcoord;
 out vec3 vertex_color;
 out vec3 world_pos;
 out vec3 world_normal;
-
+out mat3 TBN;
 
 void main() {
-    mat3 modelmatrix = mat3(1.0);
 
-    vec4 pos = Globals.ProjectionMatrix * Globals.ViewMatrix * Data.ModelMatrix * vec4(local_position, 1);
-    world_pos = local_position;
+    mat4 modelView = Globals.ViewMatrix * Data.ModelMatrix;
+	mat3 mat3nm = mat3(Data.NormalMatrix);
 
-    world_normal = local_normal;
-
-    vertex_color = vec3(0.5f,1,0.5f);
 	texcoord = in_texture;
-    gl_Position = pos;
+	world_normal = normalize(mat3nm * local_normal);
+	world_pos = (Data.ModelMatrix * vec4(local_position, 1)).xyz;
+
+	if (Data.UseNormalMap) {
+		vec3 world_tangent = normalize(mat3nm * tangent);
+		vec3 world_bitangent = normalize(mat3nm * bitangent);
+
+		TBN = transpose(mat3(
+			world_tangent,
+			world_bitangent,
+			world_normal
+		));
+	}
+	else {
+		TBN = mat3(1);
+	}
+
+	gl_Position = Globals.ProjectionMatrix * modelView * vec4(local_position, 1);
 }

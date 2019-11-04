@@ -15,10 +15,5 @@ namespace OpenH2.Engine.Entities
                 new TransformComponent(this)
             };
         }
-
-        public void SetComponents(Component[] components)
-        {
-            this.Components = components;
-        }
     }
 }

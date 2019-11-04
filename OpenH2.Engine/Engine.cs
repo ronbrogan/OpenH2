@@ -1,14 +1,17 @@
 ﻿using OpenH2.Core.Architecture;
+using OpenH2.Core.Extensions;
 using OpenH2.Core.Factories;
 using OpenH2.Core.Tags;
 using OpenH2.Engine.Components;
 using OpenH2.Engine.Entities;
 using OpenH2.Engine.EntityFactories;
 using OpenH2.Engine.Stores;
+using OpenH2.Foundation;
 using OpenH2.Foundation.Engine;
 using OpenH2.Rendering;
 using OpenH2.Rendering.Abstractions;
 using OpenH2.Rendering.OpenGL;
+using OpenH2.Rendering.Pipelines;
 using OpenH2.Rendering.Shaders;
 using System;
 using System.Diagnostics;
@@ -23,7 +26,7 @@ namespace OpenH2.Engine
         IGraphicsHost graphicsHost;
         IGraphicsAdapter graphicsAdapter;
         IGameLoopSource gameLoop;
-        public IRenderingPipeline<BitmapTag> RenderAccumulator;
+        public IRenderingPipeline<BitmapTag> RenderingPipeline;
 
         private World world;
 
@@ -35,7 +38,7 @@ namespace OpenH2.Engine
             gameLoop = host;
             graphicsAdapter = host.GetAdapter();
 
-            RenderAccumulator = new ForwardRenderingPipeline(graphicsAdapter);
+            RenderingPipeline = new ForwardRenderingPipeline(graphicsAdapter);
         }
 
         public void Start(EngineStartParameters parameters)
@@ -68,9 +71,14 @@ namespace OpenH2.Engine
         {
             var renderList = world.GetGlobalResource<RenderListStore>();
 
-            foreach(var model in renderList.Models)
+            foreach(var (model, mx) in renderList.Models)
             {
-                RenderAccumulator.AddStaticModel(model);
+                RenderingPipeline.AddStaticModel(model, mx);
+            }
+
+            foreach (var light in renderList.Lights)
+            {
+                RenderingPipeline.AddPointLight(light);
             }
 
             var cameras = world.Components<CameraComponent>();
@@ -92,12 +100,14 @@ namespace OpenH2.Engine
 
             graphicsAdapter.BeginFrame(matrices);
 
-            RenderAccumulator.DrawAndFlush();
+            RenderingPipeline.DrawAndFlush();
+
+            graphicsAdapter.EndFrame();
         }
 
         public void LoadMap(Scene destination)
         {
-            var mapPath = @"D:\H2vMaps\03b_newmombasa.map";
+            var mapPath = @"D:\H2vMaps\zanzibar.map";
 
             var factory = new MapFactory(Path.GetDirectoryName(mapPath));
 
@@ -147,6 +157,46 @@ namespace OpenH2.Engine
             }
 
             PositioningEntities.AddLocators(map, destination);
+
+            PlaceLights(destination);
+        }
+
+        private void PlaceLights(Scene destination)
+        {
+            for(var i = 0; i < 9; i++)
+            {
+                var position = VectorExtensions.Random(3, 12);
+                var color = VectorExtensions.RandomColor(200);
+
+                var item = new Light();
+                var model = new RenderModelComponent(item)
+                {
+                    RenderModel = ModelFactory.HalfTriangularThing(color)
+                };
+
+                var xform = new TransformComponent(item)
+                {
+                    Position = position
+                };
+
+                var light = new PointLightEmitterComponent(item)
+                {
+                    Light = new PointLight()
+                    {
+                        Color = color,
+                        Position = Vector3.Zero,
+                        Radius = 20f
+                    }
+                };
+
+                item.SetComponents(new Component[]{
+                    model,
+                    xform,
+                    light
+                });
+
+                destination.Entities.Add(Guid.NewGuid(), item);
+            }
         }
     }
 }

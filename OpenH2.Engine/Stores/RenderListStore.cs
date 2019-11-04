@@ -1,7 +1,9 @@
-﻿using OpenH2.Core.Tags;
+﻿using OpenH2.Core.Architecture;
+using OpenH2.Core.Tags;
 using OpenH2.Engine.Components;
 using OpenH2.Foundation;
 using System.Collections.Generic;
+using System.Numerics;
 
 namespace OpenH2.Engine.Stores
 {
@@ -12,8 +14,8 @@ namespace OpenH2.Engine.Stores
     /// </summary>
     public class RenderListStore
     {
-        public List<Model<BitmapTag>> Models = new List<Model<BitmapTag>>();
-        public List<Light> Lights = new List<Light>();
+        public List<(Model<BitmapTag>, Matrix4x4)> Models = new List<(Model<BitmapTag>, Matrix4x4)>();
+        public List<PointLight> Lights = new List<PointLight>();
 
         public void Clear()
         {
@@ -21,17 +23,35 @@ namespace OpenH2.Engine.Stores
             Lights.Clear();
         }
 
-        public void AddLight()
+        public void AddEntity(Entity entity)
         {
-            Lights.Add(new Light()
+            var xformation = Matrix4x4.Identity;
+
+            if(entity.TryGetChild<TransformComponent>(out var transform))
             {
+                xformation = transform.CreateTransformationMatrix();
+            }
 
-            });
-        }
+            if(entity.TryGetChild<RenderModelComponent>(out var renderModel))
+            {
+                var model = renderModel.RenderModel;
 
-        public void AddRenderModel(RenderModelComponent component)
-        {
-            Models.Add(component.RenderModel);
+                var xform = model.CreateTransformationMatrix();
+
+                xformation = Matrix4x4.Multiply(xformation, xform);
+
+                Models.Add((model, xformation));
+            }
+
+            if (entity.TryGetChild<PointLightEmitterComponent>(out var pointLight))
+            {
+                Lights.Add(new PointLight()
+                {
+                    Position = pointLight.Light.Position + xformation.Translation,
+                    Color = pointLight.Light.Color,
+                    Radius = pointLight.Light.Radius
+                });
+            }
         }
     }
 }

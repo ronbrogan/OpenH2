@@ -12,7 +12,6 @@ namespace OpenH2.Engine.Components
         public bool Dirty { get; set; }
 
         public Vector3 PositionOffset { get; set; }
-        public Vector3 OrientationOffset { get; set; }
         public Matrix4x4 ProjectionMatrix { get; set; }
         public Matrix4x4 ViewMatrix { get; set; }
 
@@ -23,7 +22,6 @@ namespace OpenH2.Engine.Components
         public CameraComponent(Entity parent) : base(parent)
         {
             PositionOffset = Vector3.Zero;
-            OrientationOffset = Vector3.Zero;
             FieldOfView = MathF.PI / 2;
             AspectRatio = 16f / 9f;
 

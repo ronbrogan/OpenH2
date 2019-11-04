@@ -48,17 +48,45 @@ layout(std140, binding = 1) uniform GenericUniform
 
 } Data;
 
-in vec3 world_pos;
+struct PointLight {
+	vec4 Position;
+    vec4 ColorAndRange;
+};
+
+layout(std140, binding = 2) uniform LightingUniform
+{
+	PointLight[10] pointLights;
+} Lighting;
+
 in vec2 texcoord;
-in vec3 world_normal;
 in vec3 vertex_color;
-out vec4 out_color;
+in vec3 world_pos;
+in vec3 world_normal;
+in mat3 TBN;
+
+layout(location = 0) out vec4 out_color;
+
+
+vec3 calculated_normal;
+vec3 specular_color;
+
+vec3 viewDifference = Globals.ViewPosition - world_pos;
+float viewDistance = length(viewDifference);
+vec3 viewDirection = normalize(viewDifference);
+
+
 
 // TODO move lighting to global uniform
-vec3 light_pos = vec3(50, 50, 500);
+vec3 light_pos = vec3(50, 100, 50);
 vec3 light_color = vec3(1,1,1);
 
+vec4 lightCalculation(in PointLight light, in vec4 textureColor);
+vec4 globalLighting(in vec4 textureColor);
+
 void main() {
+
+	calculated_normal = world_normal;
+	specular_color = vec3(1);
 
 	vec4 detail1Tex = texture(Data.DetailMap1, texcoord * Data.DetailMap1Scale.xy);
 	vec4 detail2Tex = texture(Data.DetailMap2, texcoord * Data.DetailMap2Scale.xy);
@@ -83,17 +111,23 @@ void main() {
 	}
 
 	diffuseColor = vec4((diffuseColor * detailColor * 2.5).rgb, 1);
-	
-    float ambientStrength = 0.4;
-    vec4 ambient = ambientStrength * diffuseColor;
 
-    vec3 norm = normalize(world_normal);
-    vec3 lightDir = normalize(light_pos - world_pos);  
 
-    float diffStrength = max(dot(norm, lightDir), 0.0);
-    vec4 diffuse = diffStrength * diffuseColor;
+	// Sets ambient baseline
+	vec4 finalColor = diffuseColor * 0.3;
 
-    vec4 result = ambient + diffuse;
+	// Adds global lighting
+	finalColor += globalLighting(diffuseColor);
+
+	// Accumulates point lights
+	for(int i = 0; i < 10; i++)
+	{
+		if(Lighting.pointLights[i].ColorAndRange.a <= 0.0) 
+		{
+			continue;
+		}
+		finalColor += lightCalculation(Lighting.pointLights[i], diffuseColor);
+	}
 
 	float alpha = 1f;
 
@@ -107,5 +141,34 @@ void main() {
 		}
 	}
 
-    out_color = vec4(result.xyz, alpha);
+    out_color = vec4(finalColor.xyz, alpha);
+}
+
+vec4 globalLighting(in vec4 textureColor)
+{
+	vec3 norm = normalize(world_normal);
+    vec3 lightDir = normalize(-light_pos);  
+
+    float diffStrength = max(dot(norm, lightDir), 0.0);
+    vec4 diffuse = diffStrength * textureColor * vec4(light_color,1) * 0.5;
+
+    return diffuse;
+}
+
+vec4 lightCalculation(in PointLight light, in vec4 textureColor)
+{
+	vec3 posDiff = light.Position.xyz - world_pos;
+
+	if(length(posDiff) > light.ColorAndRange.a)
+	{
+		return vec4(0);
+	}
+
+    vec3 norm = normalize(world_normal);
+
+	float falloff = 1/exp2(length(posDiff));
+
+    vec4 diffuse = (textureColor/2 + vec4(light.ColorAndRange.xyz, 1)/2) * falloff;
+
+    return diffuse;
 }

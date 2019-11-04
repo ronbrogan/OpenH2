@@ -24,6 +24,9 @@ namespace OpenH2.Rendering.OpenGL
         private int GlobalUniformHandle;
         private GlobalUniform GlobalUniform;
 
+        private int LightingUniformHandle;
+        private LightingUniform LightingUniform;
+
         public OpenGLGraphicsAdapter()
         {
         }
@@ -32,6 +35,8 @@ namespace OpenH2.Rendering.OpenGL
         {
             GlobalUniform = global;
             SetupGlobalUniform();
+
+            LightingUniform = new LightingUniform() { PointLights = new PointLightUniform[0] };
         }
 
         public void UseShader(Shader shader)
@@ -50,6 +55,19 @@ namespace OpenH2.Rendering.OpenGL
             {
                 action();
             }
+        }
+
+        public void SetSunLight(Vector3 sunDirection)
+        {
+            //LightingUniform.SunDirection = new Vector4(sunDirection, 0f);
+        }
+
+        public void AddLight(PointLight light)
+        {
+            var newLights = new List<PointLightUniform>(LightingUniform.PointLights);
+            newLights.Add(new PointLightUniform(light));
+
+            LightingUniform.PointLights = newLights.ToArray();
         }
 
         public uint UploadMesh(Mesh<BitmapTag> mesh)
@@ -118,9 +136,30 @@ namespace OpenH2.Rendering.OpenGL
             return bindings;
         }
 
+        public void SetupLighting()
+        {
+            if (LightingUniformHandle == default(int))
+            {
+                GL.GenBuffers(1, out LightingUniformHandle);
+                GL.BindBuffer(BufferTarget.UniformBuffer, LightingUniformHandle);
+                GL.BufferData(BufferTarget.UniformBuffer, 320, IntPtr.Zero, BufferUsageHint.DynamicDraw);
+            }
+            else
+            {
+                GL.BindBuffer(BufferTarget.UniformBuffer, LightingUniformHandle);
+            }
+
+            GL.BufferSubData(BufferTarget.UniformBuffer, IntPtr.Zero, 320, LightingUniform.PointLights);
+
+            GL.BindBufferBase(BufferRangeTarget.UniformBuffer, 2, LightingUniformHandle);
+            GL.BindBuffer(BufferTarget.UniformBuffer, 0);
+        }
+
         // PERF: sort calls by material and vao and deduplicate GL calls 
         public void DrawMesh(Mesh<BitmapTag> mesh, Matrix4x4 transform)
         {
+            SetupLighting();
+
             var bindings = SetupTextures(mesh.Material);
 
             CreateAndBindShaderUniform(mesh, bindings, transform);

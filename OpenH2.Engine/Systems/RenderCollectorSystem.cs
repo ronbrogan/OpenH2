@@ -1,5 +1,4 @@
 ﻿using OpenH2.Core.Architecture;
-using OpenH2.Engine.Components;
 using OpenH2.Engine.Stores;
 
 namespace OpenH2.Engine.Systems
@@ -15,10 +14,10 @@ namespace OpenH2.Engine.Systems
             var renderList = this.world.GetGlobalResource<RenderListStore>();
             renderList.Clear();
 
-            var renderables = this.world.Components<RenderModelComponent>();
-            foreach(var renderable in renderables)
+            var entities = this.world.Scene.Entities.Values;
+            foreach(var entity in entities)
             {
-                renderList.AddRenderModel(renderable);
+                renderList.AddEntity(entity);
             }
         }
     }

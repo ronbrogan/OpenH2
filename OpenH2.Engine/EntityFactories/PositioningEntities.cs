@@ -1,4 +1,5 @@
 ﻿using OpenH2.Core.Architecture;
+using OpenH2.Core.Factories;
 using OpenH2.Core.Representations;
 using OpenH2.Core.Tags;
 using OpenH2.Engine.Components;
@@ -13,26 +14,6 @@ namespace OpenH2.Engine.EntityFactories
 {
     public static class PositioningEntities
     {
-        public static Mesh<BitmapTag> LocatorMesh(Vector3 color)
-        {
-            return new Mesh<BitmapTag>
-            {
-                ElementType = MeshElementType.TriangleList,
-                Indicies = new[] {
-                    0, 1, 2,
-                    0, 1, 3,
-                    1, 2, 3,
-                    2, 0, 3 },
-                Verticies = new VertexFormat[] {
-                    new VertexFormat(new Vector3(0, 0, 0), new Vector2(), new Vector3()),
-                    new VertexFormat(new Vector3(0.5f, 0, 0), new Vector2(), new Vector3()),
-                    new VertexFormat(new Vector3(0.25f, 0.5f, 0), new Vector2(), new Vector3()),
-                    new VertexFormat(new Vector3(0.25f, 0.25f, 0.5f), new Vector2(), new Vector3())
-                },
-                Material = new Material<BitmapTag>() { DiffuseColor = color }
-            };
-        }
-
         public static void AddLocators(H2vMap map, Scene destination)
         {
             var scenario = map.GetLocalTagsOfType<ScenarioTag>().First();
@@ -70,19 +51,17 @@ namespace OpenH2.Engine.EntityFactories
             var item = new Scenery();
             var model = new RenderModelComponent(item)
             {
-                RenderModel = new Model<BitmapTag>()
-                {
-                    Position = position,
-                    Meshes = new Mesh<BitmapTag>[]
-                    {
-                        LocatorMesh(color)
-                    }
-                }
+                RenderModel = ModelFactory.UnitPyramid(color)
+            };
+
+            var xform = new TransformComponent(item)
+            {
+                Position = position
             };
 
             item.SetComponents(new Component[]{
                 model,
-                new TransformComponent(item)
+                xform
             });
 
             destination.Entities.Add(Guid.NewGuid(), item);

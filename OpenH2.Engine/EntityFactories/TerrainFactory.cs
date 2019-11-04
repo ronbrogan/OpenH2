@@ -59,10 +59,9 @@ namespace OpenH2.Engine.EntityFactories
                 }
             };
 
-            components.Add(comp);
-            components.Add(new TransformComponent(terrain));
+            var xform = new TransformComponent(terrain);
 
-            terrain.SetComponents(components.ToArray());
+            terrain.SetComponents(new Component[] { comp, xform });
 
             return terrain;
         }

@@ -2,6 +2,7 @@
 {
     public enum Shader
     {
+        Depth,
         Skybox,
         Generic,
         TextureViewer,

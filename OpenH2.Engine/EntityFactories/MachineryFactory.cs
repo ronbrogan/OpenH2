@@ -9,6 +9,7 @@ using OpenH2.Foundation;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Numerics;
 
 namespace OpenH2.Engine.EntityFactories
 {
@@ -80,15 +81,17 @@ namespace OpenH2.Engine.EntityFactories
                 {
                     Note = $"[{tag.Id}] {tag.Name}",
                     Meshes = renderModelMeshes.ToArray(),
-                    Position = instance.Position,
-                    Orientation = instance.Orientation.ToQuaternion(),
                     Flags = ModelFlags.Diffuse | ModelFlags.CastsShadows | ModelFlags.ReceivesShadows
                 }
             };
 
-            var components = new List<Component>();
-            components.Add(comp);
-            scenery.SetComponents(components.ToArray());
+            var xform = new TransformComponent(scenery)
+            {
+                Position = instance.Position,
+                Orientation = Quaternion.CreateFromYawPitchRoll(instance.Orientation.Y, instance.Orientation.Z, instance.Orientation.X)
+            };
+
+            scenery.SetComponents(new Component[] { comp, xform });
 
             return scenery;
         }
