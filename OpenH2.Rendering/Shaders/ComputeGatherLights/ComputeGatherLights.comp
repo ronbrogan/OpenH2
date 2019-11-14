@@ -1,6 +1,74 @@
 ﻿#version 450
+#extension GL_ARB_bindless_texture : require
 
+// Pixels per tile is used to launch TilePixelDimension*TilePixelDimension threads per tile to "iterate" over all input lights
+#define TilePixelDimension 16
+
+layout(std140, binding = 0) uniform GlobalUniform
+{
+	mat4 ViewMatrix;
+	mat4 ProjectionMatrix;
+	vec3 ViewPosition;
+} Globals;
+
+layout(std140, binding = 1) uniform ComputeUniform
+{
+	sampler2D DepthMap;
+} Data;
+
+struct PointLight {
+	vec4 Position;
+    vec4 ColorAndRange;
+};
+
+// All lights in scene to evaluate
+layout(std430, binding = 2) buffer LightingUniform
+{
+	PointLight[] pointLights;
+} Lighting;
+
+// Buffer to hold gather results
+layout(std430, binding = 3) buffer GatheredLights
+{
+	// maybe have uvec2[] of cluster (start, length) into lightIndices to prevent sentinel value usage
+	// which might also perform better? maybe not, because full buffer size would need to be preallocated
+	int[] lightIndices;
+} gatheredLights;
+
+shared uint minTileDepth;
+shared uint maxTileDepth;
+
+layout(local_size_x = TilePixelDimension, local_size_y = TilePixelDimension, local_size_z = 1) in;
 void main()
 {
+	uvec2 screenPixel = gl_GlobalInvocationID.xy / textureSize(Data.DepthMap, 0).xy;
+	uvec2 tile = gl_WorkGroupID.xy;
+	uvec2 totalTiles = gl_NumWorkGroups.xy;
+	uvec2 tilePixel = gl_LocalInvocationID.xy;
+	uint tileThreads = gl_WorkGroupSize.x * gl_WorkGroupSize.y;
 
+	// do other init here
+
+
+	barrier();
+
+	// setup depths
+	float depth = texture(Data.DepthMap, screenPixel).r;
+
+	uint uDepth = floatBitsToUint(depth);
+	atomicMin(minTileDepth, uDepth);
+	atomicMax(maxTileDepth, uDepth);
+
+	barrier();
+
+	// setup frustums
+
+	barrier();
+
+	// Gather affecting lights
+	PointLight light1 = Lighting.pointLights[tilePixel.x];
+
+	barrier();
+
+	// accumulate into output buffer
 }

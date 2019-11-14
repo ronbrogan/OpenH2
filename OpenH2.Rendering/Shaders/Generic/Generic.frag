@@ -2,13 +2,6 @@
 
 #extension GL_ARB_bindless_texture : require
 
-layout(std140, binding = 0) uniform GlobalUniform
-{
-	mat4 ViewMatrix;
-	mat4 ProjectionMatrix;
-	vec3 ViewPosition;
-} Globals;
-
 layout(std140, binding = 1) uniform GenericUniform
 {
 	mat4 ModelMatrix;
@@ -48,14 +41,21 @@ layout(std140, binding = 1) uniform GenericUniform
 
 } Data;
 
+layout(std140, binding = 0) uniform GlobalUniform
+{
+	mat4 ViewMatrix;
+	mat4 ProjectionMatrix;
+	vec3 ViewPosition;
+} Globals;
+
 struct PointLight {
 	vec4 Position;
     vec4 ColorAndRange;
 };
 
-layout(std140, binding = 2) uniform LightingUniform
+layout(std430, binding = 2) buffer LightingUniform
 {
-	PointLight[10] pointLights;
+	PointLight[] pointLights;
 } Lighting;
 
 in vec2 texcoord;
@@ -120,7 +120,7 @@ void main() {
 	finalColor += globalLighting(diffuseColor);
 
 	// Accumulates point lights
-	for(int i = 0; i < 10; i++)
+	for(int i = 0; i < Lighting.pointLights.length(); i++)
 	{
 		if(Lighting.pointLights[i].ColorAndRange.a <= 0.0) 
 		{

@@ -8,6 +8,7 @@ using OpenTK.Graphics.OpenGL;
 using System;
 using System.Collections.Generic;
 using System.Numerics;
+using System.Runtime.InteropServices;
 
 namespace OpenH2.Rendering.OpenGL
 {
@@ -15,7 +16,6 @@ namespace OpenH2.Rendering.OpenGL
     {
         private Dictionary<Mesh<BitmapTag>, uint> meshLookup = new Dictionary<Mesh<BitmapTag>, uint>();
         private Dictionary<IMaterial<BitmapTag>, MaterialBindings> boundMaterials = new Dictionary<IMaterial<BitmapTag>, MaterialBindings>();
-        private ITextureBinder textureBinder = new OpenGLTextureBinder();
 
         private Shader activeShader;
         private Dictionary<Shader, int> shaderHandles = new Dictionary<Shader, int>();
@@ -26,6 +26,8 @@ namespace OpenH2.Rendering.OpenGL
 
         private int LightingUniformHandle;
         private LightingUniform LightingUniform;
+
+        public ITextureBinder TextureBinder { get; } = new OpenGLTextureBinder();
 
         public OpenGLGraphicsAdapter()
         {
@@ -41,6 +43,14 @@ namespace OpenH2.Rendering.OpenGL
 
         public void UseShader(Shader shader)
         {
+            if(activeShader != default && shaderEndActions.TryGetValue(activeShader, out var endActions))
+            {
+                foreach(var action in endActions)
+                {
+                    action(this);
+                }
+            }
+
             if (shaderHandles.TryGetValue(shader, out var handle) == false)
             {
                 handle = ShaderCompiler.CreateShader(shader);
@@ -51,9 +61,12 @@ namespace OpenH2.Rendering.OpenGL
 
             activeShader = shader;
 
-            if(shaderBeginActions.TryGetValue(shader, out var action))
+            if(shaderBeginActions.TryGetValue(shader, out var actions))
             {
-                action();
+                foreach(var action in actions)
+                {
+                    action(this);
+                }
             }
         }
 
@@ -109,25 +122,25 @@ namespace OpenH2.Rendering.OpenGL
 
             if (material.DiffuseMap != null)
             {
-                textureBinder.Bind(material.DiffuseMap, out var diffuseHandle);
+                TextureBinder.Bind(material.DiffuseMap, out var diffuseHandle);
                 bindings.DiffuseHandle = diffuseHandle;
             }
 
             if (material.DetailMap1 != null)
             {
-                textureBinder.Bind(material.DetailMap1, out var handle);
+                TextureBinder.Bind(material.DetailMap1, out var handle);
                 bindings.Detail1Handle = handle;
             }
 
             if (material.DetailMap2 != null)
             {
-                textureBinder.Bind(material.DetailMap2, out var handle);
+                TextureBinder.Bind(material.DetailMap2, out var handle);
                 bindings.Detail2Handle = handle;
             }
 
             if (material.AlphaMap != null)
             {
-                textureBinder.Bind(material.AlphaMap, out var alphaHandle);
+                TextureBinder.Bind(material.AlphaMap, out var alphaHandle);
                 bindings.AlphaHandle = alphaHandle;
             }
 
@@ -138,21 +151,23 @@ namespace OpenH2.Rendering.OpenGL
 
         public void SetupLighting()
         {
+            var size = LightingUniform.PointLights.Length * PointLightUniform.Size;
+
             if (LightingUniformHandle == default(int))
             {
                 GL.GenBuffers(1, out LightingUniformHandle);
-                GL.BindBuffer(BufferTarget.UniformBuffer, LightingUniformHandle);
-                GL.BufferData(BufferTarget.UniformBuffer, 320, IntPtr.Zero, BufferUsageHint.DynamicDraw);
+                GL.BindBuffer(BufferTarget.ShaderStorageBuffer, LightingUniformHandle);
+                GL.BufferData(BufferTarget.ShaderStorageBuffer, size, IntPtr.Zero, BufferUsageHint.DynamicDraw);
             }
             else
             {
-                GL.BindBuffer(BufferTarget.UniformBuffer, LightingUniformHandle);
+                GL.BindBuffer(BufferTarget.ShaderStorageBuffer, LightingUniformHandle);
             }
 
-            GL.BufferSubData(BufferTarget.UniformBuffer, IntPtr.Zero, 320, LightingUniform.PointLights);
+            GL.BufferSubData(BufferTarget.ShaderStorageBuffer, IntPtr.Zero, size, LightingUniform.PointLights);
 
-            GL.BindBufferBase(BufferRangeTarget.UniformBuffer, 2, LightingUniformHandle);
-            GL.BindBuffer(BufferTarget.UniformBuffer, 0);
+            GL.BindBufferBase(BufferRangeTarget.ShaderStorageBuffer, 2, LightingUniformHandle);
+            GL.BindBuffer(BufferTarget.ShaderStorageBuffer, 0);
         }
 
         // PERF: sort calls by material and vao and deduplicate GL calls 
@@ -210,6 +225,13 @@ namespace OpenH2.Rendering.OpenGL
                     break;
                 case Shader.TextureViewer:
                     break;
+                case Shader.Voxelize:
+                    SetupGenericUniform(
+                        activeShader,
+                        new GenericUniform(mesh.Material, bindings, transform, inverted),
+                        GenericUniform.Size);
+                    break;
+
             }
         }
 
@@ -268,13 +290,23 @@ namespace OpenH2.Rendering.OpenGL
 
         private void SetupGenericUniform<T>(Shader shader, T uniform, int size) where T : struct
         {
-            if (uniformHandles.TryGetValue(shader, out var handle) == false)
+            var hadHandle = uniformHandles.TryGetValue(shader, out var handle);
+
+            BindUniform(ref handle, uniform, size);
+
+            if(hadHandle == false)
+            {
+                uniformHandles[shader] = handle;
+            }
+        }
+
+        public void BindUniform<T>(ref int handle, T uniform, int size) where T : struct
+        {
+            if (handle == 0)
             {
                 GL.GenBuffers(1, out handle);
                 GL.BindBuffer(BufferTarget.UniformBuffer, handle);
                 GL.BufferData(BufferTarget.UniformBuffer, size, IntPtr.Zero, BufferUsageHint.DynamicDraw);
-
-                uniformHandles[shader] = handle;
             }
             else
             {
@@ -287,17 +319,41 @@ namespace OpenH2.Rendering.OpenGL
             GL.BindBuffer(BufferTarget.UniformBuffer, 0);
         }
 
-        private Dictionary<Shader, Action> shaderBeginActions = new Dictionary<Shader, Action>()
+        public void SetupShaderBegin(Shader shader, Action<IGraphicsAdapter> onBegin)
         {
-            { Shader.Skybox, () => {
+            if (shaderBeginActions.TryGetValue(shader, out var current))
+            {
+                current.Add(onBegin);
+            }
+            else
+            {
+                shaderBeginActions[shader] = new List<Action<IGraphicsAdapter>>() { onBegin };
+            }
+        }
+
+        public void SetupShaderEnd(Shader shader, Action<IGraphicsAdapter> onEnd)
+        {
+            if (shaderEndActions.TryGetValue(shader, out var current))
+            {
+                current.Add(onEnd);
+            }
+            else
+            {
+                shaderEndActions[shader] = new List<Action<IGraphicsAdapter>>() { onEnd };
+            }
+        }
+
+        private Dictionary<Shader, List<Action<IGraphicsAdapter>>> shaderBeginActions = new Dictionary<Shader, List<Action<IGraphicsAdapter>>>()
+        {
+            { Shader.Skybox, new List<Action<IGraphicsAdapter>>() { a => {
                 GL.Disable(EnableCap.DepthTest);
-            }},
-            { Shader.Generic, () => {
+            } } },
+            { Shader.Generic, new List<Action<IGraphicsAdapter>>() { a => {
                 GL.Enable(EnableCap.DepthTest);
-            }}
+            } } }
         };
 
-        private Dictionary<Shader, Action> shaderEndActions = new Dictionary<Shader, Action>()
+        private Dictionary<Shader, List<Action<IGraphicsAdapter>>> shaderEndActions = new Dictionary<Shader, List<Action<IGraphicsAdapter>>>()
         {
             
         };

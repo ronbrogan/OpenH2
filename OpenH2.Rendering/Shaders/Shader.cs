@@ -7,6 +7,9 @@
         Generic,
         TextureViewer,
         
+        Voxelize,
+        VoxelWorldPositioning,
+        VoxelVisualizer,
         ComputeGatherLights
     }
 }

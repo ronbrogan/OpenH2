@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using OpenTK.Graphics.OpenGL;
 
@@ -6,23 +7,37 @@ namespace OpenH2.Rendering.Shaders
 {
     public static class ShaderCompiler
     {
+        private static Dictionary<ShaderType, string> ShaderExtensions = new Dictionary<ShaderType, string>
+        {
+            { ShaderType.VertexShader, "vert" },
+            { ShaderType.GeometryShader, "geom" },
+            { ShaderType.FragmentShader, "frag" },
+            { ShaderType.ComputeShader, "comp" }
+        };
+
         public static int CreateShader(Shader shader)
         {
             var shaderName = shader.ToString();
-            string vertSrc;
-            string fragSrc;
 
-            var path = Path.Combine(Directory.GetCurrentDirectory(), "Shaders", shaderName);
+            var basePath = Path.Combine(Directory.GetCurrentDirectory(), "Shaders", shaderName);
 
-            if(Directory.Exists(path) == false)
+            if(Directory.Exists(basePath) == false)
             {
-                throw new Exception("Couldn't find shader folder: " + path);
+                throw new Exception("Couldn't find shader folder: " + basePath);
             }
 
-            vertSrc = File.ReadAllText(Path.Combine(path, shaderName + ".vert"));
-            fragSrc = File.ReadAllText(Path.Combine(path, shaderName + ".frag"));
+            var sources = new Dictionary<ShaderType, string>();
 
-            return CreateShader(shaderName, vertSrc, fragSrc);
+            foreach(var type in ShaderExtensions.Keys)
+            {
+                var path = Path.Combine(basePath, shaderName + "." + ShaderExtensions[type]);
+                if (File.Exists(path) == false)
+                    continue;
+
+                sources[type] = File.ReadAllText(path);
+            }
+
+            return CreateShader(shaderName, sources);
         }
 
         public static int CreateComputeShader(Shader shader)
@@ -30,28 +45,17 @@ namespace OpenH2.Rendering.Shaders
             return 0;
         }
 
-        public static int CreateShader(string shaderName, string vertexSource, string fragmentSource)
+        public static int CreateShader(string shaderName, Dictionary<ShaderType, string> sources)
         {
-            var vertexShader = 0;
-            var fragmentShader = 0;
-            var geometryShader = 0;
-
-            if (vertexSource != string.Empty)
-                vertexShader = CompileShader(ShaderType.VertexShader, vertexSource, "vertex::" + shaderName);
-
-            if (fragmentSource != string.Empty)
-                fragmentShader = CompileShader(ShaderType.FragmentShader, fragmentSource, "fragment::" + shaderName);
-
             var program = GL.CreateProgram();
 
-            if (vertexShader != 0)
-                GL.AttachShader(program, vertexShader);
+            foreach (var source in sources)
+            {
+                var compiledShader = CompileShader(source.Key, source.Value, source.Key+"::"+shaderName);
 
-            if (fragmentShader != 0)
-                GL.AttachShader(program, fragmentShader);
-
-            if (geometryShader != 0)
-                GL.AttachShader(program, geometryShader);
+                if(compiledShader > 0)
+                    GL.AttachShader(program, compiledShader);
+            }
 
             GL.LinkProgram(program);
 

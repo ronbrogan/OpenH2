@@ -1,6 +1,7 @@
 ﻿using OpenH2.Core.Tags;
 using OpenH2.Foundation;
 using OpenH2.Rendering.Shaders;
+using System;
 using System.Numerics;
 
 namespace OpenH2.Rendering.Abstractions
@@ -10,12 +11,20 @@ namespace OpenH2.Rendering.Abstractions
     /// </summary>
     public interface IGraphicsAdapter
     {
+        ITextureBinder TextureBinder { get; }
+
         void BeginFrame(GlobalUniform matricies);
 
-        void UseShader(Shader shader);
+        
         void SetSunLight(Vector3 sunDirection);
         void AddLight(PointLight light);
         void DrawMesh(Mesh<BitmapTag> mesh, Matrix4x4 transform);
         void EndFrame();
+
+
+        void UseShader(Shader shader);
+        void SetupShaderBegin(Shader shader, Action<IGraphicsAdapter> onBegin);
+        void SetupShaderEnd(Shader shader, Action<IGraphicsAdapter> onEnd);
+        void BindUniform<T>(ref int handle, T uniform, int size) where T : struct;
     }
 }

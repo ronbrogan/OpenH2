@@ -20,6 +20,8 @@ namespace OpenH2.Rendering.Pipelines
             this.adapter = adapter;
         }
 
+        public void Initialize() { }
+
         public void AddPointLight(PointLight light)
         {
             

@@ -9,6 +9,8 @@ namespace OpenH2.Rendering.Abstractions
     /// </summary>
     public interface IRenderingPipeline<TMaterialMap>
     {
+        void Initialize();
+
         void AddStaticModel(Model<TMaterialMap> model, Matrix4x4 transform);
         void AddTerrain(ScenarioTag.Terrain terrain);
         void AddSkybox(object skybox);

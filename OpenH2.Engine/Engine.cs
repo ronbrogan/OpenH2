@@ -8,7 +8,6 @@ using OpenH2.Engine.EntityFactories;
 using OpenH2.Engine.Stores;
 using OpenH2.Foundation;
 using OpenH2.Foundation.Engine;
-using OpenH2.Rendering;
 using OpenH2.Rendering.Abstractions;
 using OpenH2.Rendering.OpenGL;
 using OpenH2.Rendering.Pipelines;
@@ -38,7 +37,8 @@ namespace OpenH2.Engine
             gameLoop = host;
             graphicsAdapter = host.GetAdapter();
 
-            RenderingPipeline = new ForwardRenderingPipeline(graphicsAdapter);
+            //RenderingPipeline = new ForwardRenderingPipeline(graphicsAdapter);
+            RenderingPipeline = new VoxelRenderingPipeline(graphicsAdapter);
         }
 
         public void Start(EngineStartParameters parameters)
@@ -57,6 +57,8 @@ namespace OpenH2.Engine
             watch.Stop();
             Console.WriteLine($"Loading map took {watch.ElapsedMilliseconds / 1000f} seconds");
             world.LoadScene(scene);
+
+            RenderingPipeline.Initialize();
 
             gameLoop.RegisterCallbacks(Update, Render);
             gameLoop.Start(60, 60);
@@ -163,10 +165,10 @@ namespace OpenH2.Engine
 
         private void PlaceLights(Scene destination)
         {
-            for(var i = 0; i < 9; i++)
+            for(var i = 0; i < 20; i++)
             {
                 var position = VectorExtensions.Random(3, 12);
-                var color = VectorExtensions.RandomColor(200);
+                var color = VectorExtensions.RandomColor(100);
 
                 var item = new Light();
                 var model = new RenderModelComponent(item)

@@ -207,6 +207,35 @@ namespace OpenH2.Rendering.OpenGL
             return texHandle;
         }
 
+        public int Bind3D<TData>(TData[] data, int width, int height, int depth, bool genMipMaps, out long handle) where TData: struct
+        {
+            GL.GenTextures(1, out int texId);
+            GL.BindTexture(TextureTarget.Texture3D, texId);
+
+            int levels = 7;
+            GL.TexStorage3D(TextureTarget3d.Texture3D, levels, SizedInternalFormat.Rgba8, width, height, depth);
+            GL.TexImage3D(TextureTarget.Texture3D, 0, PixelInternalFormat.Rgba8, width, height, depth, 0, PixelFormat.Rgba, PixelType.Float, data);
+            if(genMipMaps)
+            {
+                GL.GenerateMipmap(GenerateMipmapTarget.Texture3D);
+            }
+
+            GL.TexParameter(TextureTarget.Texture3D, TextureParameterName.TextureWrapR, (int)TextureWrapMode.ClampToBorder);
+            GL.TexParameter(TextureTarget.Texture3D, TextureParameterName.TextureWrapS, (int)TextureWrapMode.ClampToBorder);
+            GL.TexParameter(TextureTarget.Texture3D, TextureParameterName.TextureWrapT, (int)TextureWrapMode.ClampToBorder);
+
+            GL.TexParameter(TextureTarget.Texture3D, TextureParameterName.TextureMinFilter, (int)TextureMinFilter.Linear);
+            GL.TexParameter(TextureTarget.Texture3D, TextureParameterName.TextureMagFilter, (int)TextureMagFilter.Nearest);
+
+            handle = GL.Arb.GetTextureHandle(texId);
+
+            GL.Arb.MakeTextureHandleResident(handle);
+
+            CheckTextureBindErrors();
+
+            return texId;
+        }
+
         private void SetCommonTextureParams()
         {
             GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureWrapS, (int)TextureWrapMode.Repeat);

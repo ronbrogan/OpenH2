@@ -1,9 +1,7 @@
-﻿using OpenH2.Core.Extensions;
-using OpenH2.Core.Tags;
+﻿using OpenH2.Core.Tags;
 using OpenH2.Foundation;
 using OpenH2.Rendering.Abstractions;
 using OpenH2.Rendering.Shaders;
-using System;
 using System.Collections.Generic;
 using System.Numerics;
 using PointLight = OpenH2.Foundation.PointLight;
@@ -22,6 +20,7 @@ namespace OpenH2.Rendering.Pipelines
             this.adapter = graphicsAdapter;
         }
 
+        public void Initialize() { }
 
         /// <summary>
         /// Should be called for each object that to be drawn each frame
