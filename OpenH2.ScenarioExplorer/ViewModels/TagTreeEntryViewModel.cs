@@ -14,5 +14,7 @@ namespace OpenH2.ScenarioExplorer.ViewModels
         public string Description => $"{TagName} ({Id})";
 
         public TagTreeEntryViewModel[] Children { get; set; } = null;
+
+        public bool NullChildren => Children == null;
     }
 }

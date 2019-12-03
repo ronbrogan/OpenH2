@@ -4,6 +4,7 @@ using Avalonia.Markup.Xaml;
 using Avalonia.Media;
 using OpenH2.Core.Extensions;
 using OpenH2.Core.Factories;
+using OpenH2.ScenarioExplorer.Preferences;
 using OpenH2.ScenarioExplorer.ViewModels;
 using PropertyChanged;
 using ReactiveUI;
@@ -18,12 +19,18 @@ namespace OpenH2.ScenarioExplorer
     [DoNotNotify]
     public class ScenarioExplorer : Window
     {
-        ScenarioExplorerViewModel DataCtx;
+        private ScenarioExplorerViewModel DataCtx;
+        private PreferencesManager prefManager;
+        private AppPreferences prefs;
+
+        private string loadedMap = null;
 
         public ScenarioExplorer()
         {
+            prefManager = new PreferencesManager();
+            prefs = prefManager.LoadAppPreferences();
             DataCtx = new ScenarioExplorerViewModel();
-            CreateMenu(DataCtx);
+            CreateMenu(prefs.RecentFiles, DataCtx);
             this.DataContext = DataCtx;
 
             this.InitializeComponent();
@@ -112,7 +119,7 @@ namespace OpenH2.ScenarioExplorer
             var open = new OpenFileDialog
             {
                 AllowMultiple = false,
-                InitialDirectory = "D:\\",
+                InitialDirectory = prefs.LastBrowseLocation,
                 Title = "Open .map"
             };
 
@@ -133,6 +140,12 @@ namespace OpenH2.ScenarioExplorer
 
         public void LoadScenario(string path)
         {
+            if (string.IsNullOrEmpty(path))
+            {
+                prefManager.StoreAppPreferences(prefs);
+                return;
+            }
+
             using (var file = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read))
             {
                 var rawData = file.ToMemory();
@@ -140,13 +153,31 @@ namespace OpenH2.ScenarioExplorer
 
                 var factory = new MapFactory(Path.GetDirectoryName(path));
                 var scene = factory.FromFile(file);
-                var vm = new ScenarioViewModel(scene, rawData, discoveryMode: false);
+                var vm = new ScenarioViewModel(scene, rawData, prefs.DiscoveryMode);
 
                 DataCtx.LoadedScenario = vm;
+                DataCtx.SelectedEntry = vm.TreeRoots[0];
             }
+
+            loadedMap = path;
+            this.Title = $"OpenH2 Scenario Explorer - {Path.GetFileName(path)} {(prefs.DiscoveryMode ? "[Discovery Mode]" : "")}";
+
+            prefs.LastBrowseLocation = Path.GetDirectoryName(path);
+
+            var list = prefs.RecentFiles.ToList();
+            list.Insert(0, path);
+            prefs.RecentFiles = list.Take(5).Distinct().ToArray();
+
+            prefManager.StoreAppPreferences(prefs);
         }
 
-        private void CreateMenu(ScenarioExplorerViewModel vm)
+        public void ToggleDisoveryMode()
+        {
+            prefs.DiscoveryMode = !prefs.DiscoveryMode;
+            LoadScenario(loadedMap);
+        }
+
+        private void CreateMenu(string[] recents, ScenarioExplorerViewModel vm)
         {
             /*
              *<MenuItem Header="File">
@@ -169,18 +200,22 @@ namespace OpenH2.ScenarioExplorer
                 new Separator()
             };
 
-            foreach(var recent in vm.RecentFiles)
+            if(recents.Any())
             {
-                var item = new MenuItem()
+                foreach (var recent in recents)
                 {
-                    Header = Path.GetFileName(recent),
-                    Command = ReactiveCommand.Create(() => LoadScenario(recent))
-                };
+                    var item = new MenuItem()
+                    {
+                        Header = Path.GetFileName(recent),
+                        Command = ReactiveCommand.Create(() => LoadScenario(recent))
+                    };
 
-                fileItems.Add(item);
+                    fileItems.Add(item);
+                }
+
+                fileItems.Add(new Separator());
             }
-
-            fileItems.Add(new Separator());
+            
             fileItems.Add(new MenuItem
             {
                 Header = "Exit",
@@ -192,8 +227,21 @@ namespace OpenH2.ScenarioExplorer
                 Header = "File",
                 Items = fileItems
             };
+
+            var edit = new MenuItem
+            {
+                Header = "Edit",
+                Items = new List<Control>
+                {
+                    new MenuItem()
+                    {
+                        Header = "Toggle Mode",
+                        Command = ReactiveCommand.Create(ToggleDisoveryMode)
+                    }
+                }
+            };
             
-            vm.MenuItems = new Control[] { file };
+            vm.MenuItems = new Control[] { file, edit };
         }
     }
 }

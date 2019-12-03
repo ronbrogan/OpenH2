@@ -40,10 +40,19 @@
         <TextBox MinWidth="80" TextWrapping="NoWrap" AcceptsReturn="False" Name="gotoTagBox" Height="26"  />
       </StackPanel>
       
-      <TreeView Grid.Row="1" Items="{Binding Path=LoadedScenario.TreeRoots}" SelectedItem="{Binding SelectedEntry, Mode=TwoWay}" AutoScrollToSelectedItem="True">
+      <TreeView Grid.Row="1" 
+                Name="tagTree"
+                Items="{Binding Path=LoadedScenario.TreeRoots}" 
+                SelectedItem="{Binding SelectedEntry, Mode=TwoWay}" 
+                AutoScrollToSelectedItem="True">
         <TreeView.ItemTemplate>
           <TreeDataTemplate ItemsSource="{Binding Children}">
             <StackPanel Orientation="Horizontal">
+              <Image IsVisible="{Binding NullChildren}" 
+                     Source="resm:OpenH2.ScenarioExplorer.Images.reload.bmp?assembly=OpenH2.ScenarioExplorer"
+                     Height="14"
+                     Width="14"
+                     Margin="0,0,4,0"></Image>
               <TextBlock Text="{Binding Description}"></TextBlock>
             </StackPanel>
           </TreeDataTemplate>

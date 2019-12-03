@@ -98,6 +98,8 @@ namespace OpenH2.ScenarioExplorer.ViewModels
 
         public ObservableCollection<HexViewerFeature> Features { get; set; } = new ObservableCollection<HexViewerFeature>();
 
+        public bool IsPostProcessed => Data.Length == 0 || (Features?.Any() ?? false);
+
         public int InternalOffsetStart { get; set; }
 
         public int InternalOffsetEnd { get; set; }
@@ -111,6 +113,11 @@ namespace OpenH2.ScenarioExplorer.ViewModels
             //  - internal offset and count entries
             //  - tag references
             //  - ? 
+
+            if(IsPostProcessed)
+            {
+                return;
+            }
 
             var span = this.Data.Span;
 

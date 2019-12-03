@@ -25,7 +25,22 @@ namespace OpenH2.ScenarioExplorer.ViewModels
                 if (selectedEntry != null)
                 {
                     CurrentTag = LoadedScenario.GetTagViewModel(selectedEntry.Id);
+
+                    if(selectedEntry.Children == null)
+                    {
+                        LoadedScenario.PopulateTreeChildren(selectedEntry);
+                    }
+
+                    // Populate next (hidden) level too
+                    foreach(var child in selectedEntry.Children)
+                    {
+                        if(child.Children == null)
+                        {
+                            LoadedScenario.PopulateTreeChildren(child);
+                        }
+                    }
                 }
+
             }
         }
 

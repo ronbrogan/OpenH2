@@ -6,7 +6,7 @@ namespace OpenH2.Core.Tags
 {
     public abstract class BaseTag
     {
-        public abstract string Name { get; set; }
+        public virtual string Name { get; set; }
 
         public uint Id { get; private set; }
 
