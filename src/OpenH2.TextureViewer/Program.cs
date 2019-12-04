@@ -25,7 +25,7 @@ namespace OpenH2.TextureViewer
         public static int MatriciesUniformHandle;
         public static GlobalUniform MatriciesUniform;
         private static uint QuadMeshId;
-        private static Mesh quadMesh;
+        private static Mesh<BitmapTag> quadMesh;
         private static int ShaderHandle;
         private static OpenGLTextureBinder textureBinder = new OpenGLTextureBinder();
 
@@ -166,7 +166,7 @@ namespace OpenH2.TextureViewer
 
         public static void UploadQuadMesh()
         {
-            var mesh = new Mesh();
+            var mesh = new Mesh<BitmapTag>();
             mesh.Verticies = new VertexFormat[]
             {
                 new VertexFormat(new Vector3(-1,-1,1), new Vector2(0,1), Vector3.Zero),

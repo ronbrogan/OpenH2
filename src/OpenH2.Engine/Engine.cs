@@ -156,9 +156,9 @@ namespace OpenH2.Engine
                 destination.AddEntity(MachineryFactory.FromTag(map, scenario, mach));
             }
 
-            PositioningEntities.AddLocators(map, destination);
+            //PositioningEntities.AddLocators(map, destination);
 
-            PlaceLights(destination);
+            //PlaceLights(destination);
         }
 
         private void PlaceLights(Scene destination)

@@ -30,7 +30,7 @@ namespace OpenH2.Engine.Entities
                 new MoverComponent(this),
                 xform,
                 camera,
-                light
+                //light
             };
 
             xform.Position = new Vector3(0, 0, 20);
