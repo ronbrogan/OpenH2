@@ -37,7 +37,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Include="../lib/HLSLcc.exe">
+    <None Include="../../lib/HLSLcc.exe">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       <DependentUpon>Dependencies</DependentUpon>
     </None>
