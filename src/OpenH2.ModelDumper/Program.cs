@@ -1,9 +1,13 @@
 ﻿using OpenH2.Core.Factories;
+using OpenH2.Core.Formats;
 using OpenH2.Core.Representations;
 using OpenH2.Core.Tags;
 using OpenH2.Core.Tags.Common;
 using System;
+using System.Collections.Generic;
 using System.IO;
+using System.Linq;
+using System.Numerics;
 using System.Text;
 
 namespace OpenH2.ModelDumper
@@ -35,113 +39,144 @@ namespace OpenH2.ModelDumper
                 scene = factory.FromFile(map);
             }
 
-            var processed = 0;
+            var writer = new WavefrontObjWriter(Path.GetFileNameWithoutExtension(mapPath));
 
-            var models = scene.GetLocalTagsOfType<ModelTag>();
+            var bsps = scene.GetLocalTagsOfType<BspTag>();
+            var bspMeshes = bsps
+                .SelectMany(b => b.RenderChunks);
 
-            foreach (var modelTag in models)
+            foreach(var chunk in bspMeshes)
             {
-                var writePath = Path.Combine(outPath, Path.GetDirectoryName(modelTag.Name));
-                if (Directory.Exists(writePath) == false)
-                {
-                    Directory.CreateDirectory(writePath);
-                }
-
-                for(var i = 0; i < modelTag.Parts.Length; i++)
-                {
-                    var writeName = $"{Path.GetFileName(modelTag.Name)}.{i}";
-                    var writePathAndName = Path.Combine(writePath, writeName);
-
-                    Console.WriteLine($"Writing {writeName} to {writePath}");
-
-                    //File.WriteAllBytes(writePathAndName + ".model", modelTag.Parts[i].RawData);
-                    File.WriteAllText(writePathAndName + ".obj", CreatObjFileForMesh(modelTag.Parts[0].Model));
-
-                    processed++;
-                }
+                writer.WriteModel(chunk.Model, default, "bsp");
             }
 
-            Console.WriteLine($"Processed {processed} models from {Path.GetFileName(mapPath)}");
+            var instancedGeometries = bsps.SelectMany(b => b.InstancedGeometryInstances
+                .Select(i => new { Bsp = b, Instance = i }));
+
+            foreach (var geom in instancedGeometries)
+            {
+                var def = geom.Bsp.InstancedGeometryDefinitions[geom.Instance.Index];
+
+                var xform = Matrix4x4.CreateScale(new Vector3(geom.Instance.Scale))
+                    * Matrix4x4.CreateFromQuaternion(QuatFrom3x3Mat4(geom.Instance.RotationMatrix)) 
+                    * Matrix4x4.CreateTranslation(geom.Instance.Position);
+
+                writer.WriteModel(def.Model, xform, "instanced_" + geom.Instance.Index);
+            }
+
+            var scenario = scene.GetLocalTagsOfType<ScenarioTag>().First();
+
+            foreach(var blocInstance in scenario.BlocInstances)
+            {
+                var def = scenario.BlocDefinitions[blocInstance.BlocDefinitionIndex];
+
+                var xform = Matrix4x4.CreateScale(new Vector3(1))
+                    * Matrix4x4.CreateFromQuaternion(Quaternion.CreateFromYawPitchRoll(blocInstance.Orientation.Y, blocInstance.Orientation.Z, blocInstance.Orientation.X))
+                    * Matrix4x4.CreateTranslation(blocInstance.Position);
+
+                if(!scene.TryGetTag(def.Bloc, out var bloc))
+                {
+                    continue;
+                }
+
+                if (!scene.TryGetTag(bloc.PhysicalModel, out var phmo))
+                {
+                    continue;
+                }
+
+                if (!scene.TryGetTag(phmo.Model, out var mode))
+                {
+                    continue;
+                }
+
+                writer.WriteModel(mode.Parts[0].Model, xform, "bloc_" + blocInstance.BlocDefinitionIndex);
+            }
+
+            foreach (var scenInstance in scenario.SceneryInstances)
+            {
+                var def = scenario.SceneryDefinitions[scenInstance.SceneryDefinitionIndex];
+
+                var xform = Matrix4x4.CreateScale(new Vector3(1))
+                    * Matrix4x4.CreateFromQuaternion(Quaternion.CreateFromYawPitchRoll(scenInstance.Orientation.Y, scenInstance.Orientation.Z, scenInstance.Orientation.X))
+                    * Matrix4x4.CreateTranslation(scenInstance.Position);
+
+                if (!scene.TryGetTag(def.Scenery, out var scen))
+                {
+                    continue;
+                }
+
+                if (!scene.TryGetTag(scen.PhysicalModel, out var phmo))
+                {
+                    continue;
+                }
+
+                if (!scene.TryGetTag(phmo.Model, out var mode))
+                {
+                    continue;
+                }
+
+                writer.WriteModel(mode.Parts[0].Model, xform, "scen_" + scenInstance.SceneryDefinitionIndex);
+            }
+
+            foreach (var machInstance in scenario.MachineryInstances)
+            {
+                var def = scenario.MachineryDefinitions[machInstance.MachineryDefinitionIndex];
+
+                var xform = Matrix4x4.CreateScale(new Vector3(1))
+                    * Matrix4x4.CreateFromQuaternion(Quaternion.CreateFromYawPitchRoll(machInstance.Orientation.Y, machInstance.Orientation.Z, machInstance.Orientation.X))
+                    * Matrix4x4.CreateTranslation(machInstance.Position);
+
+                if (!scene.TryGetTag(def.Machinery, out var mach))
+                {
+                    continue;
+                }
+
+                if (!scene.TryGetTag(mach.PhysicalModel, out var phmo))
+                {
+                    continue;
+                }
+
+                if (!scene.TryGetTag(phmo.Model, out var mode))
+                {
+                    continue;
+                }
+
+                writer.WriteModel(mode.Parts[0].Model, xform, "mach_" + machInstance.MachineryDefinitionIndex);
+            }
+
+            File.WriteAllText(outPath, writer.ToString());
+
+            Console.WriteLine($"Processed {Path.GetFileName(mapPath)}");
             Console.WriteLine("Press any key to exit");
             Console.ReadLine();
         }
 
-        public static string CreatObjFileForMesh(MeshCollection model)
+        private static Quaternion QuatFrom3x3Mat4(float[] vals)
         {
-            var verts = model.Meshes[0].Verticies;
+            var mat4 = new Matrix4x4(
+                vals[0],
+                vals[1],
+                vals[2],
+                0f,
+                vals[3],
+                vals[4],
+                vals[5],
+                0f,
+                vals[6],
+                vals[7],
+                vals[8],
+                0f,
+                0f,
+                0f,
+                0f,
+                1f);
 
-            var sb = new StringBuilder();
-
-            foreach (var vert in verts)
+            if (Matrix4x4.Decompose(mat4, out var _, out var q, out var _) == false)
             {
-                sb.AppendLine($"v {vert.Position.X.ToString("0.000000")} {vert.Position.Y.ToString("0.000000")} {vert.Position.Z.ToString("0.000000")}");
+                return Quaternion.Identity;
             }
 
-            foreach (var vert in verts)
-            {
-                sb.AppendLine($"vt {vert.TexCoords.X.ToString("0.000000")} {vert.TexCoords.Y.ToString("0.000000")}");
-            }
-
-            foreach (var vert in verts)
-            {
-                sb.AppendLine($"vn {vert.Normal.X.ToString("0.000000")} {vert.Normal.Y.ToString("0.000000")} {vert.Normal.Z.ToString("0.000000")}");
-            }
-
-            var vertsWritten = 1;
-
-            foreach (var mesh in model.Meshes)
-            {
-                var matId = mesh.Shader.Id + 1;
-
-                sb.AppendLine($"g BspChunk.{matId}");
-                sb.AppendLine($"usemtl {matId}");
-
-                for (var j = 2; j < mesh.Indicies.Length; j++)
-                {
-                    var indicies = (mesh.Indicies[j-2], mesh.Indicies[j-1], mesh.Indicies[j]);
-
-                    sb.Append("f");
-                    sb.Append($" {indicies.Item1 + vertsWritten}/{indicies.Item1 + vertsWritten}/{indicies.Item1 + vertsWritten}");
-                    sb.Append($" {indicies.Item2 + vertsWritten}/{indicies.Item2 + vertsWritten}/{indicies.Item2 + vertsWritten}");
-                    sb.Append($" {indicies.Item3 + vertsWritten}/{indicies.Item3 + vertsWritten}/{indicies.Item3 + vertsWritten}");
-
-                    sb.AppendLine("");
-                }
-            }
-
-            
-
-            //var triangles = new List<(int, int, int)>();
-
-            
-
-            //for (int i = 0; i < mesh.Indicies.Length - 2; i++)
-            //{
-            //    (int, int, int) triangle = default((int, int, int));
-
-            //    if(i % 2 == 0)
-            //    {
-            //        triangle = (
-            //            mesh.Indicies[i] + 1,
-            //            mesh.Indicies[i + 1] + 1,
-            //            mesh.Indicies[i + 2] + 1
-            //        );
-            //    }
-            //    else
-            //    {
-            //        triangle = (
-            //            mesh.Indicies[i] + 1,
-            //            mesh.Indicies[i + 2] + 1,
-            //            mesh.Indicies[i + 1] + 1
-            //        );
-            //    }
-
-
-            //    triangles.Add(triangle);
-            //}
-
-
-            return sb.ToString();
+            return q;
         }
     }
 }

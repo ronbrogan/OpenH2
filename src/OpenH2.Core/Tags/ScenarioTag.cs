@@ -19,7 +19,7 @@ namespace OpenH2.Core.Tags
         [InternalReferenceValue(72)] public Obj72[] Obj72s { get; set; }
 
         [InternalReferenceValue(80)] public SceneryInstance[] SceneryInstances { get; set; }
-        [InternalReferenceValue(88)] public SceneryDefinition[] SceneryReferences { get; set; }
+        [InternalReferenceValue(88)] public SceneryDefinition[] SceneryDefinitions { get; set; }
 
         [InternalReferenceValue(96)] public Obj96[] Obj96s { get; set; }
         [InternalReferenceValue(104)] public BipedDefinition[] BipedDefinitions { get; set; }

@@ -40,7 +40,7 @@ namespace OpenH2.Engine.EntityFactories
                 {
                     Compressed = mesh.Compressed,
                     ElementType = mesh.ElementType,
-                    Indicies = mesh.Indicies,
+                    Indicies = mesh.Indices,
                     Note = mesh.Note,
                     RawData = mesh.RawData,
                     Verticies = mesh.Verticies,
@@ -103,7 +103,7 @@ namespace OpenH2.Engine.EntityFactories
         {
             var scenery = new Scenery();
 
-            var id = scenario.SceneryReferences[instance.SceneryDefinitionIndex].Scenery;
+            var id = scenario.SceneryDefinitions[instance.SceneryDefinitionIndex].Scenery;
             map.TryGetTag(id, out var tag);
 
             if (map.TryGetTag(tag.PhysicalModel, out var hlmt) == false)
@@ -142,7 +142,7 @@ namespace OpenH2.Engine.EntityFactories
                 {
                     Compressed = mesh.Compressed,
                     ElementType = mesh.ElementType,
-                    Indicies = mesh.Indicies,
+                    Indicies = mesh.Indices,
                     Note = mesh.Note,
                     RawData = mesh.RawData,
                     Verticies = mesh.Verticies,

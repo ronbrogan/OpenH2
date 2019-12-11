@@ -54,7 +54,7 @@ namespace OpenH2.Engine.EntityFactories
                 {
                     Compressed = mesh.Compressed,
                     ElementType = mesh.ElementType,
-                    Indicies = mesh.Indicies,
+                    Indicies = mesh.Indices,
                     Note = mesh.Note,
                     RawData = mesh.RawData,
                     Verticies = mesh.Verticies,

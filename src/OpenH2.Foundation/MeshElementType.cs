@@ -4,6 +4,6 @@
     {
         TriangleList = 11,
         TriangleStrip = 3,
-        Other = 2
+        TriangleStripDecal = 2
     }
 }

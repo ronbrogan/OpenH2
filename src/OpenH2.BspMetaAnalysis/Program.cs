@@ -139,9 +139,9 @@ namespace OpenH2.BspMetaAnalysis
                     sb.AppendLine($"g BspChunk.{i}.{matId}");
                     sb.AppendLine($"usemtl {matId}");
                     
-                    for(var j = 0; j < mesh.Indicies.Length; j+=3)
+                    for(var j = 0; j < mesh.Indices.Length; j+=3)
                     {
-                        var indicies = (mesh.Indicies[j], mesh.Indicies[j+1], mesh.Indicies[j+2]);
+                        var indicies = (mesh.Indices[j], mesh.Indices[j+1], mesh.Indices[j+2]);
 
                         sb.Append("f");
                         sb.Append($" {indicies.Item1 + vertsWritten}/{indicies.Item1 + vertsWritten}/{indicies.Item1 + vertsWritten}");

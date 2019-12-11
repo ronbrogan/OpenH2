@@ -42,7 +42,7 @@ namespace OpenH2.Core.Tags.Common
                 var mesh = new ModelMesh
                 {
                     Verticies = verts,
-                    Indicies = new int[indexCount],
+                    Indices = new int[indexCount],
                     Shader = shaders[matId].ShaderId,
                     ElementType = elementType
                 };
@@ -53,7 +53,7 @@ namespace OpenH2.Core.Tags.Common
                 {
                     var byteStart = (indexStart + j) * 2;
 
-                    mesh.Indicies[j] = faceData.ReadUInt16At(byteStart);
+                    mesh.Indices[j] = faceData.ReadUInt16At(byteStart);
                 }
 
                 meshes.Add(mesh);

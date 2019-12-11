@@ -107,7 +107,7 @@ namespace OpenH2.Engine
 
         public void LoadMap(Scene destination)
         {
-            var mapPath = @"D:\H2vMaps\zanzibar.map";
+            var mapPath = @"D:\H2vMaps\street_sweeper.map";
 
             var factory = new MapFactory(Path.GetDirectoryName(mapPath));
 
