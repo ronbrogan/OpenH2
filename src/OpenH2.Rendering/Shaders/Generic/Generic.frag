@@ -77,7 +77,7 @@ vec3 viewDirection = normalize(viewDifference);
 
 
 // TODO move lighting to global uniform
-vec3 light_pos = vec3(50, 100, 50);
+vec3 light_pos = vec3(100, 100, 50);
 vec3 light_color = vec3(1,1,1);
 
 vec4 lightCalculation(in PointLight light, in vec4 textureColor);
@@ -112,28 +112,42 @@ void main() {
 
 	diffuseColor = vec4((diffuseColor * detailColor * 2.5).rgb, 1);
 
-
-	// Sets ambient baseline
-	vec4 finalColor = diffuseColor * 0.3;
-
-	// Adds global lighting
-	finalColor += globalLighting(diffuseColor);
-
-	// Accumulates point lights
-	for(int i = 0; i < 10; i++)
-	{
-		if(Lighting.pointLights[i].ColorAndRange.a <= 0.0) 
-		{
-			continue;
-		}
-		finalColor += lightCalculation(Lighting.pointLights[i], diffuseColor);
-	}
-
+	
 	float alpha = 1f;
+	vec4 finalColor;
+
+	if(Data.UseEmissiveMap)
+	{
+		// TODO: support the various emissive modes:
+		// - r alpha (fusion coil)
+		// - emissive alpha, with diffuse (ascension railing)
+		// - 3 channel? (ascension)
+		finalColor = texture(Data.EmissiveMap, texcoord);
+		alpha = finalColor.r;
+		finalColor += diffuseColor;
+	}
+	else
+	{
+		// Sets ambient baseline
+		finalColor = diffuseColor * 0.3;
+
+		// Adds global lighting
+		finalColor += globalLighting(diffuseColor);
+
+		// Accumulates point lights
+		for(int i = 0; i < 10; i++)
+		{
+			if(Lighting.pointLights[i].ColorAndRange.a <= 0.0) 
+			{
+				continue;
+			}
+			finalColor += lightCalculation(Lighting.pointLights[i], diffuseColor);
+		}
+	}
 
 	if(Data.UseAlpha)
 	{
-		alpha = texture(Data.AlphaHandle, texcoord).a;
+		alpha = min(texture(Data.AlphaHandle, texcoord).a, alpha);
 		
 		if(alpha < 0.5)
 		{

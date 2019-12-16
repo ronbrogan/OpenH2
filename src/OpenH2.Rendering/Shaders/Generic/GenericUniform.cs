@@ -40,6 +40,10 @@ namespace OpenH2.Rendering.Shaders.Generic
             UseAlpha = bindings.AlphaHandle != default;
             AlphaAmount = 1f;
 
+            UseEmissiveMap = bindings.EmissiveHandle != default;
+            EmissiveMapAmount = 1f;
+            EmissiveMap = bindings.EmissiveHandle;
+
             // Currently unused
             UseSpecular = false;
             SpecularAmount = 0f;
@@ -48,9 +52,6 @@ namespace OpenH2.Rendering.Shaders.Generic
             UseNormalMap = false;
             NormalMapAmount = 0f;
             NormalMap = 0;
-            UseEmissiveMap = false;
-            EmissiveMapAmount = 0f;
-            EmissiveMap = 0;
         }
 
         public Matrix4x4 ModelMatrix;

@@ -1,8 +1,5 @@
 ﻿using OpenH2.Core.Representations;
 using OpenH2.Core.Tags.Layout;
-using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace OpenH2.Core.Tags
 {
@@ -73,8 +70,8 @@ namespace OpenH2.Core.Tags
             [PrimitiveArray(6, 16)]
             public ushort[] Values { get; set; }
 
-            [InternalReferenceValue(40)]
-            public byte[] Data { get; set; }
+            //[InternalReferenceValue(40)]
+            //public byte[] Data { get; set; }
 
         }
 

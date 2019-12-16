@@ -32,6 +32,7 @@ namespace OpenH2.Rendering.OpenGL
             { TextureFormat.A8, (w,h) => w*h},
             { TextureFormat.L8, (w,h) => w*h},
             { TextureFormat.A8L8, (w,h) => w*h*2},
+            { TextureFormat.U8V8, (w,h) => w*h*2},
             { TextureFormat.R5G6B5, (w,h) => w*h*4 },
             { TextureFormat.A4R4G4B4, (w,h) => w*h*4},
             { TextureFormat.R8G8B8, (w,h) => w*h*4},

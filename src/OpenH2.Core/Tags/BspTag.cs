@@ -173,7 +173,7 @@ namespace OpenH2.Core.Tags
                     resource.Data = sceneReader.Chunk(new NormalOffset((int)dataOffset), resource.Size, "InstancedGeometry Render Data").ReadArray(0, resource.Size);
                 }
 
-                var meshes = ModelResouceContainerProcessor.ProcessContainer(def, ModelShaderReferences);
+                var meshes = ModelResouceContainerProcessor.ProcessContainer(def, ModelShaderReferences, "InstancedGeometry_" + def.DataBlockRawOffset);
                 def.Model = new MeshCollection(meshes);
             }
         }

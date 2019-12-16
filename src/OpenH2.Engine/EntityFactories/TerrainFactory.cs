@@ -16,8 +16,6 @@ namespace OpenH2.Engine.EntityFactories
         {
             var terrain = new Terrain();
 
-            var components = new List<Component>();
-
             var meshes = new List<ModelMesh>();
 
             foreach (var chunk in tag.RenderChunks)

@@ -7,13 +7,7 @@ namespace OpenH2.Engine.Entities
     {
         public Scenery()
         {
-            var renderComponent = new RenderModelComponent(this);
-
-            this.Components = new Component[]
-            {
-                renderComponent,
-                new TransformComponent(this)
-            };
+            this.Components = new Component[0];
         }
     }
 }

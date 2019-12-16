@@ -16,6 +16,8 @@ namespace OpenH2.Foundation
 
         TTexture AlphaMap { get; set; }
 
+        TTexture AnimationMap { get; set; }
+
         TTexture SpecularMap { get; set; }
 
         TTexture EmissiveMap { get; set; }
@@ -38,6 +40,8 @@ namespace OpenH2.Foundation
         public TTexture DiffuseMap { get; set; }
 
         public TTexture AlphaMap { get; set; }
+
+        public TTexture AnimationMap { get; set; }
 
         public TTexture EmissiveMap { get; set; }
 

@@ -37,6 +37,7 @@ namespace OpenH2.Rendering.OpenGL
             GL.Enable(EnableCap.CullFace);
             GL.Enable(EnableCap.AlphaTest);
             GL.BlendFunc(BlendingFactor.SrcAlpha, BlendingFactor.OneMinusSrcAlpha);
+            GL.Enable(EnableCap.Blend);
         }
 
         public void RegisterCallbacks(Action<double> updateCallback, Action<double> renderCallback)

@@ -35,6 +35,7 @@ namespace OpenH2.Core.Tags
         public Part[] Parts { get; set; }
 
         // TODO, bones are implict reference from parts...how to support?
+        // TODO: bones aren't in tag at all??
         public Bone[] Bones { get; set; }
 
         [InternalReferenceValue(72)]

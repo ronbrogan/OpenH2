@@ -107,11 +107,11 @@ namespace OpenH2.Engine
 
         public void LoadMap(Scene destination)
         {
-            var mapPath = @"D:\H2vMaps\street_sweeper.map";
+            var mapPath = @"D:\H2vMaps\zanzibar.map";
 
             var factory = new MapFactory(Path.GetDirectoryName(mapPath));
 
-            var fs = new FileStream(mapPath, FileMode.Open, FileAccess.Read, FileShare.Read, 1024);
+            var fs = new FileStream(mapPath, FileMode.Open, FileAccess.Read, FileShare.Read, 8096);
             var map = factory.FromFile(fs);
 
             map.TryGetTag(map.IndexHeader.Scenario, out var scenario);

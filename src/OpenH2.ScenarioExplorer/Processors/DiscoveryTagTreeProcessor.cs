@@ -59,7 +59,7 @@ namespace OpenH2.ScenarioExplorer.Processors
                 .Select(c => new TagTreeEntryViewModel()
                 {
                     Id = c.Id,
-                    TagName = c.Name
+                    TagName = c.TagIndexEntry.Tag + (c.Name != null ? " - " + c.Name : string.Empty)
                 })
                 .ToArray();
         }

@@ -6,7 +6,7 @@ namespace OpenH2.Core.Tags.Common
 {
     public static class ModelResouceContainerProcessor
     {
-        public static ModelMesh[] ProcessContainer(IModelResourceContainer container, ModelShaderReference[] shaders)
+        public static ModelMesh[] ProcessContainer(IModelResourceContainer container, ModelShaderReference[] shaders, string note = null)
         {
             if (container.Resources.Length < 4)
             {
@@ -44,7 +44,8 @@ namespace OpenH2.Core.Tags.Common
                     Verticies = verts,
                     Indices = new int[indexCount],
                     Shader = shaders[matId].ShaderId,
-                    ElementType = elementType
+                    ElementType = elementType,
+                    Note = note
                 };
 
                 mesh.RawData = partData.Slice(start, 72).ToArray();
