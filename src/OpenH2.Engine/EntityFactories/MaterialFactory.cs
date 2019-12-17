@@ -13,6 +13,7 @@ namespace OpenH2.Engine.EntityFactories
     {
         private static Dictionary<uint, Action<H2vMap, ShaderTag.ShaderArguments, Material<BitmapTag>>> ShaderMappings = new Dictionary<uint, Action<H2vMap, ShaderTag.ShaderArguments, Material<BitmapTag>>>
         {
+            { 3792316325, OneAlphaEnvIllum },
             { 3833408024, TwoAddEnvIllum },
             { 3834718764, TexBumpPlasmaOneChannelIllum },
             { 3913548045, PrtSimple },
@@ -20,15 +21,21 @@ namespace OpenH2.Engine.EntityFactories
             { 3917480231, TexEnv },
             { 3786024773, TexBump },
             { 3783075608, TexBumpIllum },
+            { 3876323435, TexBumpIllumDetailHonorGuard },
             { 4114612757, TexBumpNoAlpha },
+            { 4085121223, TexBumpAlphaTest },
             { 3923521399, TexBumpEnvCombined },
+            { 3953406271, TexBumpEnvIllum },
             { 4118348365, TexBumpDetailKeep },
             { 4116185644, TexBumpDetailBlend },
+            { 4084531390, TexBumpDetailBlend },
             { 4113891850, TexBumpDetailKeepBlend },
             { 3786745680, TransparentPlasmaAlpha },
             { 3788318568, TransparentOneAlphaEnv },
+            { 3874291795, TransparentOneAddTwoPlusTwo },
             { 4119855716, TransparentTwoAlphaClouds },
-            { 3783524361, SkyTwoAlphaClouds }
+            { 3783524361, SkyTwoAlphaClouds },
+            { 3783000068, SkyOneAlphaEnv }
         };
 
         public static void PopulateMaterial(H2vMap map, Material<BitmapTag> mat, ShaderTag shader)
@@ -144,6 +151,18 @@ namespace OpenH2.Engine.EntityFactories
             }
         }
 
+        private static void OneAlphaEnvIllum(H2vMap map, ShaderTag.ShaderArguments shader, Material<BitmapTag> mat)
+        {
+            if (map.TryGetTag(shader.ShaderMaps[0].Bitmap, out var zero))
+                mat.SpecularMap = zero;
+
+            if (map.TryGetTag(shader.ShaderMaps[1].Bitmap, out var emissive))
+                mat.EmissiveMap = emissive;
+            
+            if (map.TryGetTag(shader.ShaderMaps[2].Bitmap, out var diffuse))
+                mat.DiffuseMap = diffuse;
+        }
+
         private static void TwoAddEnvIllum(H2vMap map, ShaderTag.ShaderArguments shader, Material<BitmapTag> mat)
         {
             if(map.TryGetTag(shader.ShaderMaps[3].Bitmap, out var emissive))
@@ -214,6 +233,12 @@ namespace OpenH2.Engine.EntityFactories
                 mat.SpecularMap = two;
         }
 
+        private static void TransparentOneAddTwoPlusTwo(H2vMap map, ShaderTag.ShaderArguments shader, Material<BitmapTag> mat)
+        {
+            if (map.TryGetTag(shader.ShaderMaps[0].Bitmap, out var zero))
+                mat.DiffuseMap = zero;
+        }
+
         private static void TexBumpDetailKeep(H2vMap map, ShaderTag.ShaderArguments shader, Material<BitmapTag> mat)
         {
             if (map.TryGetTag(shader.ShaderMaps[0].Bitmap, out var zero))
@@ -276,17 +301,71 @@ namespace OpenH2.Engine.EntityFactories
             if (map.TryGetTag(shader.ShaderMaps[1].Bitmap, out var one))
                 mat.DiffuseMap = one;
 
+            // 2 might be a detail map
+
             if (map.TryGetTag(shader.ShaderMaps[3].Bitmap, out var emissive))
             {
                 mat.EmissiveMap = emissive;
             }
         }
 
+        private static void TexBumpIllumDetailHonorGuard(H2vMap map, ShaderTag.ShaderArguments shader, Material<BitmapTag> mat)
+        {
+            if (map.TryGetTag(shader.ShaderMaps[0].Bitmap, out var zero))
+                mat.NormalMap = zero;
+
+            if (map.TryGetTag(shader.ShaderMaps[1].Bitmap, out var one))
+                mat.DiffuseMap = one;
+
+            // 2 might be a detail map
+
+            if (map.TryGetTag(shader.ShaderMaps[3].Bitmap, out var emissive))
+            {
+                mat.EmissiveMap = emissive;
+            }
+
+            // TODO: 4 is some mask or something
+        }
+
         private static void TexBumpNoAlpha(H2vMap map, ShaderTag.ShaderArguments shader, Material<BitmapTag> mat) 
             => TexBump(map, shader, mat);
 
+        private static void TexBumpAlphaTest(H2vMap map, ShaderTag.ShaderArguments shader, Material<BitmapTag> mat)
+        {
+            if (map.TryGetTag(shader.ShaderMaps[0].Bitmap, out var zero))
+                mat.NormalMap = zero;
+
+            if (map.TryGetTag(shader.ShaderMaps[2].Bitmap, out var two))
+                mat.AlphaMap = two;
+
+            if (map.TryGetTag(shader.ShaderMaps[3].Bitmap, out var three))
+                mat.DiffuseMap = three;
+
+            if (map.TryGetTag(shader.ShaderMaps[4].Bitmap, out var four))
+            {
+                mat.DetailMap1 = four;
+                mat.Detail1Scale = shader.ShaderInputs[2];
+            }
+        }
+
         private static void TexBumpEnvCombined(H2vMap map, ShaderTag.ShaderArguments shader, Material<BitmapTag> mat)
             => TexBump(map, shader, mat);
+
+        private static void TexBumpEnvIllum(H2vMap map, ShaderTag.ShaderArguments shader, Material<BitmapTag> mat)
+        {
+            if (map.TryGetTag(shader.ShaderMaps[0].Bitmap, out var zero))
+                mat.NormalMap = zero;
+
+            if (map.TryGetTag(shader.ShaderMaps[2].Bitmap, out var two))
+                mat.DiffuseMap = two;
+
+            // 2 might be a detail map
+
+            if (map.TryGetTag(shader.ShaderMaps[4].Bitmap, out var emissive))
+            {
+                mat.EmissiveMap = emissive;
+            }
+        }
 
         private static void TransparentOneAlphaEnv(H2vMap map, ShaderTag.ShaderArguments shader, Material<BitmapTag> mat)
         {
@@ -325,6 +404,12 @@ namespace OpenH2.Engine.EntityFactories
         {
             if (map.TryGetTag(shader.ShaderMaps[0].Bitmap, out var zero))
                 mat.DiffuseMap = zero;
+        }
+
+        private static void SkyOneAlphaEnv(H2vMap map, ShaderTag.ShaderArguments shader, Material<BitmapTag> mat)
+        {
+            if (map.TryGetTag(shader.ShaderMaps[2].Bitmap, out var two))
+                mat.DiffuseMap = two;
         }
     }
 }

@@ -1,4 +1,5 @@
 ﻿using PropertyChanged;
+using System;
 
 namespace OpenH2.ScenarioExplorer.ViewModels
 {
@@ -16,5 +17,10 @@ namespace OpenH2.ScenarioExplorer.ViewModels
         public TagTreeEntryViewModel[] Children { get; set; } = null;
 
         public bool NullChildren => Children == null;
+
+        public void GenerateCaoCode()
+        {
+            Console.WriteLine("heyo");
+        }
     }
 }

@@ -2,8 +2,10 @@
 using OpenH2.Core.Tags;
 using OpenH2.ScenarioExplorer.Processors;
 using PropertyChanged;
+using ReactiveUI;
 using System;
 using System.Collections.Generic;
+using System.Reactive;
 
 namespace OpenH2.ScenarioExplorer.ViewModels
 {
@@ -22,6 +24,8 @@ namespace OpenH2.ScenarioExplorer.ViewModels
 
         public TagTreeEntryViewModel[] TreeRoots { get; set; }
 
+        public ReactiveCommand<Unit, Unit> GenerateCaoCode { get; set; }
+
         public ScenarioViewModel() { }
 
         public ScenarioViewModel(H2vMap scene, Memory<byte> sceneData, bool discoveryMode = true)
@@ -29,6 +33,8 @@ namespace OpenH2.ScenarioExplorer.ViewModels
             this.scene = scene;
             this.sceneData = sceneData;
             this.discoveryMode = discoveryMode;
+
+            this.GenerateCaoCode = ReactiveCommand.Create(GenerateCaoCodeM);
 
             var scenarioVm = GetTagViewModel(scene.IndexHeader.Scenario);
             var scenarioEntry = new TagTreeEntryViewModel()
@@ -56,6 +62,11 @@ namespace OpenH2.ScenarioExplorer.ViewModels
         {
             var vm = GetTagViewModel(selectedEntry.Id);
             treeProcessor.PopulateChildren(vm, selectedEntry);
+        }
+
+        public void GenerateCaoCodeM()
+        {
+            Console.WriteLine("heyo");
         }
 
         public TagViewModel GetTagViewModel(uint tagId)
