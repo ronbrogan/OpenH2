@@ -5,6 +5,12 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="Shaders\ShadowMapping\**" />
+    <EmbeddedResource Remove="Shaders\ShadowMapping\**" />
+    <None Remove="Shaders\ShadowMapping\**" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="OpenTK.NetStandard" Version="1.0.7-prerelease" />
   </ItemGroup>
 
@@ -38,10 +44,6 @@
     <None Update="Shaders\TextureViewer\TextureViewer.vert">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-  </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="Shaders\ShadowMapping\" />
   </ItemGroup>
 
 </Project>

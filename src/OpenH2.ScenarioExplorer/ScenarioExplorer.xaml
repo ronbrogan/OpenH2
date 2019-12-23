@@ -1,12 +1,12 @@
 ﻿<Window xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:vm="clr-namespace:OpenH2.ScenarioExplorer.ViewModels"
-        xmlns:ctrls="https://github.com/ronbrogan/openh2/avaloniacontrols"
+        xmlns:ctrls="clr-namespace:OpenH2.AvaloniaControls;assembly=OpenH2.AvaloniaControls"
         Title="Scenario Explorer"
-        x:Class="OpenH2.ScenarioExplorer"
+        x:Class="OpenH2.ScenarioExplorer.ScenarioExplorer"
         MinWidth="900"
         MinHeight="500">
-
+  
   <Grid Name="mainGrid">
     <Grid.ColumnDefinitions>
       <ColumnDefinition Width="550" />
@@ -151,11 +151,21 @@
               <ListBox Items="{Binding PreviewItems}" SelectedItem="{Binding SelectedPreviewItem}" Grid.Row="0"></ListBox>
 
               <TextBox Text="{Binding SelectedPreviewItemObject}" IsReadOnly="True" Grid.Row="1"
-  ScrollViewer.HorizontalScrollBarVisibility="Auto"
-  ScrollViewer.VerticalScrollBarVisibility="Auto"></TextBox>
+                       ScrollViewer.HorizontalScrollBarVisibility="Auto"
+                       ScrollViewer.VerticalScrollBarVisibility="Auto"
+                       IsVisible="{Binding ItemIsString}"></TextBox>
 
-              <Image Source="{Binding SelectedPreviewItemObject}" Name="bitmPreviewImage" Grid.Row="1" Stretch="None" HorizontalAlignment="Left" VerticalAlignment="Top" ></Image>
+              <Panel Grid.Row="1" IsVisible="{Binding ItemIsBitmap}">
+                <Panel.Background>
+                  <ImageBrush TileMode="Tile"
+                              Source="resm:OpenH2.ScenarioExplorer.Images.checkerboard.bmp?assembly=OpenH2.ScenarioExplorer"
+                              Stretch="Uniform"
+                              DestinationRect="0,0,32,32">
+                  </ImageBrush>
+                </Panel.Background>
 
+                <Image Source="{Binding SelectedPreviewItemObject}" Name="bitmPreviewImage" Stretch="Uniform" HorizontalAlignment="Left" VerticalAlignment="Top" ></Image>
+              </Panel>
             </Grid>
           </TabItem>
         </TabControl>

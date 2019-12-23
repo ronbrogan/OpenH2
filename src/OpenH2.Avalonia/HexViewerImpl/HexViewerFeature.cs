@@ -2,7 +2,7 @@
 using PropertyChanged;
 using System;
 
-namespace OpenH2.AvaloniaControls.HexViewer
+namespace OpenH2.AvaloniaControls.HexViewerImpl
 {
     [AddINotifyPropertyChangedInterface]
     public class HexViewerFeature

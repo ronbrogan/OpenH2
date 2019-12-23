@@ -21,7 +21,7 @@ namespace OpenH2.Rendering.Shaders.Skybox
         {
             ModelMatrix = transform;
             NormalMatrix = Matrix4x4.Transpose(inverted);
-            DiffuseColor = new Vector4(material.DiffuseColor, 1);
+            DiffuseColor = material.DiffuseColor;
             UseDiffuse = bindings.DiffuseHandle != default;
             DiffuseHandle = bindings.DiffuseHandle;
             DiffuseAmount = 1f;

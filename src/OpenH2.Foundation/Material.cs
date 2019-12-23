@@ -5,7 +5,7 @@ namespace OpenH2.Foundation
 {
     public interface IMaterial
     {
-        Vector3 DiffuseColor { get; set; }
+        Vector4 DiffuseColor { get; set; }
 
         Vector3 SpecularColor { get; set; }
     }
@@ -21,6 +21,8 @@ namespace OpenH2.Foundation
         TTexture SpecularMap { get; set; }
 
         TTexture EmissiveMap { get; set; }
+        EmissiveType EmissiveType { get; set; }
+        Vector4 EmissiveArguments { get; set; }
 
         TTexture NormalMap { get; set; }
 
@@ -34,7 +36,7 @@ namespace OpenH2.Foundation
     public class Material<TTexture> : IMaterial<TTexture>
     {
 
-        public Vector3 DiffuseColor { get; set; }
+        public Vector4 DiffuseColor { get; set; }
         public Vector3 SpecularColor { get; set; }
 
         public TTexture DiffuseMap { get; set; }
@@ -44,6 +46,8 @@ namespace OpenH2.Foundation
         public TTexture AnimationMap { get; set; }
 
         public TTexture EmissiveMap { get; set; }
+        public EmissiveType EmissiveType { get; set; }
+        public Vector4 EmissiveArguments { get; set; }
 
         public TTexture NormalMap { get; set; }
 

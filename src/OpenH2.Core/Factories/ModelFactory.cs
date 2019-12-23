@@ -9,7 +9,7 @@ namespace OpenH2.Core.Factories
 {
     public static class ModelFactory
     {
-        public static Model<BitmapTag> UnitPyramid(Vector3 color)
+        public static Model<BitmapTag> UnitPyramid(Vector4 color)
         {
             var mesh = new Mesh<BitmapTag>
             {
@@ -35,7 +35,7 @@ namespace OpenH2.Core.Factories
             };
         }
 
-        public static Model<BitmapTag> HalfTriangularThing(Vector3 color)
+        public static Model<BitmapTag> HalfTriangularThing(Vector4 color)
         {
             var mesh = new Mesh<BitmapTag>
             {

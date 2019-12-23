@@ -21,7 +21,7 @@ namespace OpenH2.Rendering.Shaders.Generic
         {
             ModelMatrix = transform;
             NormalMatrix = Matrix4x4.Transpose(inverted);
-            DiffuseColor = new Vector4(material.DiffuseColor, 1);
+            DiffuseColor = material.DiffuseColor;
             UseDiffuse = bindings.DiffuseHandle != default;
             DiffuseHandle = bindings.DiffuseHandle;
             DiffuseAmount = 1f;
@@ -41,8 +41,9 @@ namespace OpenH2.Rendering.Shaders.Generic
             AlphaAmount = 1f;
 
             UseEmissiveMap = bindings.EmissiveHandle != default;
-            EmissiveMapAmount = 1f;
             EmissiveMap = bindings.EmissiveHandle;
+            EmissiveType = (int)material.EmissiveType;
+            EmissiveArguments = material.EmissiveArguments;
 
             // Currently unused
             UseSpecular = false;
@@ -76,8 +77,9 @@ namespace OpenH2.Rendering.Shaders.Generic
         public long NormalMap;
 
         public bool UseEmissiveMap;
-        public float EmissiveMapAmount;
+        public int EmissiveType;
         public long EmissiveMap;
+        public Vector4 EmissiveArguments;
 
         public bool UseDetailMap1;
         public float DetailMap1Amount;

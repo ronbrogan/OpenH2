@@ -2,6 +2,6 @@
 {
     public class EngineStartParameters
     {
-
+        public string LoadPathOverride { get; set; }
     }
 }

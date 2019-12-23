@@ -5,8 +5,14 @@
         static void Main(string[] args)
         {
             var engine = new Engine();
+            var startArgs = new EngineStartParameters();
 
-            engine.Start(new EngineStartParameters());
+            if(args.Length > 0)
+            {
+                startArgs.LoadPathOverride = args[0];
+            }
+
+            engine.Start(startArgs);
         }
     }
 }

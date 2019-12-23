@@ -1,6 +1,6 @@
 ﻿<UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             x:Class="OpenH2.AvaloniaControls.HexViewer.HexViewer"
+             x:Class="OpenH2.AvaloniaControls.HexViewer"
              Design.Width="520"
              Design.Height="100" 
              MinWidth="520"

@@ -6,8 +6,14 @@ layout(std140, binding = 0) uniform GlobalUniform
 {
 	mat4 ViewMatrix;
 	mat4 ProjectionMatrix;
-	vec3 ViewPosition;
+	vec4 ViewPosition;
 } Globals;
+
+
+const int EmissiveTypeEmissiveOnly = 0;   // fusion coil bloom?
+const int EmissiveTypeDiffuseBlended = 1; // flag base
+const int EmissiveTypeThreeChannel = 2;     // ascension
+const int EmissiveTypeDisabled = -1;
 
 layout(std140, binding = 1) uniform GenericUniform
 {
@@ -33,8 +39,9 @@ layout(std140, binding = 1) uniform GenericUniform
 	sampler2D NormalMap;
 	
 	bool UseEmissiveMap;
-	float EmissiveMapAmount;
+	int EmissiveType;
 	sampler2D EmissiveMap;
+	vec4 EmissiveArguments;
 	
 	bool UseDetailMap1;
 	float DetailMap1Amount;
@@ -58,11 +65,14 @@ layout(std140, binding = 2) uniform LightingUniform
 	PointLight[10] pointLights;
 } Lighting;
 
-in vec2 texcoord;
-in vec3 vertex_color;
-in vec3 world_pos;
-in vec3 world_normal;
-in mat3 TBN;
+in Vertex
+{
+    vec2 texcoord;
+    vec3 vertex_color;
+    vec3 world_pos;
+    vec3 world_normal;
+    mat3 TBN;
+} vertex;
 
 layout(location = 0) out vec4 out_color;
 
@@ -70,84 +80,86 @@ layout(location = 0) out vec4 out_color;
 vec3 calculated_normal;
 vec3 specular_color;
 
-vec3 viewDifference = Globals.ViewPosition - world_pos;
+vec3 viewDifference = Globals.ViewPosition.xyz - vertex.world_pos;
 float viewDistance = length(viewDifference);
 vec3 viewDirection = normalize(viewDifference);
 
 
 
 // TODO move lighting to global uniform
-vec3 light_pos = vec3(100, 100, 50);
-vec3 light_color = vec3(1,1,1);
+vec3 light_pos = vec3(-5, 2, 5);
+vec3 light_color = vec3(1);
 
 vec4 lightCalculation(in PointLight light, in vec4 textureColor);
 vec4 globalLighting(in vec4 textureColor);
 
 void main() {
 
-	calculated_normal = world_normal;
+	calculated_normal = vertex.world_normal;
 	specular_color = vec3(1);
 
-	vec4 detail1Tex = texture(Data.DetailMap1, texcoord * Data.DetailMap1Scale.xy);
-	vec4 detail2Tex = texture(Data.DetailMap2, texcoord * Data.DetailMap2Scale.xy);
-	vec4 diffuseTex = texture(Data.DiffuseMap, texcoord);
+	vec4 detail1Tex = texture(Data.DetailMap1, vertex.texcoord * Data.DetailMap1Scale.xy);
+	vec4 detail2Tex = texture(Data.DetailMap2, vertex.texcoord * Data.DetailMap2Scale.xy);
+	vec4 diffuseTex = texture(Data.DiffuseMap, vertex.texcoord);
 
-	vec4 diffuseColor = Data.UseDiffuseMap ? diffuseTex : Data.DiffuseColor;
-	vec4 detailColor;
-
-	if(Data.UseDetailMap1 && Data.UseDetailMap2)
-	{
-		detailColor = mix(detail1Tex, detail2Tex, diffuseColor.a);
-	}
-	else if(!Data.UseDetailMap1 && !Data.UseDetailMap2)
-	{
-		// Set to nop for later multiply
-		detailColor = vec4(0.4);
-	}
-	else
-	{
-		// If one is empty (vec4(0)), detailColor will be set to the other
-		detailColor = detail1Tex + detail2Tex;
-	}
-
-	diffuseColor = vec4((diffuseColor * detailColor * 2.5).rgb, 1);
-
+	vec4 diffuseColor = Data.DiffuseColor;
 	
-	float alpha = 1f;
+	if(Data.UseDiffuseMap)
+	{
+		vec4 detailColor = vec4(0.4);
+
+		if(Data.UseDetailMap1 && Data.UseDetailMap2)
+		{
+			detailColor = mix(detail1Tex, detail2Tex, diffuseTex.a);
+		}
+		else if(Data.UseDetailMap1 || Data.UseDetailMap2)
+		{
+			// If one is empty (vec4(0)), detailColor will be set to the other
+			detailColor = detail1Tex + detail2Tex;
+		}
+
+		diffuseColor = vec4((diffuseTex * detailColor * 2.5).rgb, 1);
+	}
+	
 	vec4 finalColor;
 
-	if(Data.UseEmissiveMap)
+	// Sets ambient baseline
+	finalColor = vec4(diffuseColor.rgb * 0.2, diffuseColor.a);
+
+	// Adds global lighting
+	finalColor += globalLighting(diffuseColor);
+
+	// Accumulates point lights
+	for(int i = 0; i < 10; i++)
 	{
-		// TODO: support the various emissive modes:
-		// - r alpha (fusion coil)
-		// - emissive alpha, with diffuse (ascension railing)
-		// - 3 channel? (ascension)
-		finalColor = texture(Data.EmissiveMap, texcoord);
-		alpha = finalColor.r;
-		finalColor += diffuseColor;
+		if(Lighting.pointLights[i].ColorAndRange.a <= 0.0) 
+		{
+			continue;
+		}
+		finalColor += lightCalculation(Lighting.pointLights[i], diffuseColor);
+	}
+
+	vec4 emissiveSample = texture(Data.EmissiveMap, vertex.texcoord);
+
+	// TODO: figure out how to do the 3 channel stuff better?
+	if(Data.EmissiveType == EmissiveTypeThreeChannel)
+	{
+		float r = emissiveSample.r * Data.EmissiveArguments.r;
+		float g = emissiveSample.g * Data.EmissiveArguments.g;
+		float b = emissiveSample.b * Data.EmissiveArguments.b;
+
+		float winner = max(max(r,g),b);
+
+		finalColor += vec4(winner,winner,winner,0);
 	}
 	else
 	{
-		// Sets ambient baseline
-		finalColor = diffuseColor * 0.3;
-
-		// Adds global lighting
-		finalColor += globalLighting(diffuseColor);
-
-		// Accumulates point lights
-		for(int i = 0; i < 10; i++)
-		{
-			if(Lighting.pointLights[i].ColorAndRange.a <= 0.0) 
-			{
-				continue;
-			}
-			finalColor += lightCalculation(Lighting.pointLights[i], diffuseColor);
-		}
+		finalColor += vec4(emissiveSample.r);
 	}
-
+	
 	if(Data.UseAlpha)
 	{
-		alpha = min(texture(Data.AlphaHandle, texcoord).a, alpha);
+		float alpha = min(texture(Data.AlphaHandle, vertex.texcoord).a, finalColor.a);
 		
 		if(alpha < 0.5)
 		{
@@ -155,30 +167,40 @@ void main() {
 		}
 	}
 
-    out_color = vec4(finalColor.xyz, alpha);
+    out_color = finalColor;
 }
 
 vec4 globalLighting(in vec4 textureColor)
 {
-	vec3 norm = normalize(world_normal);
-    vec3 lightDir = normalize(-light_pos);  
+    vec3 lightDirection = normalize(light_pos);  
 
-    float diffStrength = max(dot(norm, lightDir), 0.0);
-    vec4 diffuse = diffStrength * textureColor * vec4(light_color,1) * 0.5;
+	float cosTheta = clamp(dot(lightDirection, calculated_normal), 0.0, 1.0);
+	vec4 light_diffuse = textureColor * vec4(light_color,1) * cosTheta;
 
-    return diffuse;
+	float specularFalloff = 1 / (viewDistance * viewDistance );
+
+	vec3 halfwayDirection = normalize(lightDirection + viewDirection);
+	float specularAngle = max(dot(calculated_normal, halfwayDirection), 0.0);
+
+	// TODO: replace 100 with specular amount/intensity
+	float specularModifier = pow(specularAngle, 100);
+
+	// TODO: specular term is not working correctly
+	vec4 light_specular = vec4(light_color,1) * vec4(light_color,1) * 0; //specularModifier;
+	
+	return light_diffuse + light_specular;
 }
 
 vec4 lightCalculation(in PointLight light, in vec4 textureColor)
 {
-	vec3 posDiff = light.Position.xyz - world_pos;
+	vec3 posDiff = light.Position.xyz - vertex.world_pos;
 
 	if(length(posDiff) > light.ColorAndRange.a)
 	{
 		return vec4(0);
 	}
 
-    vec3 norm = normalize(world_normal);
+    vec3 norm = normalize(vertex.world_normal);
 
 	float falloff = 1/exp2(length(posDiff));
 

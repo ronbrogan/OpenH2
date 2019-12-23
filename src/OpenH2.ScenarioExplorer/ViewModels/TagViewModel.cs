@@ -1,17 +1,17 @@
 ﻿using Avalonia.Media;
-using OpenH2.AvaloniaControls.HexViewer;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Serialization;
+using OpenH2.AvaloniaControls.HexViewerImpl;
 using OpenH2.Core.Extensions;
+using OpenH2.Core.Tags;
+using OpenH2.Core.Tags.Common;
+using OpenH2.Core.Types;
+using OpenH2.Foundation;
 using PropertyChanged;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
-using Newtonsoft.Json;
-using OpenH2.Core.Tags;
-using Newtonsoft.Json.Serialization;
-using OpenH2.Foundation;
-using OpenH2.Core.Types;
-using OpenH2.Core.Tags.Common;
 
 namespace OpenH2.ScenarioExplorer.ViewModels
 {

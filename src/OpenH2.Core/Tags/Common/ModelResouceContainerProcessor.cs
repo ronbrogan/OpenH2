@@ -151,9 +151,9 @@ namespace OpenH2.Core.Tags.Common
                 var vert = verts[i];
 
                 var start = i * 36;
-                vert.Tangent = tbnData.ReadVec3At(start);
+                vert.Normal = tbnData.ReadVec3At(start);
                 vert.Bitangent = tbnData.ReadVec3At(start + 12);
-                vert.Normal = tbnData.ReadVec3At(start + 24);
+                vert.Tangent = tbnData.ReadVec3At(start + 24);
 
                 verts[i] = vert;
             }

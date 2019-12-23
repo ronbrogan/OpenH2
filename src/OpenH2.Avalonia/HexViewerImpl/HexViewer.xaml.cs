@@ -13,9 +13,10 @@ using System.Text;
 using System.Threading.Tasks;
 using Avalonia.Metadata;
 using PropertyChanged;
+using OpenH2.AvaloniaControls.HexViewerImpl;
 
-[assembly: XmlnsDefinition("https://github.com/ronbrogan/openh2/avaloniacontrols", "OpenH2.AvaloniaControls.HexViewer")]
-namespace OpenH2.AvaloniaControls.HexViewer
+//[assembly: XmlnsDefinition("https://github.com/ronbrogan/openh2/avaloniacontrols", "OpenH2.AvaloniaControls.HexViewer")]
+namespace OpenH2.AvaloniaControls
 {
     [DoNotNotify]
     public class HexViewer : UserControl
@@ -274,7 +275,7 @@ namespace OpenH2.AvaloniaControls.HexViewer
                 Title = "Save Data"
             };
 
-            var path = await dialog.ShowAsync(Application.Current.MainWindow);
+            var path = await dialog.ShowAsync(AvaloniaLocator.Current.GetService<Window>());
 
             File.WriteAllBytes(path, this.allData.ToArray());
         }

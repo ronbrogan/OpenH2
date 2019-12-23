@@ -33,7 +33,7 @@ namespace OpenH2.Engine.Entities
                 //light
             };
 
-            xform.Position = new Vector3(0, 0, 20);
+            xform.Position = new Vector3(0,0,10);
         }
 
     }

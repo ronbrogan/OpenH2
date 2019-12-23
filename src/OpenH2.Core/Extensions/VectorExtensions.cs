@@ -45,13 +45,13 @@ namespace OpenH2.Core.Extensions
             return Quaternion.CreateFromYawPitchRoll(vec.Y, vec.Z, vec.X);
         }
 
-        public static Vector3 RandomColor(int shade = 128)
+        public static Vector4 RandomColor(int shade = 128)
         {
-            var mix = new Vector3(shade, shade, shade);
+            var mix = new Vector4(shade, shade, shade, 256);
 
             Random random = new Random();
 
-            var rando = new Vector3(random.Next(256), random.Next(256), random.Next(256));
+            var rando = new Vector4(random.Next(256), random.Next(256), random.Next(256), 256);
 
             return (mix + rando) / 512;
         }

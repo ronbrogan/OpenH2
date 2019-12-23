@@ -1,6 +1,7 @@
 ﻿using OpenH2.Core.Enums.Texture;
 using OpenH2.Core.Representations;
 using OpenH2.Core.Tags;
+using OpenH2.Engine.Extensions;
 using OpenH2.Foundation;
 using System;
 using System.Collections.Generic;
@@ -13,6 +14,7 @@ namespace OpenH2.Engine.EntityFactories
     {
         private static Dictionary<uint, Action<H2vMap, ShaderTag.ShaderArguments, Material<BitmapTag>>> ShaderMappings = new Dictionary<uint, Action<H2vMap, ShaderTag.ShaderArguments, Material<BitmapTag>>>
         {
+            { 4086628561, Illum3Channel },
             { 3792316325, OneAlphaEnvIllum },
             { 3833408024, TwoAddEnvIllum },
             { 3834718764, TexBumpPlasmaOneChannelIllum },
@@ -21,6 +23,7 @@ namespace OpenH2.Engine.EntityFactories
             { 3917480231, TexEnv },
             { 3786024773, TexBump },
             { 3783075608, TexBumpIllum },
+            { 4082892954, TexBumpIllum3Channel },
             { 3876323435, TexBumpIllumDetailHonorGuard },
             { 4114612757, TexBumpNoAlpha },
             { 4085121223, TexBumpAlphaTest },
@@ -42,7 +45,7 @@ namespace OpenH2.Engine.EntityFactories
         {
             var args = shader.Arguments[0];
 
-            if(ShaderMappings.TryGetValue(args.ShaderTemplate.Id, out var mapping))
+            if (ShaderMappings.TryGetValue(args.ShaderTemplate.Id, out var mapping))
             {
                 mapping(map, args, mat);
                 return;
@@ -63,7 +66,7 @@ namespace OpenH2.Engine.EntityFactories
                 if (bitms == null)
                     return;
 
-                if(map.TryGetTag(bitms.DiffuseBitmap, out var diffuse))
+                if (map.TryGetTag(bitms.DiffuseBitmap, out var diffuse))
                 {
                     mat.DiffuseMap = diffuse;
                 }
@@ -87,7 +90,7 @@ namespace OpenH2.Engine.EntityFactories
 
                 var scale = Vector4.One;
 
-                if(args.ShaderInputs.Length >= bitmRefs.Length)
+                if (args.ShaderInputs.Length >= bitmRefs.Length)
                 {
                     scale = args.ShaderInputs[i];
                 }
@@ -97,7 +100,7 @@ namespace OpenH2.Engine.EntityFactories
                     continue;
                 }
 
-                if(bitm == mat.DiffuseMap)
+                if (bitm == mat.DiffuseMap)
                 {
                     continue;
                 }
@@ -107,7 +110,7 @@ namespace OpenH2.Engine.EntityFactories
                     mat.NormalMap = bitm;
                 }
 
-                if(bitm.TextureUsage == TextureUsage.Diffuse)
+                if (bitm.TextureUsage == TextureUsage.Diffuse)
                 {
                     if (mat.DiffuseMap == null)
                     {
@@ -125,7 +128,7 @@ namespace OpenH2.Engine.EntityFactories
 
 
                     // HACK: blacklisted textures that likely are not detail maps:
-                    if(
+                    if (
                         // linear_corner_fade
                         bitm.ID == 3784845107u ||
                         // default_detail
@@ -153,126 +156,92 @@ namespace OpenH2.Engine.EntityFactories
 
         private static void OneAlphaEnvIllum(H2vMap map, ShaderTag.ShaderArguments shader, Material<BitmapTag> mat)
         {
-            if (map.TryGetTag(shader.ShaderMaps[0].Bitmap, out var zero))
-                mat.SpecularMap = zero;
+            mat.SpecularMap = shader.GetBitmap(map, 0);
+            mat.EmissiveMap = shader.GetBitmap(map, 1);
+            mat.DiffuseMap = shader.GetBitmap(map, 2);
 
-            if (map.TryGetTag(shader.ShaderMaps[1].Bitmap, out var emissive))
-                mat.EmissiveMap = emissive;
-            
-            if (map.TryGetTag(shader.ShaderMaps[2].Bitmap, out var diffuse))
-                mat.DiffuseMap = diffuse;
+            mat.EmissiveType = EmissiveType.DiffuseBlended;
         }
 
         private static void TwoAddEnvIllum(H2vMap map, ShaderTag.ShaderArguments shader, Material<BitmapTag> mat)
         {
-            if(map.TryGetTag(shader.ShaderMaps[3].Bitmap, out var emissive))
-            {
-                mat.EmissiveMap = emissive;
-            }
+            mat.EmissiveMap = shader.GetBitmap(map, 3);
+            mat.DiffuseColor = new Vector4(0);
+            //mat.DiffuseMap = shader.GetBitmap(map, 2);
 
-            if (map.TryGetTag(shader.ShaderMaps[2].Bitmap, out var diffuse))
-            {
-                mat.DiffuseMap = diffuse;
-            }
+            mat.EmissiveType = EmissiveType.EmissiveOnly;
+        }
+
+        private static void Illum3Channel(H2vMap map, ShaderTag.ShaderArguments shader, Material<BitmapTag> mat)
+        {
+            mat.EmissiveMap = shader.GetBitmap(map, 0);
+            mat.DiffuseColor = new Vector4(0);
+
+            mat.EmissiveType = EmissiveType.ThreeChannel;
         }
 
         private static void TexBumpPlasmaOneChannelIllum(H2vMap map, ShaderTag.ShaderArguments shader, Material<BitmapTag> mat)
         {
-            if (map.TryGetTag(shader.ShaderMaps[1].Bitmap, out var one))
-                mat.DiffuseMap = one;
+            mat.DiffuseMap = shader.GetBitmap(map, 1);
+            mat.EmissiveMap = shader.GetBitmap(map, 3);
 
-            if (map.TryGetTag(shader.ShaderMaps[2].Bitmap, out var two))
-            {
-                mat.DetailMap1 = two;
-                mat.Detail1Scale = shader.ShaderInputs[3];
-            }
+            mat.DetailMap1 = shader.GetBitmap(map, 2);
+            mat.Detail1Scale = shader.ShaderInputs[3];
 
-            if (map.TryGetTag(shader.ShaderMaps[3].Bitmap, out var emissive))
-            {
-                mat.EmissiveMap = emissive;
-            }
+            mat.EmissiveType = EmissiveType.EmissiveOnly;
         }
 
         private static void PrtSimple(H2vMap map, ShaderTag.ShaderArguments shader, Material<BitmapTag> mat)
         {
-            if (map.TryGetTag(shader.ShaderMaps[0].Bitmap, out var zero))
-                mat.NormalMap = zero;
+            mat.NormalMap = shader.GetBitmap(map, 0);
+            mat.DiffuseMap = shader.GetBitmap(map, 1);
 
-            if (map.TryGetTag(shader.ShaderMaps[1].Bitmap, out var one))
-                mat.DiffuseMap = one;
+            mat.DetailMap1 = shader.GetBitmap(map, 2);
+            mat.Detail1Scale = shader.ShaderInputs[3];
 
-            if (map.TryGetTag(shader.ShaderMaps[2].Bitmap, out var two))
-            {
-                mat.DetailMap1 = two;
-                mat.Detail1Scale = shader.ShaderInputs[3];
-            }
         }
 
         private static void Overlay(H2vMap map, ShaderTag.ShaderArguments shader, Material<BitmapTag> mat)
         {
             // TODO: special overlay flag to enable discard for middle gray
-            if (map.TryGetTag(shader.ShaderMaps[0].Bitmap, out var zero))
-            {
-                mat.DiffuseMap = zero;
-                mat.AlphaMap = zero;
-            }
+            mat.DiffuseMap = shader.GetBitmap(map, 0);
+            mat.AlphaMap = shader.GetBitmap(map, 0);
         }
 
         private static void TexEnv(H2vMap map, ShaderTag.ShaderArguments shader, Material<BitmapTag> mat)
         {
-            if (map.TryGetTag(shader.ShaderMaps[0].Bitmap, out var zero))
-                mat.DiffuseMap = zero;
+            mat.DiffuseMap = shader.GetBitmap(map, 0);
+            mat.SpecularMap = shader.GetBitmap(map, 2);
 
-            if (map.TryGetTag(shader.ShaderMaps[1].Bitmap, out var one))
-            {
-                mat.DetailMap1 = one;
-                mat.Detail1Scale = shader.ShaderInputs[3];
-            }
-
-            if (map.TryGetTag(shader.ShaderMaps[2].Bitmap, out var two))
-                mat.SpecularMap = two;
+            mat.DetailMap1 = shader.GetBitmap(map, 1);
+            mat.Detail1Scale = shader.ShaderInputs[3];
         }
 
         private static void TransparentOneAddTwoPlusTwo(H2vMap map, ShaderTag.ShaderArguments shader, Material<BitmapTag> mat)
         {
-            if (map.TryGetTag(shader.ShaderMaps[0].Bitmap, out var zero))
-                mat.DiffuseMap = zero;
+            mat.DiffuseMap = shader.GetBitmap(map, 0);
         }
 
         private static void TexBumpDetailKeep(H2vMap map, ShaderTag.ShaderArguments shader, Material<BitmapTag> mat)
         {
-            if (map.TryGetTag(shader.ShaderMaps[0].Bitmap, out var zero))
-                mat.NormalMap = zero;
+            mat.NormalMap = shader.GetBitmap(map, 0);
+            mat.DiffuseMap = shader.GetBitmap(map, 1);
 
-            if (map.TryGetTag(shader.ShaderMaps[1].Bitmap, out var one))
-                mat.DiffuseMap = one;
+            mat.DetailMap1 = shader.GetBitmap(map, 2);
+            mat.Detail1Scale = shader.ShaderInputs[2];
 
-            if (map.TryGetTag(shader.ShaderMaps[2].Bitmap, out var two))
-            {
-                mat.DetailMap1 = two;
-                mat.Detail1Scale = shader.ShaderInputs[2];
-            }
         }
 
         private static void TexBumpDetailBlend(H2vMap map, ShaderTag.ShaderArguments shader, Material<BitmapTag> mat)
         {
-            if (map.TryGetTag(shader.ShaderMaps[0].Bitmap, out var zero))
-                mat.NormalMap = zero;
+            mat.NormalMap = shader.GetBitmap(map, 0);
+            mat.DiffuseMap = shader.GetBitmap(map, 1);
 
-            if (map.TryGetTag(shader.ShaderMaps[1].Bitmap, out var one))
-                mat.DiffuseMap = one;
+            mat.DetailMap1 = shader.GetBitmap(map, 2);
+            mat.Detail1Scale = shader.ShaderInputs[2];
 
-            if (map.TryGetTag(shader.ShaderMaps[2].Bitmap, out var two))
-            {
-                mat.DetailMap1 = two;
-                mat.Detail1Scale = shader.ShaderInputs[2];
-            }
-
-            if (map.TryGetTag(shader.ShaderMaps[3].Bitmap, out var three))
-            {
-                mat.DetailMap2 = three;
-                mat.Detail2Scale = shader.ShaderInputs[3];
-            }
+            mat.DetailMap2 = shader.GetBitmap(map, 3);
+            mat.Detail2Scale = shader.ShaderInputs[3];
         }
 
         private static void TexBumpDetailKeepBlend(H2vMap map, ShaderTag.ShaderArguments shader, Material<BitmapTag> mat)
@@ -280,72 +249,60 @@ namespace OpenH2.Engine.EntityFactories
 
         private static void TexBump(H2vMap map, ShaderTag.ShaderArguments shader, Material<BitmapTag> mat)
         {
-            if (map.TryGetTag(shader.ShaderMaps[0].Bitmap, out var zero))
-                mat.NormalMap = zero;
+            mat.NormalMap = shader.GetBitmap(map, 0);
+            mat.DiffuseMap = shader.GetBitmap(map, 2);
 
-            if (map.TryGetTag(shader.ShaderMaps[2].Bitmap, out var two))
-                mat.DiffuseMap = two;
-
-            if (map.TryGetTag(shader.ShaderMaps[3].Bitmap, out var three))
-            {
-                mat.DetailMap1 = three;
-                mat.Detail1Scale = shader.ShaderInputs[3];
-            }
+            mat.DetailMap1 = shader.GetBitmap(map, 3);
+            mat.Detail1Scale = shader.ShaderInputs[2];
         }
 
         private static void TexBumpIllum(H2vMap map, ShaderTag.ShaderArguments shader, Material<BitmapTag> mat)
         {
-            if (map.TryGetTag(shader.ShaderMaps[0].Bitmap, out var zero))
-                mat.NormalMap = zero;
-
-            if (map.TryGetTag(shader.ShaderMaps[1].Bitmap, out var one))
-                mat.DiffuseMap = one;
-
+            mat.NormalMap = shader.GetBitmap(map, 0);
+            mat.DiffuseMap = shader.GetBitmap(map, 1);
             // 2 might be a detail map
+            mat.EmissiveMap = shader.GetBitmap(map, 3);
 
-            if (map.TryGetTag(shader.ShaderMaps[3].Bitmap, out var emissive))
-            {
-                mat.EmissiveMap = emissive;
-            }
+            mat.EmissiveType = EmissiveType.DiffuseBlended;
+        }
+
+        private static void TexBumpIllum3Channel(H2vMap map, ShaderTag.ShaderArguments shader, Material<BitmapTag> mat)
+        {
+            mat.NormalMap = shader.GetBitmap(map, 0);
+            mat.DiffuseMap = shader.GetBitmap(map, 1);
+            mat.EmissiveMap = shader.GetBitmap(map, 3);
+
+            mat.Detail1Scale = shader.ShaderInputs[2];
+            mat.DetailMap1 = shader.GetBitmap(map, 2);
+
+            mat.EmissiveType = EmissiveType.ThreeChannel;
+            mat.EmissiveArguments = shader.ShaderInputs[7];
         }
 
         private static void TexBumpIllumDetailHonorGuard(H2vMap map, ShaderTag.ShaderArguments shader, Material<BitmapTag> mat)
         {
-            if (map.TryGetTag(shader.ShaderMaps[0].Bitmap, out var zero))
-                mat.NormalMap = zero;
-
-            if (map.TryGetTag(shader.ShaderMaps[1].Bitmap, out var one))
-                mat.DiffuseMap = one;
-
-            // 2 might be a detail map
-
-            if (map.TryGetTag(shader.ShaderMaps[3].Bitmap, out var emissive))
-            {
-                mat.EmissiveMap = emissive;
-            }
-
+            mat.NormalMap = shader.GetBitmap(map, 0);
+            mat.DiffuseMap = shader.GetBitmap(map, 1);
+            mat.EmissiveMap = shader.GetBitmap(map, 3);
             // TODO: 4 is some mask or something
+
+            mat.Detail1Scale = shader.ShaderInputs[2];
+            mat.DetailMap1 = shader.GetBitmap(map, 2);
+
+            mat.EmissiveType = EmissiveType.DiffuseBlended;
         }
 
-        private static void TexBumpNoAlpha(H2vMap map, ShaderTag.ShaderArguments shader, Material<BitmapTag> mat) 
+        private static void TexBumpNoAlpha(H2vMap map, ShaderTag.ShaderArguments shader, Material<BitmapTag> mat)
             => TexBump(map, shader, mat);
 
         private static void TexBumpAlphaTest(H2vMap map, ShaderTag.ShaderArguments shader, Material<BitmapTag> mat)
         {
-            if (map.TryGetTag(shader.ShaderMaps[0].Bitmap, out var zero))
-                mat.NormalMap = zero;
+            mat.NormalMap = shader.GetBitmap(map, 0);
+            mat.AlphaMap = shader.GetBitmap(map, 2);
+            mat.DiffuseMap = shader.GetBitmap(map, 3);
 
-            if (map.TryGetTag(shader.ShaderMaps[2].Bitmap, out var two))
-                mat.AlphaMap = two;
-
-            if (map.TryGetTag(shader.ShaderMaps[3].Bitmap, out var three))
-                mat.DiffuseMap = three;
-
-            if (map.TryGetTag(shader.ShaderMaps[4].Bitmap, out var four))
-            {
-                mat.DetailMap1 = four;
-                mat.Detail1Scale = shader.ShaderInputs[2];
-            }
+            mat.DetailMap1 = shader.GetBitmap(map, 4);
+            mat.Detail1Scale = shader.ShaderInputs[2];
         }
 
         private static void TexBumpEnvCombined(H2vMap map, ShaderTag.ShaderArguments shader, Material<BitmapTag> mat)
@@ -353,63 +310,42 @@ namespace OpenH2.Engine.EntityFactories
 
         private static void TexBumpEnvIllum(H2vMap map, ShaderTag.ShaderArguments shader, Material<BitmapTag> mat)
         {
-            if (map.TryGetTag(shader.ShaderMaps[0].Bitmap, out var zero))
-                mat.NormalMap = zero;
-
-            if (map.TryGetTag(shader.ShaderMaps[2].Bitmap, out var two))
-                mat.DiffuseMap = two;
-
+            mat.NormalMap = shader.GetBitmap(map, 0);
+            mat.DiffuseMap = shader.GetBitmap(map, 2);
             // 2 might be a detail map
+            mat.EmissiveMap = shader.GetBitmap(map, 4);
 
-            if (map.TryGetTag(shader.ShaderMaps[4].Bitmap, out var emissive))
-            {
-                mat.EmissiveMap = emissive;
-            }
+            mat.EmissiveType = EmissiveType.DiffuseBlended;
         }
 
         private static void TransparentOneAlphaEnv(H2vMap map, ShaderTag.ShaderArguments shader, Material<BitmapTag> mat)
         {
-            if (map.TryGetTag(shader.ShaderMaps[0].Bitmap, out var zero))
-                mat.SpecularMap = zero;
-
-            if (map.TryGetTag(shader.ShaderMaps[1].Bitmap, out var one))
-                mat.DiffuseMap = one;
-
-            if (map.TryGetTag(shader.ShaderMaps[2].Bitmap, out var two))
-                mat.AlphaMap = two;
+            mat.SpecularMap = shader.GetBitmap(map, 0);
+            mat.DiffuseMap = shader.GetBitmap(map, 1);
+            mat.AlphaMap = shader.GetBitmap(map, 2);
         }
 
         private static void TransparentTwoAlphaClouds(H2vMap map, ShaderTag.ShaderArguments shader, Material<BitmapTag> mat)
         {
-            if (map.TryGetTag(shader.ShaderMaps[0].Bitmap, out var zero))
-                mat.DiffuseMap = zero;
-
-            if (map.TryGetTag(shader.ShaderMaps[1].Bitmap, out var one))
-                mat.AlphaMap = one;
+            mat.DiffuseMap = shader.GetBitmap(map, 0);
+            mat.AlphaMap = shader.GetBitmap(map, 1);
         }
 
         private static void TransparentPlasmaAlpha(H2vMap map, ShaderTag.ShaderArguments shader, Material<BitmapTag> mat)
         {
-            if (map.TryGetTag(shader.ShaderMaps[0].Bitmap, out var zero))
-                mat.DiffuseMap = zero;
-
-            if (map.TryGetTag(shader.ShaderMaps[1].Bitmap, out var one))
-                mat.AnimationMap = one;
-
-            if (map.TryGetTag(shader.ShaderMaps[2].Bitmap, out var two))
-                mat.AlphaMap = two;
+            mat.DiffuseMap = shader.GetBitmap(map, 0);
+            mat.AnimationMap = shader.GetBitmap(map, 1);
+            mat.AlphaMap = shader.GetBitmap(map, 2);
         }
 
         private static void SkyTwoAlphaClouds(H2vMap map, ShaderTag.ShaderArguments shader, Material<BitmapTag> mat)
         {
-            if (map.TryGetTag(shader.ShaderMaps[0].Bitmap, out var zero))
-                mat.DiffuseMap = zero;
+            mat.DiffuseMap = shader.GetBitmap(map, 0);
         }
 
         private static void SkyOneAlphaEnv(H2vMap map, ShaderTag.ShaderArguments shader, Material<BitmapTag> mat)
         {
-            if (map.TryGetTag(shader.ShaderMaps[2].Bitmap, out var two))
-                mat.DiffuseMap = two;
+            mat.DiffuseMap = shader.GetBitmap(map, 2);
         }
     }
 }

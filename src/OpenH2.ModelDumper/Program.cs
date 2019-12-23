@@ -2,13 +2,10 @@
 using OpenH2.Core.Formats;
 using OpenH2.Core.Representations;
 using OpenH2.Core.Tags;
-using OpenH2.Core.Tags.Common;
 using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Numerics;
-using System.Text;
 
 namespace OpenH2.ModelDumper
 {
@@ -46,8 +43,8 @@ namespace OpenH2.ModelDumper
                 .SelectMany(b => b.RenderChunks);
 
             foreach(var chunk in bspMeshes)
-            {
-                //writer.WriteModel(chunk.Model, default, "bsp");
+            { 
+                writer.WriteModel(chunk.Model, default, "bsp");
             }
 
             var instancedGeometries = bsps.SelectMany(b => b.InstancedGeometryInstances
@@ -61,7 +58,7 @@ namespace OpenH2.ModelDumper
                     * Matrix4x4.CreateFromQuaternion(QuatFrom3x3Mat4(geom.Instance.RotationMatrix)) 
                     * Matrix4x4.CreateTranslation(geom.Instance.Position);
 
-                //writer.WriteModel(def.Model, xform, "instanced_" + geom.Instance.Index);
+                writer.WriteModel(def.Model, xform, "instanced_" + geom.Instance.Index);
             }
 
             var scenario = scene.GetLocalTagsOfType<ScenarioTag>().First();
@@ -117,7 +114,7 @@ namespace OpenH2.ModelDumper
                     continue;
                 }
 
-                //writer.WriteModel(mode.Parts[0].Model, xform, "scen_" + scenInstance.SceneryDefinitionIndex);
+                writer.WriteModel(mode.Parts[0].Model, xform, "scen_" + scenInstance.SceneryDefinitionIndex);
             }
 
             foreach (var machInstance in scenario.MachineryInstances)
@@ -143,7 +140,7 @@ namespace OpenH2.ModelDumper
                     continue;
                 }
 
-                //writer.WriteModel(mode.Parts[0].Model, xform, "mach_" + machInstance.MachineryDefinitionIndex);
+                writer.WriteModel(mode.Parts[0].Model, xform, "mach_" + machInstance.MachineryDefinitionIndex);
             }
 
             File.WriteAllText(outPath, writer.ToString());

@@ -20,22 +20,22 @@ namespace OpenH2.Engine.EntityFactories
 
             foreach (var obj in scenario.Obj96s)
             {
-                AddAtLocation(96, obj.Position, new Vector3(1, 0.7f, 0), destination);
+                AddAtLocation(96, obj.Position, new Vector4(1, 0.7f, 0, 1), destination);
             }
 
             foreach (var obj in scenario.Obj264s)
             {
-                AddAtLocation(264, obj.Position, new Vector3(0, 1, 1), destination);
+                AddAtLocation(264, obj.Position, new Vector4(0, 1, 1, 1), destination);
             }
 
             foreach (var obj in scenario.Obj480s)
             {
-                AddAtLocation(480, obj.Position, new Vector3(1, 1, 0), destination);
+                AddAtLocation(480, obj.Position, new Vector4(1, 1, 0, 1), destination);
             }
 
             foreach (var obj in scenario.Obj488s)
             {
-                AddAtLocation(488, obj.Position, new Vector3(0, 0, 1), destination);
+                AddAtLocation(488, obj.Position, new Vector4(0, 0, 1, 1), destination);
             }
 
             var bsp = map.GetLocalTagsOfType<BspTag>().First();
@@ -46,7 +46,7 @@ namespace OpenH2.Engine.EntityFactories
             }
         }
 
-        private static void AddAtLocation(uint id, Vector3 position, Vector3 color, Scene destination)
+        private static void AddAtLocation(uint id, Vector3 position, Vector4 color, Scene destination)
         {
             var item = new Scenery();
             var model = new RenderModelComponent(item)

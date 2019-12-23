@@ -6,7 +6,7 @@ layout(std140, binding = 0) uniform GlobalUniform
 {
 	mat4 ViewMatrix;
 	mat4 ProjectionMatrix;
-	vec3 ViewPosition;
+	vec4 ViewPosition;
 } Globals;
 
 layout(std140, binding = 1) uniform GenericUniform
@@ -33,8 +33,9 @@ layout(std140, binding = 1) uniform GenericUniform
 	sampler2D NormalMap;
 	
 	bool UseEmissiveMap;
-	float EmissiveMapAmount;
+	int EmissiveType;
 	sampler2D EmissiveMap;
+	vec4 EmissiveArguments;
 	
 	bool UseDetailMap1;
 	float DetailMap1Amount;
@@ -64,33 +65,36 @@ layout(location = 2) in vec3 local_normal;
 layout(location = 3) in vec3 tangent;
 layout(location = 4) in vec3 bitangent;
 
-out vec2 texcoord;
-out vec3 vertex_color;
-out vec3 world_pos;
-out vec3 world_normal;
-out mat3 TBN;
+out Vertex
+{
+	vec2 texcoord;
+	vec3 vertex_color;
+	vec3 world_pos;
+	vec3 world_normal;
+	mat3 TBN;
+} vertex;
 
 void main() {
 
     mat4 modelView = Globals.ViewMatrix * Data.ModelMatrix;
 	mat3 mat3nm = mat3(Data.NormalMatrix);
 
-	texcoord = in_texture;
-	world_normal = normalize(mat3nm * local_normal);
-	world_pos = (Data.ModelMatrix * vec4(local_position, 1)).xyz;
+	vertex.texcoord = in_texture;
+	vertex.world_normal = normalize(mat3nm * local_normal);
+	vertex.world_pos = (modelView * vec4(local_position, 1)).xyz;
 
 	if (Data.UseNormalMap) {
 		vec3 world_tangent = normalize(mat3nm * tangent);
 		vec3 world_bitangent = normalize(mat3nm * bitangent);
 
-		TBN = transpose(mat3(
+		vertex.TBN = transpose(mat3(
 			world_tangent,
 			world_bitangent,
-			world_normal
+			vertex.world_normal
 		));
 	}
 	else {
-		TBN = mat3(1);
+		vertex.TBN = mat3(1);
 	}
 
 	gl_Position = Globals.ProjectionMatrix * modelView * vec4(local_position, 1);

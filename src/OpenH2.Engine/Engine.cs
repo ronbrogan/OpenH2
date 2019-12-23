@@ -53,7 +53,7 @@ namespace OpenH2.Engine
 
             var watch = new Stopwatch();
             watch.Start();
-            LoadMap(scene);
+            LoadMap(scene, parameters.LoadPathOverride);
             watch.Stop();
             Console.WriteLine($"Loading map took {watch.ElapsedMilliseconds / 1000f} seconds");
             world.LoadScene(scene);
@@ -105,9 +105,9 @@ namespace OpenH2.Engine
             graphicsAdapter.EndFrame();
         }
 
-        public void LoadMap(Scene destination)
+        public void LoadMap(Scene destination, string mapPathOverride = null)
         {
-            var mapPath = @"D:\H2vMaps\lockout.map";
+            var mapPath = mapPathOverride ?? @"D:\H2vMaps\lockout.map";
 
             var factory = new MapFactory(Path.GetDirectoryName(mapPath));
 
@@ -183,7 +183,7 @@ namespace OpenH2.Engine
                 {
                     Light = new PointLight()
                     {
-                        Color = color,
+                        Color = new Vector3(color.X, color.Y, color.Z),
                         Position = Vector3.Zero,
                         Radius = 20f
                     }

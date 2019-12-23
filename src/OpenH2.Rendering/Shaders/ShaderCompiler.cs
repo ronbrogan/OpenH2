@@ -9,8 +9,9 @@ namespace OpenH2.Rendering.Shaders
         public static int CreateShader(Shader shader)
         {
             var shaderName = shader.ToString();
-            string vertSrc;
-            string fragSrc;
+            string vertSrc = null;
+            string fragSrc = null;
+            string geomSrc = null;
 
             var path = Path.Combine(Directory.GetCurrentDirectory(), "Shaders", shaderName);
 
@@ -22,7 +23,11 @@ namespace OpenH2.Rendering.Shaders
             vertSrc = File.ReadAllText(Path.Combine(path, shaderName + ".vert"));
             fragSrc = File.ReadAllText(Path.Combine(path, shaderName + ".frag"));
 
-            return CreateShader(shaderName, vertSrc, fragSrc);
+            var geomPath = Path.Combine(path, shaderName + ".geom");
+            if(File.Exists(geomPath))
+                geomSrc = File.ReadAllText(geomPath);
+
+            return CreateShader(shaderName, vertSrc, fragSrc, geomSrc);
         }
 
         public static int CreateComputeShader(Shader shader)
@@ -30,17 +35,20 @@ namespace OpenH2.Rendering.Shaders
             return 0;
         }
 
-        public static int CreateShader(string shaderName, string vertexSource, string fragmentSource)
+        public static int CreateShader(string shaderName, string vertexSource, string fragmentSource, string geomSource = null)
         {
             var vertexShader = 0;
             var fragmentShader = 0;
             var geometryShader = 0;
 
-            if (vertexSource != string.Empty)
+            if (string.IsNullOrWhiteSpace(vertexSource) == false)
                 vertexShader = CompileShader(ShaderType.VertexShader, vertexSource, "vertex::" + shaderName);
 
-            if (fragmentSource != string.Empty)
+            if (string.IsNullOrWhiteSpace(fragmentSource) == false)
                 fragmentShader = CompileShader(ShaderType.FragmentShader, fragmentSource, "fragment::" + shaderName);
+
+            if (string.IsNullOrWhiteSpace(geomSource) == false)
+                geometryShader = CompileShader(ShaderType.GeometryShader, geomSource, "geom::" + shaderName);
 
             var program = GL.CreateProgram();
 

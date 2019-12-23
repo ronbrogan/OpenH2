@@ -1,4 +1,5 @@
-﻿using PropertyChanged;
+﻿using Avalonia.Media.Imaging;
+using PropertyChanged;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -29,6 +30,8 @@ namespace OpenH2.ScenarioExplorer.ViewModels
         public string SelectedPreviewItem { get; set; }
 
         public object SelectedPreviewItemObject => GetItem();
+        public bool ItemIsBitmap => GetItem() is Bitmap;
+        public bool ItemIsString => GetItem() is string;
 
         public void AddItem<TState>(string key, TState value, Func<TState, object> previewTransform) where TState: class
         {
