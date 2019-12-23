@@ -194,6 +194,8 @@ namespace OpenH2.Engine.EntityFactories
         private static void PrtSimple(H2vMap map, ShaderTag.ShaderArguments shader, Material<BitmapTag> mat)
         {
             mat.NormalMap = shader.GetBitmap(map, 0);
+            mat.NormalMapScale = shader.ShaderInputs[0];
+
             mat.DiffuseMap = shader.GetBitmap(map, 1);
 
             mat.DetailMap1 = shader.GetBitmap(map, 2);
@@ -225,16 +227,19 @@ namespace OpenH2.Engine.EntityFactories
         private static void TexBumpDetailKeep(H2vMap map, ShaderTag.ShaderArguments shader, Material<BitmapTag> mat)
         {
             mat.NormalMap = shader.GetBitmap(map, 0);
+            mat.NormalMapScale = shader.ShaderInputs[0];
+
             mat.DiffuseMap = shader.GetBitmap(map, 1);
 
             mat.DetailMap1 = shader.GetBitmap(map, 2);
             mat.Detail1Scale = shader.ShaderInputs[2];
-
         }
 
         private static void TexBumpDetailBlend(H2vMap map, ShaderTag.ShaderArguments shader, Material<BitmapTag> mat)
         {
             mat.NormalMap = shader.GetBitmap(map, 0);
+            mat.NormalMapScale = shader.ShaderInputs[0];
+
             mat.DiffuseMap = shader.GetBitmap(map, 1);
 
             mat.DetailMap1 = shader.GetBitmap(map, 2);
@@ -250,6 +255,8 @@ namespace OpenH2.Engine.EntityFactories
         private static void TexBump(H2vMap map, ShaderTag.ShaderArguments shader, Material<BitmapTag> mat)
         {
             mat.NormalMap = shader.GetBitmap(map, 0);
+            mat.NormalMapScale = shader.ShaderInputs[0];
+
             mat.DiffuseMap = shader.GetBitmap(map, 2);
 
             mat.DetailMap1 = shader.GetBitmap(map, 3);
@@ -259,6 +266,8 @@ namespace OpenH2.Engine.EntityFactories
         private static void TexBumpIllum(H2vMap map, ShaderTag.ShaderArguments shader, Material<BitmapTag> mat)
         {
             mat.NormalMap = shader.GetBitmap(map, 0);
+            mat.NormalMapScale = shader.ShaderInputs[0];
+
             mat.DiffuseMap = shader.GetBitmap(map, 1);
             // 2 might be a detail map
             mat.EmissiveMap = shader.GetBitmap(map, 3);
@@ -269,6 +278,8 @@ namespace OpenH2.Engine.EntityFactories
         private static void TexBumpIllum3Channel(H2vMap map, ShaderTag.ShaderArguments shader, Material<BitmapTag> mat)
         {
             mat.NormalMap = shader.GetBitmap(map, 0);
+            mat.NormalMapScale = shader.ShaderInputs[0];
+
             mat.DiffuseMap = shader.GetBitmap(map, 1);
             mat.EmissiveMap = shader.GetBitmap(map, 3);
 
@@ -282,6 +293,8 @@ namespace OpenH2.Engine.EntityFactories
         private static void TexBumpIllumDetailHonorGuard(H2vMap map, ShaderTag.ShaderArguments shader, Material<BitmapTag> mat)
         {
             mat.NormalMap = shader.GetBitmap(map, 0);
+            mat.NormalMapScale = shader.ShaderInputs[0];
+
             mat.DiffuseMap = shader.GetBitmap(map, 1);
             mat.EmissiveMap = shader.GetBitmap(map, 3);
             // TODO: 4 is some mask or something
@@ -298,6 +311,8 @@ namespace OpenH2.Engine.EntityFactories
         private static void TexBumpAlphaTest(H2vMap map, ShaderTag.ShaderArguments shader, Material<BitmapTag> mat)
         {
             mat.NormalMap = shader.GetBitmap(map, 0);
+            mat.NormalMapScale = shader.ShaderInputs[0];
+
             mat.AlphaMap = shader.GetBitmap(map, 2);
             mat.DiffuseMap = shader.GetBitmap(map, 3);
 
@@ -311,6 +326,8 @@ namespace OpenH2.Engine.EntityFactories
         private static void TexBumpEnvIllum(H2vMap map, ShaderTag.ShaderArguments shader, Material<BitmapTag> mat)
         {
             mat.NormalMap = shader.GetBitmap(map, 0);
+            mat.NormalMapScale = shader.ShaderInputs[0];
+
             mat.DiffuseMap = shader.GetBitmap(map, 2);
             // 2 might be a detail map
             mat.EmissiveMap = shader.GetBitmap(map, 4);

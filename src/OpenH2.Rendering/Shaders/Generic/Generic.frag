@@ -37,6 +37,7 @@ layout(std140, binding = 1) uniform GenericUniform
 	bool UseNormalMap;
 	float NormalMapAmount;
 	sampler2D NormalMap;
+	vec4 NormalMapScale;
 	
 	bool UseEmissiveMap;
 	int EmissiveType;
@@ -89,6 +90,7 @@ vec3 viewDirection = normalize(viewDifference);
 // TODO move lighting to global uniform
 vec3 light_pos = vec3(-5, 2, 5);
 vec3 light_color = vec3(1);
+vec3 lightDirection = normalize(light_pos); 
 
 vec4 lightCalculation(in PointLight light, in vec4 textureColor);
 vec4 globalLighting(in vec4 textureColor);
@@ -97,6 +99,14 @@ void main() {
 
 	calculated_normal = vertex.world_normal;
 	specular_color = vec3(1);
+
+	if (Data.UseNormalMap) 
+	{
+		calculated_normal = normalize(texture(Data.NormalMap, vertex.texcoord * Data.NormalMapScale.xy).rgb * 2 - 1);
+
+		lightDirection = vertex.TBN * lightDirection;
+		viewDirection = vertex.TBN * viewDirection;
+	}
 
 	vec4 detail1Tex = texture(Data.DetailMap1, vertex.texcoord * Data.DetailMap1Scale.xy);
 	vec4 detail2Tex = texture(Data.DetailMap2, vertex.texcoord * Data.DetailMap2Scale.xy);
@@ -124,7 +134,7 @@ void main() {
 	vec4 finalColor;
 
 	// Sets ambient baseline
-	finalColor = vec4(diffuseColor.rgb * 0.2, diffuseColor.a);
+	finalColor = vec4(diffuseColor.rgb * 0.3, diffuseColor.a);
 
 	// Adds global lighting
 	finalColor += globalLighting(diffuseColor);
@@ -172,8 +182,6 @@ void main() {
 
 vec4 globalLighting(in vec4 textureColor)
 {
-    vec3 lightDirection = normalize(light_pos);  
-
 	float cosTheta = clamp(dot(lightDirection, calculated_normal), 0.0, 1.0);
 	vec4 light_diffuse = textureColor * vec4(light_color,1) * cosTheta;
 

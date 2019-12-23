@@ -25,6 +25,7 @@ namespace OpenH2.Foundation
         Vector4 EmissiveArguments { get; set; }
 
         TTexture NormalMap { get; set; }
+        Vector4 NormalMapScale { get; set; }
 
         TTexture DetailMap1 { get; set; }
         Vector4 Detail1Scale { get; set; }
@@ -50,13 +51,14 @@ namespace OpenH2.Foundation
         public Vector4 EmissiveArguments { get; set; }
 
         public TTexture NormalMap { get; set; }
+        public Vector4 NormalMapScale { get; set; } = new Vector4(1, 1, 0, 0);
 
         public TTexture DetailMap1 { get; set; }
+        public Vector4 Detail1Scale { get; set; } = new Vector4(1, 1, 0, 0);
 
-        public Vector4 Detail1Scale { get; set; }
         public TTexture DetailMap2 { get; set; }
+        public Vector4 Detail2Scale { get; set; } = new Vector4(1, 1, 0, 0);
 
-        public Vector4 Detail2Scale { get; set; }
         public TTexture SpecularMap { get; set; }
 
         public override bool Equals(object obj)

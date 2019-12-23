@@ -137,6 +137,12 @@ namespace OpenH2.Rendering.OpenGL
                 bindings.EmissiveHandle = emissiveHandle;
             }
 
+            if (material.NormalMap != null)
+            {
+                textureBinder.Bind(material.NormalMap, out var handle);
+                bindings.NormalHandle = handle;
+            }
+
             boundMaterials.Add(material, bindings);
 
             return bindings;

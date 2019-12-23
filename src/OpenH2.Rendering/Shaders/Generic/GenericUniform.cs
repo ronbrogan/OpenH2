@@ -45,14 +45,16 @@ namespace OpenH2.Rendering.Shaders.Generic
             EmissiveType = (int)material.EmissiveType;
             EmissiveArguments = material.EmissiveArguments;
 
+            UseNormalMap = bindings.NormalHandle != default;
+            NormalMap = bindings.NormalHandle;
+            NormalMapAmount = 1f;
+            NormalMapScale = material.NormalMapScale;
+
             // Currently unused
             UseSpecular = false;
             SpecularAmount = 0f;
             SpecularColor = Vector4.Zero;
             SpecularHandle = 0;
-            UseNormalMap = false;
-            NormalMapAmount = 0f;
-            NormalMap = 0;
         }
 
         public Matrix4x4 ModelMatrix;
@@ -75,6 +77,7 @@ namespace OpenH2.Rendering.Shaders.Generic
         public bool UseNormalMap;
         public float NormalMapAmount;
         public long NormalMap;
+        public Vector4 NormalMapScale;
 
         public bool UseEmissiveMap;
         public int EmissiveType;

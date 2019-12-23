@@ -31,6 +31,7 @@ layout(std140, binding = 1) uniform GenericUniform
 	bool UseNormalMap;
 	float NormalMapAmount;
 	sampler2D NormalMap;
+	vec4 NormalMapScale;
 	
 	bool UseEmissiveMap;
 	int EmissiveType;
