@@ -1,0 +1,208 @@
+﻿{
+  "mappings": {
+    "4086628561": {
+      "name": "Illum3Channel",
+      "normalMapIndex": 0
+    },
+    "3792316325": {
+      "name": "OneAlphaEnvIllum",
+      "specularMapIndex": 0,
+      "emissiveMapIndex": 1,
+      "emissiveArgumentsIndex": 0,
+      "emissiveType": "DiffuseBlended",
+      "diffuseMapIndex": 2
+    },
+    "3833408024": {
+      "name": "TwoAddEnvIllum",
+      "emissiveMapIndex": 3,
+      "emissiveType": "EmissiveOnly",
+      "diffuseColor": [ 0, 0, 0, 0 ]
+    },
+    "3834718764": {
+      "name": "TexBumpPlasmaOneChannelIllum",
+      "diffuseMapIndex": 1,
+      "emissiveMap": 3,
+      "detail1MapIndex": 2,
+      "detail1ScaleIndex": 3,
+      "emissiveType": "EmissiveOnly"
+    },
+    "3913548045": {
+      "name": "PrtSimple",
+      "normalMapIndex": 0,
+      "normalScaleIndex": 0,
+      "diffuseMapIndex": 1,
+      "detail1MapIndex": 2,
+      "detail1ScaleIndex": 3
+    },
+    "3884461347": {
+      // TODO: special overlay flag to enable discard for middle gray
+      "name": "Overlay",
+      "diffuseMapIndex": 0,
+      "alphaMapIndex": 0
+    },
+    "3917480231": {
+      "name": "TexEnv",
+      "diffuseMapIndex": 0,
+      "detail1MapIndex": 1,
+      "detail1ScaleIndex": 3,
+      "specularMapIndex": 2
+    },
+    "3786024773": {
+      "name": "TexBump",
+      "normalMapIndex": 0,
+      "normalScaleIndex": 0,
+      "diffuseMapIndex": 2,
+      "detail1MapIndex": 3,
+      "detail1ScaleIndex": 2
+    },
+    "3783075608": {
+      "name": "TexBumpIllum",
+      "normalMapIndex": 0,
+      "normalScaleIndex": 0,
+      "diffuseMapIndex": 1,
+      "emissiveMapIndex": 3,
+      "emissiveType": "DiffuseBlended"
+    },
+    "4082892954": {
+      "name": "TexBumpIllum3Channel",
+      "normalMapIndex": 0,
+      "normalScaleIndex": 0,
+      "diffuseMapIndex": 1,
+      "detail1MapIndex": 2,
+      "detail1ScaleIndex": 2,
+      "emissiveMapIndex": 3,
+      "emissiveType": "ThreeChannel",
+      "emissiveArgumentsIndex": 7
+    },
+    "3876323435": {
+      "name": "TexBumpIllumDetailHonorGuard",
+      "normalMapIndex": 0,
+      "normalScaleIndex": 0,
+      "diffuseMapIndex": 1,
+      "detail1MapIndex": 2,
+      "detail1ScaleIndex": 2,
+      "emissiveMapIndex": 3,
+      "emissiveType": "DiffuseBlended"
+    },
+    "4114612757": {
+      "name": "TexBumpNoAlpha",
+      "normalMapIndex": 0,
+      "normalScaleIndex": 0,
+      "diffuseMapIndex": 2,
+      "detail1MapIndex": 3,
+      "detail1ScaleIndex": 2
+    },
+    "4085121223": {
+      "name": "TexBumpAlphaTest",
+      "normalMapIndex": 0,
+      "normalScaleIndex": 0,
+      "alphaMapIndex": 2,
+      "diffuseMapIndex": 3,
+      "detail1MapIndex": 4,
+      "detail1ScaleIndex": 2
+    },
+    "3923521399": {
+      "name": "TexBumpEnvCombined",
+      "normalMapIndex": 0,
+      "normalScaleIndex": 0,
+      "diffuseMapIndex": 2,
+      "detail1MapIndex": 3,
+      "detail1ScaleIndex": 2
+    },
+    "3953406271": {
+      "name": "TexBumpEnvIllum",
+      "normalMapIndex": 0,
+      "normalScaleIndex": 0,
+      "diffuseMapIndex": 2,
+      "emissiveMapIndex": 4,
+      "emissiveType": "DiffuseBlended"
+    },
+    "4118348365": {
+      "name": "TexBumpDetailKeep",
+      "normalMapIndex": 0,
+      "normalScaleIndex": 0,
+      "diffuseMapIndex": 1,
+      "detail1MapIndex": 2,
+      "detail1ScaleIndex": 2
+    },
+    "4116185644": {
+      "name": "TexBumpDetailBlend",
+      "normalMapIndex": 0,
+      "normalScaleIndex": 0,
+      "diffuseMapIndex": 1,
+      "detail1MapIndex": 2,
+      "detail1ScaleIndex": 2,
+      "detail2MapIndex": 3,
+      "detail2ScaleIndex": 3
+    },
+    "4084531390": {
+      "name": "TexBumpDetailBlend",
+      "normalMapIndex": 0,
+      "normalScaleIndex": 0,
+      "diffuseMapIndex": 1,
+      "detail1MapIndex": 2,
+      "detail1ScaleIndex": 2,
+      "detail2MapIndex": 3,
+      "detail2ScaleIndex": 3
+    },
+    "4085055683": {
+      "name": "TexBumpDetailBlend",
+      "normalMapIndex": 0,
+      "normalScaleIndex": 0,
+      "diffuseMapIndex": 1,
+      "detail1MapIndex": 2,
+      "detail1ScaleIndex": 2,
+      "detail2MapIndex": 3,
+      "detail2ScaleIndex": 3
+    },
+    "4083351726": {
+      "name": "TexBumpDetailBlend",
+      "normalMapIndex": 0,
+      "normalScaleIndex": 0,
+      "diffuseMapIndex": 1,
+      "detail1MapIndex": 2,
+      "detail1ScaleIndex": 2,
+      "detail2MapIndex": 3,
+      "detail2ScaleIndex": 3
+    },
+    "4113891850": {
+      "name": "TexBumpDetailKeepBlend",
+      "normalMapIndex": 0,
+      "normalScaleIndex": 0,
+      "diffuseMapIndex": 1,
+      "detail1MapIndex": 2,
+      "detail1ScaleIndex": 2,
+      "detail2MapIndex": 3,
+      "detail2ScaleIndex": 3
+    },
+    "3786745680": {
+      "name": "TransparentPlasmaAlpha",
+      "diffuseMapIndex": 0,
+      "animationMapIndex": 1,
+      "alphaMapIndex": 2
+    },
+    "3788318568": {
+      "name": "TransparentOneAlphaEnv",
+      "specularMapIndex": 0,
+      "diffuseMapIndex": 1,
+      "alphaMapIndex": 2
+    },
+    "3874291795": {
+      "name": "TransparentOneAddTwoPlusTwo",
+      "diffuseMapIndex": 0
+    },
+    "4119855716": {
+      "name": "TransparentTwoAlphaClouds",
+      "diffuseMapIndex": 0,
+      "alphaMapIndex": 1
+    },
+    "3783524361": {
+      "name": "SkyTwoAlphaClouds",
+      "diffuseMapIndex": 0
+    },
+    "3783000068": {
+      "name": "SkyOneAlphaEnv",
+      "diffuseMapIndex": 2
+    }
+  }
+}

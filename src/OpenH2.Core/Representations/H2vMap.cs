@@ -1,6 +1,9 @@
 using OpenH2.Core.Extensions;
+using OpenH2.Core.Factories;
 using OpenH2.Core.Parsing;
 using OpenH2.Core.Tags;
+using OpenH2.Core.Tags.Common;
+using OpenH2.Foundation;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -15,6 +18,7 @@ namespace OpenH2.Core.Representations
         private readonly H2vLazyLoadingMap mpShared;
         private readonly H2vLazyLoadingMap spShared;
         private Dictionary<uint, BaseTag> Tags = new Dictionary<uint, BaseTag>();
+        private MaterialFactory materialFactory;
 
         internal H2vMap(H2vReader reader, H2vLazyLoadingMap mainMenu, H2vLazyLoadingMap mpShared, H2vLazyLoadingMap spShared)
         {
@@ -27,6 +31,17 @@ namespace OpenH2.Core.Representations
         internal void SetTags(Dictionary<uint, BaseTag> tags)
         {
             this.Tags = tags;
+        }
+
+        // TODO: consider if material construction belongs here
+        internal void UseMaterialFactory(MaterialFactory materialFactory)
+        {
+            this.materialFactory = materialFactory;
+        }
+
+        public Material<BitmapTag> CreateMaterial(ModelMesh mesh)
+        {
+            return this.materialFactory.CreateMaterial(this, mesh);
         }
 
         public IEnumerable<T> GetLocalTagsOfType<T>() where T : BaseTag

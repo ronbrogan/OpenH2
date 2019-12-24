@@ -15,7 +15,8 @@ namespace OpenH2.Core.Factories
         private const string MainMenuName = "mainmenu.map";
         private const string MultiPlayerSharedName = "shared.map";
         private const string SinglePlayerSharedName = "single_player_shared.map";
-
+        private readonly string configRoot;
+        private readonly MaterialFactory materialFactory;
         private H2vReader baseReader;
         private H2vLazyLoadingMap mainMenu;
         private H2vLazyLoadingMap spShared;
@@ -23,13 +24,14 @@ namespace OpenH2.Core.Factories
 
         // TODO: If sp maps only reference spShared and mp maps only reference mpShared, 
         // only load the relevant maps when a playable map is loaded
-        public MapFactory(string mapRoot)
+        public MapFactory(string mapRoot, MaterialFactory materialFactory)
         {
             baseReader = GetBaseReader(mapRoot);
 
             mainMenu = LazyLoadingMapFromReader(new H2vReader(baseReader.MainMenu, baseReader));
             spShared = LazyLoadingMapFromReader(new H2vReader(baseReader.SpShared, baseReader));
             mpShared = LazyLoadingMapFromReader(new H2vReader(baseReader.MpShared, baseReader));
+            this.materialFactory = materialFactory;
         }
 
         private H2vReader GetBaseReader(string mapRoot)
@@ -79,6 +81,7 @@ namespace OpenH2.Core.Factories
         private H2vMap InternalFromFile(H2vReader reader, bool lazyLoadTags = false)
         {
             var scene = new H2vMap(reader, mainMenu, mpShared, spShared);
+            scene.UseMaterialFactory(this.materialFactory);
 
             this.LoadMetadata(scene, reader);
 
@@ -199,7 +202,7 @@ namespace OpenH2.Core.Factories
             index.PrimaryMagicConstant =  /**/  span.ReadInt32At(0);
             index.TagListCount =          /**/  span.ReadInt32At(4);
             index.TagIndexOffset =        /**/  scene.PrimaryOffset(span.ReadInt32At(8));
-            index.Scenario =            /**/  span.ReadTagRefAt(12);
+            index.Scenario =              /**/  span.ReadTagRefAt(12);
             index.TagIDStart =            /**/  span.ReadInt32At(16);
             index.Unknown1 =              /**/  span.ReadInt32At(20);
             index.TagIndexCount =         /**/  span.ReadInt32At(24);

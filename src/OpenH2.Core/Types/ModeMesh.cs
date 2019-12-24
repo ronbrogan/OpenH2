@@ -3,6 +3,7 @@ using System;
 
 namespace OpenH2.Core.Types
 {
+    // TODO: delete?
     public class ModeMesh
     {
         public uint ShaderCount { get; set; }

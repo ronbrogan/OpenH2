@@ -1,4 +1,5 @@
 ﻿using OpenH2.Core.Architecture;
+using OpenH2.Core.Configuration;
 using OpenH2.Core.Extensions;
 using OpenH2.Core.Factories;
 using OpenH2.Core.Tags;
@@ -45,21 +46,54 @@ namespace OpenH2.Engine
         {
             graphicsHost.CreateWindow(new Vector2(1600, 900));
 
+            var mapPath = parameters.LoadPathOverride ?? @"D:\H2vMaps\lockout.map";
+            var configPath = Environment.GetEnvironmentVariable(ConfigurationConstants.ConfigPathOverrideEnvironmentVariable);
+
+            if (configPath != null)
+            {
+                configPath = Path.GetFullPath(configPath);
+            }
+            else
+            {
+                configPath = Environment.CurrentDirectory + "/Configs";
+            }
+
+            var matFactory = new MaterialFactory(configPath);
+
+            var factory = new MapFactory(Path.GetDirectoryName(mapPath), matFactory);
+
+            matFactory.AddListener(() =>
+            {
+                LoadScene(factory, mapPath);
+            });
+
             world = new RealtimeWorld(this);
 
-            var scene = new Scene();
-            
-            scene.AddEntity(new SpectatorCamera());
-
-            var watch = new Stopwatch();
-            watch.Start();
-            LoadMap(scene, parameters.LoadPathOverride);
-            watch.Stop();
-            Console.WriteLine($"Loading map took {watch.ElapsedMilliseconds / 1000f} seconds");
-            world.LoadScene(scene);
+            LoadScene(factory, mapPath);
 
             gameLoop.RegisterCallbacks(Update, Render);
             gameLoop.Start(60, 60);
+        }
+
+        private void LoadScene(MapFactory factory, string mapPath)
+        {
+            SpectatorCamera camera = new SpectatorCamera();
+
+            if(world.Scene != null)
+            {
+                camera = world.Scene.Entities.FirstOrDefault((v) => v.Value.GetType() == typeof(SpectatorCamera)).Value as SpectatorCamera;
+            }
+
+            var scene = new Scene();
+
+            scene.AddEntity(camera);
+
+            var watch = new Stopwatch();
+            watch.Start();
+            LoadMap(scene, factory, mapPath);
+            watch.Stop();
+            Console.WriteLine($"Loading map took {watch.ElapsedMilliseconds / 1000f} seconds");
+            world.LoadScene(scene);
         }
 
         private void Update(double timestep)
@@ -105,12 +139,8 @@ namespace OpenH2.Engine
             graphicsAdapter.EndFrame();
         }
 
-        public void LoadMap(Scene destination, string mapPathOverride = null)
+        public void LoadMap(Scene destination, MapFactory factory, string mapPath)
         {
-            var mapPath = mapPathOverride ?? @"D:\H2vMaps\lockout.map";
-
-            var factory = new MapFactory(Path.GetDirectoryName(mapPath));
-
             var fs = new FileStream(mapPath, FileMode.Open, FileAccess.Read, FileShare.Read, 8096);
             var map = factory.FromFile(fs);
 

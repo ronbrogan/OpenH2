@@ -28,13 +28,7 @@ namespace OpenH2.Engine.EntityFactories
 
             foreach (var mesh in def.Model.Meshes)
             {
-                var mat = new Material<BitmapTag>();
-                mat.DiffuseColor = VectorExtensions.RandomColor();
-
-                if (map.TryGetTag(mesh.Shader, out var shader))
-                {
-                    MaterialFactory.PopulateMaterial(map, mat, shader);
-                }
+                var mat = map.CreateMaterial(mesh);
 
                 renderModelMeshes.Add(new Mesh<BitmapTag>()
                 {
@@ -130,13 +124,7 @@ namespace OpenH2.Engine.EntityFactories
 
             foreach (var mesh in meshes)
             {
-                var mat = new Material<BitmapTag>();
-                mat.DiffuseColor = VectorExtensions.RandomColor();
-
-                if (map.TryGetTag(mesh.Shader, out var shader))
-                {
-                    MaterialFactory.PopulateMaterial(map, mat, shader);
-                }
+                var mat = map.CreateMaterial(mesh);
 
                 renderModelMeshes.Add(new Mesh<BitmapTag>()
                 {

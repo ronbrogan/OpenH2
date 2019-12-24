@@ -33,4 +33,10 @@
     </Reference>
   </ItemGroup>
 
+  <ItemGroup>
+    <None Update="Configs\material-config.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
 </Project>
