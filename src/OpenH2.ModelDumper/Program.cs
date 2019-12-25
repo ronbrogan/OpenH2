@@ -32,7 +32,7 @@ namespace OpenH2.ModelDumper
 
             using (var map = new FileStream(mapPath, FileMode.Open, FileAccess.Read, FileShare.Read))
             {
-                var factory = new MapFactory(Path.GetDirectoryName(mapPath));
+                var factory = new MapFactory(Path.GetDirectoryName(mapPath), new MaterialFactory(Environment.CurrentDirectory));
                 scene = factory.FromFile(map);
             }
 

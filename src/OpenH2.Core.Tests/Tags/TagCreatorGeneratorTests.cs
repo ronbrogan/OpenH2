@@ -10,8 +10,6 @@ namespace OpenH2.Core.Tests.Tags
 {
     public class TagFormatReaderGeneratorTests
     {
-        private AssemblyBuilder assyBuilder;
-
         [Fact]
         public void TestTag_DeserializesAllProperties()
         {

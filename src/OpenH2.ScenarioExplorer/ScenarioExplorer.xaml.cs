@@ -119,7 +119,7 @@ namespace OpenH2.ScenarioExplorer
             var open = new OpenFileDialog
             {
                 AllowMultiple = false,
-                InitialDirectory = prefs.LastBrowseLocation,
+                Directory = prefs.LastBrowseLocation,
                 Title = "Open .map"
             };
 
@@ -151,7 +151,7 @@ namespace OpenH2.ScenarioExplorer
                 var rawData = file.ToMemory();
                 file.Seek(0, SeekOrigin.Begin);
 
-                var factory = new MapFactory(Path.GetDirectoryName(path));
+                var factory = new MapFactory(Path.GetDirectoryName(path), new MaterialFactory(Environment.CurrentDirectory));
                 var scene = factory.FromFile(file);
                 var vm = new ScenarioViewModel(scene, rawData, prefs.DiscoveryMode);
 

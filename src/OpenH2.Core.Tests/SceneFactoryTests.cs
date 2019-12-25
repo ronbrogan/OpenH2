@@ -7,6 +7,7 @@ using OpenH2.Core.Extensions;
 using Xunit;
 using Xunit.Abstractions;
 using OpenH2.Core.Representations;
+using System;
 
 namespace OpenH2.Core.Tests
 {
@@ -25,7 +26,7 @@ namespace OpenH2.Core.Tests
         {
             var mapStream = new FileStream(ascensionPath, FileMode.Open, FileAccess.Read, FileShare.Read);
 
-            var factory = new MapFactory(Path.GetDirectoryName(ascensionPath));
+            var factory = new MapFactory(Path.GetDirectoryName(ascensionPath), new MaterialFactory(Environment.CurrentDirectory));
 
             var sw = new Stopwatch();
             sw.Restart();
@@ -59,7 +60,7 @@ namespace OpenH2.Core.Tests
             var raw = mapStream.ToMemory();
             mapStream.Seek(0, SeekOrigin.Begin);
 
-            var factory = new MapFactory(Path.GetDirectoryName(ascensionPath));
+            var factory = new MapFactory(Path.GetDirectoryName(ascensionPath), new MaterialFactory(Environment.CurrentDirectory));
 
             var scene = factory.FromFile(mapStream);
 

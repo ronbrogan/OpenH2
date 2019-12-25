@@ -20,7 +20,7 @@ namespace OpenH2.BspMetaAnalysis
 
             var metas = mapNames.Select(s =>
             {
-                var fac = new MapFactory(Path.GetDirectoryName(s));
+                var fac = new MapFactory(Path.GetDirectoryName(s), new MaterialFactory(Environment.CurrentDirectory));
                 using (var fs = new FileStream(s, FileMode.Open))
                     return fac.FromFile(fs);
             }).ToDictionary(s => s.Header.Name, s => s);

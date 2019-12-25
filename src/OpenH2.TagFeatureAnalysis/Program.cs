@@ -67,7 +67,7 @@ namespace OpenH2.TagFeatureAnalysis
                 throw new Exception("Only 1 argument is accepted");
             }
 
-            var factory = new MapFactory(Path.GetDirectoryName(args[0]));
+            var factory = new MapFactory(Path.GetDirectoryName(args[0]), new MaterialFactory(Environment.CurrentDirectory));
             var map = factory.FromFile(File.OpenRead(args[0]));
 
             var models = map.GetLocalTagsOfType<ModelTag>();
