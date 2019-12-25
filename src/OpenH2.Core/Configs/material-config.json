@@ -1,4 +1,38 @@
 ﻿{
+  "aliases": {
+    "4084531390": {
+      "name": "TexBumpDetailBlend",
+      "alias": 4116185644
+    },
+    "4085055683": {
+      "name": "TexBumpDetailBlend",
+      "alias": 4116185644
+    },
+    "4083351726": {
+      "name": "TexBumpDetailBlend",
+      "alias": 4116185644
+    },
+    "4113891850": {
+      "name": "TexBumpDetailKeepBlend",
+      "alias": 4116185644
+    },
+    "3836609336": {
+      "name": "TexBumpEnvCombined",
+      "alias": 3923521399
+    },
+    "2149916259": {
+      "name": "NotSure//scenarios\\shaders\\solo\\earthcity\\toll_plaza_ground",
+      "alias": 4116185644
+    },
+    "2155617978": {
+      "name": "NotSure//scenarios\\shaders\\solo\\earthcity\\park_terrain",
+      "alias": 4116185644
+    },
+    "3844146091": {
+      "name": "Overlay",
+      "alias": 3884461347
+    },
+  },
   "mappings": {
     "4086628561": {
       "name": "Illum3Channel",
@@ -16,7 +50,7 @@
       "name": "TwoAddEnvIllum",
       "emissiveMapIndex": 3,
       "emissiveType": "EmissiveOnly",
-      "diffuseColor": [ 0, 0, 0, 0 ]
+      "diffuseColor": [ 0 ]
     },
     "3834718764": {
       "name": "TexBumpPlasmaOneChannelIllum",
@@ -40,6 +74,7 @@
       "diffuseMapIndex": 0,
       "alphaMapIndex": 0
     },
+
     "3917480231": {
       "name": "TexEnv",
       "diffuseMapIndex": 0,
@@ -135,46 +170,6 @@
       "detail2MapIndex": 3,
       "detail2ScaleIndex": 3
     },
-    "4084531390": {
-      "name": "TexBumpDetailBlend",
-      "normalMapIndex": 0,
-      "normalScaleIndex": 0,
-      "diffuseMapIndex": 1,
-      "detail1MapIndex": 2,
-      "detail1ScaleIndex": 2,
-      "detail2MapIndex": 3,
-      "detail2ScaleIndex": 3
-    },
-    "4085055683": {
-      "name": "TexBumpDetailBlend",
-      "normalMapIndex": 0,
-      "normalScaleIndex": 0,
-      "diffuseMapIndex": 1,
-      "detail1MapIndex": 2,
-      "detail1ScaleIndex": 2,
-      "detail2MapIndex": 3,
-      "detail2ScaleIndex": 3
-    },
-    "4083351726": {
-      "name": "TexBumpDetailBlend",
-      "normalMapIndex": 0,
-      "normalScaleIndex": 0,
-      "diffuseMapIndex": 1,
-      "detail1MapIndex": 2,
-      "detail1ScaleIndex": 2,
-      "detail2MapIndex": 3,
-      "detail2ScaleIndex": 3
-    },
-    "4113891850": {
-      "name": "TexBumpDetailKeepBlend",
-      "normalMapIndex": 0,
-      "normalScaleIndex": 0,
-      "diffuseMapIndex": 1,
-      "detail1MapIndex": 2,
-      "detail1ScaleIndex": 2,
-      "detail2MapIndex": 3,
-      "detail2ScaleIndex": 3
-    },
     "3786745680": {
       "name": "TransparentPlasmaAlpha",
       "diffuseMapIndex": 0,
@@ -203,6 +198,46 @@
     "3783000068": {
       "name": "SkyOneAlphaEnv",
       "diffuseMapIndex": 2
+    },
+    "3810328999": {
+      "name": "TexBump",
+      "normalMapIndex": 0,
+      "normalScaleIndex": 0,
+      "diffuseMapIndex": 2,
+      "detail1MapIndex": 3,
+      "detail1ScaleIndex": 2
+    },
+
+    "3862627525": {
+      "name": "TexBumpTwoDetail",
+      "normalMapIndex": 0,
+      "normalScaleIndex": 0,
+      "diffuseMapIndex": 1,
+      "detail1MapIndex": 2,
+      "detail1ScaleIndex": 2,
+      "detail2MapIndex": 3,
+      "detail2ScaleIndex": 3
+    },
+    "3861841081": {
+      "name": "TexBumpEnvTwoDetail",
+      "normalMapIndex": 0,
+      "normalScaleIndex": 0,
+      "diffuseMapIndex": 2,
+      "detail1MapIndex": 3,
+      "detail1ScaleIndex": 2,
+      "detail2MapIndex": 3,
+      "detail2ScaleIndex": 3
+    },
+    "3837920076": {
+      "name": "TexBumpEnvIllumCombined",
+      "normalMapIndex": 0,
+      "normalScaleIndex": 0,
+      "diffuseMapIndex": 2,
+      "detail1MapIndex": 3,
+      "detail1ScaleIndex": 2,
+      "specularMapIndex": 4,
+      "emissiveMapIndex": 5,
+      "emissiveType": "DiffuseBlended"
     }
   }
 }

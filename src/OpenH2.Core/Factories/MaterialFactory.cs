@@ -54,7 +54,14 @@ namespace OpenH2.Core.Factories
 
             var args = shader.Arguments[0];
 
-            if (mappingConfig.Mappings.TryGetValue(args.ShaderTemplate.Id, out var mapping))
+            uint templateId = args.ShaderTemplate.Id;
+
+            if (mappingConfig.Aliases.TryGetValue(templateId, out var alias))
+            {
+                templateId = alias.Alias;
+            }
+
+            if (mappingConfig.Mappings.TryGetValue(templateId, out var mapping))
             {
                 PopulateFromMapping(map, mat, args, mapping);
                 return mat;
@@ -62,8 +69,7 @@ namespace OpenH2.Core.Factories
 
             Console.WriteLine($"Using heuristic for shader '{shader.Name}' stem[{shader.ShaderTemplate.Id}]");
 
-            PopulateFromBitmapReferences(map, mat, shader);
-            PopulateFromBitmapInfos(map, mat, shader);
+            PopulateFromHeuristic(map, mat, shader);
 
             return mat;
         }
@@ -79,6 +85,15 @@ namespace OpenH2.Core.Factories
             mat.NormalMapScale = args.GetInput(mapping.NormalScaleIndex);
 
             mat.DiffuseMap = args.GetBitmap(map, mapping.DiffuseMapIndex);
+            
+            if(mapping.DiffuseColor.Length == 4)
+            {
+                mat.DiffuseColor = new Vector4(mapping.DiffuseColor[0], mapping.DiffuseColor[1], mapping.DiffuseColor[2], mapping.DiffuseColor[3]);
+            }
+            else if(mapping.DiffuseColor.Length == 1)
+            {
+                mat.DiffuseColor = new Vector4(mapping.DiffuseColor[0]);
+            }
 
             mat.DetailMap1 = args.GetBitmap(map, mapping.Detail1MapIndex);
             mat.Detail1Scale = args.GetInput(mapping.Detail1ScaleIndex);
@@ -93,64 +108,46 @@ namespace OpenH2.Core.Factories
             mat.AlphaMap = args.GetBitmap(map, mapping.AlphaMapIndex);
 
             mat.SpecularMap = args.GetBitmap(map, mapping.SpecularMapIndex);
-
-            if(mat.EmissiveType == EmissiveType.ThreeChannel)
-            {
-                mat.DiffuseColor = Vector4.Zero;
-            }
         }
 
-        private static void PopulateFromBitmapInfos(H2vMap map, Material<BitmapTag> mat, ShaderTag shader)
+        private static void PopulateFromHeuristic(H2vMap map, Material<BitmapTag> mat, ShaderTag shader)
         {
-            if (shader.BitmapInfos.Length > 0)
+            foreach (var info in shader.BitmapInfos)
             {
-                var bitms = shader.BitmapInfos[0];
-
-                if (bitms == null)
-                    return;
-
-                if (map.TryGetTag(bitms.DiffuseBitmap, out var diffuse))
+                if (info.AlphaBitmap.IsInvalid == false && mat.AlphaMap == default)
                 {
-                    mat.DiffuseMap = diffuse;
-                }
-
-                if (map.TryGetTag(bitms.AlphaBitmap, out var alpha))
-                {
+                    map.TryGetTag(info.AlphaBitmap, out var alpha);
                     mat.AlphaMap = alpha;
                 }
-            }
-        }
 
-        private static void PopulateFromBitmapReferences(H2vMap map, Material<BitmapTag> mat, ShaderTag shader)
-        {
+                if(info.DiffuseBitmap.IsInvalid == false && mat.DiffuseMap == default)
+                {
+                    map.TryGetTag(info.DiffuseBitmap, out var diff);
+                    mat.DiffuseMap = diff;
+                }
+            }
+
             var args = shader.Arguments[0];
             var bitmRefs = args.ShaderMaps;
-
 
             for (int i = 0; i < bitmRefs.Length; i++)
             {
                 var bitmRef = bitmRefs[i];
-
-                var scale = Vector4.One;
-
-                if (args.ShaderInputs.Length >= bitmRefs.Length)
-                {
-                    scale = args.ShaderInputs[i];
-                }
 
                 if (map.TryGetTag(bitmRef.Bitmap, out var bitm) == false)
                 {
                     continue;
                 }
 
-                if (bitm == mat.DiffuseMap)
+                if (bitm == mat.DiffuseMap || bitm == mat.AlphaMap)
                 {
                     continue;
                 }
 
-                if (bitm.TextureUsage == TextureUsage.Bump)
+                if (bitm.TextureUsage == TextureUsage.Bump || bitm.Name.Contains("bump"))
                 {
                     mat.NormalMap = bitm;
+                    mat.NormalMapScale = args.GetInput(0, new Vector4(1, 1, 0, 0));
                 }
 
                 if (bitm.TextureUsage == TextureUsage.Diffuse)
@@ -162,35 +159,33 @@ namespace OpenH2.Core.Factories
                     }
                 }
 
-                if (bitm.TextureUsage == TextureUsage.Diffuse || bitm.TextureUsage == TextureUsage.Detail)
+                if (bitm.TextureUsage == TextureUsage.Diffuse || bitm.TextureUsage == TextureUsage.Detail || bitm.Name.Contains("detail"))
                 {
 
                     // HACK: if texture is small, it's likely not a detail map
-                    if (bitm.Width <= 8 || bitm.Height <= 8)
+                    if (bitm.Width <= 16 || bitm.Height <= 16)
                         continue;
 
+                    int inputOffset = i;
+                    Vector4 detailScale = Vector4.Zero;
 
-                    // HACK: blacklisted textures that likely are not detail maps:
-                    if (
-                        // linear_corner_fade
-                        bitm.ID == 3784845107u ||
-                        // default_detail
-                        bitm.ID == 3783272219u
-                    )
+                    while((detailScale.X < 1 || detailScale.Y < 1 || detailScale.Z != 0 || detailScale.W != 0) 
+                        && inputOffset < args.ShaderInputs.Length)
                     {
-                        continue;
+                        detailScale = args.ShaderInputs[inputOffset];
+                        inputOffset++;
                     }
 
                     if (mat.DetailMap1 == null)
                     {
                         mat.DetailMap1 = bitm;
-                        mat.Detail1Scale = scale;
+                        mat.Detail1Scale = detailScale;
                         continue;
                     }
                     else if (mat.DetailMap2 == null)
                     {
                         mat.DetailMap2 = bitm;
-                        mat.Detail2Scale = scale;
+                        mat.Detail2Scale = detailScale;
                         continue;
                     }
                 }
