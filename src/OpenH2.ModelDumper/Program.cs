@@ -32,7 +32,7 @@ namespace OpenH2.ModelDumper
 
             using (var map = new FileStream(mapPath, FileMode.Open, FileAccess.Read, FileShare.Read))
             {
-                var factory = new MapFactory(Path.GetDirectoryName(mapPath), new MaterialFactory(Environment.CurrentDirectory));
+                var factory = new MapFactory(Path.GetDirectoryName(mapPath), new MaterialFactory(Environment.CurrentDirectory + "\\Configs"));
                 scene = factory.FromFile(map);
             }
 
@@ -141,6 +141,40 @@ namespace OpenH2.ModelDumper
                 }
 
                 writer.WriteModel(mode.Parts[0].Model, xform, "mach_" + machInstance.MachineryDefinitionIndex);
+            }
+
+            foreach (var itemPlacement in scenario.ItemCollectionPlacements)
+            {
+                var xform = Matrix4x4.CreateScale(new Vector3(1))
+                    * Matrix4x4.CreateFromQuaternion(Quaternion.CreateFromYawPitchRoll(itemPlacement.Orientation.Y, itemPlacement.Orientation.Z, itemPlacement.Orientation.X))
+                    * Matrix4x4.CreateTranslation(itemPlacement.Position);
+
+                if (!scene.TryGetTag<BaseTag>(itemPlacement.ItemCollectionReference, out var itemTag))
+                    continue;
+
+                TagRef<PhysicalModelTag> hlmtRef = default;
+
+                if (itemTag is ItemCollectionTag itmc)
+                {
+                    if (!scene.TryGetTag<BaseTag>(itmc.Items[0].ItemTag, out var item))
+                        continue;
+
+                    if (item is WeaponTag weap)
+                        hlmtRef = weap.Hlmt;
+                }
+
+                if (hlmtRef == default)
+                    continue;
+                
+                if (!scene.TryGetTag(hlmtRef, out var hlmt))
+                    continue;
+
+                if (!scene.TryGetTag(hlmt.Model, out var mode))
+                    continue;
+
+                var index = mode.Lods[0].Permutations[0].HighestPieceIndex;
+                
+                writer.WriteModel(mode.Parts[index].Model, xform, "itmc_" + itemPlacement.ItemCollectionReference);
             }
 
             File.WriteAllText(outPath, writer.ToString());

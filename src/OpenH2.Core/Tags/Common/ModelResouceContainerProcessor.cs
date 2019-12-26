@@ -1,162 +1,172 @@
 ﻿using OpenH2.Core.Extensions;
+using OpenH2.Core.Representations;
 using OpenH2.Foundation;
+using System;
 using System.Collections.Generic;
 
 namespace OpenH2.Core.Tags.Common
 {
     public static class ModelResouceContainerProcessor
     {
-        public static ModelMesh[] ProcessContainer(IModelResourceContainer container, ModelShaderReference[] shaders, string note = null)
+        private struct PartDescription
         {
-            if (container.Resources.Length < 4)
+            public PartDescription(int indexStart, int indexCount, TagRef<ShaderTag> shader, MeshElementType elementType)
             {
-                // TODO investigate when differing amount of resources
-                // Skip if we don't have the right data setup
-                return new ModelMesh[0];
+                IndexStart = indexStart;
+                IndexCount = indexCount;
+                Shader = shader;
+                ElementType = elementType;
             }
 
-            var verts = ProcessVerticies(container);
+            public int IndexStart;
+            public int IndexCount;
+            public TagRef<ShaderTag> Shader;
+            public MeshElementType ElementType;
+        }
 
-            var partCount = (int)container.Header.PartInfoCount;
-            var partResource = container.Resources[0];
-            var partData = partResource.Data.Span;
-            
+        public static ModelMesh[] ProcessContainer(IModelResourceContainer container, ModelShaderReference[] shaders, string note = null)
+        {
+            var parts = new List<PartDescription>((int)container.Header.PartInfoCount);
 
-            // Process face data
-            var faceResource = container.Resources[GetIndiciesResourceIndex(container)];
-            var faceData = faceResource.Data.Span;
+            var verts = new VertexFormat[container.VertexCount];
+            Span<int> indices = new int[container.Header.IndexCount];
 
-            var meshes = new List<ModelMesh>(partCount);
+            var currentResource = 0;
 
-            for (var i = 0; i < partCount; i++)
+            // process part info 0 resource
+            if(container.Header.PartInfoCount > 0)
             {
-                var start = i * 72;
+                var partData = container.Resources[currentResource].Data.Span;
 
-                var elementType = (MeshElementType)partData.ReadUInt16At(start + 2);
-                var matId = partData.ReadUInt16At(start + 4);
-                var indexStart = partData.ReadUInt16At(start + 6);
-                var indexCount = partData.ReadUInt16At(start + 8);
-
-                var mesh = new ModelMesh
+                for (var i = 0; i < container.Header.PartInfoCount; i++)
                 {
-                    Verticies = verts,
-                    Indices = new int[indexCount],
-                    Shader = shaders[matId].ShaderId,
-                    ElementType = elementType,
-                    Note = note
-                };
+                    var start = i * 72;
 
-                mesh.RawData = partData.Slice(start, 72).ToArray();
+                    var elementType = (MeshElementType)partData.ReadUInt16At(start + 2);
+                    var matId = partData.ReadUInt16At(start + 4);
+                    var indexStart = partData.ReadUInt16At(start + 6);
+                    var indexCount = partData.ReadUInt16At(start + 8);
 
-                for (var j = 0; j < indexCount; j++)
-                {
-                    var byteStart = (indexStart + j) * 2;
+                    var partDescription = new PartDescription(indexStart, indexCount, shaders[matId].ShaderId, elementType);
 
-                    mesh.Indices[j] = faceData.ReadUInt16At(byteStart);
+                    parts.Add(partDescription);
                 }
 
-                meshes.Add(mesh);
+                currentResource++;
+            }
+
+            // process part info 2 resource
+            if(container.Header.PartInfo2Count > 0)
+            {
+                // Not positive on what this is for, last ushort of the 8 bytes looks to be part index
+                currentResource++;
+            }
+
+            // process part info 3 resource
+            if (container.Header.PartInfo3Count > 0)
+            {
+                currentResource++;
+            }
+
+            // process indicies resourc
+            if(container.Header.IndexCount > 0)
+            {
+                var data = container.Resources[currentResource].Data.Span;
+
+                for (var i = 0; i < container.Header.IndexCount; i++)
+                    indices[i] = data.ReadUInt16At(i * 2);
+                
+                currentResource++;
+            }
+
+            // process unknown resource
+            if (container.Header.UknownDataLength > 0)
+            {
+                currentResource++;
+            }
+
+            // process unknown resource
+            if (container.Header.UknownIndiciesCount > 0)
+            {
+                currentResource++;
+            }
+
+            // process Vertex Attribute Hint resource
+            if (container.Header.VertexComponentCount > 0)
+            {
+                currentResource++;
+            }
+
+            // process vertex attribute resources
+            if (container.Header.VertexComponentCount > 0)
+            {
+                if(container.Header.VertexComponentCount >= 1)
+                {
+                    var posData = container.Resources[currentResource].Data.Span;
+
+                    for (var i = 0; i < container.VertexCount; i++)
+                    {
+                        var vert = new VertexFormat();
+
+                        vert.Position = posData.ReadVec3At(i * 12);
+
+                        verts[i] = vert;
+                    }
+
+                    currentResource++;
+                }
+
+                if (container.Header.VertexComponentCount >= 2)
+                {
+                    var texData = container.Resources[currentResource].Data.Span;
+
+                    for (var i = 0; i < container.VertexCount; i++)
+                    {
+                        var vert = verts[i];
+
+                        vert.TexCoords = texData.ReadVec2At(i * 8);
+
+                        verts[i] = vert;
+                    }
+
+                    currentResource++;
+                }
+
+                if (container.Header.VertexComponentCount >= 3)
+                {
+                    var tbnData = container.Resources[currentResource].Data.Span;
+
+                    for (var i = 0; i < container.VertexCount; i++)
+                    {
+                        var vert = verts[i];
+
+                        var start = i * 36;
+                        vert.Normal = tbnData.ReadVec3At(start);
+                        vert.Bitangent = tbnData.ReadVec3At(start + 12);
+                        vert.Tangent = tbnData.ReadVec3At(start + 24);
+
+                        verts[i] = vert;
+                    }
+
+                    currentResource++;
+                }
+            }
+
+            var meshes = new List<ModelMesh>(parts.Count);
+
+            foreach(var part in parts)
+            {
+                meshes.Add(new ModelMesh
+                {
+                    Verticies = verts,
+                    Indices = indices.Slice(part.IndexStart, part.IndexCount).ToArray(),
+                    Shader = part.Shader,
+                    ElementType = part.ElementType,
+                    Note = note
+                });
             }
 
             return meshes.ToArray();
-        }
-
-        private static int GetIndiciesResourceIndex(IModelResourceContainer container)
-        {
-            var header = container.Header;
-            var index = 0;
-
-            if(header.PartInfoCount > 0)
-            {
-                index++;
-            }
-
-            if (header.PartInfo2Count > 0)
-            {
-                index++;
-            }
-
-            if (header.PartInfo3Count > 0)
-            {
-                index++;
-            }
-
-            return index;
-        }
-
-        private static int GetFirstVertexComponentIndex(IModelResourceContainer container)
-        {
-            var index = GetIndiciesResourceIndex(container);
-
-            if(container.Header.UknownDataLength > 0)
-            {
-                index++;
-            }
-
-            if(container.Header.UknownIndiciesCount > 0)
-            {
-                index++;
-            }
-
-            return index + 2;
-        }
-
-        private static VertexFormat[] ProcessVerticies(IModelResourceContainer container)
-        {
-            //int firstVertIndex = 0;
-            //for(var i = 0; i < container.Resources.Length; i++)
-            //{
-            //    if(container.Resources[i].Type == ModelResource.ResourceType.VertexAttribute)
-            //    {
-            //        firstVertIndex = i;
-            //        break;
-            //    }
-            //}
-
-            var vertIndex = GetFirstVertexComponentIndex(container);
-
-            var verts = new VertexFormat[container.VertexCount];
-
-            var posResouce = container.Resources[vertIndex];
-            var posData = posResouce.Data.Span;
-
-            for (var i = 0; i < container.VertexCount; i++)
-            {
-                var vert = new VertexFormat();
-
-                vert.Position = posData.ReadVec3At(i * 12);
-
-                verts[i] = vert;
-            }
-
-            var texResouce = container.Resources[vertIndex + 1];
-            var texData = texResouce.Data.Span;
-
-            for (var i = 0; i < container.VertexCount; i++)
-            {
-                var vert = verts[i];
-
-                vert.TexCoords = texData.ReadVec2At(i * 8);
-
-                verts[i] = vert;
-            }
-
-            var tbnResouce = container.Resources[vertIndex + 2];
-            var tbnData = tbnResouce.Data.Span;
-
-            for (var i = 0; i < container.VertexCount; i++)
-            {
-                var vert = verts[i];
-
-                var start = i * 36;
-                vert.Normal = tbnData.ReadVec3At(start);
-                vert.Bitangent = tbnData.ReadVec3At(start + 12);
-                vert.Tangent = tbnData.ReadVec3At(start + 24);
-
-                verts[i] = vert;
-            }
-
-            return verts;
-        }
+        }        
     }
 }

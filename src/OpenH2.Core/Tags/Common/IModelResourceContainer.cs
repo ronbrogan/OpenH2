@@ -6,7 +6,7 @@
 
         ushort TriangleCount { get; set; }
 
-        ushort IndiciesIndex { get; set; }
+        ushort PartCount { get; set; }
 
         uint DataBlockRawOffset { get; set; }
 

@@ -368,7 +368,7 @@ namespace OpenH2.Core.Tags
             [PrimitiveValue(2)]
             public ushort TriangleCount { get; set; }
 
-            public ushort IndiciesIndex { get; set; } = 2;
+            public ushort PartCount { get; set; } = 2;
 
             [PrimitiveValue(40)]
             public uint DataBlockRawOffset { get; set; }
@@ -413,7 +413,7 @@ namespace OpenH2.Core.Tags
             public ushort TriangleCount { get; set; }
 
             [PrimitiveValue(12)]
-            public ushort IndiciesIndex { get; set; }
+            public ushort PartCount { get; set; }
 
             [InternalReferenceValue(24)]
             public Obj24[] Obj24s { get; set; }

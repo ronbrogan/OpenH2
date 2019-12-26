@@ -19,49 +19,53 @@ namespace OpenH2.Engine.EntityFactories
         {
             var scenery = new Item();
 
-            if (instance.ItemCollectionId.IsInvalid)
+            if (instance.ItemCollectionReference.IsInvalid)
                 return scenery;
 
-            if(map.TryGetTag(instance.ItemCollectionId, out var itmc) == false)
+            if(map.TryGetTag<BaseTag>(instance.ItemCollectionReference, out var itemTag) == false)
                 throw new Exception("Unable to load itmc");
             
             var meshes = new List<ModelMesh>();
 
-            // I've only seen 1 item collections though
-            foreach (var item in itmc.Items)
+            // TODO: add support for other tags
+            if(itemTag is ItemCollectionTag itmc)
             {
-                if (map.TryGetTag<BaseTag>(item.ItemTag, out var tag) == false)
+                // I've only seen 1 item collections though
+                foreach (var item in itmc.Items)
                 {
-                    throw new Exception("No tag found for weap/equip");
-                }
+                    if (map.TryGetTag<BaseTag>(item.ItemTag, out var tag) == false)
+                    {
+                        throw new Exception("No tag found for weap/equip");
+                    }
 
-                TagRef<PhysicalModelTag> itemHlmt = default;
+                    TagRef<PhysicalModelTag> itemHlmt = default;
 
-                if(tag is WeaponTag weap)
-                    itemHlmt = weap.Hlmt;
+                    if (tag is WeaponTag weap)
+                        itemHlmt = weap.Hlmt;
 
-                if (tag is EquipmentTag eqip)
-                    itemHlmt = eqip.Hlmt;
+                    if (tag is EquipmentTag eqip)
+                        itemHlmt = eqip.Hlmt;
 
-                if (itemHlmt == default)
-                    continue;
+                    if (itemHlmt == default)
+                        continue;
 
-                if (map.TryGetTag(itemHlmt, out var hlmt) == false)
-                {
-                    Console.WriteLine($"Couldn't find ITMC[{tag.Id}]'s HLMT[{itemHlmt.Id}]");
-                    continue;
-                }
+                    if (map.TryGetTag(itemHlmt, out var hlmt) == false)
+                    {
+                        Console.WriteLine($"Couldn't find ITMC[{tag.Id}]'s HLMT[{itemHlmt.Id}]");
+                        continue;
+                    }
 
-                if (map.TryGetTag(hlmt.Model, out var model) == false)
-                {
-                    Console.WriteLine($"No MODE[{hlmt.Model.Id}] found for HLMT[{hlmt.Id}]");
-                    continue;
-                }
+                    if (map.TryGetTag(hlmt.Model, out var model) == false)
+                    {
+                        Console.WriteLine($"No MODE[{hlmt.Model.Id}] found for HLMT[{hlmt.Id}]");
+                        continue;
+                    }
 
-                foreach(var lod in model.Lods)
-                {
-                    var partIndex = lod.Permutations[0].LowPieceIndex;
-                    meshes.AddRange(model.Parts[partIndex].Model.Meshes);
+                    foreach (var lod in model.Lods)
+                    {
+                        var partIndex = lod.Permutations[0].HighestPieceIndex;
+                        meshes.AddRange(model.Parts[partIndex].Model.Meshes);
+                    }
                 }
             }
 
@@ -88,7 +92,7 @@ namespace OpenH2.Engine.EntityFactories
             {
                 RenderModel = new Model<BitmapTag>
                 {
-                    Note = $"[{itmc.Id}] {itmc.Name}",
+                    Note = $"[{itemTag.Id}] {itemTag.Name}",
                     //Position = instance.Position,
                     //Orientation = instance.Orientation.ToQuaternion(),
                     Flags = ModelFlags.Diffuse | ModelFlags.CastsShadows | ModelFlags.ReceivesShadows,

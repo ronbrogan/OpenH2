@@ -290,7 +290,7 @@ namespace OpenH2.Core.Tags
             public Vector3 Orientation { get; set; }
 
             [PrimitiveValue(92)]
-            public TagRef<ItemCollectionTag> ItemCollectionId { get; set; }
+            public TagRef ItemCollectionReference { get; set; }
         }
 
         [FixedLength(156)] public class Obj296 { }
