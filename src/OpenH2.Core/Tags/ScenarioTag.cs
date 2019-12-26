@@ -159,7 +159,7 @@ namespace OpenH2.Core.Tags
         public class BipedDefinition 
         {
             [PrimitiveValue(4)]
-            public uint BipedId { get; set; }
+            public TagRef<BipedTag> Biped { get; set; }
         }
 
 
@@ -202,7 +202,7 @@ namespace OpenH2.Core.Tags
         [FixedLength(40)] public class WeaponDefinition 
         {
             [PrimitiveValue(4)]
-            public uint WeaponId { get; set; }
+            public TagRef<WeaponTag> WeaponId { get; set; }
         }
 
         [FixedLength(72)]
@@ -241,7 +241,7 @@ namespace OpenH2.Core.Tags
         [FixedLength(40)] public class SoundSceneryDefinition 
         {
             [PrimitiveValue(4)]
-            public uint SoundSceneryId { get; set; }
+            public TagRef<SoundSceneryTag> SoundScenery { get; set; }
         }
 
         [FixedLength(108)]
@@ -290,10 +290,11 @@ namespace OpenH2.Core.Tags
             public Vector3 Orientation { get; set; }
 
             [PrimitiveValue(92)]
-            public uint ItemCollectionId { get; set; }
+            public TagRef<ItemCollectionTag> ItemCollectionId { get; set; }
         }
 
         [FixedLength(156)] public class Obj296 { }
+
         [FixedLength(16)]
         public class DecalInstance
         {

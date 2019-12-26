@@ -2,17 +2,24 @@
 using OpenH2.Foundation;
 using System;
 using System.Collections.Generic;
+using System.Text.Json.Serialization;
 
 namespace OpenH2.Core.Tags.Common
 {
     public class ModelMesh : IEquatable<ModelMesh>
     {
+        [JsonIgnore]
         public int[] Indices { get; set; }
+        [JsonIgnore]
         public VertexFormat[] Verticies { get; set; }
+
+        [JsonConverter(typeof(JsonStringEnumConverter))]
         public MeshElementType ElementType { get; set; }
+
         public TagRef<ShaderTag> Shader { get; set; }
         public bool Compressed { get; set; }
 
+        [JsonIgnore]
         public byte[] RawData { get; set; }
 
         public string Note { get; set; }

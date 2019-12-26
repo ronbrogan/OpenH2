@@ -4,14 +4,14 @@ using OpenH2.Core.Tags.Layout;
 namespace OpenH2.Core.Tags
 {
     [TagLabel(TagName.jmad)]
-    public class AnimationGraph : BaseTag
+    public class AnimationGraphTag : BaseTag
     {
-        public AnimationGraph(uint id) : base(id)
+        public AnimationGraphTag(uint id) : base(id)
         {
         }
 
         [PrimitiveValue(4)]
-        public TagRef<AnimationGraph> Unknown { get; set; }
+        public TagRef<AnimationGraphTag> Unknown { get; set; }
 
 
         [InternalReferenceValue(12)]

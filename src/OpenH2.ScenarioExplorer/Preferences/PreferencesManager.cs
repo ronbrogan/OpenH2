@@ -1,8 +1,7 @@
-﻿using Newtonsoft.Json;
-using System;
-using System.Collections.Generic;
+﻿using System;
 using System.IO;
 using System.Text;
+using System.Text.Json;
 
 namespace OpenH2.ScenarioExplorer.Preferences
 {
@@ -27,7 +26,7 @@ namespace OpenH2.ScenarioExplorer.Preferences
             {
                 var contents = File.ReadAllText(appPreferencesPath);
 
-                return JsonConvert.DeserializeObject<AppPreferences>(contents);
+                return JsonSerializer.Deserialize<AppPreferences>(contents);
             }
 
             return new AppPreferences();
@@ -39,7 +38,7 @@ namespace OpenH2.ScenarioExplorer.Preferences
             {
                 using var fs = new FileStream(appPreferencesPath, FileMode.Create, FileAccess.Write);
 
-                var text = JsonConvert.SerializeObject(prefs);
+                var text = JsonSerializer.Serialize(prefs);
 
                 fs.Write(Encoding.UTF8.GetBytes(text));
             }

@@ -1,5 +1,6 @@
 ﻿using OpenH2.Core.Tags;
 using OpenH2.Foundation;
+using System.Text.Json.Serialization;
 
 namespace OpenH2.Core.Configuration
 {
@@ -21,6 +22,8 @@ namespace OpenH2.Core.Configuration
 
         public int? EmissiveMapIndex { get; set; } = null;
         public int? EmissiveArgumentsIndex { get; set; } = null;
+
+        [JsonConverter(typeof(JsonStringEnumConverter))]
         public EmissiveType EmissiveType { get; set; } = EmissiveType.DiffuseBlended;
 
         public int? AlphaMapIndex { get; set; } = null;

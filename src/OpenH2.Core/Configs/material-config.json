@@ -68,8 +68,8 @@
       "detail1MapIndex": 2,
       "detail1ScaleIndex": 3
     },
+	// TODO: special overlay flag to enable discard for middle gray
     "3884461347": {
-      // TODO: special overlay flag to enable discard for middle gray
       "name": "Overlay",
       "diffuseMapIndex": 0,
       "alphaMapIndex": 0

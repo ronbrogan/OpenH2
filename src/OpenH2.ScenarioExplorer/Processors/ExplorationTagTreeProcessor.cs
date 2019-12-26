@@ -18,6 +18,8 @@ namespace OpenH2.ScenarioExplorer.Processors
             this.scene = scene;
         }
 
+        public Dictionary<Type, string> TagLabels = new Dictionary<Type, string>();
+
         public void PopulateChildren(TagViewModel vm, TagTreeEntryViewModel entry)
         {
             if (scene.TryGetTag<BaseTag>(entry.Id, out var tag) == false)
@@ -27,18 +29,29 @@ namespace OpenH2.ScenarioExplorer.Processors
 
             var childRefs = GetChildReferences(tag);
 
+            var addedChildren = new HashSet<uint>();
             var childrenVms = new List<TagTreeEntryViewModel>();
+
 
             foreach (var child in childRefs)
             {
+                if (addedChildren.Contains(child.Id))
+                    continue;
+
                 if (scene.TryGetTag<BaseTag>(child.Id, out var childTag) == false)
                     continue;
 
                 if (childTag == null)
                 {
-                    var indexEntry = scene.TagIndex[child.Id];
+                    if(scene.TagIndex.TryGetValue(child.Id, out var indexEntry) == false)
+                    {
+                        Console.WriteLine($"Unable to find any tag entry info for ????[{child.Id}]");
+                        continue;
+                    }
+
                     Console.WriteLine($"Found null tag for [{indexEntry.Tag}] tag");
 
+                    addedChildren.Add(child.Id);
                     childrenVms.Add(new TagTreeEntryViewModel()
                     {
                         Id = child.Id,
@@ -48,9 +61,24 @@ namespace OpenH2.ScenarioExplorer.Processors
                     continue;
                 }
 
-                var tagLabel = childTag.GetType().GetCustomAttribute<TagLabelAttribute>().Label;
+                string tagLabel = "";
+
+                if(childTag is UnknownTag uk)
+                {
+                    tagLabel = uk.OriginalLabel + "[?]";
+                }
+                else
+                {
+                    if(TagLabels.TryGetValue(childTag.GetType(), out tagLabel) == false)
+                    {
+                        tagLabel = childTag.GetType().GetCustomAttribute<TagLabelAttribute>().Label.ToString();
+                        TagLabels.Add(childTag.GetType(), tagLabel);
+                    }
+                }
+
                 var tagName = tagLabel + (childTag.Name != null ? " - " + childTag.Name : string.Empty);
 
+                addedChildren.Add(child.Id);
                 childrenVms.Add(new TagTreeEntryViewModel()
                 {
                     Id = child.Id,
@@ -60,6 +88,10 @@ namespace OpenH2.ScenarioExplorer.Processors
 
             entry.Children = childrenVms.ToArray();
         }
+
+        private Dictionary<Type, PropertyInfo[]> TagReferencePropertyCache = new Dictionary<Type, PropertyInfo[]>();
+        private Dictionary<Type, PropertyInfo[]> TagReferenceArrayPropertyCache = new Dictionary<Type, PropertyInfo[]>();
+        private Dictionary<Type, PropertyInfo[]> TagReferenceObjectPropertyCache = new Dictionary<Type, PropertyInfo[]>();
 
         // TODO: This is likely overeager
         private ITagRef[] GetChildReferences(BaseTag tag)
@@ -85,20 +117,38 @@ namespace OpenH2.ScenarioExplorer.Processors
                 if (current == null)
                     return;
 
-                var currentProps = current.GetType().GetProperties(BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly);
+                var currType = current.GetType();
 
-                var tagRefProps = currentProps.Where(t => (t.PropertyType.IsGenericType && t.PropertyType.GetGenericTypeDefinition() == typeof(TagRef<>))
+                TagReferencePropertyCache.TryGetValue(currType, out var tagRefProps);
+                TagReferenceArrayPropertyCache.TryGetValue(currType, out var tagRefArrayProps);
+                TagReferenceObjectPropertyCache.TryGetValue(currType, out var tagRefObjectProps);
+
+                PropertyInfo[] allProperties = null;
+                if ((tagRefProps ?? tagRefArrayProps ?? tagRefObjectProps) == null)
+                {
+                    allProperties = current.GetType().GetProperties(BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly);
+                }
+
+                if(tagRefProps == null)
+                {
+                    tagRefProps = allProperties.Where(t => (t.PropertyType.IsGenericType && t.PropertyType.GetGenericTypeDefinition() == typeof(TagRef<>))
                         || t.PropertyType == typeof(TagRef))
-                    .ToList();
-
+                    .ToArray();
+                    TagReferencePropertyCache.Add(currType, tagRefProps);
+                }
+                
                 foreach (var prop in tagRefProps)
                 {
                     props.Add((current, prop));
                 }
 
-                var nestedArrays = currentProps.Where(t => (t.PropertyType.IsArray && t.PropertyType.GetElementType().IsClass));
+                if(tagRefArrayProps == null)
+                {
+                    tagRefArrayProps = allProperties.Where(t => (t.PropertyType.IsArray && t.PropertyType.GetElementType().IsClass)).ToArray();
+                    TagReferenceArrayPropertyCache.Add(currType, tagRefArrayProps);
+                }
 
-                foreach (var nested in nestedArrays)
+                foreach (var nested in tagRefArrayProps)
                 {
                     var arr = (object[])nested.GetValue(current);
 
@@ -111,9 +161,13 @@ namespace OpenH2.ScenarioExplorer.Processors
                     }
                 }
 
-                var nestedItems = currentProps.Where(t => t.PropertyType.IsClass);
+                if (tagRefObjectProps == null)
+                {
+                    tagRefObjectProps = allProperties.Where(t => t.PropertyType.IsClass).ToArray();
+                    TagReferenceObjectPropertyCache.Add(currType, tagRefObjectProps);
+                }
 
-                foreach (var nested in nestedItems)
+                foreach (var nested in tagRefObjectProps)
                 {
                     CollectRecursiveTagRefs(nested.GetValue(current), props);
                 }

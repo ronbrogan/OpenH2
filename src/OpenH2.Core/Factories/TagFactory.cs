@@ -18,17 +18,29 @@ namespace OpenH2.Core.Factories
         {
             var tagType = GetTypeForTag(index.Tag);
 
+            BaseTag tag;
+
             if (tagType == null)
-                return null;
+            {
+                tag = new UnknownTag(id, index.Tag.ToString())
+                {
+                    Name = name,
+                    Length = (uint)index.DataSize,
+                    Offset = (uint)index.Offset.Value,
+                    InternalSecondaryMagic = secondaryMagic + index.Offset.Value
+                };
+            }
+            else
+            {
+                var tagCreator = generator.GetTagCreator(tagType);
 
-            var tagCreator = generator.GetTagCreator(tagType);
+                var mapData = reader.MapReader;
 
-            var mapData = reader.MapReader;
+                // Preload tag data for faster reads
+                mapData.Preload(index.Offset.Value, index.DataSize);
 
-            // Preload tag data for faster reads
-            mapData.Preload(index.Offset.Value, index.DataSize);
-            
-            var tag = tagCreator(id, name, mapData, secondaryMagic, index.Offset.Value, index.DataSize) as BaseTag;
+                tag = tagCreator(id, name, mapData, secondaryMagic, index.Offset.Value, index.DataSize) as BaseTag;
+            }
 
             tag.TagIndexEntry = index;
             tag.DataFile = reader.GetPrimaryDataFile();

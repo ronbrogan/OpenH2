@@ -1,5 +1,7 @@
+using OpenH2.Core.Enums;
 using OpenH2.Core.Extensions;
 using OpenH2.Core.Factories;
+using OpenH2.Core.Offsets;
 using OpenH2.Core.Parsing;
 using OpenH2.Core.Tags;
 using OpenH2.Core.Tags.Common;
@@ -104,6 +106,14 @@ namespace OpenH2.Core.Representations
             return false;
         }
 
+        public Memory<byte> ReadData(DataFile source, IOffset offset, int length)
+        {
+            var reader = this.reader.GetReader(source);
+
+            var chunk = reader.Chunk(offset.Value, length);
+
+            return chunk.ReadArray(0, length);
+        }
 
         public static int CalculateSignature(Memory<byte> sceneData)
         {

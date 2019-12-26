@@ -1,5 +1,6 @@
 ﻿using OpenH2.Core.Tags.Layout;
 using System;
+using System.Text.Json.Serialization;
 
 namespace OpenH2.Core.Tags.Common
 {
@@ -15,6 +16,7 @@ namespace OpenH2.Core.Tags.Common
         [PrimitiveValue(12)]
         public int Offset { get; set; }
 
+        [JsonIgnore]
         public Memory<byte> Data { get; set; }
 
         [Flags]

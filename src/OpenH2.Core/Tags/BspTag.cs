@@ -1,12 +1,11 @@
-﻿using System;
-using OpenH2.Core.Offsets;
-using Newtonsoft.Json;
-using OpenH2.Core.Tags.Layout;
+﻿using OpenH2.Core.Offsets;
 using OpenH2.Core.Parsing;
-using OpenH2.Core.Tags.Common;
-using OpenH2.Foundation;
-using System.Numerics;
 using OpenH2.Core.Representations;
+using OpenH2.Core.Tags.Common;
+using OpenH2.Core.Tags.Layout;
+using System;
+using System.Numerics;
+using System.Text.Json.Serialization;
 
 namespace OpenH2.Core.Tags
 {

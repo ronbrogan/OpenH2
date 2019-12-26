@@ -151,7 +151,7 @@ namespace OpenH2.ScenarioExplorer
                 var rawData = file.ToMemory();
                 file.Seek(0, SeekOrigin.Begin);
 
-                var factory = new MapFactory(Path.GetDirectoryName(path), new MaterialFactory(Environment.CurrentDirectory));
+                var factory = new MapFactory(Path.GetDirectoryName(path), new MaterialFactory(Environment.CurrentDirectory + "/Configs"));
                 var scene = factory.FromFile(file);
                 var vm = new ScenarioViewModel(scene, rawData, prefs.DiscoveryMode);
 

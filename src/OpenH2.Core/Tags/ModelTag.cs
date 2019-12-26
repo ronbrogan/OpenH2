@@ -5,6 +5,7 @@ using OpenH2.Core.Tags.Layout;
 using OpenH2.Foundation;
 using System;
 using System.Numerics;
+using System.Text.Json.Serialization;
 
 namespace OpenH2.Core.Tags
 {
@@ -91,7 +92,7 @@ namespace OpenH2.Core.Tags
 
                 var mesh = meshes[0];
 
-                for(var i = 0; i < mesh.Verticies.Length; i++)
+                for (var i = 0; i < mesh.Verticies.Length; i++)
                 {
                     var vert = mesh.Verticies[i];
 

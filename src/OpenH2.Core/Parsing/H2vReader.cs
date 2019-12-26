@@ -26,9 +26,9 @@ namespace OpenH2.Core.Parsing
             this.SpShared = baseReader.SpShared;
         }
 
-        public TrackingReader GetReader(NormalOffset offset)
+        public TrackingReader GetReader(DataFile source)
         {
-            switch (offset.Location)
+            switch (source)
             {
                 case DataFile.Local:
                     return MapReader;
@@ -41,6 +41,11 @@ namespace OpenH2.Core.Parsing
                 default:
                     return MapReader;
             }
+        }
+
+        public TrackingReader GetReader(NormalOffset offset)
+        {
+            return GetReader(offset.Location);   
         }
 
         public DataFile GetPrimaryDataFile()

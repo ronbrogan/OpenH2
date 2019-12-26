@@ -44,6 +44,7 @@ namespace OpenH2.Engine.EntityFactories
             {
                 //AddAtLocation(320, obj.Position, new Vector3(1, 1, 1), destination);
             }
+
         }
 
         private static void AddAtLocation(uint id, Vector3 position, Vector4 color, Scene destination)

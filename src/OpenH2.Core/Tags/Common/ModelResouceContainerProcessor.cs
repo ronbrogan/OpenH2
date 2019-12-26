@@ -22,8 +22,6 @@ namespace OpenH2.Core.Tags.Common
             var partData = partResource.Data.Span;
             
 
-            
-
             // Process face data
             var faceResource = container.Resources[GetIndiciesResourceIndex(container)];
             var faceData = faceResource.Data.Span;
@@ -34,10 +32,10 @@ namespace OpenH2.Core.Tags.Common
             {
                 var start = i * 72;
 
+                var elementType = (MeshElementType)partData.ReadUInt16At(start + 2);
                 var matId = partData.ReadUInt16At(start + 4);
                 var indexStart = partData.ReadUInt16At(start + 6);
                 var indexCount = partData.ReadUInt16At(start + 8);
-                var elementType = (MeshElementType)partData.ReadUInt16At(start + 2);
 
                 var mesh = new ModelMesh
                 {

@@ -19,7 +19,7 @@ namespace OpenH2.Core.Tags
         public uint ColliderId { get; set; }
 
         [PrimitiveValue(20)]
-        public TagRef<AnimationGraph> AnimationGraph { get; set; }
+        public TagRef<AnimationGraphTag> AnimationGraph { get; set; }
 
         [PrimitiveValue(28)]
         public uint PhysicsInfoId { get; set; }

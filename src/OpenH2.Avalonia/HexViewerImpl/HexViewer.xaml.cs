@@ -173,9 +173,14 @@ namespace OpenH2.AvaloniaControls
             var asciiBuilder = new StringBuilder();
             var addressBuilder = new StringBuilder();
 
-            for(var i = 0; i < span.Length / LineSize; i++)
+            var hexLines = (int)Math.Ceiling(span.Length / (float)LineSize);
+
+            for (var i = 0; i < hexLines; i++)
             {
-                var chunk = span.Slice(LineSize * i, LineSize);
+                var start = LineSize * i;
+                var length = Math.Min(LineSize, span.Length - start);
+
+                var chunk = span.Slice(start, length);
 
                 ToHexString(chunk, hexBuilder);
                 ToAsciiString(chunk, asciiBuilder);

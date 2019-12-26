@@ -1,6 +1,4 @@
-﻿using Newtonsoft.Json;
-using Newtonsoft.Json.Converters;
-using OpenH2.Core.Enums.Texture;
+﻿using OpenH2.Core.Enums.Texture;
 using OpenH2.Core.Offsets;
 using OpenH2.Core.Parsing;
 using OpenH2.Core.Tags.Layout;
@@ -8,6 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
+using System.Text.Json.Serialization;
 
 namespace OpenH2.Core.Tags
 {
@@ -21,15 +20,15 @@ namespace OpenH2.Core.Tags
         }
 
         [PrimitiveValue(0)]
-        [JsonConverter(typeof(StringEnumConverter))]
+        [JsonConverter(typeof(JsonStringEnumConverter))]
         public TextureType TextureType { get; set; }
 
         [PrimitiveValue(2)]
-        [JsonConverter(typeof(StringEnumConverter))]
+        [JsonConverter(typeof(JsonStringEnumConverter))]
         public TextureCompressionFormat TextureFormat { get; set; }
 
         [PrimitiveValue(4)]
-        [JsonConverter(typeof(StringEnumConverter))]
+        [JsonConverter(typeof(JsonStringEnumConverter))]
         public TextureUsage TextureUsage { get; set; }
 
         [PrimitiveValue(52)]
@@ -87,6 +86,7 @@ namespace OpenH2.Core.Tags
 
             public uint Size { get; set; }
 
+            [JsonIgnore]
             public Memory<byte> Data { get; set; } = Memory<byte>.Empty;
         }
 

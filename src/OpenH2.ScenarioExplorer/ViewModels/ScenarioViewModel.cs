@@ -91,9 +91,9 @@ namespace OpenH2.ScenarioExplorer.ViewModels
                 RawOffset = indexEntry.Offset.Value
             };
 
-            if (vm.Data.IsEmpty && tag.DataFile == Core.Enums.DataFile.Local)
+            if (vm.Data.IsEmpty)
             {
-                vm.Data = sceneData.Slice(indexEntry.Offset.Value, indexEntry.DataSize);
+                vm.Data = scene.ReadData(tag.DataFile, indexEntry.Offset, indexEntry.DataSize);
             }
 
             vm.OriginalTag = tag;

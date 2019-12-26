@@ -1,6 +1,4 @@
 ﻿using Avalonia.Media;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Serialization;
 using OpenH2.AvaloniaControls.HexViewerImpl;
 using OpenH2.Core.Extensions;
 using OpenH2.Core.Tags;
@@ -12,40 +10,26 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
+using System.Numerics;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 
 namespace OpenH2.ScenarioExplorer.ViewModels
 {
-    public class FriendlyContractResolver : DefaultContractResolver
-    {
-        private HashSet<Type> bannedTypes = new HashSet<Type>()
-        {
-            typeof(VertexFormat[]),
-            typeof(Vertex[]),
-            typeof(MeshCollection)
-        };
-
-        public override JsonContract ResolveContract(Type type)
-        {
-            var contract = base.CreateContract(type);
-
-            if(bannedTypes.Contains(type))
-            {
-                contract.Converter = null;
-            }
-
-            return contract;
-        }
-    }
 
     [AddINotifyPropertyChangedInterface]
     public class TagViewModel
     {
-        private static IContractResolver resolver = new FriendlyContractResolver();
+        private static JsonSerializerOptions serializerOptions = new JsonSerializerOptions() { WriteIndented = true };
 
-        private static JsonSerializerSettings serializerSettings = new JsonSerializerSettings()
+        static TagViewModel()
         {
-            ContractResolver = resolver
-        };
+            serializerOptions.Converters.Add(new Vector2Converter());
+            serializerOptions.Converters.Add(new Vector3Converter());
+            serializerOptions.Converters.Add(new Vector4Converter());
+            serializerOptions.Converters.Add(new NopConverter());
+        }
+
 
         public TagViewModel(uint id, string tag, string name)
         {
@@ -64,9 +48,13 @@ namespace OpenH2.ScenarioExplorer.ViewModels
             {
                 if(_tagJson == null)
                 {
-                    var json = JsonConvert.SerializeObject(_originalTag, Formatting.Indented, serializerSettings);
-
-                    _tagJson = json;
+                    try
+                    {
+                        var json = JsonSerializer.Serialize(_originalTag, _originalTag.GetType(), serializerOptions);
+                        _tagJson = json;
+                    }
+                    catch (Exception e) { Console.WriteLine(e.ToString()); }
+                    
                     return _tagJson;
                 }
                 else
@@ -168,6 +156,67 @@ namespace OpenH2.ScenarioExplorer.ViewModels
                 var chunkFeature = new HexViewerFeature(cao.Offset, cao.Count * cao.ItemSize, Brushes.OliveDrab);
 
                 this.Features.Add(chunkFeature);
+            }
+        }
+
+        public class NopConverter : JsonConverter<object>
+        {
+            public NopConverter()
+            { }
+
+            public override bool CanConvert(Type type)
+            {
+                return type == typeof(VertexFormat[])
+                || type == typeof(Vertex[]);
+            }
+
+            public override object Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
+            {
+                return null;
+            }
+
+            public override void Write(Utf8JsonWriter writer, object value, JsonSerializerOptions options)
+            {
+                writer.WriteNullValue();
+            }
+        }
+
+        public class Vector2Converter : JsonConverter<Vector2>
+        {
+
+            public override bool CanConvert(Type typeToConvert) => typeToConvert == typeof(Vector2);
+
+            public override Vector2 Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options) => throw new NotImplementedException();
+
+            public override void Write(Utf8JsonWriter writer, Vector2 value, JsonSerializerOptions options)
+            {
+                writer.WriteStringValue(string.Format("({0}, {1})", value.X, value.Y));
+            }
+        }
+
+        public class Vector3Converter : JsonConverter<Vector3>
+        {
+
+            public override bool CanConvert(Type typeToConvert) => typeToConvert == typeof(Vector3);
+
+            public override Vector3 Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options) => throw new NotImplementedException();
+
+            public override void Write(Utf8JsonWriter writer, Vector3 value, JsonSerializerOptions options)
+            {
+                writer.WriteStringValue(string.Format("({0}, {1}, {2})", value.X, value.Y, value.Z));
+            }
+        }
+
+        public class Vector4Converter : JsonConverter<Vector4>
+        {
+
+            public override bool CanConvert(Type typeToConvert) => typeToConvert == typeof(Vector4);
+
+            public override Vector4 Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options) => throw new NotImplementedException();
+
+            public override void Write(Utf8JsonWriter writer, Vector4 value, JsonSerializerOptions options)
+            {
+                writer.WriteStringValue(string.Format("({0}, {1}, {2}, {3})", value.X, value.Y, value.Z, value.W));
             }
         }
     }
