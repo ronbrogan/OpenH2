@@ -57,40 +57,12 @@ namespace OpenH2.Engine.EntityFactories
             {
                 Position = instance.Position,
                 Scale = new Vector3(instance.Scale),
-                Orientation = QuatFrom3x3Mat4(instance.RotationMatrix)
+                Orientation = QuaternionExtensions.From3x3Mat(instance.RotationMatrix)
             };
 
             scenery.SetComponents(new Component[] { comp, xform });
 
             return scenery;
-        }
-
-        private static Quaternion QuatFrom3x3Mat4(float[] vals)
-        {
-            var mat4 = new Matrix4x4(
-                vals[0],
-                vals[1],
-                vals[2],
-                0f,
-                vals[3],
-                vals[4],
-                vals[5],
-                0f,
-                vals[6],
-                vals[7],
-                vals[8],
-                0f,
-                0f,
-                0f,
-                0f,
-                1f);
-
-            if(Matrix4x4.Decompose(mat4, out var _, out var q, out var _) == false)
-            {
-                return Quaternion.Identity;
-            }
-
-            return q;
         }
 
         public static Scenery FromTag(H2vMap map, ScenarioTag scenario,  ScenarioTag.SceneryInstance instance)
@@ -116,7 +88,7 @@ namespace OpenH2.Engine.EntityFactories
 
             foreach (var lod in model.Lods)
             {
-                var part = lod.Permutations.First().HighestPieceIndex;
+                var part = lod.Permutations[0].HighestPieceIndex;
                 meshes.AddRange(model.Parts[part].Model.Meshes);
             }
 

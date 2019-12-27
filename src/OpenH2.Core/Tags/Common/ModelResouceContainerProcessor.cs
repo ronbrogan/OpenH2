@@ -68,7 +68,7 @@ namespace OpenH2.Core.Tags.Common
                 currentResource++;
             }
 
-            // process indicies resourc
+            // process indicies resource
             if(container.Header.IndexCount > 0)
             {
                 var data = container.Resources[currentResource].Data.Span;
@@ -104,11 +104,14 @@ namespace OpenH2.Core.Tags.Common
                 {
                     var posData = container.Resources[currentResource].Data.Span;
 
+                    // TODO: Find out why stride can be different/ how to know other than this method
+                    var itemStride = posData.Length / container.VertexCount;
+
                     for (var i = 0; i < container.VertexCount; i++)
                     {
                         var vert = new VertexFormat();
 
-                        vert.Position = posData.ReadVec3At(i * 12);
+                        vert.Position = posData.ReadVec3At(i * itemStride);
 
                         verts[i] = vert;
                     }

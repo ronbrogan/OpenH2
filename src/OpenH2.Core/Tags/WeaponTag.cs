@@ -15,6 +15,8 @@ namespace OpenH2.Core.Tags
         [PrimitiveValue(56)]
         public TagRef<PhysicalModelTag> Hlmt { get; set; }
 
+        [PrimitiveArray(108, 9)]
+        public float[] RotationMatrix { get; set; }
 
         [InternalReferenceValue(260)]
         public BitmapWrapper[] Bitmaps { get; set; }

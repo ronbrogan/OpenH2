@@ -25,23 +25,22 @@ namespace OpenH2.Engine.Stores
 
         public void AddEntity(Entity entity)
         {
+            Model<BitmapTag> model = default;
             var xformation = Matrix4x4.Identity;
-
-            if(entity.TryGetChild<TransformComponent>(out var transform))
-            {
-                xformation = transform.CreateTransformationMatrix();
-            }
 
             if(entity.TryGetChild<RenderModelComponent>(out var renderModel))
             {
-                var model = renderModel.RenderModel;
+                model = renderModel.RenderModel;
 
-                var xform = model.CreateTransformationMatrix();
-
-                xformation = Matrix4x4.Multiply(xformation, xform);
-
-                Models.Add((model, xformation));
+                xformation = model.CreateTransformationMatrix();
             }
+
+            if (entity.TryGetChild<TransformComponent>(out var transform))
+            {
+                xformation = Matrix4x4.Multiply(xformation, transform.CreateTransformationMatrix());
+            }
+
+            Models.Add((model, xformation));
 
             if (entity.TryGetChild<PointLightEmitterComponent>(out var pointLight))
             {
