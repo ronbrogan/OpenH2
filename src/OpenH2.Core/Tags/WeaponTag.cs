@@ -18,10 +18,10 @@ namespace OpenH2.Core.Tags
         [PrimitiveArray(108, 9)]
         public float[] RotationMatrix { get; set; }
 
-        [InternalReferenceValue(260)]
+        [ReferenceArray(260)]
         public BitmapWrapper[] Bitmaps { get; set; }
 
-        [InternalReferenceValue(680)]
+        [ReferenceArray(680)]
         public FirstPersonAnimation[] FirstPersonAnimations { get; set; }
 
         [FixedLength(8)]

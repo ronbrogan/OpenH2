@@ -24,25 +24,25 @@ namespace OpenH2.Core.Tags
         [PrimitiveValue(10)]
         public ushort Flags { get; set; }
 
-        [InternalReferenceValue(20)]
+        [ReferenceArray(20)]
         public BoundingBox[] BoundingBoxes { get; set; }
 
-        [InternalReferenceValue(28)]
+        [ReferenceArray(28)]
         public LevelOfDetail[] Lods { get; set; }
 
         public Permutation[] Permutations { get; set; }
 
-        [InternalReferenceValue(36)]
+        [ReferenceArray(36)]
         public Part[] Parts { get; set; }
 
         // TODO, bones are implict reference from parts...how to support?
         // TODO: bones aren't in tag at all??
         public Bone[] Bones { get; set; }
 
-        [InternalReferenceValue(72)]
+        [ReferenceArray(72)]
         public Marker[] Markers { get; set; }
 
-        [InternalReferenceValue(96)]
+        [ReferenceArray(96)]
         public ModelShaderReference[] ModelShaderReferences { get; set; }
 
         public override void PopulateExternalData(H2vReader sceneReader)
@@ -173,7 +173,7 @@ namespace OpenH2.Core.Tags
 
             // RESEARCH: It looks like these are for different damage states, 
             // ie a pillar gets destroyed, different permutations are used
-            [InternalReferenceValue(8)]
+            [ReferenceArray(8)]
             public Permutation[] Permutations { get; set; }
         }
 
@@ -238,7 +238,7 @@ namespace OpenH2.Core.Tags
 
             public ModelResourceBlockHeader Header { get; set; }
 
-            [InternalReferenceValue(72)]
+            [ReferenceArray(72)]
             public ModelResource[] Resources { get; set; }
 
             [PrimitiveValue(80)]

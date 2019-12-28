@@ -1,8 +1,8 @@
 ﻿namespace OpenH2.Core.Tags.Layout
 {
-    public class InternalReferenceValueAttribute : TagValueAttribute
+    public class ReferenceArrayAttribute : TagValueAttribute
     {
-        public InternalReferenceValueAttribute(int offset) : base(offset)
+        public ReferenceArrayAttribute(int offset) : base(offset)
         {
         }
     }

@@ -14,16 +14,16 @@ namespace OpenH2.Core.Tags
         public TagRef<AnimationGraphTag> Unknown { get; set; }
 
 
-        [InternalReferenceValue(12)]
+        [ReferenceArray(12)]
         public Obj172[] Obj172s { get; set; }
 
-        [InternalReferenceValue(44)]
+        [ReferenceArray(44)]
         public Obj588[] Obj588s { get; set; }
 
-        [InternalReferenceValue(52)]
+        [ReferenceArray(52)]
         public Obj1556[] Obj1556s { get; set; }
 
-        [InternalReferenceValue(84)]
+        [ReferenceArray(84)]
         public Obj1656[] Obj1656s { get; set; }
 
 
@@ -87,7 +87,7 @@ namespace OpenH2.Core.Tags
             [PrimitiveArray(4,2)]
             public uint[] Next { get; set; }
 
-            [InternalReferenceValue(12)]
+            [ReferenceArray(12)]
             public Obj1556Val[] Value { get; set; }
         }
 

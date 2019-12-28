@@ -15,7 +15,7 @@ namespace OpenH2.Core.Tags
         [PrimitiveValue(36)]
         public TagRef<BitmapTag> Bitmap { get; set; }
 
-        [InternalReferenceValue(64)]
+        [ReferenceArray(64)]
         public Obj64[] obj64s { get; set; }
 
         [FixedLength(48)]

@@ -12,94 +12,94 @@ namespace OpenH2.Core.Tags
         {
         }
 
-        [InternalReferenceValue(8)]
+        [ReferenceArray(8)]
         public SkyboxInstance[] SkyboxInstances { get; set; }
 
 
-        [InternalReferenceValue(72)] public Obj72[] Obj72s { get; set; }
+        [ReferenceArray(72)] public Obj72[] Obj72s { get; set; }
 
-        [InternalReferenceValue(80)] public SceneryInstance[] SceneryInstances { get; set; }
-        [InternalReferenceValue(88)] public SceneryDefinition[] SceneryDefinitions { get; set; }
+        [ReferenceArray(80)] public SceneryInstance[] SceneryInstances { get; set; }
+        [ReferenceArray(88)] public SceneryDefinition[] SceneryDefinitions { get; set; }
 
-        [InternalReferenceValue(96)] public Obj96[] Obj96s { get; set; }
-        [InternalReferenceValue(104)] public BipedDefinition[] BipedDefinitions { get; set; }
-        [InternalReferenceValue(144)] public AmmunitionInstance[] AmmoPickupInstances { get; set; }
-        [InternalReferenceValue(152)] public WeaponDefinition[] WeaponDefinitions { get; set; }
-        [InternalReferenceValue(160)] public Obj160[] Obj160s { get; set; }
-        [InternalReferenceValue(168)] public MachineryInstance[] MachineryInstances { get; set; }
-        [InternalReferenceValue(176)] public MachineryDefinition[] MachineryDefinitions { get; set; }
-        [InternalReferenceValue(184)] public ControllerInstance[] ControllerInstances { get; set; }
-        [InternalReferenceValue(192)] public ControllerDefinition[] ControllerDefinitions { get; set; }
+        [ReferenceArray(96)] public Obj96[] Obj96s { get; set; }
+        [ReferenceArray(104)] public BipedDefinition[] BipedDefinitions { get; set; }
+        [ReferenceArray(144)] public AmmunitionInstance[] AmmoPickupInstances { get; set; }
+        [ReferenceArray(152)] public WeaponDefinition[] WeaponDefinitions { get; set; }
+        [ReferenceArray(160)] public Obj160[] Obj160s { get; set; }
+        [ReferenceArray(168)] public MachineryInstance[] MachineryInstances { get; set; }
+        [ReferenceArray(176)] public MachineryDefinition[] MachineryDefinitions { get; set; }
+        [ReferenceArray(184)] public ControllerInstance[] ControllerInstances { get; set; }
+        [ReferenceArray(192)] public ControllerDefinition[] ControllerDefinitions { get; set; }
 
         
 
-        [InternalReferenceValue(216)] 
+        [ReferenceArray(216)] 
         public SoundSceneryInstance[] SoundSceneryInstances { get; set; }
 
-        [InternalReferenceValue(224)] 
+        [ReferenceArray(224)] 
         public SoundSceneryDefinition[] SoundSceneryDefinitions { get; set; }
 
-        [InternalReferenceValue(232)] 
+        [ReferenceArray(232)] 
         public LightInstance[] LightInstances { get; set; }
 
-        [InternalReferenceValue(240)] public Obj240[] Obj240s { get; set; }
+        [ReferenceArray(240)] public Obj240[] Obj240s { get; set; }
 
-        [InternalReferenceValue(256)] 
+        [ReferenceArray(256)] 
         public PlayerSpawnMarker[] PlayerSpawnMarkers { get; set; }
 
-        [InternalReferenceValue(264)] public Obj264[] Obj264s { get; set; }
+        [ReferenceArray(264)] public Obj264[] Obj264s { get; set; }
 
-        [InternalReferenceValue(280)] 
+        [ReferenceArray(280)] 
         public GameModeMarker[] GameModeMarkers { get; set; }
 
-        [InternalReferenceValue(288)] 
+        [ReferenceArray(288)] 
         public ItemCollectionPlacement[] ItemCollectionPlacements { get; set; }
 
-        [InternalReferenceValue(296)] public Obj296[] Obj296s { get; set; }
+        [ReferenceArray(296)] public Obj296[] Obj296s { get; set; }
 
-        [InternalReferenceValue(312)] 
+        [ReferenceArray(312)] 
         public DecalInstance[] DecalInstances { get; set; }
 
 
 
-        [InternalReferenceValue(320)] public Obj320[] Obj320s { get; set; }
+        [ReferenceArray(320)] public Obj320[] Obj320s { get; set; }
 
-        [InternalReferenceValue(432)] public Obj432[] Obj432s { get; set; }
+        [ReferenceArray(432)] public Obj432[] Obj432s { get; set; }
 
 
-        [InternalReferenceValue(472)] public Obj472[] Obj472s { get; set; }
+        [ReferenceArray(472)] public Obj472[] Obj472s { get; set; }
 
-        [InternalReferenceValue(480)] public Obj480[] Obj480s { get; set; }
-        [InternalReferenceValue(488)] public Obj488[] Obj488s { get; set; }
+        [ReferenceArray(480)] public Obj480[] Obj480s { get; set; }
+        [ReferenceArray(488)] public Obj488[] Obj488s { get; set; }
 
-        [InternalReferenceValue(528)]
+        [ReferenceArray(528)]
         public Terrain[] Terrains { get; set; }
 
-        [InternalReferenceValue(536)] public Obj536[] Obj536s { get; set; }
+        [ReferenceArray(536)] public Obj536[] Obj536s { get; set; }
 
-        [InternalReferenceValue(560)] public Obj560[] Obj560s { get; set; }
+        [ReferenceArray(560)] public Obj560[] Obj560s { get; set; }
 
-        [InternalReferenceValue(568)] public Obj568[] Obj568s { get; set; }
+        [ReferenceArray(568)] public Obj568[] Obj568s { get; set; }
 
-        [InternalReferenceValue(592)] public Obj592[] Obj592s { get; set; }
+        [ReferenceArray(592)] public Obj592[] Obj592s { get; set; }
 
-        [InternalReferenceValue(600)] public Obj600[] Obj600s { get; set; }
+        [ReferenceArray(600)] public Obj600[] Obj600s { get; set; }
 
-        [InternalReferenceValue(656)] public Obj656[] Obj656s { get; set; }
+        [ReferenceArray(656)] public Obj656[] Obj656s { get; set; }
 
-        [InternalReferenceValue(792)] public Obj792[] Obj792s { get; set; }
+        [ReferenceArray(792)] public Obj792[] Obj792s { get; set; }
 
-        [InternalReferenceValue(808)] 
+        [ReferenceArray(808)] 
         public BlocInstance[] BlocInstances { get; set; }
 
-        [InternalReferenceValue(816)] 
+        [ReferenceArray(816)] 
         public BlocDefinition[] BlocDefinitions { get; set; }
 
-        [InternalReferenceValue(840)] public Obj840[] Obj840s { get; set; }
+        [ReferenceArray(840)] public Obj840[] Obj840s { get; set; }
 
-        [InternalReferenceValue(904)] public Obj904[] Obj904s { get; set; }
+        [ReferenceArray(904)] public Obj904[] Obj904s { get; set; }
 
-        [InternalReferenceValue(920)] public Obj920[] Obj920s { get; set; }
+        [ReferenceArray(920)] public Obj920[] Obj920s { get; set; }
 
 
         [FixedLength(8)]

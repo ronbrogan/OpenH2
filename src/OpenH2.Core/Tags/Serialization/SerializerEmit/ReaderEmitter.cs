@@ -36,7 +36,7 @@ namespace OpenH2.Core.Tags.Serialization.SerializerEmit
             var tagLocal = gen.DeclareLocal(tagType);
             LocalBuilder caoLocal = null;
 
-            if (props.Any(p => p.LayoutAttribute is InternalReferenceValueAttribute))
+            if (props.Any(p => p.LayoutAttribute is ReferenceArrayAttribute))
             {
                 var caoLookupType = typeof(Dictionary<int, CountAndOffset>);
 
@@ -132,7 +132,7 @@ namespace OpenH2.Core.Tags.Serialization.SerializerEmit
                         GeneratePrimitiveArrayProperty(gen, tagLocal, prop, tagType, arr);
                         break;
 
-                    case InternalReferenceValueAttribute reference:
+                    case ReferenceArrayAttribute reference:
                         var propType = prop.Type.IsArray ? prop.Type.GetElementType() : prop.Type;
                         // Ensure that any nested type creators are pre-created
                         internalPropCreators[prop] = GenerateNestedTagCreatorMethod(propType, context);
@@ -146,7 +146,7 @@ namespace OpenH2.Core.Tags.Serialization.SerializerEmit
             }
 
             // Do subsequent passes for internal references
-            foreach (var prop in props.Where(p => p.LayoutAttribute is InternalReferenceValueAttribute))
+            foreach (var prop in props.Where(p => p.LayoutAttribute is ReferenceArrayAttribute))
             {
                 var creator = internalPropCreators[prop];
                 GenerateInternalReferenceArrayReader(gen, tagLocal, caoLocal, prop, tagType, creator);

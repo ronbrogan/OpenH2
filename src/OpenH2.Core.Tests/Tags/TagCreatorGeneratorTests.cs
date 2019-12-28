@@ -59,7 +59,7 @@ namespace OpenH2.Core.Tests.Tags
             [PrimitiveValue(4)]
             public float Value2 { get; set; }
 
-            [InternalReferenceValue(8)]
+            [ReferenceArray(8)]
             public SubTag[] SubValues { get; set; }
 
             public SubTag FirstSubValue { get; set; }
@@ -75,7 +75,7 @@ namespace OpenH2.Core.Tests.Tags
                 [PrimitiveArray(0, 1)]
                 public uint[] ArrayItem { get; set; }
 
-                [InternalReferenceValue(4)]
+                [ReferenceArray(4)]
                 public SubSubTag[] SubSubTags { get; set; }
 
                 [FixedLength(8)]

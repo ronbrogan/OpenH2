@@ -11,7 +11,7 @@ namespace OpenH2.Core.Tags
         {
         }
 
-        [InternalReferenceValue(4)]
+        [ReferenceArray(4)]
         public ShaderReference[] Shaders { get; set; }
 
 

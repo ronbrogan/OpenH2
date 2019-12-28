@@ -16,10 +16,10 @@ namespace OpenH2.Core.Tags
         [PrimitiveValue(4)]
         public TagRef<ModelTag> Model { get; set; }
 
-        [InternalReferenceValue(28)]
+        [ReferenceArray(28)]
         public Obj28[] Obj28s { get; set; }
 
-        [InternalReferenceValue(120)]
+        [ReferenceArray(120)]
         public Obj120[] Obj120s { get; set; }
 
 
@@ -45,7 +45,7 @@ namespace OpenH2.Core.Tags
             [PrimitiveValue(24)]
             public TagRef<LensFlareTag> LensFlare { get; set; }
 
-            [InternalReferenceValue(44)]
+            [ReferenceArray(44)]
             public Obj120_44[] obj120_44s { get; set; }
         }
 

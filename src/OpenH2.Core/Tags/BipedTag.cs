@@ -23,16 +23,16 @@ namespace OpenH2.Core.Tags
         public TagRef<PhysicalModelTag> Hlmt { get; set; }
 
 
-        [InternalReferenceValue(92)]
+        [ReferenceArray(92)]
         public Obj92[] obj92s { get; set; }
 
-        [InternalReferenceValue(148)]
+        [ReferenceArray(148)]
         public Obj148[] obj148s { get; set; }
 
-        [InternalReferenceValue(180)]
+        [ReferenceArray(180)]
         public Obj180[] obj180s { get; set; }
 
-        [InternalReferenceValue(232)]
+        [ReferenceArray(232)]
         public Obj232[] obj232s { get; set; }
 
 

@@ -11,13 +11,13 @@ namespace OpenH2.Core.Tags
         {
         }
 
-        [InternalReferenceValue(28)]
+        [ReferenceArray(28)]
         public Wrapper1[] Wrapper1s { get; set; }
 
         [FixedLength(8)]
         public class Wrapper1
         {
-            [InternalReferenceValue(0)]
+            [ReferenceArray(0)]
             public Wrapper2[] Wrapper2s { get; set; }
         }
 
@@ -27,13 +27,13 @@ namespace OpenH2.Core.Tags
             [PrimitiveValue(256)]
             public TagRef<VertexShaderTag> VertexShaderId { get; set; }
 
-            [InternalReferenceValue(306)]
+            [ReferenceArray(306)]
             public ShaderReferenceGroup[] ShaderReferenceGroups1 { get; set; }
 
-            [InternalReferenceValue(314)]
+            [ReferenceArray(314)]
             public uint[] Somethings { get; set; }
 
-            [InternalReferenceValue(322)]
+            [ReferenceArray(322)]
             public byte[] ShaderIdsMaybe { get; set; }
         }
 

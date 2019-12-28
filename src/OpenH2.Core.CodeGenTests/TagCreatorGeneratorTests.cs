@@ -124,7 +124,7 @@ namespace OpenH2.Core.CodeGenTests
             [PrimitiveValue(4)]
             public float Value2 { get; set; }
 
-            [InternalReferenceValue(8)]
+            [ReferenceArray(8)]
             public SubTag[] SubValues { get; set; }
             public override string Name { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
 
@@ -134,10 +134,10 @@ namespace OpenH2.Core.CodeGenTests
                 [PrimitiveValue(0)]
                 public int Deadbeef { get; set; }
 
-                [InternalReferenceValue(4)]
+                [ReferenceArray(4)]
                 public SubSubTag[] SubSubTags { get; set; }
 
-                [InternalReferenceValue(12)]
+                [ReferenceArray(12)]
                 public byte[] RawBytes { get; set; }
 
                 [FixedLength(4)]

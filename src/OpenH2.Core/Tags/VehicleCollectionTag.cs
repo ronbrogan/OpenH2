@@ -6,25 +6,25 @@ using System.Text;
 
 namespace OpenH2.Core.Tags
 {
-    [TagLabel(TagName.itmc)]
-    public class ItemCollectionTag : BaseTag
+    [TagLabel(TagName.vehc)]
+    public class VehicleCollectionTag : BaseTag
     {
-        public ItemCollectionTag(uint id) : base(id)
+        public VehicleCollectionTag(uint id) : base(id)
         {
         }
 
-        [ReferenceArray(0)]
-        public Item[] Items { get; set; }
 
-        [FixedLength(12)]
-        public class Item
+        [ReferenceArray(0)]
+        public VehicleReference[] VehicleReferences { get; set; }
+
+        [FixedLength(20)]
+        public class VehicleReference
         {
             [PrimitiveValue(0)]
             public float Param { get; set; }
 
-            // Equip or Weap
             [PrimitiveValue(8)]
-            public TagRef ItemTag { get; set; }
+            public TagRef<VehicleTag> Vehicle { get; set; }
         }
     }
 }

@@ -21,7 +21,7 @@ namespace OpenH2.Core.Tags
         [PrimitiveValue(20)]
         public TagRef CdmgTag { get; set; }
 
-        [InternalReferenceValue(36)]
+        [ReferenceArray(36)]
         public SoundReference[] SoundReferences { get; set; }
 
         [FixedLength(48)]

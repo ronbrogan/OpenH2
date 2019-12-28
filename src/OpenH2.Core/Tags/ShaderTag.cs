@@ -19,13 +19,13 @@ namespace OpenH2.Core.Tags
         [PrimitiveValue(4)]
         public TagRef<ShaderTemplateTag> ShaderTemplate { get; set; }
 
-        [InternalReferenceValue(12)]
+        [ReferenceArray(12)]
         public BitmapInfo[] BitmapInfos { get; set; }
 
-        [InternalReferenceValue(32)]
+        [ReferenceArray(32)]
         public ShaderArguments[] Arguments { get; set; }
 
-        [InternalReferenceValue(44)]
+        [ReferenceArray(44)]
         public BitmapReferenceSetting[] BitmapReferenceSettings { get; set; }
 
         [FixedLength(80)]
@@ -59,16 +59,16 @@ namespace OpenH2.Core.Tags
             [PrimitiveValue(0)]
             public TagRef<ShaderTemplateTag> ShaderTemplate { get; set; }
 
-            [InternalReferenceValue(4)]
+            [ReferenceArray(4)]
             public ShaderMaps[] ShaderMaps { get; set; }
 
-            [InternalReferenceValue(12)]
+            [ReferenceArray(12)]
             public BitmapParameter2[] BitmapParamter2s { get; set; }
 
-            [InternalReferenceValue(20)]
+            [ReferenceArray(20)]
             public Vector4[] ShaderInputs { get; set; }
 
-            [InternalReferenceValue(28)]
+            [ReferenceArray(28)]
             public BitmapParameter4[] BitmapParamter4s { get; set; }
         }
 

@@ -12,25 +12,25 @@ namespace OpenH2.Core.Tags
         {
         }
 
-        [InternalReferenceValue(88)]
+        [ReferenceArray(88)]
         public ShaderInfo[] ShaderInfos { get; set; }
 
         [FixedLength(40)]
         public class ShaderInfo
         {
-            [InternalReferenceValue(0)]
+            [ReferenceArray(0)]
             public Unknown1[] Unknown1s { get; set; }
 
-            [InternalReferenceValue(8)]
+            [ReferenceArray(8)]
             public short[] Unknown2s { get; set; }
 
-            [InternalReferenceValue(16)]
+            [ReferenceArray(16)]
             public ShaderPassReference[] ShaderPassReferences { get; set; }
 
-            [InternalReferenceValue(24)]
+            [ReferenceArray(24)]
             public Unknown4[] Unknown4s { get; set; }
 
-            [InternalReferenceValue(32)]
+            [ReferenceArray(32)]
             public Unknown5[] Unknown5s { get; set; }
         }
 

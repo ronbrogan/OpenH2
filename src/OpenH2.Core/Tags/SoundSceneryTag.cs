@@ -15,7 +15,7 @@ namespace OpenH2.Core.Tags
         [PrimitiveArray(108, 9)]
         public float[] Params { get; set; }
 
-        [InternalReferenceValue(148)]
+        [ReferenceArray(148)]
         public SoundReference[] SoundReferences { get; set; }
 
         [FixedLength(48)]
