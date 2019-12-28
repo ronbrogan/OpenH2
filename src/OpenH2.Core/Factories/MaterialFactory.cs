@@ -21,6 +21,7 @@ namespace OpenH2.Core.Factories
         private FileWatcher configWatcher;
         private MaterialMappingConfig mappingConfig;
         private List<Action> callbacks = new List<Action>();
+        private HashSet<uint> stemsWarned = new HashSet<uint>();
 
         public MaterialFactory(string configRoot)
         {
@@ -69,7 +70,11 @@ namespace OpenH2.Core.Factories
                 return mat;
             }
 
-            Console.WriteLine($"Using heuristic for shader '{shader.Name}' stem[{shader.ShaderTemplate.Id}]");
+            if(stemsWarned.Contains(shader.ShaderTemplate.Id) == false)
+            {
+                Console.WriteLine($"Using heuristic for shader '{shader.Name}' stem[{shader.ShaderTemplate.Id}]");
+                stemsWarned.Add(shader.ShaderTemplate.Id);
+            }
 
             PopulateFromHeuristic(map, mat, shader);
 
@@ -82,7 +87,6 @@ namespace OpenH2.Core.Factories
             ShaderTag.ShaderArguments args,
             MaterialMapping mapping)
         {
-            
             mat.NormalMap = args.GetBitmap(map, mapping.NormalMapIndex);
             mat.NormalMapScale = args.GetInput(mapping.NormalScaleIndex);
 
@@ -150,11 +154,12 @@ namespace OpenH2.Core.Factories
                 {
                     mat.NormalMap = bitm;
                     mat.NormalMapScale = args.GetInput(0, new Vector4(1, 1, 0, 0));
+                    continue;
                 }
 
                 if (bitm.TextureUsage == TextureUsage.Diffuse)
                 {
-                    if (mat.DiffuseMap == null)
+                    if (mat.DiffuseMap == default)
                     {
                         mat.DiffuseMap = bitm;
                         continue;

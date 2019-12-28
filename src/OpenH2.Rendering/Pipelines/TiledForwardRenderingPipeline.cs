@@ -32,47 +32,23 @@ namespace OpenH2.Rendering.Pipelines
         // TODO: Figure out shader storage binding
         public void DrawAndFlush()
         {
-            var passes = new RenderPasses(renderables);
+            //var passes = new RenderPasses(renderables);
 
             // Render depth
-            DrawOpaque(passes, Shader.Depth);
+            //DrawOpaque(passes, Shader.Depth);
 
             // TODO: Cull lights using compute shader
 
 
             // Render diffuse
-            DrawSkybox(passes);
-            DrawOpaque(passes, Shader.Generic);
+            //DrawSkybox(passes);
+            //DrawOpaque(passes, Shader.Generic);
 
 
             // TODO: tonemap from HDR
 
 
             renderables.Clear();
-        }
-
-        private void DrawSkybox(RenderPasses passes)
-        {
-            this.adapter.UseShader(Shader.Skybox);
-            foreach (var (skybox, xform) in passes.Skyboxes)
-            {
-                foreach (var mesh in skybox.Meshes)
-                {
-                    this.adapter.DrawMesh(mesh, xform);
-                }
-            }
-        }
-
-        private void DrawOpaque(RenderPasses passes, Shader shader)
-        {
-            this.adapter.UseShader(shader);
-            foreach (var (model, xform) in passes.Diffuse)
-            {
-                foreach (var mesh in model.Meshes)
-                {
-                    this.adapter.DrawMesh(mesh, xform);
-                }
-            }
         }
 
 

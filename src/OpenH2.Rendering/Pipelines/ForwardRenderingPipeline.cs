@@ -50,28 +50,35 @@ namespace OpenH2.Rendering.Pipelines
         /// </summary>
         public void DrawAndFlush()
         {
-            var passes = new RenderPasses(renderables);
-
             foreach(var light in pointLights)
             {
                 this.adapter.AddLight(light);
             }
 
             this.adapter.UseShader(Shader.Skybox);
-            foreach(var (skybox,xform) in passes.Skyboxes)
+            for (var i = 0; i < renderables.Count; i++)
             {
-                foreach(var mesh in skybox.Meshes)
+                var renderable = renderables[i];
+                if(RenderPasses.IsSkybox(renderable.Item1))
                 {
-                    this.adapter.DrawMesh(mesh, xform);
+                    foreach (var mesh in renderable.Item1.Meshes)
+                    {
+                        this.adapter.DrawMesh(mesh, renderable.Item2);
+                    }
                 }
             }
 
+            // PERF: add in sorted order to prevent enumerating renderables multiple times
             this.adapter.UseShader(Shader.Generic);
-            foreach (var (model, xform) in passes.Diffuse)
+            for (var i = 0; i < renderables.Count; i++)
             {
-                foreach (var mesh in model.Meshes)
+                var renderable = renderables[i];
+                if (RenderPasses.IsDiffuse(renderable.Item1))
                 {
-                    this.adapter.DrawMesh(mesh, xform);
+                    foreach (var mesh in renderable.Item1.Meshes)
+                    {
+                        this.adapter.DrawMesh(mesh, renderable.Item2);
+                    }
                 }
             }
 
