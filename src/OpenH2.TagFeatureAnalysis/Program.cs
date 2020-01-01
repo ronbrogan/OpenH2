@@ -59,7 +59,7 @@ namespace OpenH2.TagFeatureAnalysis
         static void Main(string[] args)
         {
 #if !DEBUG
-                throw new Exception("This tool relies on DEBUG functionality, run in DEBUG mode.")
+            throw new Exception("This tool relies on DEBUG functionality, run in DEBUG mode.");
 #endif
 
             if (args.Length != 1)

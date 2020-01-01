@@ -2,12 +2,12 @@ using OpenH2.Core.Factories;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using OpenH2.Core.Tags;
 using OpenH2.Core.Extensions;
 using Xunit;
 using Xunit.Abstractions;
 using OpenH2.Core.Representations;
 using System;
+using OpenH2.Core.Tags.Scenario;
 
 namespace OpenH2.Core.Tests
 {

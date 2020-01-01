@@ -3,8 +3,10 @@ using OpenH2.Core.Extensions;
 using OpenH2.Core.Representations;
 using OpenH2.Core.Tags;
 using OpenH2.Core.Tags.Common;
+using OpenH2.Core.Tags.Scenario;
 using OpenH2.Engine.Components;
 using OpenH2.Engine.Entities;
+using OpenH2.Engine.Factories;
 using OpenH2.Foundation;
 using System;
 using System.Collections.Generic;
@@ -22,44 +24,6 @@ namespace OpenH2.Engine.EntityFactories
             var bloc = scenario.BlocDefinitions[instance.BlocDefinitionIndex].Bloc;
             map.TryGetTag(bloc, out var tag);
 
-            if(map.TryGetTag(tag.PhysicalModel, out var hlmt) == false)
-            {
-                throw new Exception("No model found for bloc");
-            }
-
-            if (map.TryGetTag(hlmt.Model, out var model) == false)
-            {
-                Console.WriteLine($"No MODE[{hlmt.Model}] found for HLMT[{hlmt.Id}]");
-                return scenery;
-            }
-
-            var meshes = new List<ModelMesh>();
-
-            foreach (var lod in model.Lods)
-            {
-                var partIndex = lod.Permutations[0].HighestPieceIndex;
-                meshes.AddRange(model.Parts[partIndex].Model.Meshes);
-            }
-
-            var renderModelMeshes = new List<Mesh<BitmapTag>>(meshes.Count);
-
-            foreach (var mesh in meshes)
-            {
-                var mat = map.CreateMaterial(mesh);
-
-                renderModelMeshes.Add(new Mesh<BitmapTag>()
-                {
-                    Compressed = mesh.Compressed,
-                    ElementType = mesh.ElementType,
-                    Indicies = mesh.Indices,
-                    Note = mesh.Note,
-                    RawData = mesh.RawData,
-                    Verticies = mesh.Verticies,
-                    
-                    Material = mat
-                });
-            }
-
             var comp = new RenderModelComponent(scenery)
             {
                 RenderModel = new Model<BitmapTag>
@@ -68,8 +32,8 @@ namespace OpenH2.Engine.EntityFactories
                     //Position = instance.Position,
                     //Orientation = instance.Orientation.ToQuaternion(),
                     Flags = ModelFlags.Diffuse | ModelFlags.CastsShadows | ModelFlags.ReceivesShadows,
-                    Meshes = renderModelMeshes.ToArray()
-                }
+                    Meshes = MeshFactory.GetModelForHlmt(map, tag.PhysicalModel)
+        }
             };
 
             var xform = new TransformComponent(scenery)

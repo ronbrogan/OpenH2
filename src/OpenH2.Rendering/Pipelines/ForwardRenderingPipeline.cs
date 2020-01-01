@@ -1,5 +1,6 @@
 ﻿using OpenH2.Core.Extensions;
 using OpenH2.Core.Tags;
+using OpenH2.Core.Tags.Scenario;
 using OpenH2.Foundation;
 using OpenH2.Rendering.Abstractions;
 using OpenH2.Rendering.Shaders;

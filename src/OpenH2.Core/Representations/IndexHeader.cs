@@ -1,5 +1,5 @@
 ﻿using OpenH2.Core.Offsets;
-using OpenH2.Core.Tags;
+using OpenH2.Core.Tags.Scenario;
 
 namespace OpenH2.Core.Representations
 {

@@ -18,9 +18,7 @@ namespace OpenH2.Engine.Systems
         public override void Update(double timestep)
         {
             var inputs = this.world.GetGlobalResource<InputStore>();
-
             var movers = this.world.Components<MoverComponent>();
-
 
             var mouse = Mouse.GetCursorState();
             var currPos = new Vector2(mouse.X, mouse.Y);

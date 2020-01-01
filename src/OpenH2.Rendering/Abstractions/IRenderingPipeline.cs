@@ -1,5 +1,5 @@
 ﻿using System.Numerics;
-using OpenH2.Core.Tags;
+using OpenH2.Core.Tags.Scenario;
 using OpenH2.Foundation;
 
 namespace OpenH2.Rendering.Abstractions

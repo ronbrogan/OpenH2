@@ -87,6 +87,11 @@ namespace OpenH2.Core.Extensions
         {
             var len = (int)Math.Min(length, data.Length - offset);
 
+            if(len <= 0)
+            {
+                return "ERR@" + offset;
+            }
+
             return data.ReadArray(offset, len).ToStringFromNullTerminated();
         }
 

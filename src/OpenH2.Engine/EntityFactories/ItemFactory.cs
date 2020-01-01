@@ -2,6 +2,7 @@
 using OpenH2.Core.Extensions;
 using OpenH2.Core.Representations;
 using OpenH2.Core.Tags;
+using OpenH2.Core.Tags.Scenario;
 using OpenH2.Engine.Components;
 using OpenH2.Engine.Entities;
 using OpenH2.Engine.Factories;
@@ -117,6 +118,42 @@ namespace OpenH2.Engine.EntityFactories
             }
 
             return components;
+        }
+
+        public static Entity CreateFromVehicleInstance(H2vMap map, ScenarioTag scenario, ScenarioTag.VehicleInstance instance)
+        {
+            Entity item = new Vehicle();
+            List<Component> components = new List<Component>();
+
+            var def = scenario.VehicleDefinitions[instance.Index];
+ 
+            if (map.TryGetTag(def.Vehicle, out var vehi) == false)
+            {
+                throw new Exception("No tag found for vehi reference");
+            }
+
+            components.Add(new RenderModelComponent(item)
+            {
+                RenderModel = new Model<BitmapTag>
+                {
+                    Note = $"[{vehi.Id}] {vehi.Name}",
+                    //Position = instance.Position,
+                    //Orientation = baseRotation,
+                    //Scale = new Vector3(1.3f),
+                    Flags = ModelFlags.Diffuse | ModelFlags.CastsShadows | ModelFlags.ReceivesShadows,
+                    Meshes = MeshFactory.GetModelForHlmt(map, vehi.Hlmt)
+                }
+            });
+
+            components.Add(new TransformComponent(item)
+            {
+                Position = instance.Position,
+                Orientation = instance.Orientation.ToQuaternion()
+            });
+
+            item.SetComponents(components.ToArray());
+
+            return item;
         }
     }
 }

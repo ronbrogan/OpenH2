@@ -18,9 +18,7 @@ namespace OpenH2.Core.Tags
 
         public DataFile DataFile { get; set; }
 
-#if DEBUG
         public int InternalSecondaryMagic { get; set; }
-#endif
 
         public BaseTag(uint id)
         {

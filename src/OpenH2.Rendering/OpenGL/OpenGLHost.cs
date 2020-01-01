@@ -28,6 +28,8 @@ namespace OpenH2.Rendering.OpenGL
         {
             window = new GameWindow((int)size.X, (int)size.Y, GraphicsMode.Default, "OpenH2", GameWindowFlags.Default, DisplayDevice.Default, 4, 0, GraphicsContextFlags.Debug);
 
+            window.Resize += this.Window_Resize;
+
             window.Visible = !hidden;
 
             //foreach (var ext in ListSupportedExtensions())
@@ -38,6 +40,12 @@ namespace OpenH2.Rendering.OpenGL
             GL.Enable(EnableCap.AlphaTest);
             GL.BlendFunc(BlendingFactor.SrcAlpha, BlendingFactor.OneMinusSrcAlpha);
             GL.Enable(EnableCap.Blend);
+        }
+
+        private void Window_Resize(object sender, EventArgs e)
+        {
+            GL.Viewport(window.ClientRectangle);
+            // reset projection matrix
         }
 
         public void RegisterCallbacks(Action<double> updateCallback, Action<double> renderCallback)

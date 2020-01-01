@@ -26,6 +26,14 @@ There are a number of dumping and analysis tools also in the solution, but they'
 
 # Progress History
 
+## Dece,ber 2019
+
+Fixed mesh loading, now loading all mesh parts, item and vehicle placements, fix for mesh normals, new shader mapping system, more scenario tag loading
+
+![Zanzibar - December 2019](doc/Assets/2019-12.gif)
+
+[https://www.youtube.com/watch?v=eaFrBpENgwY](https://www.youtube.com/watch?v=eaFrBpENgwY)
+
 ## November 2019
 All static geometry and crate objects loading, with textures (although shaders with multiple textures aren't quite right). Animated meshes are incorrect, such as the Zanzibar house gate.
 

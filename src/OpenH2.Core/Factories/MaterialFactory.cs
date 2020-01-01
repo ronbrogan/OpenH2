@@ -91,8 +91,8 @@ namespace OpenH2.Core.Factories
             mat.NormalMapScale = args.GetInput(mapping.NormalScaleIndex);
 
             mat.DiffuseMap = args.GetBitmap(map, mapping.DiffuseMapIndex);
-            
-            if(mapping.DiffuseColor.Length == 4)
+
+            if (mapping.DiffuseColor.Length == 4)
             {
                 mat.DiffuseColor = new Vector4(mapping.DiffuseColor[0], mapping.DiffuseColor[1], mapping.DiffuseColor[2], mapping.DiffuseColor[3]);
             }

@@ -2,6 +2,7 @@
 using OpenH2.Core.Formats;
 using OpenH2.Core.Representations;
 using OpenH2.Core.Tags;
+using OpenH2.Core.Tags.Scenario;
 using System;
 using System.IO;
 using System.Linq;

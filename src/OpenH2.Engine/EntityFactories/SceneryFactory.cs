@@ -3,8 +3,10 @@ using OpenH2.Core.Extensions;
 using OpenH2.Core.Representations;
 using OpenH2.Core.Tags;
 using OpenH2.Core.Tags.Common;
+using OpenH2.Core.Tags.Scenario;
 using OpenH2.Engine.Components;
 using OpenH2.Engine.Entities;
+using OpenH2.Engine.Factories;
 using OpenH2.Foundation;
 using System;
 using System.Collections.Generic;
@@ -72,51 +74,12 @@ namespace OpenH2.Engine.EntityFactories
             var id = scenario.SceneryDefinitions[instance.SceneryDefinitionIndex].Scenery;
             map.TryGetTag(id, out var tag);
 
-            if (map.TryGetTag(tag.PhysicalModel, out var hlmt) == false)
-            {
-                Console.WriteLine($"No HLMT[{tag.PhysicalModel.Id}] found for SCNR[{tag.Id}]");
-                return scenery;
-            }
-
-            if (map.TryGetTag(hlmt.Model, out var model) == false)
-            {
-                Console.WriteLine($"No MODE[{hlmt.Model.Id}] found for HLMT[{hlmt.Id}]");
-                return scenery;
-            }
-
-            var meshes = new List<ModelMesh>();
-
-            foreach (var lod in model.Lods)
-            {
-                var part = lod.Permutations[0].HighestPieceIndex;
-                meshes.AddRange(model.Parts[part].Model.Meshes);
-            }
-
-            var renderModelMeshes = new List<Mesh<BitmapTag>>(meshes.Count);
-
-            foreach (var mesh in meshes)
-            {
-                var mat = map.CreateMaterial(mesh);
-
-                renderModelMeshes.Add(new Mesh<BitmapTag>()
-                {
-                    Compressed = mesh.Compressed,
-                    ElementType = mesh.ElementType,
-                    Indicies = mesh.Indices,
-                    Note = mesh.Note,
-                    RawData = mesh.RawData,
-                    Verticies = mesh.Verticies,
-
-                    Material = mat
-                });
-            }
-
             var comp = new RenderModelComponent(scenery)
             {
                 RenderModel = new Model<BitmapTag>
                 {
                     Note = $"[{tag.Id}] {tag.Name}",
-                    Meshes = renderModelMeshes.ToArray(),
+                    Meshes = MeshFactory.GetModelForHlmt(map, tag.PhysicalModel),
                     Scale = new Vector3(1),
                     Flags = ModelFlags.Diffuse | ModelFlags.CastsShadows | ModelFlags.ReceivesShadows
                 }

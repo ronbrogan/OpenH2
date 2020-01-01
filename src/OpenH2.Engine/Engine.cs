@@ -191,7 +191,12 @@ namespace OpenH2.Engine
                 destination.AddEntity(ItemFactory.FromTag(map, scenario, item));
             }
 
-            PositioningEntities.AddLocators(map, destination);
+            foreach (var item in scenario.VehicleInstances)
+            {
+                destination.AddEntity(ItemFactory.CreateFromVehicleInstance(map, scenario, item));
+            }
+
+            //PositioningEntities.AddLocators(map, destination);
 
             //PlaceLights(destination);
         }

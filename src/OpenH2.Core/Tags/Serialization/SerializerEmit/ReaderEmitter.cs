@@ -105,7 +105,6 @@ namespace OpenH2.Core.Tags.Serialization.SerializerEmit
                 gen.Emit(OpCodes.Callvirt, tagLengthProp.GetSetMethod());
             }
 
-#if DEBUG
             var tagMagicProp = tagType.GetProperty(nameof(BaseTag.InternalSecondaryMagic), BindingFlags.Public | BindingFlags.Instance);
             if (tagMagicProp != null)
             {
@@ -116,8 +115,6 @@ namespace OpenH2.Core.Tags.Serialization.SerializerEmit
                 gen.Emit(OpCodes.Add);
                 gen.Emit(OpCodes.Callvirt, tagMagicProp.GetSetMethod());
             }
-
-#endif
             
             // Do first pass over "header" region
             foreach (var prop in props)
