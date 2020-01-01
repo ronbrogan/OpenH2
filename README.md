@@ -26,7 +26,7 @@ There are a number of dumping and analysis tools also in the solution, but they'
 
 # Progress History
 
-## Dece,ber 2019
+## December 2019
 
 Fixed mesh loading, now loading all mesh parts, item and vehicle placements, fix for mesh normals, new shader mapping system, more scenario tag loading
 
