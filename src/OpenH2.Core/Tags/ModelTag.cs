@@ -107,11 +107,15 @@ namespace OpenH2.Core.Tags
                         Decompress(vert.TexCoords.Y, minUV.Y, maxUV.Y)
                         ) : vert.TexCoords;
 
-                    mesh.Verticies[i] = new VertexFormat(newPos,
+                    // Workaround for JIT issue
+                    // https://github.com/dotnet/runtime/issues/1241
+                    var newVert = new VertexFormat(newPos,
                         newTex,
                         vert.Normal,
                         vert.Tangent,
                         vert.Bitangent);
+
+                    mesh.Verticies[i] = newVert;
                 }
 
                 part.Model = new MeshCollection(meshes);
