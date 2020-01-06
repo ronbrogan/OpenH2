@@ -4,6 +4,7 @@ using OpenH2.Rendering.Abstractions;
 using OpenH2.Rendering.Shaders;
 using OpenH2.Rendering.Shaders.Generic;
 using OpenH2.Rendering.Shaders.Skybox;
+using OpenH2.Rendering.Shaders.Wireframe;
 using OpenTK.Graphics.OpenGL;
 using System;
 using System.Collections.Generic;
@@ -217,6 +218,12 @@ namespace OpenH2.Rendering.OpenGL
                         activeShader, 
                         new GenericUniform(mesh.Material, bindings, transform, inverted), 
                         GenericUniform.Size);
+                    break;
+                case Shader.Wireframe:
+                    SetupGenericUniform(
+                        activeShader,
+                        new WireframeUniform(mesh.Material, bindings, transform, inverted),
+                        WireframeUniform.Size);
                     break;
                 case Shader.TextureViewer:
                     break;

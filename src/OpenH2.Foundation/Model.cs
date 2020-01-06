@@ -37,6 +37,7 @@ namespace OpenH2.Foundation
         ReceivesShadows = 1 << 2,
         IsStatic        = 1 << 3,
         IsSkybox        = 1 << 4,
-        IsTransparent   = 1 << 5
+        IsTransparent   = 1 << 5,
+        Wireframe       = 1 << 6
     }
 }

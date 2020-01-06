@@ -32,9 +32,11 @@ namespace OpenH2.Engine.EntityFactories
                     //Position = instance.Position,
                     //Orientation = instance.Orientation.ToQuaternion(),
                     Flags = ModelFlags.Diffuse | ModelFlags.CastsShadows | ModelFlags.ReceivesShadows,
-                    Meshes = MeshFactory.GetModelForHlmt(map, tag.PhysicalModel)
-        }
+                    Meshes = MeshFactory.GetModelForHlmt(map, tag.PhysicalModel, out var least, out var most)
+                }
             };
+
+            var modelBounds = new BoundsComponent(scenery, least, most);
 
             var xform = new TransformComponent(scenery)
             {
@@ -42,7 +44,7 @@ namespace OpenH2.Engine.EntityFactories
                 Orientation = Quaternion.CreateFromYawPitchRoll(instance.Orientation.Y, instance.Orientation.Z, instance.Orientation.X)
             };
 
-            scenery.SetComponents(new Component[] { comp, xform });
+            scenery.SetComponents(new Component[] { comp, modelBounds, xform });
 
             return scenery;
         }

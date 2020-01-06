@@ -83,7 +83,7 @@ namespace OpenH2.Engine.EntityFactories
                         //Orientation = baseRotation,
                         //Scale = new Vector3(1.3f),
                         Flags = ModelFlags.Diffuse | ModelFlags.CastsShadows | ModelFlags.ReceivesShadows,
-                        Meshes = MeshFactory.GetModelForHlmt(map, itemHlmt)
+                        Meshes = MeshFactory.GetModelForHlmt(map, itemHlmt, out var least, out var most)
                     }
                 });
             }
@@ -112,7 +112,7 @@ namespace OpenH2.Engine.EntityFactories
                         //Orientation = baseRotation,
                         //Scale = new Vector3(1.3f),
                         Flags = ModelFlags.Diffuse | ModelFlags.CastsShadows | ModelFlags.ReceivesShadows,
-                        Meshes = MeshFactory.GetModelForHlmt(map, vehi.Hlmt)
+                        Meshes = MeshFactory.GetModelForHlmt(map, vehi.Hlmt, out var least, out var most)
                     }
                 });
             }
@@ -141,7 +141,7 @@ namespace OpenH2.Engine.EntityFactories
                     //Orientation = baseRotation,
                     //Scale = new Vector3(1.3f),
                     Flags = ModelFlags.Diffuse | ModelFlags.CastsShadows | ModelFlags.ReceivesShadows,
-                    Meshes = MeshFactory.GetModelForHlmt(map, vehi.Hlmt)
+                    Meshes = MeshFactory.GetModelForHlmt(map, vehi.Hlmt, out var least, out var most)
                 }
             });
 

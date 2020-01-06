@@ -1,4 +1,5 @@
 ﻿using OpenH2.Core.Architecture;
+using OpenH2.Core.Factories;
 using OpenH2.Core.Tags;
 using OpenH2.Engine.Components;
 using OpenH2.Foundation;
@@ -41,6 +42,11 @@ namespace OpenH2.Engine.Stores
             }
 
             Models.Add((model, xformation));
+
+            if(entity.TryGetChild<BoundsComponent>(out var bounds))
+            {
+                Models.Add((bounds.RenderModel, xformation));
+            }
 
             if (entity.TryGetChild<PointLightEmitterComponent>(out var pointLight))
             {

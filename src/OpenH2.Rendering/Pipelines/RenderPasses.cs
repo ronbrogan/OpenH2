@@ -25,6 +25,11 @@ namespace OpenH2.Rendering.Pipelines
             return model?.Flags.HasFlag(ModelFlags.Diffuse) ?? false;
         }
 
+        public static bool IsWireframe(Model<BitmapTag> model)
+        {
+            return model?.Flags.HasFlag(ModelFlags.Wireframe) ?? false;
+        }
+
         public static bool IsTransparent(Model<BitmapTag> model)
         {
             return model?.Flags.HasFlag(ModelFlags.IsTransparent) ?? false;

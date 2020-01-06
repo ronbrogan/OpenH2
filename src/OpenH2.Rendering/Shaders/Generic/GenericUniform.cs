@@ -1,9 +1,7 @@
 ﻿using OpenH2.Core.Tags;
 using OpenH2.Foundation;
-using OpenTK;
 using System.Numerics;
 using System.Runtime.InteropServices;
-using Vector4 = System.Numerics.Vector4;
 
 namespace OpenH2.Rendering.Shaders.Generic
 {
@@ -94,6 +92,6 @@ namespace OpenH2.Rendering.Shaders.Generic
         public long DetailMap2Handle;
         public Vector4 DetailMap2Scale;
 
-        public static readonly int Size = BlittableValueType<GenericUniform>.Stride;
+        public static readonly int Size = OpenTK.BlittableValueType<GenericUniform>.Stride;
     }
 }

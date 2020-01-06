@@ -83,6 +83,19 @@ namespace OpenH2.Rendering.Pipelines
                 }
             }
 
+            this.adapter.UseShader(Shader.Wireframe);
+            for (var i = 0; i < renderables.Count; i++)
+            {
+                var renderable = renderables[i];
+                if (RenderPasses.IsWireframe(renderable.Item1))
+                {
+                    foreach (var mesh in renderable.Item1.Meshes)
+                    {
+                        this.adapter.DrawMesh(mesh, renderable.Item2);
+                    }
+                }
+            }
+
             renderables.Clear();
             pointLights.Clear();
         }

@@ -9,6 +9,8 @@ using OpenH2.Engine.EntityFactories;
 using OpenH2.Engine.Stores;
 using OpenH2.Foundation;
 using OpenH2.Foundation.Engine;
+using OpenH2.Physics.Abstractions;
+using OpenH2.Physics.Iterative;
 using OpenH2.Rendering;
 using OpenH2.Rendering.Abstractions;
 using OpenH2.Rendering.OpenGL;
@@ -28,6 +30,7 @@ namespace OpenH2.Engine
         IGraphicsAdapter graphicsAdapter;
         IGameLoopSource gameLoop;
         public IRenderingPipeline<BitmapTag> RenderingPipeline;
+        IPhysicsSimulator physicsSim;
 
         private World world;
 
@@ -40,6 +43,7 @@ namespace OpenH2.Engine
             graphicsAdapter = host.GetAdapter();
 
             RenderingPipeline = new ForwardRenderingPipeline(graphicsAdapter);
+            physicsSim = new IterativePhysicsSimulator(5);
         }
 
         public void Start(EngineStartParameters parameters)
@@ -98,7 +102,14 @@ namespace OpenH2.Engine
 
         private void Update(double timestep)
         {
+            // Do actions
             world.Update(timestep);
+
+            // Detect collisions
+            //var detectedCollisionData = physicsSim.DetectCollisions(world);
+
+            // Resolve collisions
+            //physicsSim.ResolveCollisions(detectedCollisionData);
         }
 
         private void Render(double timestep)

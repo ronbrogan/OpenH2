@@ -28,7 +28,6 @@ namespace OpenH2.Core.Tags
         public ShaderInfo[] Shaders { get; set; }
 
         [ReferenceArray(20)]
-        [JsonIgnore]
         public CollisionInfo[] CollisionInfos { get; set; }
 
 
@@ -194,10 +193,10 @@ namespace OpenH2.Core.Tags
         public class CollisionInfo
         {
             [ReferenceArray(0)]
-            public RawObject1[] RawObject1s { get; set; }
+            public Node3D[] Node3Ds { get; set; }
 
             [ReferenceArray(8)]
-            public RawObject2[] RawObject2s { get; set; }
+            public Plane[] Planes { get; set; }
 
             [ReferenceArray(16)]
             public RawObject3[] RawObject3s { get; set; }
@@ -206,7 +205,7 @@ namespace OpenH2.Core.Tags
             public RawObject4[] RawObject4s { get; set; }
 
             [ReferenceArray(32)]
-            public RawObject5[] RawObject5s { get; set; }
+            public Node2D[] Node2Ds { get; set; }
 
             [ReferenceArray(40)]
             public Face[] Faces { get; set; }
@@ -221,74 +220,71 @@ namespace OpenH2.Core.Tags
             public int Unknown { get; set; }
 
             [FixedLength(8)]
-            public class RawObject1
+            public class Node3D
             {
                 [PrimitiveValue(0)]
-                public ushort val1 { get; set; }
+                public ushort PlaneIndex { get; set; }
 
                 [PrimitiveValue(2)]
-                public ushort val2 { get; set; }
+                public ushort Left { get; set; }
 
                 [PrimitiveValue(4)]
-                public ushort unknown1 { get; set; }
+                public byte val1 { get; set; }
 
-                [PrimitiveValue(6)]
-                public ushort unknown2 { get; set; }
+                [PrimitiveValue(5)]
+                public ushort Right { get; set; }
+
+                [PrimitiveValue(7)]
+                public byte val2 { get; set; }
             }
 
             [FixedLength(16)]
-            public class RawObject2
+            public class Plane
             {
                 [PrimitiveValue(0)]
-                public float x { get; set; }
-
-                [PrimitiveValue(4)]
-                public float y { get; set; }
-
-                [PrimitiveValue(8)]
-                public float z { get; set; }
+                public Vector3 Normal { get; set; }
 
                 [PrimitiveValue(12)]
-                public float w { get; set; }
+                public float Distance { get; set; }
             }
 
             [FixedLength(4)]
             public class RawObject3
             {
                 [PrimitiveValue(0)]
-                public ushort val1 { get; set; }
+                public byte val1 { get; set; }
+
+                [PrimitiveValue(1)]
+                public byte val2 { get; set; }
 
                 [PrimitiveValue(2)]
-                public ushort val2 { get; set; }
+                public ushort FourIndex { get; set; }
             }
 
             [FixedLength(4)]
             public class RawObject4
             {
                 [PrimitiveValue(0)]
-                public ushort val1 { get; set; }
+                public ushort PlaneIndex { get; set; }
 
                 [PrimitiveValue(2)]
-                public ushort val2 { get; set; }
+                public ushort Node2DIndex { get; set; }
             }
 
             [FixedLength(16)]
-            public class RawObject5
+            public class Node2D
             {
                 [PrimitiveValue(0)]
-                public float x { get; set; }
-
-                [PrimitiveValue(4)]
-                public float y { get; set; }
+                public Vector2 PlaneNormal { get; set; }
 
                 [PrimitiveValue(8)]
-                public float z { get; set; }
+                public float PlaneDistance { get; set; }
 
                 [PrimitiveValue(12)]
-                public short u { get; set; }
+                public ushort Left { get; set; }
 
-                [PrimitiveValue(12)]
-                public short v { get; set; }
+                [PrimitiveValue(14)]
+                public ushort Right { get; set; }
             }
 
             [FixedLength(8)]

@@ -41,7 +41,7 @@ namespace OpenH2.Engine.EntityFactories
                 RenderModel = new Model<BitmapTag>
                 {
                     Note = $"[{tag.Id}] {tag.Name}",
-                    Meshes = MeshFactory.GetModelForHlmt(map, tag.PhysicalModel),
+                    Meshes = MeshFactory.GetModelForHlmt(map, tag.PhysicalModel, out var least, out var most),
                     Flags = ModelFlags.Diffuse | ModelFlags.CastsShadows | ModelFlags.ReceivesShadows
                 }
             };
