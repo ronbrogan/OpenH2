@@ -27,7 +27,7 @@ namespace OpenH2.Engine.Entities
 
             this.Components = new Component[]
             {
-                new MoverComponent(this),
+                new MoverComponent(this, MoverComponent.MovementMode.Freecam),
                 xform,
                 camera,
                 //light

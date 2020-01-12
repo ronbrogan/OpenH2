@@ -13,7 +13,7 @@ namespace OpenH2.Engine
         {
             // new up systems
             Systems.Add(new OpenTKInputSystem(this));
-
+            Systems.Add(new MoverSystem(this));
 
             // render should be lastish
             Systems.Add(new CameraSystem(this));
