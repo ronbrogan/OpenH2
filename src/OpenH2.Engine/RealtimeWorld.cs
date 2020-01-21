@@ -15,6 +15,8 @@ namespace OpenH2.Engine
             Systems.Add(new OpenTKInputSystem(this));
             Systems.Add(new MoverSystem(this));
 
+            Systems.Add(new PhysicsSystem(this));
+
             // render should be lastish
             Systems.Add(new CameraSystem(this));
             Systems.Add(new RenderCollectorSystem(this));

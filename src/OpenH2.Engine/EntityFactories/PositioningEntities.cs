@@ -83,10 +83,7 @@ namespace OpenH2.Engine.EntityFactories
                 RenderModel = ModelFactory.UnitPyramid(color)
             };
 
-            var xform = new TransformComponent(item)
-            {
-                Position = position
-            };
+            var xform = new TransformComponent(item, position);
 
             item.SetComponents(new Component[]{
                 model,

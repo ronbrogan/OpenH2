@@ -7,6 +7,7 @@ using OpenH2.Engine.Components;
 using OpenH2.Engine.Entities;
 using OpenH2.Foundation;
 using System.Collections.Generic;
+using System.Numerics;
 
 namespace OpenH2.Engine.EntityFactories
 {
@@ -51,7 +52,7 @@ namespace OpenH2.Engine.EntityFactories
                 }
             };
 
-            var xform = new TransformComponent(terrain);
+            var xform = new TransformComponent(terrain, Vector3.Zero);
 
             terrain.SetComponents(new Component[] { comp, xform });
 

@@ -5,8 +5,8 @@ using System.Text;
 
 namespace OpenH2.Physics.Abstractions
 {
-    public interface IBroadPhaseDetector
+    public interface IContactGenerator
     {
-        IBody[] DetectCandidateCollisions(IPhysicsWorld world, IList<IBody> bodies);
+        Contact[] DetectCollisions(IBody[] candidatePairs);
     }
 }

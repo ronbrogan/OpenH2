@@ -7,12 +7,6 @@ namespace OpenH2.Core.Architecture
         public Guid Id { get; private set; }
         protected Component[] Components;
 
-        private float _mass = 1f;
-        public float Mass { get => IsStatic ? float.PositiveInfinity : _mass; set => _mass = value; }
-        public bool IsStatic { get; set; }
-
-
-
         public Entity()
         {
             this.Id = Guid.NewGuid();

@@ -11,10 +11,8 @@ namespace OpenH2.Engine.Entities
 
         public SpectatorCamera()
         {
-            var xform = new TransformComponent(this)
-            {
-                Orientation = Quaternion.CreateFromYawPitchRoll(0, (float)Math.PI / -2f, 0)
-            };
+            var xform = new TransformComponent(this, Quaternion.CreateFromYawPitchRoll(0, (float)Math.PI / -2f, 0));
+
             var camera = new CameraComponent(this);
 
             var light = new PointLightEmitterComponent(this);

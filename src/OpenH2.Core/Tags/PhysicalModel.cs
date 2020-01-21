@@ -16,7 +16,7 @@ namespace OpenH2.Core.Tags
         public TagRef<ModelTag> Model { get; set; }
 
         [PrimitiveValue(12)]
-        public uint ColliderId { get; set; }
+        public TagRef<ColliderTag> ColliderId { get; set; }
 
         [PrimitiveValue(20)]
         public TagRef<AnimationGraphTag> AnimationGraph { get; set; }

@@ -9,9 +9,7 @@ using OpenH2.Engine.EntityFactories;
 using OpenH2.Engine.Stores;
 using OpenH2.Foundation;
 using OpenH2.Foundation.Engine;
-using OpenH2.Physics.Abstractions;
-using OpenH2.Physics.Iterative;
-using OpenH2.Rendering;
+using OpenH2.Physics.Colliders;
 using OpenH2.Rendering.Abstractions;
 using OpenH2.Rendering.OpenGL;
 using OpenH2.Rendering.Pipelines;
@@ -30,7 +28,6 @@ namespace OpenH2.Engine
         IGraphicsAdapter graphicsAdapter;
         IGameLoopSource gameLoop;
         public IRenderingPipeline<BitmapTag> RenderingPipeline;
-        IPhysicsSimulator physicsSim;
 
         private World world;
 
@@ -43,7 +40,6 @@ namespace OpenH2.Engine
             graphicsAdapter = host.GetAdapter();
 
             RenderingPipeline = new ForwardRenderingPipeline(graphicsAdapter);
-            physicsSim = new IterativePhysicsSimulator(5);
         }
 
         public void Start(EngineStartParameters parameters)
@@ -97,6 +93,27 @@ namespace OpenH2.Engine
             LoadMap(scene, factory, mapPath);
             watch.Stop();
             Console.WriteLine($"Loading map took {watch.ElapsedMilliseconds / 1000f} seconds");
+
+
+            var floor = new Scenery();
+            var floorXform = new TransformComponent(floor, Vector3.Zero);
+            var floorGeom = new StaticGeometryComponent(floor)
+            {
+                Collider = new PlaneCollider()
+                {
+                    Bounds = new Physics.Bounds.AxisAlignedBoundingBox()
+                    {
+                        Least = new Vector3(-100, -100, -1),
+                        Most = new Vector3(100, 100, 1)
+                    },
+                    Distance = 1,
+                    Normal = new Vector3(0, 0, 1)
+                },
+                Transform = floorXform
+            };
+            floor.SetComponents(new Component[] { floorGeom, floorXform });
+            scene.AddEntity(floor);
+
             world.LoadScene(scene);
         }
 
@@ -104,12 +121,6 @@ namespace OpenH2.Engine
         {
             // Do actions
             world.Update(timestep);
-
-            // Detect collisions
-            //var detectedCollisionData = physicsSim.DetectCollisions(world);
-
-            // Resolve collisions
-            //physicsSim.ResolveCollisions(detectedCollisionData);
         }
 
         private void Render(double timestep)
@@ -225,10 +236,7 @@ namespace OpenH2.Engine
                     RenderModel = ModelFactory.HalfTriangularThing(color)
                 };
 
-                var xform = new TransformComponent(item)
-                {
-                    Position = position
-                };
+                var xform = new TransformComponent(item, position);
 
                 var light = new PointLightEmitterComponent(item)
                 {

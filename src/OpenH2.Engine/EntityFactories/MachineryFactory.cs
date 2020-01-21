@@ -46,11 +46,8 @@ namespace OpenH2.Engine.EntityFactories
                 }
             };
 
-            var xform = new TransformComponent(scenery)
-            {
-                Position = instance.Position,
-                Orientation = Quaternion.CreateFromYawPitchRoll(instance.Orientation.Y, instance.Orientation.Z, instance.Orientation.X)
-            };
+            var orientation = Quaternion.CreateFromYawPitchRoll(instance.Orientation.Y, instance.Orientation.Z, instance.Orientation.X);
+            var xform = new TransformComponent(scenery, instance.Position, orientation);
 
             scenery.SetComponents(new Component[] { comp, xform });
 

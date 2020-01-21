@@ -40,11 +40,7 @@ namespace OpenH2.Engine.EntityFactories
             if (item == default)
                 return new Scenery();
 
-            components.Add(new TransformComponent(item)
-            {
-                Position = instance.Position,
-                Orientation = instance.Orientation.ToQuaternion()
-            });
+            components.Add(new TransformComponent(item, instance.Position, instance.Orientation.ToQuaternion()));
 
             item.SetComponents(components.ToArray());
 
@@ -145,11 +141,7 @@ namespace OpenH2.Engine.EntityFactories
                 }
             });
 
-            components.Add(new TransformComponent(item)
-            {
-                Position = instance.Position,
-                Orientation = instance.Orientation.ToQuaternion()
-            });
+            components.Add(new TransformComponent(item, instance.Position, instance.Orientation.ToQuaternion()));
 
             item.SetComponents(components.ToArray());
 

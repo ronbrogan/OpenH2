@@ -1,21 +1,48 @@
 ﻿using OpenH2.Core.Architecture;
+using OpenH2.Foundation.Physics;
 using System.Numerics;
 
 namespace OpenH2.Engine.Components
 {
-    public class TransformComponent : Component
+    public class TransformComponent : Component, ITransform
     {
-        public TransformComponent(Entity parent) : base(parent)
+        public TransformComponent(Entity parent, Vector3 pos, Quaternion orientation) : base(parent)
         {
+            this.Position = pos;
+            this.Orientation = orientation;
+
+            UpdateDerivedData();
+        }
+
+        public TransformComponent(Entity parent, Vector3 pos) : base(parent)
+        {
+            this.Position = pos;
+            this.Orientation = Quaternion.Identity;
+
+            UpdateDerivedData();
+        }
+
+        public TransformComponent(Entity parent, Quaternion orientation) : base(parent)
+        {
+            this.Position = Vector3.Zero;
+            this.Orientation = orientation;
+
+            UpdateDerivedData();
         }
 
         public Vector3 Position { get; set; } = Vector3.Zero;
-
+        public Quaternion Orientation { get; set; } = Quaternion.Identity;
         public Vector3 Scale { get; set; } = Vector3.One;
 
-        public Quaternion Orientation { get; set; } = Quaternion.Identity;
+        public Matrix4x4 TransformationMatrix { get; private set; }
 
-        public Matrix4x4 CreateTransformationMatrix()
+        public void UpdateDerivedData()
+        {
+            Orientation = Quaternion.Normalize(Orientation);
+            TransformationMatrix = CreateTransformationMatrix();
+        }
+
+        private Matrix4x4 CreateTransformationMatrix()
         {
             var translate = Matrix4x4.CreateTranslation(Position);
             var scale = Matrix4x4.CreateScale(Scale);

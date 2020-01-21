@@ -55,12 +55,12 @@ namespace OpenH2.Engine.EntityFactories
                 }
             };
 
-            var xform = new TransformComponent(scenery)
+            var xform = new TransformComponent(scenery, instance.Position, QuaternionExtensions.From3x3Mat(instance.RotationMatrix))
             {
-                Position = instance.Position,
                 Scale = new Vector3(instance.Scale),
-                Orientation = QuaternionExtensions.From3x3Mat(instance.RotationMatrix)
             };
+
+            xform.UpdateDerivedData();
 
             scenery.SetComponents(new Component[] { comp, xform });
 
@@ -85,11 +85,8 @@ namespace OpenH2.Engine.EntityFactories
                 }
             };
 
-            var xform = new TransformComponent(scenery)
-            {
-                Position = instance.Position,
-                Orientation = Quaternion.CreateFromYawPitchRoll(instance.Orientation.Y, instance.Orientation.Z, instance.Orientation.X)
-            };
+            var orientation = Quaternion.CreateFromYawPitchRoll(instance.Orientation.Y, instance.Orientation.Z, instance.Orientation.X);
+            var xform = new TransformComponent(scenery, instance.Position, orientation);
 
             scenery.SetComponents(new Component[] { comp, xform });
 

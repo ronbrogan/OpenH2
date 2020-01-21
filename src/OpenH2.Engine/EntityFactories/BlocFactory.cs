@@ -8,6 +8,7 @@ using OpenH2.Engine.Components;
 using OpenH2.Engine.Entities;
 using OpenH2.Engine.Factories;
 using OpenH2.Foundation;
+using OpenH2.Physics.Colliders;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -36,15 +37,14 @@ namespace OpenH2.Engine.EntityFactories
                 }
             };
 
+            var orientation = Quaternion.CreateFromYawPitchRoll(instance.Orientation.Y, instance.Orientation.Z, instance.Orientation.X);
+            var xform = new TransformComponent(scenery, instance.Position, orientation);
+
+            var body = new RigidBodyComponent(scenery, xform);
+            body.Collider = new BoxCollider(xform, instance.Position, (most-least)/2);
             var modelBounds = new BoundsComponent(scenery, least, most);
 
-            var xform = new TransformComponent(scenery)
-            {
-                Position = instance.Position,
-                Orientation = Quaternion.CreateFromYawPitchRoll(instance.Orientation.Y, instance.Orientation.Z, instance.Orientation.X)
-            };
-
-            scenery.SetComponents(new Component[] { comp, modelBounds, xform });
+            scenery.SetComponents(new Component[] { comp, modelBounds, xform, body });
 
             return scenery;
         }

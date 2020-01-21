@@ -38,7 +38,7 @@ namespace OpenH2.Engine.Stores
 
             if (entity.TryGetChild<TransformComponent>(out var transform))
             {
-                xformation = Matrix4x4.Multiply(xformation, transform.CreateTransformationMatrix());
+                xformation = Matrix4x4.Multiply(xformation, transform.TransformationMatrix);
             }
 
             Models.Add((model, xformation));
