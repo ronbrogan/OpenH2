@@ -2,18 +2,14 @@
 using OpenH2.Core.Configuration;
 using OpenH2.Core.Extensions;
 using OpenH2.Core.Factories;
-using OpenH2.Core.Tags;
 using OpenH2.Engine.Components;
 using OpenH2.Engine.Entities;
 using OpenH2.Engine.EntityFactories;
-using OpenH2.Engine.Stores;
 using OpenH2.Foundation;
 using OpenH2.Foundation.Engine;
 using OpenH2.Physics.Colliders;
 using OpenH2.Rendering.Abstractions;
 using OpenH2.Rendering.OpenGL;
-using OpenH2.Rendering.Pipelines;
-using OpenH2.Rendering.Shaders;
 using System;
 using System.Diagnostics;
 using System.IO;
@@ -25,9 +21,8 @@ namespace OpenH2.Engine
     public class Engine
     {
         IGraphicsHost graphicsHost;
-        IGraphicsAdapter graphicsAdapter;
         IGameLoopSource gameLoop;
-        public IRenderingPipeline<BitmapTag> RenderingPipeline;
+        
 
         private World world;
 
@@ -37,9 +32,6 @@ namespace OpenH2.Engine
 
             graphicsHost = host;
             gameLoop = host;
-            graphicsAdapter = host.GetAdapter();
-
-            RenderingPipeline = new ForwardRenderingPipeline(graphicsAdapter);
         }
 
         public void Start(EngineStartParameters parameters)
@@ -67,11 +59,14 @@ namespace OpenH2.Engine
                 LoadScene(factory, mapPath);
             });
 
-            world = new RealtimeWorld(this);
+            var rtWorld = new RealtimeWorld(this);
+            rtWorld.UseGraphicsAdapter(graphicsHost.GetAdapter());
+
+            world = rtWorld;
 
             LoadScene(factory, mapPath);
 
-            gameLoop.RegisterCallbacks(Update, Render);
+            gameLoop.RegisterCallbacks(world.Update, world.Render);
             gameLoop.Start(60, 60);
         }
 
@@ -115,50 +110,6 @@ namespace OpenH2.Engine
             scene.AddEntity(floor);
 
             world.LoadScene(scene);
-        }
-
-        private void Update(double timestep)
-        {
-            // Do actions
-            world.Update(timestep);
-        }
-
-        private void Render(double timestep)
-        {
-            var renderList = world.GetGlobalResource<RenderListStore>();
-
-            foreach(var (model, mx) in renderList.Models)
-            {
-                RenderingPipeline.AddStaticModel(model, mx);
-            }
-
-            foreach (var light in renderList.Lights)
-            {
-                RenderingPipeline.AddPointLight(light);
-            }
-
-            var cameras = world.Components<CameraComponent>();
-            var cam = cameras.First();
-
-            var pos = cam.PositionOffset;
-
-            if(cam.TryGetSibling<TransformComponent>(out var xform))
-            {
-                pos += xform.Position;
-            }
-
-            var matrices = new GlobalUniform
-            {
-                ViewMatrix = cam.ViewMatrix,
-                ProjectionMatrix = cam.ProjectionMatrix,
-                ViewPosition = pos
-            };
-
-            graphicsAdapter.BeginFrame(matrices);
-
-            RenderingPipeline.DrawAndFlush();
-
-            graphicsAdapter.EndFrame();
         }
 
         public void LoadMap(Scene destination, MapFactory factory, string mapPath)

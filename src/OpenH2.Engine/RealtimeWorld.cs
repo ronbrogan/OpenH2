@@ -1,6 +1,7 @@
 ﻿using OpenH2.Core.Architecture;
 using OpenH2.Engine.Stores;
 using OpenH2.Engine.Systems;
+using OpenH2.Rendering.Abstractions;
 using System.Collections.Generic;
 
 namespace OpenH2.Engine
@@ -21,9 +22,13 @@ namespace OpenH2.Engine
             Systems.Add(new CameraSystem(this));
             Systems.Add(new RenderCollectorSystem(this));
 
-
             globalResources.Add(new RenderListStore());
             globalResources.Add(new InputStore());
+        }
+
+        public void UseGraphicsAdapter(IGraphicsAdapter graphics)
+        {
+            RenderSystems.Add(new RenderPipelineSystem(this, graphics));
         }
 
         public override T GetGlobalResource<T>()

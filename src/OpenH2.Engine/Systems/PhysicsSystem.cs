@@ -26,11 +26,14 @@ namespace OpenH2.Engine.Systems
 
         public override void Update(double timestep)
         {
-            if(StepMode)
-            {
-                if(input == null)
-                    input = this.world.GetGlobalResource<InputStore>();
+            if (input == null)
+                input = this.world.GetGlobalResource<InputStore>();
 
+            if (input.Keyboard.IsKeyDown(OpenTK.Input.Key.P) && input.Keyboard.IsKeyDown(OpenTK.Input.Key.ShiftRight))
+                StepMode = !StepMode;
+
+            if (StepMode)
+            {
                 ShouldStep = input.Keyboard.IsKeyDown(OpenTK.Input.Key.P);
 
                 if(ShouldStep == false)

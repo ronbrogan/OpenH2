@@ -9,6 +9,7 @@ namespace OpenH2.Core.Architecture
         public Scene Scene { get; private set; }
 
         public List<WorldSystem> Systems { get; private set; } = new List<WorldSystem>();
+        public List<RenderSystem> RenderSystems { get; private set; } = new List<RenderSystem>();
 
         public Vector3 Gravity { get; set; } = new Vector3(0, 0, -9.8f);
 
@@ -42,6 +43,14 @@ namespace OpenH2.Core.Architecture
             foreach (var system in Systems)
             {
                 system.Update(timestep);
+            }
+        }
+
+        public void Render(double timestep)
+        {
+            foreach (var system in RenderSystems)
+            {
+                system.Render(timestep);
             }
         }
     }
