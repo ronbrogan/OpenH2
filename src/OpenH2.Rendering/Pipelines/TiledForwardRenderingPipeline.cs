@@ -14,7 +14,7 @@ namespace OpenH2.Rendering.Pipelines
     {
         private readonly IGraphicsAdapter adapter;
 
-        private List<(Model<BitmapTag>, Matrix4x4)> renderables = new List<(Model<BitmapTag>, Matrix4x4)>();
+        private IList<(Model<BitmapTag>, Matrix4x4)> renderables = new List<(Model<BitmapTag>, Matrix4x4)>();
 
         public TiledForwardRenderingPipeline(IGraphicsAdapter adapter)
         {
@@ -26,7 +26,7 @@ namespace OpenH2.Rendering.Pipelines
             
         }
 
-        public void AddStaticModel(Model<BitmapTag> model, Matrix4x4 transform) => renderables.Add((model, transform));
+        public void SetModels(IList<(Model<BitmapTag>, Matrix4x4)> models) => renderables = models;
 
         // TODO: Setup framebuffers and attachments
         // TODO: Bind framebuffers/textures(eg depth) for each shader/stage

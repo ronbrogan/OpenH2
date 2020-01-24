@@ -91,7 +91,7 @@ namespace OpenH2.Rendering.OpenGL
 
             SetupVertexFormatAttributes();
 
-            meshLookup.Add(mesh, vao);
+            meshLookup[mesh] = vao;
             return vao;
         }
 
@@ -191,6 +191,9 @@ namespace OpenH2.Rendering.OpenGL
                 case MeshElementType.TriangleStripDecal:
                     GL.DrawElements(PrimitiveType.TriangleStrip, indicies.Length, DrawElementsType.UnsignedInt, 0);
                     break;
+                case MeshElementType.Point:
+                    GL.DrawElements(PrimitiveType.Points, indicies.Length, DrawElementsType.UnsignedInt, 0);
+                    break;
                 default:
                     GL.DrawElements(PrimitiveType.Triangles, indicies.Length, DrawElementsType.UnsignedInt, 0);
                     break;
@@ -225,6 +228,12 @@ namespace OpenH2.Rendering.OpenGL
                         new WireframeUniform(mesh.Material, bindings, transform, inverted),
                         WireframeUniform.Size);
                     break;
+                case Shader.Pointviz:
+                    SetupGenericUniform(
+                        activeShader,
+                        new PointvizUniform(mesh.Material, bindings, transform, inverted),
+                        PointvizUniform.Size);
+                    break;
                 case Shader.TextureViewer:
                     break;
             }
@@ -232,7 +241,7 @@ namespace OpenH2.Rendering.OpenGL
 
         private void BindMesh(Mesh<BitmapTag> mesh)
         {
-            if (meshLookup.TryGetValue(mesh, out var vaoId) == false)
+            if (mesh.Dirty || meshLookup.TryGetValue(mesh, out var vaoId) == false)
             {
                 vaoId = UploadMesh(mesh);
             }

@@ -1,4 +1,5 @@
-﻿using System.Numerics;
+﻿using System.Collections.Generic;
+using System.Numerics;
 using OpenH2.Core.Tags.Scenario;
 using OpenH2.Foundation;
 
@@ -9,9 +10,7 @@ namespace OpenH2.Rendering.Abstractions
     /// </summary>
     public interface IRenderingPipeline<TMaterialMap>
     {
-        void AddStaticModel(Model<TMaterialMap> model, Matrix4x4 transform);
-        void AddTerrain(ScenarioTag.Terrain terrain);
-        void AddSkybox(object skybox);
+        void SetModels(IList<(Model<TMaterialMap>, Matrix4x4)> models);
         void AddPointLight(PointLight light);
 
         //void AddUI();

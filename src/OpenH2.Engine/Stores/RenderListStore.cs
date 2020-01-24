@@ -1,5 +1,4 @@
 ﻿using OpenH2.Core.Architecture;
-using OpenH2.Core.Factories;
 using OpenH2.Core.Tags;
 using OpenH2.Engine.Components;
 using OpenH2.Foundation;
@@ -16,12 +15,14 @@ namespace OpenH2.Engine.Stores
     public class RenderListStore
     {
         public List<(Model<BitmapTag>, Matrix4x4)> Models = new List<(Model<BitmapTag>, Matrix4x4)>();
+        public List<VertexFormat> Points = new List<VertexFormat>();
         public List<PointLight> Lights = new List<PointLight>();
 
         public void Clear()
         {
             Models.Clear();
             Lights.Clear();
+            Points.Clear();
         }
 
         public void AddEntity(Entity entity)
@@ -41,7 +42,10 @@ namespace OpenH2.Engine.Stores
                 xformation = Matrix4x4.Multiply(xformation, transform.TransformationMatrix);
             }
 
-            Models.Add((model, xformation));
+            if(model != default)
+            {
+                Models.Add((model, xformation));
+            }
 
             if(entity.TryGetChild<BoundsComponent>(out var bounds))
             {
@@ -57,6 +61,11 @@ namespace OpenH2.Engine.Stores
                     Radius = pointLight.Light.Radius
                 });
             }
+        }
+
+        public void AddModel(Model<BitmapTag> model, Matrix4x4 transform)
+        {
+            Models.Add((model, transform));
         }
     }
 }

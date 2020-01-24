@@ -32,12 +32,13 @@ namespace OpenH2.Foundation
     [Flags]
     public enum ModelFlags
     {
-        Diffuse         = 1<<0,
+        Diffuse         = 1 << 0,
         CastsShadows    = 1 << 1,
         ReceivesShadows = 1 << 2,
         IsStatic        = 1 << 3,
         IsSkybox        = 1 << 4,
         IsTransparent   = 1 << 5,
-        Wireframe       = 1 << 6
+        Wireframe       = 1 << 6,
+        DebugViz        = 1 << 7
     }
 }

@@ -24,10 +24,7 @@ namespace OpenH2.Engine.Systems
         {
             var renderList = world.GetGlobalResource<RenderListStore>();
 
-            foreach (var (model, mx) in renderList.Models)
-            {
-                RenderingPipeline.AddStaticModel(model, mx);
-            }
+            RenderingPipeline.SetModels(renderList.Models);
 
             foreach (var light in renderList.Lights)
             {
@@ -56,6 +53,8 @@ namespace OpenH2.Engine.Systems
             RenderingPipeline.DrawAndFlush();
 
             graphics.EndFrame();
+
+            renderList.Clear();
         }
     }
 }

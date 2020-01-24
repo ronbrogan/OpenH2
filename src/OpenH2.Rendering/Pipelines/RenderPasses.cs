@@ -1,8 +1,5 @@
 ﻿using OpenH2.Core.Tags;
 using OpenH2.Foundation;
-using System.Buffers;
-using System.Collections.Generic;
-using System.Numerics;
 
 namespace OpenH2.Rendering.Pipelines
 {
@@ -28,6 +25,11 @@ namespace OpenH2.Rendering.Pipelines
         public static bool IsWireframe(Model<BitmapTag> model)
         {
             return model?.Flags.HasFlag(ModelFlags.Wireframe) ?? false;
+        }
+
+        public static bool IsDebugviz(Model<BitmapTag> model)
+        {
+            return model?.Flags.HasFlag(ModelFlags.DebugViz) ?? false;
         }
 
         public static bool IsTransparent(Model<BitmapTag> model)

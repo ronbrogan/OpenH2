@@ -13,7 +13,6 @@ namespace OpenH2.Engine.Systems
         public override void Update(double timestep)
         {
             var renderList = this.world.GetGlobalResource<RenderListStore>();
-            renderList.Clear();
 
             var entities = this.world.Scene.Entities.Values;
             foreach(var entity in entities)

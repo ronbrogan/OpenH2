@@ -1,10 +1,7 @@
-﻿using OpenH2.Core.Extensions;
-using OpenH2.Core.Tags;
-using OpenH2.Core.Tags.Scenario;
+﻿using OpenH2.Core.Tags;
 using OpenH2.Foundation;
 using OpenH2.Rendering.Abstractions;
 using OpenH2.Rendering.Shaders;
-using System;
 using System.Collections.Generic;
 using System.Numerics;
 using PointLight = OpenH2.Foundation.PointLight;
@@ -15,7 +12,7 @@ namespace OpenH2.Rendering.Pipelines
     {
         private readonly IGraphicsAdapter adapter;
 
-        private List<(Model<BitmapTag>, Matrix4x4)> renderables = new List<(Model<BitmapTag>, Matrix4x4)>();
+        private IList<(Model<BitmapTag>, Matrix4x4)> renderables = new List<(Model<BitmapTag>, Matrix4x4)>();
         private List<PointLight> pointLights = new List<PointLight>();
 
         public ForwardRenderingPipeline(IGraphicsAdapter graphicsAdapter)
@@ -23,22 +20,13 @@ namespace OpenH2.Rendering.Pipelines
             this.adapter = graphicsAdapter;
         }
 
-
         /// <summary>
         /// Should be called for each object that to be drawn each frame
         /// </summary>
         /// <param name="meshes"></param>
-        public void AddStaticModel(Model<BitmapTag> model, Matrix4x4 transform)
+        public void SetModels(IList<(Model<BitmapTag>, Matrix4x4)> models)
         {
-            renderables.Add((model, transform));
-        }
-
-        public void AddTerrain(ScenarioTag.Terrain terrain)
-        {
-        }
-
-        public void AddSkybox(object skybox)
-        {
+            renderables = models;
         }
 
         public void AddPointLight(PointLight light)
@@ -96,7 +84,30 @@ namespace OpenH2.Rendering.Pipelines
                 }
             }
 
-            renderables.Clear();
+            this.adapter.UseShader(Shader.Pointviz);
+            for (var i = 0; i < renderables.Count; i++)
+            {
+                var renderable = renderables[i];
+                if (RenderPasses.IsDebugviz(renderable.Item1))
+                {
+                    foreach (var mesh in renderable.Item1.Meshes)
+                    {
+                        if (mesh.ElementType != MeshElementType.Point)
+                            continue;
+
+                        this.adapter.DrawMesh(mesh, renderable.Item2);
+                    }
+                }
+            }
+
+            foreach(var renderable in renderables)
+            {
+                foreach(var mesh in renderable.Item1.Meshes)
+                {
+                    mesh.Dirty = false;
+                }
+            }
+
             pointLights.Clear();
         }
     }

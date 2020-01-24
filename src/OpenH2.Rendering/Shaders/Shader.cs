@@ -7,6 +7,7 @@
         Generic,
         TextureViewer,
         Wireframe,
+        Pointviz,
         
         ComputeGatherLights
     }

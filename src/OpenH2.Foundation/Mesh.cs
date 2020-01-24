@@ -11,5 +11,10 @@
         public byte[] RawData { get; set; }
 
         public string Note { get; set; }
+
+        /// <summary>
+        /// Set to true after modification of internal data to ensure caches are updated
+        /// </summary>
+        public bool Dirty { get; set; }
     }
 }
