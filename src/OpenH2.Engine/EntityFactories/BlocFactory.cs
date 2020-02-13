@@ -41,7 +41,8 @@ namespace OpenH2.Engine.EntityFactories
             var xform = new TransformComponent(scenery, instance.Position, orientation);
 
             var body = new RigidBodyComponent(scenery, xform);
-            body.Collider = new BoxCollider(xform, instance.Position, (most-least)/2);
+            body.Collider = new BoxCollider(xform, (most-least)/2);
+
             var modelBounds = new BoundsComponent(scenery, least, most);
 
             scenery.SetComponents(new Component[] { comp, modelBounds, xform, body });

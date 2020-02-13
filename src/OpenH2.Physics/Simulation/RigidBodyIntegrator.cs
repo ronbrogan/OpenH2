@@ -8,8 +8,8 @@ namespace OpenH2.Physics.Simulation
 {
     public class RigidBodyIntegrator : IBodyIntegrator<IRigidBody>
     {
-        private const float LinearDamping = 0.99f;
-        private const float AngularDamping = 0.99f;
+        private const float LinearDamping = 0.8f;
+        private const float AngularDamping = 0.8f;
 
         // REF: Millington
         public void Integrate(IRigidBody body, float timestep)

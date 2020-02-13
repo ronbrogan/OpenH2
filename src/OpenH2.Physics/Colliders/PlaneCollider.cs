@@ -18,10 +18,10 @@ namespace OpenH2.Physics.Colliders
         {
             if (other is BoxCollider box)
             {
-                return ContactGenerator.CollideBoxAndPlane(box, this);
+                return ContactGenerators.CollideBoxAndPlane(box, this);
             }
 
-            return ContactGenerator.Empty;
+            return ContactGenerators.Empty;
         }
 
         public bool Intersects(ICollider other)

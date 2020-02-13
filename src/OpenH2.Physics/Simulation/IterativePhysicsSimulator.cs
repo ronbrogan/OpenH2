@@ -26,8 +26,6 @@ namespace OpenH2.Physics.Simulation
 
         public Contact[] DetectCollisions(IPhysicsWorld world, IList<IBody> bodies)
         {
-            var aroundZero = bodies.Any(b => b.Transform.Position.Z <= 0);
-
             // Do broad phase to get candidates, need broad phase provider
             var candidates = broadPhase.DetectCandidateCollisions(world, bodies);
 

@@ -1,7 +1,6 @@
 ﻿using OpenH2.Foundation.Extensions;
 using System;
 using System.Numerics;
-using System.Threading;
 
 namespace OpenH2.Foundation.Physics
 {
@@ -193,8 +192,8 @@ namespace OpenH2.Foundation.Physics
             this.RelativeContactPosition = new Vector3[2];
 
             // Check if the first object is NULL, and swap if it is.
-            //if (!this.A) swapBodies();
-            //assert(this.A);
+            if (this.A is IRigidBody == false) this.SwapBodies();
+            
 
             // Calculate an set of axis at the contact point.
             CalculateContactBasis();
@@ -359,8 +358,8 @@ namespace OpenH2.Foundation.Physics
 
             // Do a change of basis to convert into contact coordinates.
             Matrix4x4 deltaVelocity = Matrix4x4.Transpose(ContactToWorld);
-            deltaVelocity = Matrix4x4.Multiply(deltaVelocity, deltaVelWorld);
-            deltaVelocity = Matrix4x4.Multiply(deltaVelocity, ContactToWorld);
+            deltaVelocity *= deltaVelWorld;
+            deltaVelocity *= ContactToWorld;
 
             // Add in the linear velocity change
             deltaVelocity.M11 += inverseMass;
@@ -370,7 +369,10 @@ namespace OpenH2.Foundation.Physics
             deltaVelocity.M44 = 1f;
 
             // Invert to get the impulse needed per unit velocity
-            Matrix4x4.Invert(deltaVelocity, out var impulseMatrix);
+            if(Matrix4x4.Invert(deltaVelocity, out var impulseMatrix) == false)
+            {
+                throw new Exception("Bad inversion");
+            }
 
             // Find the target velocities to kill
             var velKill = new Vector3(DesiredDeltaVelocity, -ContactVelocity.Y, -ContactVelocity.Z);
@@ -390,8 +392,8 @@ namespace OpenH2.Foundation.Physics
                 impulseContact.Z /= planarImpulse;
 
                 impulseContact.X = deltaVelocity.M11 +
-                    deltaVelocity.M12 * Friction * impulseContact.Y +
-                    deltaVelocity.M13 * Friction * impulseContact.Z;
+                    deltaVelocity.M21 * Friction * impulseContact.Y +
+                    deltaVelocity.M31 * Friction * impulseContact.Z;
                 impulseContact.X = DesiredDeltaVelocity / impulseContact.X;
                 impulseContact.Y *= Friction * impulseContact.X;
                 impulseContact.Z *= Friction * impulseContact.X;

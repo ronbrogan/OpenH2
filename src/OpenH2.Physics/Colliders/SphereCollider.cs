@@ -14,7 +14,7 @@ namespace OpenH2.Physics.Colliders
 
         public IList<Contact> GenerateContacts(ICollider other)
         {
-            return ContactGenerator.Empty;
+            return ContactGenerators.Empty;
         }
 
         public bool Intersects(ICollider other)

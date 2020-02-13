@@ -15,7 +15,6 @@ namespace OpenH2.Physics.Colliders.Contacts
         {
             velocityIterations = iterations;
             positionIterations = iterations;
-
         }
 
         public void ResolveContacts(Contact[] contacts, float duration)

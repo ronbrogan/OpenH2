@@ -1,11 +1,9 @@
 ﻿using OpenH2.Core.Representations;
 using OpenH2.Core.Tags;
-using OpenH2.Core.Tags.Common;
 using OpenH2.Foundation;
 using System;
 using System.Collections.Generic;
 using System.Numerics;
-using System.Text;
 
 namespace OpenH2.Engine.Factories
 {

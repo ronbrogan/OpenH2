@@ -19,7 +19,7 @@ namespace OpenH2.Engine.Systems
         public readonly IterativePhysicsSimulator Simulator;
 
         private InputStore input;
-        public bool StepMode = false;
+        public bool StepMode = true;
         public bool ShouldStep = false;
         public bool DebugContacts = true;
 
@@ -29,7 +29,7 @@ namespace OpenH2.Engine.Systems
         public PhysicsSystem(World world) : base(world)
         {
             this.Integrator = new RigidBodyIntegrator();
-            this.Simulator = new IterativePhysicsSimulator(1);
+            this.Simulator = new IterativePhysicsSimulator(10);
 
 
             DebugMesh = new Mesh<BitmapTag>()
@@ -49,19 +49,8 @@ namespace OpenH2.Engine.Systems
 
         public override void Update(double timestep)
         {
-            if (input == null)
-                input = this.world.GetGlobalResource<InputStore>();
-
-            if (input.Keyboard.IsKeyDown(OpenTK.Input.Key.P) && input.Keyboard.IsKeyDown(OpenTK.Input.Key.ShiftRight))
-                StepMode = !StepMode;
-
-            if (StepMode)
-            {
-                ShouldStep = input.Keyboard.IsKeyDown(OpenTK.Input.Key.P);
-
-                if(ShouldStep == false)
-                    return;
-            }
+            if (TakeStep() == false)
+                return;
 
             var allBodies = new List<IBody>();
 
@@ -79,31 +68,64 @@ namespace OpenH2.Engine.Systems
 
             if(DebugContacts)
             {
-                var renderstore = this.world.GetGlobalResource<RenderListStore>();
-
-                // Ensure there's enough space + some padding for future growth
-                if(DebugMesh.Verticies.Length < contacts.Length)
-                {
-                    DebugMesh.Verticies = new VertexFormat[contacts.Length + 64];
-                    DebugMesh.Indicies = new int[contacts.Length + 64];
-                }
-
-                for(var i = 0; i < contacts.Length; i++)
-                {
-                    var p = contacts[i];
-                    DebugMesh.Verticies[i] = new VertexFormat(p.Point, Vector2.Zero, p.Normal);
-                    DebugMesh.Indicies[i] = i;
-                }
-
-                // Set rest of indices array to 0
-                Array.Clear(DebugMesh.Indicies, contacts.Length, DebugMesh.Indicies.Length - contacts.Length);
-
-                DebugMesh.Dirty = true;
-
-                renderstore.AddModel(DebugModel, Matrix4x4.Identity);
+                UpdateAndRenderContacts(contacts);
             }
 
             this.Simulator.ResolveCollisions(contacts, timestep);
+        }
+
+        private bool TakeStep()
+        {
+            if (input == null)
+                input = this.world.GetGlobalResource<InputStore>();
+
+            if (input.Keyboard.IsKeyDown(OpenTK.Input.Key.P) && input.Keyboard.IsKeyDown(OpenTK.Input.Key.ShiftRight))
+                StepMode = !StepMode;
+
+            if (StepMode)
+            {
+                ShouldStep = input.Keyboard.IsKeyDown(OpenTK.Input.Key.P);
+
+                if (ShouldStep == false)
+                {
+                    // Render debug contacts from previous iteration
+                    if (DebugContacts)
+                    {
+                        var renderstore = this.world.GetGlobalResource<RenderListStore>();
+                        renderstore.AddModel(DebugModel, Matrix4x4.Identity);
+                    }
+
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
+        private void UpdateAndRenderContacts(Contact[] contacts)
+        {
+            var renderstore = this.world.GetGlobalResource<RenderListStore>();
+
+            // Ensure there's enough space + some padding for future growth
+            if (DebugMesh.Verticies.Length < contacts.Length)
+            {
+                DebugMesh.Verticies = new VertexFormat[contacts.Length + 64];
+                DebugMesh.Indicies = new int[contacts.Length + 64];
+            }
+
+            for (var i = 0; i < contacts.Length; i++)
+            {
+                var p = contacts[i];
+                DebugMesh.Verticies[i] = new VertexFormat(p.Point, Vector2.Zero, p.Normal);
+                DebugMesh.Indicies[i] = i;
+            }
+
+            // Set rest of indices array to 0
+            Array.Clear(DebugMesh.Indicies, contacts.Length, DebugMesh.Indicies.Length - contacts.Length);
+
+            DebugMesh.Dirty = true;
+
+            renderstore.AddModel(DebugModel, Matrix4x4.Identity);
         }
     }
 }

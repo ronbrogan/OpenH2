@@ -7,12 +7,12 @@ namespace OpenH2.Foundation.Extensions
         public static Matrix4x4 SetSkewSymmetric(this Matrix4x4 matrix, Vector3 vector)
         {
             matrix.M11 = matrix.M22 = matrix.M33 = 0;
-            matrix.M12 = -vector.Z;
-            matrix.M13 = vector.Y;
-            matrix.M21 = vector.Z;
-            matrix.M23 = -vector.X;
-            matrix.M31 = -vector.Y;
-            matrix.M32 = vector.X;
+            matrix.M21 = -vector.Z;
+            matrix.M31 = vector.Y;
+            matrix.M12 = vector.Z;
+            matrix.M32 = -vector.X;
+            matrix.M13 = -vector.Y;
+            matrix.M23 = vector.X;
 
             return matrix;
         }
@@ -41,13 +41,13 @@ namespace OpenH2.Foundation.Extensions
         public static Matrix4x4 SetComponents(this Matrix4x4 matrix, Vector3 compOne, Vector3 compTwo, Vector3 compThree)
         {
             matrix.M11 = compOne.X;
-            matrix.M21 = compOne.Y;
-            matrix.M31 = compOne.Z;
-            matrix.M12 = compTwo.X;
+            matrix.M12 = compOne.Y;
+            matrix.M13 = compOne.Z;
+            matrix.M21 = compTwo.X;
             matrix.M22 = compTwo.Y;
-            matrix.M32 = compTwo.Z;
-            matrix.M13 = compThree.X;
-            matrix.M23 = compThree.Y;
+            matrix.M23 = compTwo.Z;
+            matrix.M31 = compThree.X;
+            matrix.M32 = compThree.Y;
             matrix.M33 = compThree.Z;
 
             return matrix;
