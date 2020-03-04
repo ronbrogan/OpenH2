@@ -194,6 +194,31 @@ namespace OpenH2.Core.Extensions
             return vectorConverter.Vec4;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static Matrix4x4 ReadMatrix4x4At(this Span<byte> data, int offset)
+        {
+            var matrixBytes = data.Slice(offset, 64);
+
+            return new Matrix4x4(
+                matrixBytes.ReadFloatAt(4 * 0), //1
+                matrixBytes.ReadFloatAt(4 * 4), //1
+                matrixBytes.ReadFloatAt(4 * 8), //1
+                matrixBytes.ReadFloatAt(4 * 12),//1
+                matrixBytes.ReadFloatAt(4 * 1), //2
+                matrixBytes.ReadFloatAt(4 * 5), //2
+                matrixBytes.ReadFloatAt(4 * 9), //2
+                matrixBytes.ReadFloatAt(4 * 13),//2
+                matrixBytes.ReadFloatAt(4 * 2), //3
+                matrixBytes.ReadFloatAt(4 * 6), //3
+                matrixBytes.ReadFloatAt(4 * 10),//3
+                matrixBytes.ReadFloatAt(4 * 14),//3
+                matrixBytes.ReadFloatAt(4 * 3), //4
+                matrixBytes.ReadFloatAt(4 * 7), //4
+                matrixBytes.ReadFloatAt(4 * 11),//4
+                matrixBytes.ReadFloatAt(4 * 15) //4
+            );
+        }
+
         public static byte[] ReadArray(this Span<byte> data, int offset, int length)
         {
             return data.Slice(offset, length).ToArray();

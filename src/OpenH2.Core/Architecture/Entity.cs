@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 
 namespace OpenH2.Core.Architecture
 {
@@ -32,6 +33,22 @@ namespace OpenH2.Core.Architecture
             }
 
             return false;
+        }
+
+        public T[] GetChildren<T>() where T : Component
+        {
+            var children = new List<T>();
+
+            foreach (var c in Components)
+            {
+                var t = c as T;
+                if (t != null)
+                {
+                    children.Add(t);
+                }
+            }
+
+            return children.ToArray();
         }
     }
 }

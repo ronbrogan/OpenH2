@@ -223,6 +223,15 @@ namespace OpenH2.Core.Parsing
             return Data.ReadVec4At(offset);
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public Matrix4x4 ReadMatrix4x4At(int offset)
+        {
+            if (offset >= preloadStart && offset + 64 < preloadStart + preloadLength)
+                return preloadData.AsSpan().ReadMatrix4x4At(offset - preloadStart);
+
+            return Data.ReadMatrix4x4At(offset);
+        }
+
         public byte[] ReadArray(int offset, int length)
         {
             if (offset >= preloadStart && offset + length < preloadStart + preloadLength)

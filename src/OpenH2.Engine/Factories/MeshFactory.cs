@@ -11,7 +11,7 @@ namespace OpenH2.Engine.Factories
     {
         private static Mesh<BitmapTag>[] EmptyModel = Array.Empty<Mesh<BitmapTag>>();
 
-        public static Mesh<BitmapTag>[] GetModelForHlmt(H2vMap map, TagRef<PhysicalModelTag> hlmtReference, out Vector3 least, out Vector3 most)
+        public static Mesh<BitmapTag>[] GetModelForHlmt(H2vMap map, TagRef<HaloModelTag> hlmtReference, out Vector3 least, out Vector3 most)
         {
             if (map.TryGetTag(hlmtReference, out var hlmt) == false)
             {
@@ -21,9 +21,9 @@ namespace OpenH2.Engine.Factories
                 return EmptyModel;
             }
 
-            if (map.TryGetTag(hlmt.Model, out var model) == false)
+            if (map.TryGetTag(hlmt.RenderModel, out var model) == false)
             {
-                Console.WriteLine($"No MODE[{hlmt.Model.Id}] found for HLMT[{hlmt.Id}]");
+                Console.WriteLine($"No MODE[{hlmt.RenderModel.Id}] found for HLMT[{hlmt.Id}]");
                 least = Vector3.Zero;
                 most = Vector3.Zero;
                 return EmptyModel;
@@ -36,9 +36,9 @@ namespace OpenH2.Engine.Factories
 
             var renderModelMeshes = new List<Mesh<BitmapTag>>();
 
-            foreach (var lod in model.Lods)
+            foreach (var lod in model.Components)
             {
-                var partIndex = lod.Permutations[0].HighestPieceIndex;
+                var partIndex = lod.DamageLevels[0].HighestPieceIndex;
 
                 foreach (var mesh in model.Parts[partIndex].Model.Meshes)
                 {

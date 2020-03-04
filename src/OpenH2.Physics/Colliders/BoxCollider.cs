@@ -10,23 +10,22 @@ namespace OpenH2.Physics.Colliders
 {
     public class BoxCollider : ICollider
     {
-        public Vector3 Center => transform.Position;
+        public Vector3 OriginOffset { get; }
         public Vector3 HalfWidths { get; set; }
         public ISweepableBounds Bounds { get; set; }
         public Matrix4x4 Transform => transform.TransformationMatrix;
         private ITransform transform;
 
-        public BoxCollider(ITransform xform, Vector3 HalfWidths)
+        public BoxCollider(ITransform xform, Vector3 HalfWidths, Vector3 originOffset = default)
         {
+            this.OriginOffset = originOffset;
             this.HalfWidths = HalfWidths;
             this.transform = xform;
 
             // TODO: use AABB
             var radius = Math.Max(Math.Max(HalfWidths.X, HalfWidths.Y), HalfWidths.Z);
-            Bounds = new SphereBounds(xform, Center, radius);
+            Bounds = new SphereBounds(xform, transform.Position + originOffset, radius);
         }
-
-
 
         public IList<Contact> GenerateContacts(ICollider other)
         {
@@ -69,7 +68,7 @@ namespace OpenH2.Physics.Colliders
                 case 2:
                     return new Vector3(mat.M31, mat.M32, mat.M33);
                 case 3:
-                    return new Vector3(mat.M41, mat.M42, mat.M43);
+                    return new Vector3(mat.M41, mat.M42, mat.M43) + this.OriginOffset;
                 default:
                     throw new Exception("Bad axis provided");
             }

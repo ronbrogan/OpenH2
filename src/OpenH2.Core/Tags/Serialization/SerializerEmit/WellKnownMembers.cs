@@ -55,6 +55,7 @@ namespace OpenH2.Core.Tags.Serialization.SerializerEmit
             { typeof(Vector2), typeof(Parsing.TrackingReader).GetMethod(nameof(Parsing.TrackingReader.ReadVec2At)) },
             { typeof(Vector3), typeof(Parsing.TrackingReader).GetMethod(nameof(Parsing.TrackingReader.ReadVec3At)) },
             { typeof(Vector4), typeof(Parsing.TrackingReader).GetMethod(nameof(Parsing.TrackingReader.ReadVec4At)) },
+            { typeof(Matrix4x4), typeof(Parsing.TrackingReader).GetMethod(nameof(Parsing.TrackingReader.ReadMatrix4x4At)) },
 
             { typeof(TagRef), typeof(Parsing.TrackingReader).GetMethod(nameof(Parsing.TrackingReader.ReadTagRefAt)) },
             { typeof(TagRef<>), typeof(Parsing.TrackingReader).GetMethod(nameof(Parsing.TrackingReader.ReadTagRefAt)) },
@@ -119,6 +120,24 @@ namespace OpenH2.Core.Tags.Serialization.SerializerEmit
 
             public static MethodInfo IOffsetValue = typeof(IOffset)
                 .GetProperty(nameof(IOffset.Value)).GetGetMethod();
+        }
+
+        public static class Tag
+        {
+            public static MethodInfo NameGetter = typeof(BaseTag)
+               .GetProperty(nameof(BaseTag.Name)).GetGetMethod();
+        }
+
+        public static class String
+        {
+            public static MethodInfo Concat = typeof(string)
+                .GetMethod(nameof(string.Concat), new[] { typeof(string), typeof(string) });
+        }
+
+        public static class Helpers
+        {
+            public static MethodInfo ConsoleWriteLine = typeof(Console)
+                .GetMethod(nameof(Console.WriteLine), new[] { typeof(string) });
         }
     }
 }

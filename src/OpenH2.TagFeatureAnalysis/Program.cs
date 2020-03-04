@@ -70,7 +70,7 @@ namespace OpenH2.TagFeatureAnalysis
             var factory = new MapFactory(Path.GetDirectoryName(args[0]), new MaterialFactory(Environment.CurrentDirectory));
             var map = factory.FromFile(File.OpenRead(args[0]));
 
-            var models = map.GetLocalTagsOfType<ModelTag>();
+            var models = map.GetLocalTagsOfType<RenderModelTag>();
             var containers = new List<ModelContainer>();
             var tagHeaderSize = 92;
 
@@ -147,7 +147,7 @@ namespace OpenH2.TagFeatureAnalysis
     class ModelContainer
     {
         public bool isTriangleStrip;
-        public ModelTag model;
+        public RenderModelTag model;
         public IEnumerable<object> features;
     }
 }

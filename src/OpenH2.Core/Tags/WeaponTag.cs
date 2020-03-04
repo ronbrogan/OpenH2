@@ -13,7 +13,7 @@ namespace OpenH2.Core.Tags
         }
 
         [PrimitiveValue(56)]
-        public TagRef<PhysicalModelTag> Hlmt { get; set; }
+        public TagRef<HaloModelTag> Hlmt { get; set; }
 
         [PrimitiveArray(108, 9)]
         public float[] RotationMatrix { get; set; }
@@ -35,7 +35,7 @@ namespace OpenH2.Core.Tags
         public class FirstPersonAnimation
         {
             [PrimitiveValue(4)]
-            public TagRef<ModelTag> Model { get; set; }
+            public TagRef<RenderModelTag> Model { get; set; }
 
             [PrimitiveValue(12)]
             public TagRef<AnimationGraphTag> Animation { get; set; }

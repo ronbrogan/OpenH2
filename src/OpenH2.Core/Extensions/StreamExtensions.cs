@@ -230,6 +230,29 @@ namespace OpenH2.Core.Extensions
             return new Vector4(data.ReadFloatAt(offset), data.ReadFloatAt(offset + 4), data.ReadFloatAt(offset + 8), data.ReadFloatAt(offset + 12));
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static Matrix4x4 ReadMatrix4x4At(this Stream data, int offset)
+        {
+            return new Matrix4x4(
+                data.ReadFloatAt(offset + (4 * 0)),
+                data.ReadFloatAt(offset + (4 * 1)),
+                data.ReadFloatAt(offset + (4 * 2)),
+                data.ReadFloatAt(offset + (4 * 3)),
+                data.ReadFloatAt(offset + (4 * 4)),
+                data.ReadFloatAt(offset + (4 * 5)),
+                data.ReadFloatAt(offset + (4 * 6)),
+                data.ReadFloatAt(offset + (4 * 7)),
+                data.ReadFloatAt(offset + (4 * 8)),
+                data.ReadFloatAt(offset + (4 * 9)),
+                data.ReadFloatAt(offset + (4 * 10)),
+                data.ReadFloatAt(offset + (4 * 11)),
+                data.ReadFloatAt(offset + (4 * 12)),
+                data.ReadFloatAt(offset + (4 * 13)),
+                data.ReadFloatAt(offset + (4 * 14)),
+                data.ReadFloatAt(offset + (4 * 15))
+            );
+        }
+
         public static byte[] ReadArray(this Stream data, int offset, int length)
         {
             data.Position = offset;

@@ -10,9 +10,9 @@ using System.Text.Json.Serialization;
 namespace OpenH2.Core.Tags
 {
     [TagLabel(TagName.mode)]
-    public class ModelTag : BaseTag
+    public class RenderModelTag : BaseTag
     { 
-        public ModelTag(uint id) : base(id)
+        public RenderModelTag(uint id) : base(id)
         {
         }
 
@@ -28,9 +28,9 @@ namespace OpenH2.Core.Tags
         public BoundingBox[] BoundingBoxes { get; set; }
 
         [ReferenceArray(28)]
-        public LevelOfDetail[] Lods { get; set; }
+        public Component[] Components { get; set; }
 
-        public Permutation[] Permutations { get; set; }
+        public DamageLevel[] Permutations { get; set; }
 
         [ReferenceArray(36)]
         public Part[] Parts { get; set; }
@@ -170,19 +170,17 @@ namespace OpenH2.Core.Tags
         }
 
         [FixedLength(16)]
-        public class LevelOfDetail
+        public class Component
         {
             [PrimitiveValue(0)]
             public int PartNameId { get; set; }
 
-            // RESEARCH: It looks like these are for different damage states, 
-            // ie a pillar gets destroyed, different permutations are used
             [ReferenceArray(8)]
-            public Permutation[] Permutations { get; set; }
+            public DamageLevel[] DamageLevels { get; set; }
         }
 
         [FixedLength(16)]
-        public class Permutation
+        public class DamageLevel
         {
             [PrimitiveValue(0)]
             public int PermutationNameId { get; set; }

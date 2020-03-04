@@ -13,6 +13,7 @@ namespace OpenH2.Foundation.Physics
         Vector3 Velocity { get; set; }
         Vector3 AngularVelocity { get; set; }
 
+        Vector3 CenterOfMassOffset { get; set; }
         float Mass { get; set; }
         float InverseMass { get; }
         Matrix4x4 InverseInertiaBody { get; set; }

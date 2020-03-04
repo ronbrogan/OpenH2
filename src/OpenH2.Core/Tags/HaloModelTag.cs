@@ -4,16 +4,16 @@ using OpenH2.Core.Tags.Layout;
 namespace OpenH2.Core.Tags
 {
     [TagLabel(TagName.hlmt)]
-    public class PhysicalModelTag : BaseTag
+    public class HaloModelTag : BaseTag
     {
         public override string Name { get; set; }
 
-        public PhysicalModelTag(uint id) : base(id)
+        public HaloModelTag(uint id) : base(id)
         {
         }
 
         [PrimitiveValue(4)]
-        public TagRef<ModelTag> Model { get; set; }
+        public TagRef<RenderModelTag> RenderModel { get; set; }
 
         [PrimitiveValue(12)]
         public TagRef<ColliderTag> ColliderId { get; set; }
@@ -25,7 +25,7 @@ namespace OpenH2.Core.Tags
         public uint PhysicsInfoId { get; set; }
 
         [PrimitiveValue(36)]
-        public uint PhmoId { get; set; }
+        public TagRef<PhysicsModelTag> PhysicsModel { get; set; }
 
         [PrimitiveArray(40, 8)]
         public float[] Params { get; set; }

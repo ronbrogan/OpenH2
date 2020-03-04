@@ -14,7 +14,7 @@ namespace OpenH2.Core.Tags
         }
 
         [PrimitiveValue(4)]
-        public TagRef<ModelTag> Model { get; set; }
+        public TagRef<RenderModelTag> Model { get; set; }
 
         [ReferenceArray(28)]
         public Obj28[] Obj28s { get; set; }

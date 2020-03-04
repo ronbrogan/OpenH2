@@ -6,6 +6,8 @@ namespace OpenH2.Engine.Components
 {
     public class RigidBodyComponent : Component, IRigidBody
     {
+        private static Vector3 AccelerationDueToGravity = new Vector3(0, 0, -9.8f);
+
         public Vector3 ForceAccumulator { get; set; }
         public Vector3 TorqueAccumulator { get; set; }
 
@@ -15,6 +17,7 @@ namespace OpenH2.Engine.Components
         public ITransform Transform { get; }
 
         // "Constant" attributes
+        public Vector3 CenterOfMassOffset { get; set; }
         private float mass;
         private float inverseMass;
         public float Mass { get => mass; set { mass = value; inverseMass = 1 / value; } }
@@ -28,14 +31,31 @@ namespace OpenH2.Engine.Components
         public Vector3 Velocity { get; set; }
         public Vector3 AngularVelocity { get; set; }
 
-        public RigidBodyComponent(Entity parent, TransformComponent xform) : base(parent)
+        public RigidBodyComponent(Entity parent, 
+            TransformComponent xform, 
+            Matrix4x4 inertiaTensor,
+            Vector3 centerOfMassOffset = default)
+            : base(parent)
         {
             this.Transform = xform;
-            this.Acceleration = new Vector3(0, 0, -9.8f);
+            this.Acceleration = AccelerationDueToGravity;
+            this.CenterOfMassOffset = centerOfMassOffset;
             this.Mass = 1f;
 
-            Matrix4x4.Invert(Matrix4x4.Identity, out var inv);
-            this.InverseInertiaBody = inv;
+            // Set non-rotational components of matrix to standard values to ensure inversion succeeds
+            // TODO: investigate if these components of the matrix have any meaningful data
+            inertiaTensor.M14 = 0;
+            inertiaTensor.M24 = 0;
+            inertiaTensor.M34 = 0;
+            inertiaTensor.M41 = 0;
+            inertiaTensor.M42 = 0;
+            inertiaTensor.M43 = 0;
+            inertiaTensor.M44 = 1;
+
+            if (Matrix4x4.Invert(inertiaTensor, out var inv))
+            {
+                this.InverseInertiaBody = inv;
+            }
         }
 
         public void UpdateDerivedData()
@@ -66,7 +86,7 @@ namespace OpenH2.Engine.Components
 
         public void AddForceAtPoint(Vector3 force, Vector3 point)
         {
-            var pointRelativeToCenterOfMass = point - Transform.Position;
+            var pointRelativeToCenterOfMass = point - Transform.Position + CenterOfMassOffset;
 
             ForceAccumulator += force;
             TorqueAccumulator += Vector3.Cross(pointRelativeToCenterOfMass, force);

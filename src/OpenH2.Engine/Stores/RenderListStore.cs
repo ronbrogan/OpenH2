@@ -47,7 +47,7 @@ namespace OpenH2.Engine.Stores
                 Models.Add((model, xformation));
             }
 
-            if(entity.TryGetChild<BoundsComponent>(out var bounds))
+            foreach(var bounds in entity.GetChildren<BoundsComponent>())
             {
                 Models.Add((bounds.RenderModel, xformation));
             }

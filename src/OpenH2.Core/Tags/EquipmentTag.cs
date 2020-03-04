@@ -13,7 +13,7 @@ namespace OpenH2.Core.Tags
         }
 
         [PrimitiveValue(56)]
-        public TagRef<PhysicalModelTag> Hlmt { get; set; }
+        public TagRef<HaloModelTag> Hlmt { get; set; }
 
 
         //[InternalReferenceValue(260)]

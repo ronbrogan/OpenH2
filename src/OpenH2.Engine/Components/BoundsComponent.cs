@@ -13,11 +13,15 @@ namespace OpenH2.Engine.Components
 
         public Model<BitmapTag> RenderModel { get; set; }
 
-        public BoundsComponent(Entity parent, Vector3 least, Vector3 most) : base(parent)
+        public BoundsComponent(Entity parent, Vector3 least, Vector3 most) : this(parent, least, most, new Vector4(1, 0, 0, 1))
+        {
+        }
+
+        public BoundsComponent(Entity parent, Vector3 least, Vector3 most, Vector4 color) : base(parent)
         {
             Least = least;
             Most = most;
-            RenderModel = ModelFactory.Cuboid(least, most, new Vector4(1, 0, 0, 1));
+            RenderModel = ModelFactory.Cuboid(least, most, color);
             RenderModel.Flags = ModelFlags.Wireframe;
         }
     }

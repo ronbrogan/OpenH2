@@ -335,6 +335,22 @@ namespace OpenH2.Core.Tags.Serialization.SerializerEmit
             gen.Emit(OpCodes.Stloc, count);
 
 
+#if DEBUG
+            var caoCountSanityCheckEnd = gen.DefineLabel();
+            gen.Emit(OpCodes.Ldloc, count);
+            gen.Emit(OpCodes.Ldc_I4, (int)short.MaxValue);
+
+            // Skip warning if short.MaxValue is greater than count
+            gen.Emit(OpCodes.Blt, caoCountSanityCheckEnd);
+
+            gen.Emit(OpCodes.Ldstr, "[WARN] Count for ReferenceArray at " + tagType.Name + "@" + prop.LayoutAttribute.Offset + " is very large // ");
+            gen.Emit(OpCodes.Ldarg, TagCreatorArguments.GetArgumentLocation(TagCreatorArguments.Name.Name));
+            gen.Emit(OpCodes.Call, MI.String.Concat);
+            gen.Emit(OpCodes.Call, MI.Helpers.ConsoleWriteLine);
+
+            gen.MarkLabel(caoCountSanityCheckEnd);
+#endif
+
             var i = gen.DeclareLocal(typeof(int));
             var loop = gen.DefineLabel();
             var loopCheck = gen.DefineLabel();

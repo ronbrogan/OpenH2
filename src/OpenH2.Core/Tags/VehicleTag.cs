@@ -11,7 +11,7 @@ namespace OpenH2.Core.Tags
         }
 
         [PrimitiveValue(56)]
-        public TagRef<PhysicalModelTag> Hlmt { get; set; }
+        public TagRef<HaloModelTag> Hlmt { get; set; }
 
         [ReferenceArray(92)]
         public Obj92[] Obj92s { get; set; }

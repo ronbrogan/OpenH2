@@ -59,7 +59,7 @@ namespace OpenH2.Engine.EntityFactories
                     throw new Exception("No tag found for weap/equip");
                 }
 
-                TagRef<PhysicalModelTag> itemHlmt = default;
+                TagRef<HaloModelTag> itemHlmt = default;
 
                 if (tag is WeaponTag weap)
                     itemHlmt = weap.Hlmt;

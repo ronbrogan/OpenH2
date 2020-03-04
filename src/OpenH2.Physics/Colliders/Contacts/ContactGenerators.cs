@@ -1,6 +1,5 @@
 ﻿using OpenH2.Foundation.Physics;
 using OpenH2.Physics.Colliders.Extensions;
-using OpenH2.Physics.Colliders.Tests;
 using System;
 using System.Collections.Generic;
 using System.Numerics;
@@ -26,6 +25,7 @@ namespace OpenH2.Physics.Colliders.Contacts
             {
                 // Calculate the position of each vertex
                 var vertexPos = Vector3.Multiply(new Vector3(mults[i, 0], mults[i, 1], mults[i, 2]), box.HalfWidths);
+                vertexPos += box.OriginOffset;
                 vertexPos = Vector3.Transform(vertexPos, box.Transform);
 
                 float vertexDistance = Vector3.Dot(vertexPos, plane.Normal);
@@ -55,17 +55,13 @@ namespace OpenH2.Physics.Colliders.Contacts
             return contacts;
         }
 
-        // This preprocessor definition is only used as a convenience
-        // in the boxAndBox contact generation method.
-        //#define CHECK_OVERLAP(axis, index) \
-        //if (!tryAxis(one, two, (axis), toCentre, (index), pen, best)) return 0;
-
+        // TODO: change this to use OriginOffset of the box to determine points/centers
         public static IList<Contact> BoxAndBox(BoxCollider one, BoxCollider two)
         {
             var contacts = new List<Contact>(1);
 
-            // Find the vector between the two centres
-            Vector3 toCentre = two.GetAxis(3) - one.GetAxis(3);
+            // Find the vector between the two centers
+            Vector3 toCenter = two.GetAxis(3) - one.GetAxis(3);
 
             // We start assuming there is no contact
             float pen = float.MaxValue;
@@ -74,27 +70,27 @@ namespace OpenH2.Physics.Colliders.Contacts
             // Now we check each axes, returning if it gives us
             // a separating axis, and keeping track of the axis with
             // the smallest penetration otherwise.
-            if (!tryAxis(one, two, one.GetAxis(0), toCentre, 0, ref pen, ref best)) return contacts;
-            if (!tryAxis(one, two, one.GetAxis(1), toCentre, 1, ref pen, ref best)) return contacts;
-            if (!tryAxis(one, two, one.GetAxis(2), toCentre, 2, ref pen, ref best)) return contacts;
+            if (!tryAxis(one, two, one.GetAxis(0), toCenter, 0, ref pen, ref best)) return contacts;
+            if (!tryAxis(one, two, one.GetAxis(1), toCenter, 1, ref pen, ref best)) return contacts;
+            if (!tryAxis(one, two, one.GetAxis(2), toCenter, 2, ref pen, ref best)) return contacts;
 
-            if (!tryAxis(one, two, two.GetAxis(0), toCentre, 3, ref pen, ref best)) return contacts;
-            if (!tryAxis(one, two, two.GetAxis(1), toCentre, 4, ref pen, ref best)) return contacts;
-            if (!tryAxis(one, two, two.GetAxis(2), toCentre, 5, ref pen, ref best)) return contacts;
+            if (!tryAxis(one, two, two.GetAxis(0), toCenter, 3, ref pen, ref best)) return contacts;
+            if (!tryAxis(one, two, two.GetAxis(1), toCenter, 4, ref pen, ref best)) return contacts;
+            if (!tryAxis(one, two, two.GetAxis(2), toCenter, 5, ref pen, ref best)) return contacts;
 
             // Store the best axis-major, in case we run into almost
             // parallel edge collisions later
             int bestSingleAxis = best;
 
-            if (!tryAxis(one, two, Vector3.Cross(one.GetAxis(0), two.GetAxis(0)), toCentre, 6, ref pen, ref best)) return contacts;
-            if (!tryAxis(one, two, Vector3.Cross(one.GetAxis(0), two.GetAxis(1)), toCentre, 7, ref pen, ref best)) return contacts;
-            if (!tryAxis(one, two, Vector3.Cross(one.GetAxis(0), two.GetAxis(2)), toCentre, 8, ref pen, ref best)) return contacts;
-            if (!tryAxis(one, two, Vector3.Cross(one.GetAxis(1), two.GetAxis(0)), toCentre, 9, ref pen, ref best)) return contacts;
-            if (!tryAxis(one, two, Vector3.Cross(one.GetAxis(1), two.GetAxis(1)), toCentre, 10, ref pen, ref best)) return contacts;
-            if (!tryAxis(one, two, Vector3.Cross(one.GetAxis(1), two.GetAxis(2)), toCentre, 11, ref pen, ref best)) return contacts;
-            if (!tryAxis(one, two, Vector3.Cross(one.GetAxis(2), two.GetAxis(0)), toCentre, 12, ref pen, ref best)) return contacts;
-            if (!tryAxis(one, two, Vector3.Cross(one.GetAxis(2), two.GetAxis(1)), toCentre, 13, ref pen, ref best)) return contacts;
-            if (!tryAxis(one, two, Vector3.Cross(one.GetAxis(2), two.GetAxis(2)), toCentre, 14, ref pen, ref best)) return contacts;
+            if (!tryAxis(one, two, Vector3.Cross(one.GetAxis(0), two.GetAxis(0)), toCenter, 6, ref pen, ref best)) return contacts;
+            if (!tryAxis(one, two, Vector3.Cross(one.GetAxis(0), two.GetAxis(1)), toCenter, 7, ref pen, ref best)) return contacts;
+            if (!tryAxis(one, two, Vector3.Cross(one.GetAxis(0), two.GetAxis(2)), toCenter, 8, ref pen, ref best)) return contacts;
+            if (!tryAxis(one, two, Vector3.Cross(one.GetAxis(1), two.GetAxis(0)), toCenter, 9, ref pen, ref best)) return contacts;
+            if (!tryAxis(one, two, Vector3.Cross(one.GetAxis(1), two.GetAxis(1)), toCenter, 10, ref pen, ref best)) return contacts;
+            if (!tryAxis(one, two, Vector3.Cross(one.GetAxis(1), two.GetAxis(2)), toCenter, 11, ref pen, ref best)) return contacts;
+            if (!tryAxis(one, two, Vector3.Cross(one.GetAxis(2), two.GetAxis(0)), toCenter, 12, ref pen, ref best)) return contacts;
+            if (!tryAxis(one, two, Vector3.Cross(one.GetAxis(2), two.GetAxis(1)), toCenter, 13, ref pen, ref best)) return contacts;
+            if (!tryAxis(one, two, Vector3.Cross(one.GetAxis(2), two.GetAxis(2)), toCenter, 14, ref pen, ref best)) return contacts;
 
             // Make sure we've got a result.
             if (best == 0xffffff) throw new System.Exception("No axis");
@@ -106,15 +102,15 @@ namespace OpenH2.Physics.Colliders.Contacts
             if (best < 3)
             {
                 // We've got a vertex of box two on a face of box one.
-                contacts.Add(one.GetPointFaceBoxBoxContact(two, toCentre, best, pen));
+                contacts.Add(one.GetPointFaceBoxBoxContact(two, toCenter, best, pen));
             }
             else if (best < 6)
             {
                 // We've got a vertex of box one on a face of box two.
                 // We use the same algorithm as above, but swap around
                 // one and two (and therefore also the vector between their
-                // centres).
-                contacts.Add(two.GetPointFaceBoxBoxContact(one, toCentre * -1.0f, best - 3, pen));
+                // centers).
+                contacts.Add(two.GetPointFaceBoxBoxContact(one, toCenter * -1.0f, best - 3, pen));
             }
             else
             {
@@ -128,12 +124,12 @@ namespace OpenH2.Physics.Colliders.Contacts
                 axis = Vector3.Normalize(axis);
 
                 // The axis should point from box one to box two.
-                if (Vector3.Dot(axis, toCentre) > 0)
+                if (Vector3.Dot(axis, toCenter) > 0)
                     axis = axis * -1.0f;
 
                 // We have the axes, but not the edges: each axis has 4 edges parallel
                 // to it, we need to find which of the 4 for each object. We do
-                // that by finding the point in the centre of the edge. We know
+                // that by finding the point in the center of the edge. We know
                 // its component in the direction of the box's collision axis is zero
                 // (its a mid-point) and we determine which of the extremes in each
                 // of the other axes is closest.
@@ -185,7 +181,7 @@ namespace OpenH2.Physics.Colliders.Contacts
             BoxCollider one,
             BoxCollider two,
             Vector3 axis,
-            Vector3 toCentre,
+            Vector3 toCenter,
             int index,
             ref float smallestPenetration,
             ref int smallestCase
@@ -196,7 +192,7 @@ namespace OpenH2.Physics.Colliders.Contacts
 
             axis = Vector3.Normalize(axis);
 
-            float penetration = PenetrationOnAxis(one, two, axis, toCentre);
+            float penetration = PenetrationOnAxis(one, two, axis, toCenter);
 
             if (penetration < 0) return false;
             if (penetration < smallestPenetration)
@@ -207,14 +203,14 @@ namespace OpenH2.Physics.Colliders.Contacts
             return true;
         }
 
-        public static float PenetrationOnAxis(BoxCollider one, BoxCollider two, Vector3 axis, Vector3 toCentre)
+        public static float PenetrationOnAxis(BoxCollider one, BoxCollider two, Vector3 axis, Vector3 toCenter)
         {
             // Project the half-size of one onto axis
             float oneProject = one.TransformToAxis(axis);
             float twoProject = two.TransformToAxis(axis);
 
             // Project this onto the axis
-            float distance = Math.Abs(Vector3.Dot(toCentre, axis));
+            float distance = Math.Abs(Vector3.Dot(toCenter, axis));
 
             // Return the overlap (i.e. positive indicates
             // overlap, negative indicates separation).
@@ -223,19 +219,19 @@ namespace OpenH2.Physics.Colliders.Contacts
 
         // This method is called when we know that a vertex from
         // box two is in contact with box one.
-        private static Contact GetPointFaceBoxBoxContact(this BoxCollider one, BoxCollider two, Vector3 toCentre, int best, float pen)
+        private static Contact GetPointFaceBoxBoxContact(this BoxCollider one, BoxCollider two, Vector3 toCenter, int best, float pen)
         {
             // We know which axis the collision is on (i.e. best),
             // but we need to work out which of the two faces on
             // this axis.
             Vector3 normal = one.GetAxis(best);
-            if (Vector3.Dot(one.GetAxis(best), toCentre) > 0)
+            if (Vector3.Dot(one.GetAxis(best), toCenter) > 0)
             {
                 normal *= -1.0f;
             }
 
             // Work out which vertex of box two we're colliding with.
-            // Using toCentre doesn't work!
+            // Using toCenter doesn't work!
             Vector3 vertex = two.HalfWidths;
             if (Vector3.Dot(two.GetAxis(0), normal) < 0) vertex.X = -vertex.X;
             if (Vector3.Dot(two.GetAxis(1), normal) < 0) vertex.Y = -vertex.Y;

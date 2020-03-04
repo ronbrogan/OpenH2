@@ -82,12 +82,12 @@ namespace OpenH2.ModelDumper
                     continue;
                 }
 
-                if (!scene.TryGetTag(phmo.Model, out var mode))
+                if (!scene.TryGetTag(phmo.RenderModel, out var mode))
                 {
                     continue;
                 }
 
-                var part = mode.Lods[0].Permutations[0].HighestPieceIndex;
+                var part = mode.Components[0].DamageLevels[0].HighestPieceIndex;
 
                 writer.WriteModel(mode.Parts[part].Model, xform, "bloc_" + blocInstance.BlocDefinitionIndex);
             }
@@ -110,7 +110,7 @@ namespace OpenH2.ModelDumper
                     continue;
                 }
 
-                if (!scene.TryGetTag(phmo.Model, out var mode))
+                if (!scene.TryGetTag(phmo.RenderModel, out var mode))
                 {
                     continue;
                 }
@@ -136,7 +136,7 @@ namespace OpenH2.ModelDumper
                     continue;
                 }
 
-                if (!scene.TryGetTag(phmo.Model, out var mode))
+                if (!scene.TryGetTag(phmo.RenderModel, out var mode))
                 {
                     continue;
                 }
@@ -153,7 +153,7 @@ namespace OpenH2.ModelDumper
                 if (!scene.TryGetTag<BaseTag>(itemPlacement.ItemCollectionReference, out var itemTag))
                     continue;
 
-                TagRef<PhysicalModelTag> hlmtRef = default;
+                TagRef<HaloModelTag> hlmtRef = default;
 
                 if (itemTag is ItemCollectionTag itmc)
                 {
@@ -170,10 +170,10 @@ namespace OpenH2.ModelDumper
                 if (!scene.TryGetTag(hlmtRef, out var hlmt))
                     continue;
 
-                if (!scene.TryGetTag(hlmt.Model, out var mode))
+                if (!scene.TryGetTag(hlmt.RenderModel, out var mode))
                     continue;
 
-                var index = mode.Lods[0].Permutations[0].HighestPieceIndex;
+                var index = mode.Components[0].DamageLevels[0].HighestPieceIndex;
                 
                 writer.WriteModel(mode.Parts[index].Model, xform, "itmc_" + itemPlacement.ItemCollectionReference);
             }
