@@ -7,6 +7,6 @@ namespace OpenH2.Physics.Abstractions
 {
     public interface IBroadPhaseDetector
     {
-        IBody[] DetectCandidateCollisions(IPhysicsWorld world, IList<IBody> bodies);
+        IList<IBody> DetectCandidateCollisions(IPhysicsWorld world, IList<IBody> bodies);
     }
 }

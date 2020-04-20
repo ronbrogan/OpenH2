@@ -1,5 +1,6 @@
 ﻿using OpenH2.Foundation.Extensions;
 using System;
+using System.Diagnostics;
 using System.Numerics;
 
 namespace OpenH2.Foundation.Physics
@@ -30,7 +31,7 @@ namespace OpenH2.Foundation.Physics
         public void MatchAwakeState()
         {
             // Collisions with the world never cause a body to wake up.
-            if (A == null) return;
+            if (B == null) return;
 
             bool body0awake = A.IsAwake;
             bool body1awake = B.IsAwake;
@@ -39,9 +40,9 @@ namespace OpenH2.Foundation.Physics
             if (body0awake ^ body1awake)
             {
                 if (body0awake)
-                    B.IsAwake = true;
+                    B.Wake();
                 else
-                    A.IsAwake = true;
+                    A.Wake();
             }
         }
 
@@ -193,7 +194,7 @@ namespace OpenH2.Foundation.Physics
 
             // Check if the first object is NULL, and swap if it is.
             if (this.A is IRigidBody == false) this.SwapBodies();
-            
+
 
             // Calculate an set of axis at the contact point.
             CalculateContactBasis();
@@ -246,6 +247,11 @@ namespace OpenH2.Foundation.Physics
 
             // Convert impulse to world coordinates
             Vector3 impulse = Vector3.Transform(impulseContact, ContactToWorld);
+
+            if(impulse.LengthSquared() > 1000)
+            {
+                Debugger.Break();
+            }
 
             // Split in the impulse into linear and rotational components
             Vector3 impulsiveTorque = Vector3.Cross(this.RelativeContactPosition[0], impulse);
@@ -369,7 +375,7 @@ namespace OpenH2.Foundation.Physics
             deltaVelocity.M44 = 1f;
 
             // Invert to get the impulse needed per unit velocity
-            if(Matrix4x4.Invert(deltaVelocity, out var impulseMatrix) == false)
+            if (Matrix4x4.Invert(deltaVelocity, out var impulseMatrix) == false)
             {
                 throw new Exception("Bad inversion");
             }
@@ -416,106 +422,111 @@ namespace OpenH2.Foundation.Physics
             // We need to work out the inertia of each object in the direction
             // of the contact normal, due to angular inertia only.
             for (uint i = 0; i < 2; i++) if (body[i] != null)
-            {
-                Matrix4x4 inverseInertiaTensor;
-                inverseInertiaTensor = body[i].InverseInertiaWorld;
+                {
+                    Matrix4x4 inverseInertiaTensor;
+                    inverseInertiaTensor = body[i].InverseInertiaWorld;
 
-                // Use the same procedure as for calculating Frictionless
-                // velocity change to work out the angular inertia.
-                Vector3 angularInertiaWorld = Vector3.Cross(this.RelativeContactPosition[i], Normal);
-                angularInertiaWorld = Vector3.Transform(angularInertiaWorld, inverseInertiaTensor);
-                angularInertiaWorld = Vector3.Cross(angularInertiaWorld, this.RelativeContactPosition[i]);
-                angularInertia[i] = Vector3.Dot(angularInertiaWorld, Normal);
+                    // Use the same procedure as for calculating Frictionless
+                    // velocity change to work out the angular inertia.
+                    Vector3 angularInertiaWorld = Vector3.Cross(this.RelativeContactPosition[i], Normal);
+                    angularInertiaWorld = Vector3.Transform(angularInertiaWorld, inverseInertiaTensor);
+                    angularInertiaWorld = Vector3.Cross(angularInertiaWorld, this.RelativeContactPosition[i]);
+                    angularInertia[i] = Vector3.Dot(angularInertiaWorld, Normal);
 
-                // The linear component is simply the inverse mass
-                linearInertia[i] = body[i].InverseMass;
+                    // The linear component is simply the inverse mass
+                    linearInertia[i] = body[i].InverseMass;
 
-                // Keep track of the total inertia from all components
-                totalInertia += linearInertia[i] + angularInertia[i];
+                    // Keep track of the total inertia from all components
+                    totalInertia += linearInertia[i] + angularInertia[i];
 
-                // We break the loop here so that the totalInertia value is
-                // completely calculated (by both iterations) before
-                // continuing.
-            }
+                    // We break the loop here so that the totalInertia value is
+                    // completely calculated (by both iterations) before
+                    // continuing.
+                }
 
             // Loop through again calculating and applying the changes
             for (uint i = 0; i < 2; i++) if (body[i] != null)
-            {
-                // The linear and angular movements required are in proportion to
-                // the two inverse inertias.
-                float sign = (i == 0) ? 1 : -1;
-                angularMove[i] =
-                    sign * penetration * (angularInertia[i] / totalInertia);
-                linearMove[i] =
-                    sign * penetration * (linearInertia[i] / totalInertia);
-
-                // To avoid angular projections that are too great (when mass is large
-                // but inertia tensor is small) limit the angular move.
-                Vector3 projection = this.RelativeContactPosition[i];
-                projection += Vector3.Multiply(Normal, -this.RelativeContactPosition[i].ScalarProduct(Normal));
-
-                // Use the small angle approximation for the sine of the angle (i.e.
-                // the magnitude would be sine(angularLimit) * projection.magnitude
-                // but we approximate sine(angularLimit) to angularLimit).
-                float maxMagnitude = angularLimit * projection.Length();
-
-                if (angularMove[i] < -maxMagnitude)
                 {
-                    float totalMove = angularMove[i] + linearMove[i];
-                    angularMove[i] = -maxMagnitude;
-                    linearMove[i] = totalMove - angularMove[i];
+                    // The linear and angular movements required are in proportion to
+                    // the two inverse inertias.
+                    float sign = (i == 0) ? 1 : -1;
+                    angularMove[i] =
+                        sign * penetration * (angularInertia[i] / totalInertia);
+                    linearMove[i] =
+                        sign * penetration * (linearInertia[i] / totalInertia);
+
+                    // To avoid angular projections that are too great (when mass is large
+                    // but inertia tensor is small) limit the angular move.
+                    Vector3 projection = this.RelativeContactPosition[i];
+                    projection += Vector3.Multiply(Normal, -this.RelativeContactPosition[i].ScalarProduct(Normal));
+
+                    // Use the small angle approximation for the sine of the angle (i.e.
+                    // the magnitude would be sine(angularLimit) * projection.magnitude
+                    // but we approximate sine(angularLimit) to angularLimit).
+                    float maxMagnitude = angularLimit * projection.Length();
+
+                    if (angularMove[i] < -maxMagnitude)
+                    {
+                        float totalMove = angularMove[i] + linearMove[i];
+                        angularMove[i] = -maxMagnitude;
+                        linearMove[i] = totalMove - angularMove[i];
+                    }
+                    else if (angularMove[i] > maxMagnitude)
+                    {
+                        float totalMove = angularMove[i] + linearMove[i];
+                        angularMove[i] = maxMagnitude;
+                        linearMove[i] = totalMove - angularMove[i];
+                    }
+
+                    // We have the linear amount of movement required by turning
+                    // the rigid body (in angularMove[i]). We now need to
+                    // calculate the desired rotation to achieve that.
+                    if (angularMove[i] == 0)
+                    {
+                        // Easy case - no angular movement means no rotation.
+                        angularChange[i] = Vector3.Zero;
+                    }
+                    else
+                    {
+                        // Work out the direction we'd like to rotate in.
+                        var targetAngularDirection = Vector3.Cross(this.RelativeContactPosition[i], Normal);
+
+                        Matrix4x4 inverseInertiaTensor = body[i].InverseInertiaWorld;
+
+                        // Work out the direction we'd need to rotate to achieve that
+                        angularChange[i] = Vector3.Transform(targetAngularDirection, inverseInertiaTensor)
+                            * (angularMove[i] / angularInertia[i]);
+                    }
+
+                    // Velocity change is easier - it is just the linear movement
+                    // along the contact normal.
+                    linearChange[i] = Normal * linearMove[i];
+
+                    // Now we can start to apply the values we've calculated.
+                    // Apply the linear movement
+                    Vector3 pos = body[i].Transform.Position;
+                    pos += Vector3.Multiply(Normal, linearMove[i]);
+                    body[i].Transform.Position = pos;
+
+                    // And the change in orientation
+                    Quaternion q = body[i].Transform.Orientation;
+                    q = q.ApplyScaledVector(angularChange[i], 1.0f);
+                    body[i].Transform.Orientation = q;
+
+                    if (body[i].Transform.TransformationMatrix.M11 == float.NaN || body[i].Transform.TransformationMatrix.Translation.X > 10000)
+                    {
+                        throw new Exception("Nanners");
+                    }
+
+
+                    // We need to calculate the derived data for any body that is
+                    // asleep, so that the changes are reflected in the object's
+                    // data. Otherwise the resolution will not change the position
+                    // of the object, and the next collision detection round will
+                    // have the same penetration.
+                    if (!body[i].IsAwake)
+                        body[i].UpdateDerivedData();
                 }
-                else if (angularMove[i] > maxMagnitude)
-                {
-                    float totalMove = angularMove[i] + linearMove[i];
-                    angularMove[i] = maxMagnitude;
-                    linearMove[i] = totalMove - angularMove[i];
-                }
-
-                // We have the linear amount of movement required by turning
-                // the rigid body (in angularMove[i]). We now need to
-                // calculate the desired rotation to achieve that.
-                if (angularMove[i] == 0)
-                {
-                    // Easy case - no angular movement means no rotation.
-                    angularChange[i] = Vector3.Zero;
-                }
-                else
-                {
-                    // Work out the direction we'd like to rotate in.
-                    var targetAngularDirection = Vector3.Cross(this.RelativeContactPosition[i], Normal);
-
-                    Matrix4x4 inverseInertiaTensor = body[i].InverseInertiaWorld;
-
-                    // Work out the direction we'd need to rotate to achieve that
-                    angularChange[i] = Vector3.Transform(targetAngularDirection, inverseInertiaTensor) 
-                        * (angularMove[i] / angularInertia[i]);
-                }
-
-                // Velocity change is easier - it is just the linear movement
-                // along the contact normal.
-                linearChange[i] = Normal * linearMove[i];
-
-                // Now we can start to apply the values we've calculated.
-                // Apply the linear movement
-                Vector3 pos = body[i].Transform.Position;
-                pos += Vector3.Multiply(Normal, linearMove[i]);
-                body[i].Transform.Position = pos;
-
-                // And the change in orientation
-                Quaternion q = body[i].Transform.Orientation;
-                q = q.ApplyScaledVector(angularChange[i], 1.0f);
-                body[i].Transform.Orientation = q;
-
-
-                // We need to calculate the derived data for any body that is
-                // asleep, so that the changes are reflected in the object's
-                // data. Otherwise the resolution will not change the position
-                // of the object, and the next collision detection round will
-                // have the same penetration.
-                if (!body[i].IsAwake) 
-                    body[i].UpdateDerivedData();
-            }
         }
     }
 }

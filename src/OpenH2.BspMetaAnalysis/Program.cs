@@ -6,6 +6,8 @@ using System.Drawing;
 using System;
 using System.Collections.Generic;
 using OpenH2.Core.Tags;
+using OpenH2.Core.Representations;
+using System.Numerics;
 
 namespace OpenH2.BspMetaAnalysis
 {
@@ -13,39 +15,137 @@ namespace OpenH2.BspMetaAnalysis
     {
         static void Main(string[] args)
         {
-            var mapNames = new string[]
-            {
-                @"D:\H2vMaps\zanzibar.map"
-            };
+            var mapName = @"D:\H2vMaps\containment.map";
 
-            var metas = mapNames.Select(s =>
-            {
-                var fac = new MapFactory(Path.GetDirectoryName(s), new MaterialFactory(Environment.CurrentDirectory));
-                using (var fs = new FileStream(s, FileMode.Open))
-                    return fac.FromFile(fs);
-            }).ToDictionary(s => s.Header.Name, s => s);
+            H2vMap map;
 
-            var file = File.OpenRead(mapNames[0]);
+            var fac = new MapFactory(Path.GetDirectoryName(mapName), new MaterialFactory(Environment.CurrentDirectory + "\\Configs"));
+            using (var fs = new FileStream(mapName, FileMode.Open))
+                map = fac.FromFile(fs);
 
-            BlkhScanner.ScanBlocks(file);
-
-            Console.ReadLine();
-            return;
-
-            var ascension = metas["zanzibar"];
-
-            var bsps = ascension.GetLocalTagsOfType<BspTag>().ToArray();
+            var bsps = map.GetLocalTagsOfType<BspTag>().ToArray();
 
             for(var i = 0; i < bsps.Count(); i++)
             {
                 var bsp = bsps[i];
 
-                var mtl = CreateMtlFileForBsp(bsp);
-                File.WriteAllText($"D:\\bsp_{i}.mtl", mtl);
-
-                var obj = CreatObjFileForBsp(bsp);
-                File.WriteAllText($"D:\\bsp_{i}.obj", $"usemtl bsp_{i}.mtl\r\n" + obj);
+                var obj = CreateCollisionObj(bsp);
+                File.WriteAllText($"D:\\bsp_{i}_collision.obj", obj);
             }
+        }
+
+        public static string CreateCollisionObj(BspTag tag)
+        {
+            var sb = new StringBuilder();
+            var vertsAdded = 0;
+
+            Console.WriteLine($"CollisionInfo lengths: {tag.CollisionInfos.Length}");
+
+            sb.AppendLine("o CollisionMesh");
+
+            foreach (var col in tag.CollisionInfos)
+            {
+                var nextFaceSlot = 0;
+                var faceTexLookup = new Dictionary<int, int>();
+
+                foreach(var face in col.Faces)
+                {
+                    if(faceTexLookup.ContainsKey(face.ShaderIndex))
+                    {
+                        continue;
+                    }
+
+                    faceTexLookup.Add(face.ShaderIndex, nextFaceSlot + 1);
+                    nextFaceSlot++;
+                }
+
+                for(var i = 0; i < nextFaceSlot; i++)
+                {
+                    sb.AppendLine($"vt 0.5 {(i / (float)nextFaceSlot).ToString("0.000000")}");
+                }
+
+
+                var faceIndex = 0;
+                for(; faceIndex < col.Faces.Length; faceIndex++)
+                {
+                    var face = col.Faces[faceIndex];
+                    var verts = new List<ushort>(8);
+
+                    ushort edgeIndex = face.FirstEdge; 
+                    do
+                    {
+                        var edge = col.HalfEdges[edgeIndex];
+
+                        verts.Add(edge.Face0 == faceIndex
+                            ? edge.Vertex0
+                            : edge.Vertex1);
+
+                        edgeIndex = edge.Face0 == faceIndex 
+                            ? edge.NextEdge
+                            : edge.PrevEdge;
+
+                    } while (edgeIndex != face.FirstEdge);
+
+                    var faceTexCoord = faceTexLookup[face.ShaderIndex];
+
+                    foreach (var index in verts)
+                    {
+                        var vert = col.Verticies[index];
+                        sb.AppendLine($"v {vert.x.ToString("0.000000")} {vert.y.ToString("0.000000")} {vert.z.ToString("0.000000")}");
+                    }
+
+                    sb.Append($"f");
+
+                    foreach(var vert in verts)
+                    {
+                        sb.Append(" ");
+                        sb.Append($"{++vertsAdded}/{faceTexCoord}");
+                    }
+
+                    sb.AppendLine();
+                }
+            }
+
+
+            return sb.ToString();
+        }
+
+        public static string CreatePlanesObj(BspTag tag)
+        {
+            var sb = new StringBuilder();
+            var vertsAdded = 0;
+
+            Console.WriteLine($"CollisionInfo lengths: {tag.CollisionInfos.Length}");
+
+            sb.AppendLine("o CollisionPlanes");
+
+            foreach(var col in tag.CollisionInfos)
+            {
+                foreach(var plane in col.Planes)
+                {
+                    var centroid = plane.Normal * plane.Distance;
+
+                    // Use arbitrary vector to get tangent vector to normal
+                    var tempVec = Vector3.Normalize(new Vector3(plane.Normal.X + 1, plane.Normal.Y, plane.Normal.Z));
+                    var tangent = Vector3.Normalize(Vector3.Cross(plane.Normal, tempVec));
+                    var bitangent = Vector3.Cross(plane.Normal, tangent);
+
+                    var upperRight = centroid + tangent + bitangent;
+                    var lowerRight = centroid - tangent + bitangent;
+                    var upperLeft = centroid + tangent - bitangent;
+                    var lowerLeft = centroid - tangent - bitangent;
+
+                    sb.AppendLine($"v {upperRight.X.ToString("0.000000")} {upperRight.Y.ToString("0.000000")} {upperRight.Z.ToString("0.000000")}");
+                    sb.AppendLine($"v {lowerRight.X.ToString("0.000000")} {lowerRight.Y.ToString("0.000000")} {lowerRight.Z.ToString("0.000000")}");
+                    sb.AppendLine($"v {lowerLeft.X.ToString("0.000000")} {lowerLeft.Y.ToString("0.000000")} {lowerLeft.Z.ToString("0.000000")}");
+                    sb.AppendLine($"v {upperLeft.X.ToString("0.000000")} {upperLeft.Y.ToString("0.000000")} {upperLeft.Z.ToString("0.000000")}");
+
+                    sb.AppendLine($"f {++vertsAdded} {++vertsAdded} {++vertsAdded} {++vertsAdded}");
+                }
+            }
+
+
+            return sb.ToString();
         }
 
         public static string CreateMtlFileForBsp(BspTag tag)

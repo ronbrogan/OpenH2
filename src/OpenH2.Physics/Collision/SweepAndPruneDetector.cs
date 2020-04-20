@@ -1,9 +1,7 @@
 ﻿using OpenH2.Foundation.Physics;
 using OpenH2.Physics.Abstractions;
-using System;
 using System.Collections.Generic;
 using System.Numerics;
-using System.Text;
 
 namespace OpenH2.Physics.Collision
 {
@@ -17,7 +15,7 @@ namespace OpenH2.Physics.Collision
         }
 
         // REF: Ericson p337
-        public IBody[] DetectCandidateCollisions(IPhysicsWorld world, IList<IBody> bodies)
+        public IList<IBody> DetectCandidateCollisions(IPhysicsWorld world, IList<IBody> bodies)
         {
             var candidates = new List<IBody>(bodies.Count);
 
@@ -29,9 +27,9 @@ namespace OpenH2.Physics.Collision
 
             for(var i = 0; i < bodies.Count; i++)
             {
-                var bounds = bodies[i].Collider.Bounds;
+                var bounds = bodies[i].Bounds;
 
-                var p = 0.5f * (bounds.Min() + bounds.Max());
+                var p = 0.5f * (bounds.Min + bounds.Max);
 
                 s[0] += p.X;
                 s2[0] += p.X * p.X;
@@ -43,18 +41,26 @@ namespace OpenH2.Physics.Collision
                 for (var j = i + 1; j < bodies.Count; j++)
                 {
 
-                    var a = bodies[j].Collider.Bounds;
-                    var b = bodies[i].Collider.Bounds;
+                    var a = bodies[j];
+                    var b = bodies[i];
 
-                    if (SortAxis(a.Min()) > SortAxis(b.Max()))
+                    var aBounds = a.Bounds;
+                    var bBounds = b.Bounds;
+
+                    if(a.IsStatic && b.IsStatic)
+                    {
+                        continue;
+                    }
+
+                    if (SortAxis(aBounds.Min) > SortAxis(bBounds.Max))
                     {
                         break;
                     }
 
-                    if(OverlapBounds(a, b))
+                    if(OverlapBounds(aBounds, bBounds))
                     {
-                        candidates.Add(bodies[j]);
-                        candidates.Add(bodies[i]);
+                        candidates.Add(a);
+                        candidates.Add(b);
                     }
                 }
             }
@@ -63,7 +69,7 @@ namespace OpenH2.Physics.Collision
             if (v[1] > v[0]) AxisSelector = 1;
             if (v[2] > v[AxisSelector]) AxisSelector = 2;
 
-            return candidates.ToArray();
+            return candidates;
         }
 
         private float SortAxis(Vector3 v)
@@ -78,7 +84,11 @@ namespace OpenH2.Physics.Collision
 
         bool OverlapBounds(ISweepableBounds a, ISweepableBounds b)
         {
-            return true;
+            var distance = a.Center - b.Center;
+
+            var radii = a.Radius + b.Radius;
+
+            return distance.Length() < radii;
         }
 
         // TODO: current list is provided in no particular order, if we can persist this ordering between frames, we can get better perf here
@@ -90,7 +100,7 @@ namespace OpenH2.Physics.Collision
                 var key = bodies[i];
                 var j = i - 1;
 
-                while(j >= 0 && SortAxis(bodies[j].Collider.Bounds.Min()) > SortAxis(key.Collider.Bounds.Min()))
+                while(j >= 0 && SortAxis(bodies[j].Bounds.Min) > SortAxis(key.Bounds.Min))
                 {
                     bodies[j + 1] = bodies[j];
                     j--;

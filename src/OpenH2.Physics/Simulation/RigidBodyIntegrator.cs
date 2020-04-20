@@ -2,6 +2,7 @@
 using OpenH2.Foundation.Physics;
 using OpenH2.Physics.Abstractions;
 using System;
+using System.Diagnostics;
 using System.Numerics;
 
 namespace OpenH2.Physics.Simulation
@@ -15,6 +16,11 @@ namespace OpenH2.Physics.Simulation
         public void Integrate(IRigidBody body, float timestep)
         {
             if (!body.IsAwake) return;
+
+            if (body.ForceAccumulator.X > 100 || body.TorqueAccumulator.X > 100)
+            {
+                Debugger.Break();
+            }
 
             // Calculate linear acceleration from force inputs.
             body.PreviousAcceleration = body.Acceleration;
@@ -40,6 +46,11 @@ namespace OpenH2.Physics.Simulation
 
             // Update angular position.
             body.Transform.Orientation = body.Transform.Orientation.ApplyScaledVector(body.AngularVelocity, timestep);
+
+            if(body.Transform.TransformationMatrix.M11 == float.NaN || body.Transform.TransformationMatrix.Translation.X > 10000)
+            {
+                throw new Exception("NaNners");
+            }
 
             // Normalise the orientation, and update the matrices with the new
             // position and orientation

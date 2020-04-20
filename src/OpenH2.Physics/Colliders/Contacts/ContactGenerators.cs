@@ -140,12 +140,12 @@ namespace OpenH2.Physics.Colliders.Contacts
                     if (i == oneAxisIndex)
                         ptOnOneEdge = ptOnOneEdge.Set(i, 0);
                     else if (Vector3.Dot(one.GetAxis(i), axis) > 0)
-                        ptOnOneEdge = ptOnOneEdge.Set(i, -ptOnOneEdge.Get(i));
+                        ptOnOneEdge = ptOnOneEdge.Set(i, -ptOnOneEdge.Axis(i));
 
                     if (i == twoAxisIndex)
                         ptOnTwoEdge = ptOnTwoEdge.Set(i, 0);
                     else if (Vector3.Dot(two.GetAxis(i), axis) < 0)
-                        ptOnTwoEdge = ptOnTwoEdge.Set(i, -ptOnTwoEdge.Get(i));
+                        ptOnTwoEdge = ptOnTwoEdge.Set(i, -ptOnTwoEdge.Axis(i));
                 }
 
                 // Move them into world coordinates (they are already oriented
@@ -157,8 +157,8 @@ namespace OpenH2.Physics.Colliders.Contacts
                 // We need to find out point of closest approach of the two
                 // line-segments.
                 Vector3 vertex = NumericsExtensions.ContactPoint(
-                    ptOnOneEdge, oneAxis, one.HalfWidths.Get(oneAxisIndex),
-                    ptOnTwoEdge, twoAxis, two.HalfWidths.Get(twoAxisIndex),
+                    ptOnOneEdge, oneAxis, one.HalfWidths.Axis(oneAxisIndex),
+                    ptOnTwoEdge, twoAxis, two.HalfWidths.Axis(twoAxisIndex),
                     bestSingleAxis > 2);
 
                 // We can fill the contact.
@@ -167,7 +167,7 @@ namespace OpenH2.Physics.Colliders.Contacts
                     Point = vertex,
                     Normal = axis,
                     Penetration = pen,
-                    Friction = 0f,
+                    Friction = 1f,
                     Restitution = 0.1f
                 };
 

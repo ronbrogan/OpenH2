@@ -4,6 +4,7 @@ using OpenH2.Engine.Components;
 using OpenH2.Engine.Stores;
 using OpenH2.Foundation;
 using OpenH2.Foundation.Physics;
+using OpenH2.Physics.Colliders;
 using OpenH2.Physics.Simulation;
 using System;
 using System.Collections.Generic;
@@ -23,6 +24,7 @@ namespace OpenH2.Engine.Systems
         public bool ShouldStep = false;
         public bool DebugContacts = true;
 
+        private List<IBody> levelGeometry = new List<IBody>();
         private Mesh<BitmapTag> DebugMesh;
         private Model<BitmapTag> DebugModel;
 
@@ -30,7 +32,7 @@ namespace OpenH2.Engine.Systems
         {
             this.Integrator = new RigidBodyIntegrator();
             this.Simulator = new IterativePhysicsSimulator(10);
-
+            
 
             DebugMesh = new Mesh<BitmapTag>()
             {
@@ -47,14 +49,23 @@ namespace OpenH2.Engine.Systems
             };
         }
 
+        public override void Initialize()
+        {
+            this.levelGeometry = world.Components<StaticTerrainComponent>()
+                .SelectMany(t => t.Collision)
+                .ToList<IBody>();
+
+            this.levelGeometry.AddRange(world.Components<StaticGeometryComponent>().ToList<IBody>());
+        }
+
         public override void Update(double timestep)
         {
             if (TakeStep() == false)
                 return;
 
-            var allBodies = new List<IBody>();
-
             var rigidBodies = this.world.Components<RigidBodyComponent>();
+
+            var allBodies = new List<IBody>(rigidBodies.Count + this.levelGeometry.Count);
 
             foreach(var body in rigidBodies)
             {
@@ -62,7 +73,7 @@ namespace OpenH2.Engine.Systems
                 allBodies.Add(body);
             }
 
-            allBodies.AddRange(this.world.Components<StaticGeometryComponent>());
+            allBodies.AddRange(this.levelGeometry);
 
             var contacts = this.Simulator.DetectCollisions(this.world, allBodies);
 

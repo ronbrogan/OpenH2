@@ -96,18 +96,14 @@ namespace OpenH2.Engine
             {
                 Collider = new PlaneCollider()
                 {
-                    Bounds = new Physics.Bounds.AxisAlignedBoundingBox()
-                    {
-                        Least = new Vector3(-100, -100, -1),
-                        Most = new Vector3(100, 100, 1)
-                    },
+                    Bounds = new Physics.Bounds.AxisAlignedBoundingBox(new Vector3(-100, -100, -1), new Vector3(100, 100, 1)),
                     Distance = 1,
                     Normal = new Vector3(0, 0, 1)
                 },
                 Transform = floorXform
             };
             floor.SetComponents(new Component[] { floorGeom, floorXform });
-            scene.AddEntity(floor);
+            //scene.AddEntity(floor);
 
             world.LoadScene(scene);
         }

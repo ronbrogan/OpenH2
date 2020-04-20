@@ -9,10 +9,11 @@ namespace OpenH2.Engine.Components
         {
         }
 
-        public bool IsAwake { get; set; } = true;
+        public bool IsAwake { get; } = true;
         public bool IsStatic => true;
         public ICollider Collider { get; set; }
         public ITransform Transform { get; set; }
-
+        public ISweepableBounds Bounds => Collider.Bounds;
+        public void Wake() { }
     }
 }

@@ -7,7 +7,9 @@ namespace OpenH2.Foundation.Physics
 {
     public interface ISweepableBounds
     {
-        Vector3 Min();
-        Vector3 Max();
+        Vector3 Min { get; }
+        Vector3 Max { get; }
+        float Radius { get; }
+        Vector3 Center { get; }
     }
 }

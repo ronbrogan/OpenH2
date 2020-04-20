@@ -7,6 +7,6 @@ namespace OpenH2.Physics.Abstractions
 {
     public interface IContactGenerator
     {
-        Contact[] DetectCollisions(IBody[] candidatePairs);
+        Contact[] DetectCollisions(IList<IBody> candidatePairs);
     }
 }

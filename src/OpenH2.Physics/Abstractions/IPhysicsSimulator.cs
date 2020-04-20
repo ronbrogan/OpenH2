@@ -5,7 +5,7 @@ using System.Text;
 
 namespace OpenH2.Physics.Abstractions
 {
-    public interface IPhysicsSimulator
+    public interface IPhysicsSimulator<TGeomCollider>
     {
         Contact[] DetectCollisions(IPhysicsWorld world, IList<IBody> bodies);
 

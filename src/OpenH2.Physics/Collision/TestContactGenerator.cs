@@ -6,11 +6,11 @@ namespace OpenH2.Physics.Collision
 {
     public class TestContactGenerator : IContactGenerator
     {
-        public Contact[] DetectCollisions(IBody[] candidates)
+        public Contact[] DetectCollisions(IList<IBody> candidates)
         {
-            var contacts = new List<Contact>(candidates.Length);
+            var contacts = new List<Contact>(candidates.Count);
 
-            for (var i = 0; i < candidates.Length / 2; i++)
+            for (var i = 0; i < candidates.Count / 2; i++)
             {
                 var a = candidates[i * 2];
                 var b = candidates[i * 2 + 1];

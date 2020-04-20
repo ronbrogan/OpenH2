@@ -11,9 +11,10 @@ namespace OpenH2.Engine.Components
         public Vector3 ForceAccumulator { get; set; }
         public Vector3 TorqueAccumulator { get; set; }
 
-        public bool IsAwake { get; set; } = true;
+        public bool IsAwake { get; private set; } = true;
         public bool IsStatic => false;
         public ICollider Collider { get; set; }
+        public ISweepableBounds Bounds => this.Collider.Bounds;
         public ITransform Transform { get; }
 
         // "Constant" attributes
@@ -52,6 +53,9 @@ namespace OpenH2.Engine.Components
             inertiaTensor.M43 = 0;
             inertiaTensor.M44 = 1;
 
+            // NOCOMMIT
+            inertiaTensor = Matrix4x4.Identity;
+
             if (Matrix4x4.Invert(inertiaTensor, out var inv))
             {
                 this.InverseInertiaBody = inv;
@@ -66,6 +70,11 @@ namespace OpenH2.Engine.Components
             var localWorld = InverseInertiaWorld;
             TransformInertiaTensor(InverseInertiaBody, Transform.TransformationMatrix, ref localWorld);
             InverseInertiaWorld = localWorld;
+        }
+
+        public void Wake()
+        {
+            this.IsAwake = true;
         }
 
         public void AddVelocity(Vector3 deltaV)

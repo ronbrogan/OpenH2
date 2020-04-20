@@ -5,7 +5,7 @@ namespace OpenH2.Physics.Colliders.Extensions
 {
     public static class NumericsExtensions
     {
-        public static float Get(this Vector3 vec, int axis)
+        public static float Axis(this Vector3 vec, int axis)
         {
             switch (axis)
             {

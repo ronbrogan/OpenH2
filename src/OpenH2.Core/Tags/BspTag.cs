@@ -31,6 +31,25 @@ namespace OpenH2.Core.Tags
         public CollisionInfo[] CollisionInfos { get; set; }
 
 
+        [PrimitiveValue(52)]
+        public float MinX { get; set; }
+
+        [PrimitiveValue(56)]
+        public float MaxX { get; set; }
+
+        [PrimitiveValue(60)]
+        public float MinY { get; set; }
+
+        [PrimitiveValue(64)]
+        public float MaxY { get; set; }
+
+        [PrimitiveValue(68)]
+        public float MinZ { get; set; }
+
+        [PrimitiveValue(72)]
+        public float MaxZ { get; set; }
+
+
         //[InternalReferenceValue(76)]
         //public object[] MiscObject1Cao { get; set; }
 
@@ -201,7 +220,7 @@ namespace OpenH2.Core.Tags
             [ReferenceArray(16)]
             public RawObject3[] RawObject3s { get; set; }
 
-            [ReferenceArray(24)]
+            //[ReferenceArray(24)]
             public RawObject4[] RawObject4s { get; set; }
 
             [ReferenceArray(32)]
@@ -297,10 +316,13 @@ namespace OpenH2.Core.Tags
                 public ushort FirstEdge { get; set; }
 
                 [PrimitiveValue(4)]
-                public ushort val3 { get; set; }
+                public byte val3 { get; set; }
+
+                [PrimitiveValue(5)]
+                public byte val3_2 { get; set; }
 
                 [PrimitiveValue(6)]
-                public ushort val4 { get; set; }
+                public ushort ShaderIndex { get; set; }
             }
 
             [FixedLength(12)]

@@ -16,6 +16,11 @@ namespace OpenH2.Core.Architecture
         public virtual void LoadScene(Scene scene)
         {
             this.Scene = scene;
+
+            foreach(var system in Systems)
+            {
+                system.Initialize();
+            }
         }
 
         public List<T> Components<T>() where T : Component
