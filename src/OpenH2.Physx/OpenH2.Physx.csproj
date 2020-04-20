@@ -1,0 +1,31 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netcoreapp3.1</TargetFramework>
+	<OutputType>Exe</OutputType>
+  </PropertyGroup>
+
+    <ItemGroup>
+        <Reference Include="..\..\lib\physxdotnetcore\PhysX.NetCore.dll"></Reference>
+        <None Include="..\..\lib\physxdotnetcore\Ijwhost.dll">
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</None>
+		<None Include="..\..\lib\physx\win64\PhysX_64.dll">
+			<Link>PhysX_64.dll</Link>
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</None>
+		<None Include="..\..\lib\physx\win64\PhysXCommon_64.dll">
+			<Link>PhysXCommon_64.dll</Link>
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</None>
+		<None Include="..\..\lib\physx\win64\PhysXCooking_64.dll">
+			<Link>PhysXCooking_64.dll</Link>
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</None>
+		<None Include="..\..\lib\physx\win64\PhysXFoundation_64.dll">
+			<Link>PhysXFoundation_64.dll</Link>
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</None>
+    </ItemGroup>
+
+</Project>
