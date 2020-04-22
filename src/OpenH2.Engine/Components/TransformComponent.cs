@@ -7,8 +7,6 @@ namespace OpenH2.Engine.Components
 {
     public class TransformComponent : Component, ITransform
     {
-        private Vector3 position = Vector3.Zero;
-
         public TransformComponent(Entity parent, Vector3 pos, Quaternion orientation) : base(parent)
         {
             this.Position = pos;
@@ -33,13 +31,7 @@ namespace OpenH2.Engine.Components
             UpdateDerivedData();
         }
 
-        public Vector3 Position { get => position; set 
-            {
-                if (value.X > 10000 || value.X == float.NaN)
-                    throw new Exception();
-
-                position = value; 
-            } }
+        public Vector3 Position { get; set; } = Vector3.Zero; 
         public Quaternion Orientation { get; set; } = Quaternion.Identity;
         public Vector3 Scale { get; set; } = Vector3.One;
 
@@ -62,12 +54,16 @@ namespace OpenH2.Engine.Components
 
             var result = Matrix4x4.Multiply(scaleRotate, translate);
 
-            if (result.M11 == float.NaN || result.Translation.X > 10000)
-            {
-                throw new System.Exception("Nanners");
-            }
-
             return result;
+        }
+
+        public void UseTransformationMatrix(Matrix4x4 mat)
+        {
+            this.TransformationMatrix = mat;
+            Matrix4x4.Decompose(mat, out var s, out var r, out var p);
+            this.Scale = s;
+            this.Orientation = r;
+            this.Position = p;
         }
     }
 }

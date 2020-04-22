@@ -10,5 +10,6 @@ namespace OpenH2.Foundation.Physics
         Matrix4x4 TransformationMatrix { get; }
 
         void UpdateDerivedData();
+        void UseTransformationMatrix(Matrix4x4 mat);
     }
 }

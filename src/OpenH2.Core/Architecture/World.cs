@@ -19,7 +19,7 @@ namespace OpenH2.Core.Architecture
 
             foreach(var system in Systems)
             {
-                system.Initialize();
+                system.Initialize(scene);
             }
         }
 

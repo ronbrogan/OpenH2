@@ -31,5 +31,9 @@ namespace OpenH2.Foundation
         public void UpdateDerivedData()
         {
         }
+
+        public void UseTransformationMatrix(Matrix4x4 mat)
+        {
+        }
     }
 }

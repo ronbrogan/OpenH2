@@ -2,12 +2,11 @@
 
   <PropertyGroup>
     <TargetFramework>netcoreapp3.1</TargetFramework>
-	<OutputType>Exe</OutputType>
   </PropertyGroup>
 
-    <ItemGroup>
-        <Reference Include="..\..\lib\physxdotnetcore\PhysX.NetCore.dll"></Reference>
-        <None Include="..\..\lib\physxdotnetcore\Ijwhost.dll">
+	<ItemGroup>
+		<Reference Include="..\..\lib\physxdotnetcore\PhysX.NetCore.dll"></Reference>
+		<None Include="..\..\lib\physxdotnetcore\Ijwhost.dll">
 			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 		</None>
 		<None Include="..\..\lib\physx\win64\PhysX_64.dll">
@@ -26,6 +25,6 @@
 			<Link>PhysXFoundation_64.dll</Link>
 			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 		</None>
-    </ItemGroup>
+	</ItemGroup>
 
 </Project>

@@ -15,6 +15,6 @@
         /// Called when the system should update any cached values from the world
         /// TODO: hookup to some sort of callback/listener system
         /// </summary>
-        public virtual void Initialize() { }
+        public virtual void Initialize(Scene scene) { }
     }
 }

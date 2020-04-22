@@ -53,9 +53,6 @@ namespace OpenH2.Engine.Components
             inertiaTensor.M43 = 0;
             inertiaTensor.M44 = 1;
 
-            // NOCOMMIT
-            inertiaTensor = Matrix4x4.Identity;
-
             if (Matrix4x4.Invert(inertiaTensor, out var inv))
             {
                 this.InverseInertiaBody = inv;
