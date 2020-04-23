@@ -5,6 +5,7 @@ using OpenH2.Engine.Stores;
 using OpenH2.Foundation;
 using OpenH2.Foundation.Physics;
 using PhysX;
+using PhysX.VisualDebugger;
 using System;
 using System.Collections.Generic;
 using System.Numerics;
@@ -21,33 +22,34 @@ namespace OpenH2.Engine.Systems
         private PxScene physxScene;
         private Cooking cooker;
         private Material defaultMat;
-
-        private Dictionary<IRigidBody, RigidActor> ActorMap;
-        private Dictionary<RigidActor, IRigidBody> IBodyMap;
+        private Pvd pvd;
 
 
         private InputStore input;
         public bool StepMode = true;
         public bool ShouldStep = false;
-        public bool DebugContacts = false;
-
-        private Mesh<BitmapTag> DebugMesh;
-        private Model<BitmapTag> DebugModel;
 
         public PhysicsSystem(World world) : base(world)
         {
             // Setup PhysX infra here
 
             this.physxFoundation = new PxFoundation(new ConsoleErrorCallback());
+
+#if DEBUG
+            pvd = new Pvd(this.physxFoundation);
+            pvd.Connect("localhost", 5425, TimeSpan.FromSeconds(10), InstrumentationFlag.All);
+            this.physxPhysics = new PxPhysics(this.physxFoundation, false, pvd);
+#else
             this.physxPhysics = new PxPhysics(this.physxFoundation);
-            this.defaultMat = this.physxPhysics.CreateMaterial(1, 1, 0.1f);
-            ActorMap = new Dictionary<IRigidBody, RigidActor>();
-            IBodyMap = new Dictionary<RigidActor, IRigidBody>();
+#endif
+            this.defaultMat = this.physxPhysics.CreateMaterial(0.5f, 0.5f, 0.1f);            
 
             var sceneDesc = new SceneDesc()
             {
                 BroadPhaseType = BroadPhaseType.SweepAndPrune,
-                Gravity = world.Gravity
+                Gravity = world.Gravity,
+                Flags = SceneFlag.EnableStabilization,
+                SolverType = SolverType.TGS
             };
 
             this.physxScene = this.physxPhysics.CreateScene(sceneDesc);
@@ -117,25 +119,26 @@ namespace OpenH2.Engine.Systems
 
         public void AddRigidBodyComponent(RigidBodyComponent component)
         {
-            if(ActorMap.ContainsKey(component))
-            {
-                return;
-            }
-
             var actor = this.physxPhysics.CreateRigidDynamic(component.Transform.TransformationMatrix);
+            actor.UserData = component;
+            actor.Name = component.Parent.Id.ToString();
+            actor.CenterOfMassLocalPose = Matrix4x4.CreateTranslation(component.CenterOfMass);
+            actor.MassSpaceInertiaTensor = MathUtil.Diagonalize(component.InertiaTensor);
+            actor.Mass = component.Mass;
 
-            if(component.Collider is IVertexBasedCollider vertCollider)
+            if (component.Collider is IVertexBasedCollider vertCollider)
             {
                 var desc = new ConvexMeshDesc() { Flags = ConvexFlag.ComputeConvex };
                 desc.SetPositions(vertCollider.Vertices);
                 var mesh = this.physxPhysics.CreateConvexMesh(this.cooker, desc);
                 var geom = new ConvexMeshGeometry(mesh);
+                // TODO: re-use shared shapes instead of creating exclusive
                 RigidActorExt.CreateExclusiveShape(actor, geom, defaultMat);
             }
 
+            
+
             this.physxScene.AddActor(actor);
-            ActorMap.Add(component, actor);
-            IBodyMap.Add(actor, component);
         }
 
         public override void Update(double timestep)
@@ -148,10 +151,10 @@ namespace OpenH2.Engine.Systems
             var rigidBodies = this.world.Components<RigidBodyComponent>();
             foreach(var rigid in rigidBodies)
             {
-                if(ActorMap.TryGetValue(rigid, out var actor) && actor is RigidDynamic dynamic)
+                //if(ActorMap.TryGetValue(rigid, out var actor) && actor is RigidDynamic dynamic)
                 {
-                    dynamic.AddForce(rigid.ForceAccumulator);
-                    dynamic.AddTorque(rigid.TorqueAccumulator);
+                    //dynamic.AddForce(rigid.ForceAccumulator);
+                    //dynamic.AddTorque(rigid.TorqueAccumulator);
                 }
             }
 
@@ -162,13 +165,9 @@ namespace OpenH2.Engine.Systems
             // Update all engine transforms, reset forces?
             foreach (var actor in this.physxScene.RigidDynamicActors)
             {
-                if(IBodyMap.TryGetValue(actor, out var body) && body is RigidBodyComponent component)
+                if(actor.UserData is RigidBodyComponent component)
                 {
                     component.Transform.UseTransformationMatrix(actor.GlobalPose);
-                    component.ResetAccumulators(); // ? needed, remove?
-
-                    actor.ClearForce();
-                    actor.ClearTorque();
                 }
             }
         }
@@ -185,46 +184,10 @@ namespace OpenH2.Engine.Systems
             {
                 ShouldStep = input.Keyboard.IsKeyDown(OpenTK.Input.Key.P);
 
-                if (ShouldStep == false)
-                {
-                    // Render debug contacts from previous iteration
-                    if (DebugContacts)
-                    {
-                        var renderstore = this.world.GetGlobalResource<RenderListStore>();
-                        renderstore.AddModel(DebugModel, Matrix4x4.Identity);
-                    }
-
-                    return false;
-                }
+                return ShouldStep;
             }
 
             return true;
-        }
-
-        private void UpdateAndRenderContacts(Contact[] contacts)
-        {
-            var renderstore = this.world.GetGlobalResource<RenderListStore>();
-
-            // Ensure there's enough space + some padding for future growth
-            if (DebugMesh.Verticies.Length < contacts.Length)
-            {
-                DebugMesh.Verticies = new VertexFormat[contacts.Length + 64];
-                DebugMesh.Indicies = new int[contacts.Length + 64];
-            }
-
-            for (var i = 0; i < contacts.Length; i++)
-            {
-                var p = contacts[i];
-                DebugMesh.Verticies[i] = new VertexFormat(p.Point, Vector2.Zero, p.Normal);
-                DebugMesh.Indicies[i] = i;
-            }
-
-            // Set rest of indices array to 0
-            Array.Clear(DebugMesh.Indicies, contacts.Length, DebugMesh.Indicies.Length - contacts.Length);
-
-            DebugMesh.Dirty = true;
-
-            renderstore.AddModel(DebugModel, Matrix4x4.Identity);
         }
 
         private class ConsoleErrorCallback : ErrorCallback

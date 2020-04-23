@@ -89,22 +89,6 @@ namespace OpenH2.Engine
             watch.Stop();
             Console.WriteLine($"Loading map took {watch.ElapsedMilliseconds / 1000f} seconds");
 
-
-            var floor = new Scenery();
-            var floorXform = new TransformComponent(floor, Vector3.Zero);
-            var floorGeom = new StaticGeometryComponent(floor)
-            {
-                Collider = new PlaneCollider()
-                {
-                    Bounds = new Physics.Bounds.AxisAlignedBoundingBox(new Vector3(-100, -100, -1), new Vector3(100, 100, 1)),
-                    Distance = 1,
-                    Normal = new Vector3(0, 0, 1)
-                },
-                Transform = floorXform
-            };
-            floor.SetComponents(new Component[] { floorGeom, floorXform });
-            //scene.AddEntity(floor);
-
             world.LoadScene(scene);
         }
 
