@@ -4,7 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Text.Json.Serialization;
 
-namespace OpenH2.Core.Tags.Common
+namespace OpenH2.Core.Tags.Common.Models
 {
     public class ModelMesh : IEquatable<ModelMesh>
     {

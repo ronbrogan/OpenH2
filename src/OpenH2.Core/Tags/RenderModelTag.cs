@@ -1,6 +1,6 @@
 ﻿using OpenH2.Core.Offsets;
 using OpenH2.Core.Parsing;
-using OpenH2.Core.Tags.Common;
+using OpenH2.Core.Tags.Common.Models;
 using OpenH2.Core.Tags.Layout;
 using OpenH2.Foundation;
 using System;

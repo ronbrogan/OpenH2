@@ -90,7 +90,7 @@ namespace OpenH2.BspMetaAnalysis
 
                     foreach (var index in verts)
                     {
-                        var vert = col.Verticies[index];
+                        var vert = col.Vertices[index];
                         sb.AppendLine($"v {vert.x.ToString("0.000000")} {vert.y.ToString("0.000000")} {vert.z.ToString("0.000000")}");
                     }
 

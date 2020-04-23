@@ -1,7 +1,7 @@
 ﻿using OpenH2.Core.Representations;
 using OpenH2.Core.Tags.Layout;
 
-namespace OpenH2.Core.Tags.Common
+namespace OpenH2.Core.Tags.Common.Models
 {
     [FixedLength(32)]
     public class ModelShaderReference

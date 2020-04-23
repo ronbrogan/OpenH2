@@ -1,16 +1,23 @@
 ﻿using OpenH2.Foundation.Physics;
-using System;
 using System.Numerics;
 
 namespace OpenH2.Physics.Colliders
 {
     public class ConvexMeshCollider : IVertexBasedCollider
     {
-        public Vector3[] Vertices => throw new NotImplementedException();
+        private readonly ITransform xform;
+        public Vector3[] Vertices { get; private set; }
+
+        public ConvexMeshCollider(ITransform xform, Vector3[] verts)
+        {
+            this.Vertices = verts;
+            this.xform = xform;
+        }
 
         public Vector3[] GetTransformedVertices()
         {
-            throw new NotImplementedException();
+            // TODO: transform or cut method from interface
+            return Vertices;
         }
     }
 }

@@ -1,7 +1,8 @@
 ﻿using OpenH2.Core.Offsets;
 using OpenH2.Core.Parsing;
 using OpenH2.Core.Representations;
-using OpenH2.Core.Tags.Common;
+using OpenH2.Core.Tags.Common.Collision;
+using OpenH2.Core.Tags.Common.Models;
 using OpenH2.Core.Tags.Layout;
 using System;
 using System.Numerics;
@@ -10,7 +11,7 @@ using System.Text.Json.Serialization;
 namespace OpenH2.Core.Tags
 {
     [TagLabel(TagName.sbsp)]
-    public class BspTag : BaseTag
+    public partial class BspTag : BaseTag
     {
         [JsonIgnore]
         public byte[] RawMeta { get; set; }
@@ -209,13 +210,13 @@ namespace OpenH2.Core.Tags
         }
 
         [FixedLength(68)]
-        public class CollisionInfo
+        public partial class CollisionInfo : ICollisionInfo
         {
             [ReferenceArray(0)]
             public Node3D[] Node3Ds { get; set; }
 
             [ReferenceArray(8)]
-            public Plane[] Planes { get; set; }
+            public Common.Collision.Plane[] Planes { get; set; }
 
             [ReferenceArray(16)]
             public RawObject3[] RawObject3s { get; set; }
@@ -233,135 +234,12 @@ namespace OpenH2.Core.Tags
             public HalfEdgeContainer[] HalfEdges { get; set; }
 
             [ReferenceArray(56)]
-            public Vertex[] Verticies { get; set; }
+            public Vertex[] Vertices { get; set; }
 
             [PrimitiveValue(64)]
             public int Unknown { get; set; }
 
-            [FixedLength(8)]
-            public class Node3D
-            {
-                [PrimitiveValue(0)]
-                public ushort PlaneIndex { get; set; }
-
-                [PrimitiveValue(2)]
-                public ushort Left { get; set; }
-
-                [PrimitiveValue(4)]
-                public byte val1 { get; set; }
-
-                [PrimitiveValue(5)]
-                public ushort Right { get; set; }
-
-                [PrimitiveValue(7)]
-                public byte val2 { get; set; }
-            }
-
-            [FixedLength(16)]
-            public class Plane
-            {
-                [PrimitiveValue(0)]
-                public Vector3 Normal { get; set; }
-
-                [PrimitiveValue(12)]
-                public float Distance { get; set; }
-            }
-
-            [FixedLength(4)]
-            public class RawObject3
-            {
-                [PrimitiveValue(0)]
-                public byte val1 { get; set; }
-
-                [PrimitiveValue(1)]
-                public byte val2 { get; set; }
-
-                [PrimitiveValue(2)]
-                public ushort FourIndex { get; set; }
-            }
-
-            [FixedLength(4)]
-            public class RawObject4
-            {
-                [PrimitiveValue(0)]
-                public ushort PlaneIndex { get; set; }
-
-                [PrimitiveValue(2)]
-                public ushort Node2DIndex { get; set; }
-            }
-
-            [FixedLength(16)]
-            public class Node2D
-            {
-                [PrimitiveValue(0)]
-                public Vector2 PlaneNormal { get; set; }
-
-                [PrimitiveValue(8)]
-                public float PlaneDistance { get; set; }
-
-                [PrimitiveValue(12)]
-                public ushort Left { get; set; }
-
-                [PrimitiveValue(14)]
-                public ushort Right { get; set; }
-            }
-
-            [FixedLength(8)]
-            public class Face
-            {
-                [PrimitiveValue(0)]
-                public ushort val1 { get; set; }
-
-                [PrimitiveValue(2)]
-                public ushort FirstEdge { get; set; }
-
-                [PrimitiveValue(4)]
-                public byte val3 { get; set; }
-
-                [PrimitiveValue(5)]
-                public byte val3_2 { get; set; }
-
-                [PrimitiveValue(6)]
-                public ushort ShaderIndex { get; set; }
-            }
-
-            [FixedLength(12)]
-            public class HalfEdgeContainer
-            {
-                [PrimitiveValue(0)]
-                public ushort Vertex0 { get; set; }
-
-                [PrimitiveValue(2)]
-                public ushort Vertex1 { get; set; }
-
-                [PrimitiveValue(4)]
-                public ushort NextEdge { get; set; }
-
-                [PrimitiveValue(6)]
-                public ushort PrevEdge { get; set; }
-
-                [PrimitiveValue(8)]
-                public ushort Face0 { get; set; }
-
-                [PrimitiveValue(10)]
-                public ushort Face1 { get; set; }
-            }
-
-            [FixedLength(16)]
-            public class Vertex
-            {
-                [PrimitiveValue(0)]
-                public float x { get; set; }
-
-                [PrimitiveValue(4)]
-                public float y { get; set; }
-
-                [PrimitiveValue(8)]
-                public float z { get; set; }
-
-                [PrimitiveValue(12)]
-                public int edge { get; set; }
-            }
+            
         }
 
         [FixedLength(36)]

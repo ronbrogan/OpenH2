@@ -7,6 +7,7 @@ using OpenH2.Engine.Entities;
 using OpenH2.Engine.Factories;
 using OpenH2.Foundation;
 using OpenH2.Physics.Colliders;
+using System.Linq;
 using System.Numerics;
 
 namespace OpenH2.Engine.EntityFactories
@@ -47,7 +48,20 @@ namespace OpenH2.Engine.EntityFactories
             }
 
             var body = new RigidBodyComponent(scenery, xform, inertiaTensor, comOffset);
-            body.Collider = new BoxCollider(xform, (most-least)/2, comOffset);
+
+            if (map.TryGetTag(hlmt.ColliderId, out var coll)
+                && coll.ColliderDefinitions.Length > 0
+                && coll.ColliderDefinitions[0].CollisionContainers.Length > 0
+                && coll.ColliderDefinitions[0].CollisionContainers[0].CollisionInfos.Length > 0)
+            {
+                var collision = coll.ColliderDefinitions[0].CollisionContainers[0].CollisionInfos[0];
+
+                body.Collider = new ConvexMeshCollider(xform, collision.Vertices.Select(v => new Vector3(v.x, v.y, v.z)).ToArray());
+            }
+            else
+            {
+                body.Collider = new BoxCollider(xform, (most - least) / 2, comOffset);
+            }
 
             var modelBounds = new BoundsComponent(scenery, least, most);
             var centerOfMass = new BoundsComponent(scenery, comOffset - new Vector3(0.02f), comOffset + new Vector3(0.02f), new Vector4(1f, 1f, 0, 1f));

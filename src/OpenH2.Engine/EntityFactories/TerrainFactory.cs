@@ -1,7 +1,7 @@
 ﻿using OpenH2.Core.Architecture;
 using OpenH2.Core.Representations;
 using OpenH2.Core.Tags;
-using OpenH2.Core.Tags.Common;
+using OpenH2.Core.Tags.Common.Models;
 using OpenH2.Engine.Components;
 using OpenH2.Engine.Entities;
 using OpenH2.Foundation;
@@ -65,7 +65,7 @@ namespace OpenH2.Engine.EntityFactories
         {
             var totalFaces = tag.CollisionInfos.Sum(c => c.Faces.Length);
 
-            List<Vector3> verts = new List<Vector3>(tag.CollisionInfos.Sum(c => c.Verticies.Length));
+            List<Vector3> verts = new List<Vector3>(tag.CollisionInfos.Sum(c => c.Vertices.Length));
             List<int> indices = new List<int>(totalFaces * 4);
 
             for (var i = 0; i < tag.CollisionInfos.Length; i++)
@@ -73,7 +73,7 @@ namespace OpenH2.Engine.EntityFactories
                 var currentVertStart = verts.Count();
 
                 var col = tag.CollisionInfos[i];
-                verts.AddRange(col.Verticies.Select(v => new Vector3(v.x, v.y, v.z)));
+                verts.AddRange(col.Vertices.Select(v => new Vector3(v.x, v.y, v.z)));
 
                 var faceVerts = new List<ushort>(8);
 

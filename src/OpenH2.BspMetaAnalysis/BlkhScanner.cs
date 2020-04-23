@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using OpenH2.Core.Extensions;
 using System.IO;
-using OpenH2.Core.Tags.Common;
+using OpenH2.Core.Tags.Common.Models;
 
 namespace OpenH2.BspMetaAnalysis
 {

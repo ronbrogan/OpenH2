@@ -4,7 +4,7 @@ using OpenH2.Foundation;
 using System;
 using System.Collections.Generic;
 
-namespace OpenH2.Core.Tags.Common
+namespace OpenH2.Core.Tags.Common.Models
 {
     public static class ModelResouceContainerProcessor
     {
@@ -34,7 +34,7 @@ namespace OpenH2.Core.Tags.Common
             var currentResource = 0;
 
             // process part info 0 resource
-            if(container.Header.PartInfoCount > 0)
+            if (container.Header.PartInfoCount > 0)
             {
                 var partData = container.Resources[currentResource].Data.Span;
 
@@ -56,7 +56,7 @@ namespace OpenH2.Core.Tags.Common
             }
 
             // process part info 2 resource
-            if(container.Header.PartInfo2Count > 0)
+            if (container.Header.PartInfo2Count > 0)
             {
                 // Not positive on what this is for, last ushort of the 8 bytes looks to be part index
                 currentResource++;
@@ -69,13 +69,13 @@ namespace OpenH2.Core.Tags.Common
             }
 
             // process indicies resource
-            if(container.Header.IndexCount > 0)
+            if (container.Header.IndexCount > 0)
             {
                 var data = container.Resources[currentResource].Data.Span;
 
                 for (var i = 0; i < container.Header.IndexCount; i++)
                     indices[i] = data.ReadUInt16At(i * 2);
-                
+
                 currentResource++;
             }
 
@@ -100,7 +100,7 @@ namespace OpenH2.Core.Tags.Common
             // process vertex attribute resources
             if (container.Header.VertexComponentCount > 0)
             {
-                if(container.Header.VertexComponentCount >= 1)
+                if (container.Header.VertexComponentCount >= 1)
                 {
                     var posData = container.Resources[currentResource].Data.Span;
 
@@ -157,7 +157,7 @@ namespace OpenH2.Core.Tags.Common
 
             var meshes = new List<ModelMesh>(parts.Count);
 
-            foreach(var part in parts)
+            foreach (var part in parts)
             {
                 meshes.Add(new ModelMesh
                 {
@@ -170,6 +170,6 @@ namespace OpenH2.Core.Tags.Common
             }
 
             return meshes.ToArray();
-        }        
+        }
     }
 }
