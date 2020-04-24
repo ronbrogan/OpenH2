@@ -84,20 +84,22 @@ namespace OpenH2.Engine.Systems
                     Triangles = terrain.TriangleIndices
                 };
 
-                // Avoiding offline cook path for now because
-                //   1. Comments in Physx.Net imply memory leak using streams
-                //   2. I don't want to deal with disk caching cooks yet
-                var finalMesh = this.physxPhysics.CreateTriangleMesh(cooker, meshDesc);
-
-                var meshGeom = new TriangleMeshGeometry(finalMesh);
-
-                var rigid = this.physxPhysics.CreateRigidStatic();
-                RigidActorExt.CreateExclusiveShape(rigid, meshGeom, defaultMat);
-                this.physxScene.AddActor(rigid);
+                var actor = CreateStaticActor(meshDesc);
+                this.physxScene.AddActor(actor);
             }
 
-            var scenery = world.Components<StaticGeometryComponent>();
-            // TODO: other static geom
+            var sceneries = world.Components<StaticGeometryComponent>();
+            foreach(var scenery in sceneries)
+            {
+                var meshDesc = new TriangleMeshDesc()
+                {
+                    Points = scenery.Vertices,
+                    Triangles = scenery.TriangleIndices
+                };
+
+                var actor = CreateStaticActor(meshDesc, scenery.Transform.TransformationMatrix);
+                this.physxScene.AddActor(actor);
+            }
 
             var rigidBodies = this.world.Components<RigidBodyComponent>();
             foreach(var body in rigidBodies)
@@ -120,12 +122,23 @@ namespace OpenH2.Engine.Systems
 
         public void AddRigidBodyComponent(RigidBodyComponent component)
         {
-            var actor = this.physxPhysics.CreateRigidDynamic(component.Transform.TransformationMatrix);
+            RigidActor actor;
+
+            if(component.IsDynamic)
+            {
+                var dynamic = this.physxPhysics.CreateRigidDynamic(component.Transform.TransformationMatrix);
+                dynamic.CenterOfMassLocalPose = Matrix4x4.CreateTranslation(component.CenterOfMass);
+                dynamic.MassSpaceInertiaTensor = MathUtil.Diagonalize(component.InertiaTensor);
+                dynamic.Mass = component.Mass;
+                actor = dynamic;
+            }
+            else
+            {
+                actor = this.physxPhysics.CreateRigidStatic(component.Transform.TransformationMatrix);
+            }
+
             actor.UserData = component;
             actor.Name = component.Parent.Id.ToString();
-            actor.CenterOfMassLocalPose = Matrix4x4.CreateTranslation(component.CenterOfMass);
-            actor.MassSpaceInertiaTensor = MathUtil.Diagonalize(component.InertiaTensor);
-            actor.Mass = component.Mass;
 
             if (component.Collider is IVertexBasedCollider vertCollider)
             {
@@ -199,6 +212,20 @@ namespace OpenH2.Engine.Systems
             }
 
             return true;
+        }
+
+        private Actor CreateStaticActor(TriangleMeshDesc meshDesc, Matrix4x4? transform = null)
+        {
+            // Avoiding offline cook path for now because
+            //   1. Comments in Physx.Net imply memory leak using streams
+            //   2. I don't want to deal with disk caching cooks yet
+            var finalMesh = this.physxPhysics.CreateTriangleMesh(cooker, meshDesc);
+
+            var meshGeom = new TriangleMeshGeometry(finalMesh);
+
+            var rigid = this.physxPhysics.CreateRigidStatic(transform);
+            RigidActorExt.CreateExclusiveShape(rigid, meshGeom, defaultMat);
+            return rigid;
         }
 
         private class ConsoleErrorCallback : ErrorCallback

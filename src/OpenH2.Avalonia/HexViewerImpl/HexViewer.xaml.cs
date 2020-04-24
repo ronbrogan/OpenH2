@@ -14,6 +14,7 @@ using System.Threading.Tasks;
 using Avalonia.Metadata;
 using PropertyChanged;
 using OpenH2.AvaloniaControls.HexViewerImpl;
+using Avalonia.Controls.ApplicationLifetimes;
 
 //[assembly: XmlnsDefinition("https://github.com/ronbrogan/openh2/avaloniacontrols", "OpenH2.AvaloniaControls.HexViewer")]
 namespace OpenH2.AvaloniaControls
@@ -280,9 +281,12 @@ namespace OpenH2.AvaloniaControls
                 Title = "Save Data"
             };
 
-            var path = await dialog.ShowAsync(AvaloniaLocator.Current.GetService<Window>());
+            if(Application.Current.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
+            {
+                var path = await dialog.ShowAsync(desktop.MainWindow);
 
-            File.WriteAllBytes(path, this.allData.ToArray());
+                File.WriteAllBytes(path, this.allData.ToArray());
+            }
         }
 
         private void GotoBox_KeyDown(object sender, Avalonia.Input.KeyEventArgs e)

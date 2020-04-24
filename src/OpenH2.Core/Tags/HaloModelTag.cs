@@ -29,5 +29,40 @@ namespace OpenH2.Core.Tags
 
         [PrimitiveArray(40, 8)]
         public float[] Params { get; set; }
+
+
+        [ReferenceArray(80)]
+        public VariantDescriptor[] Variants { get; set; }
+
+        [FixedLength(56)]
+        public class VariantDescriptor
+        {
+            [PrimitiveValue(0)]
+            public uint Id { get; set; }
+
+
+            [ReferenceArray(20)]
+            public VariantEffects[] Effects { get; set; }
+
+            [ReferenceArray(28)]
+            public VariantChildren[] Children { get; set; }
+
+
+            [FixedLength(120)]
+            public class VariantEffects
+            {
+
+            }
+
+            [FixedLength(16)]
+            public class VariantChildren
+            {
+                [PrimitiveValue(0)]
+                public uint Id { get; set; }
+
+                [PrimitiveValue(8)]
+                public TagRef Child { get; set; }
+            }
+        }
     }
 }

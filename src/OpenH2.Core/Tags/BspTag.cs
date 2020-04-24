@@ -210,7 +210,7 @@ namespace OpenH2.Core.Tags
         }
 
         [FixedLength(68)]
-        public partial class CollisionInfo : ICollisionInfo
+        public class CollisionInfo : ICollisionInfo
         {
             [ReferenceArray(0)]
             public Node3D[] Node3Ds { get; set; }
@@ -300,7 +300,7 @@ namespace OpenH2.Core.Tags
         }
 
         [FixedLength(200)]
-        public class InstancedGeometryDefinition : IModelResourceContainer
+        public class InstancedGeometryDefinition : IModelResourceContainer, ICollisionInfo
         {
             [PrimitiveValue(0)]
             public ushort VertexCount { get; set; }
@@ -330,96 +330,37 @@ namespace OpenH2.Core.Tags
 
             [ReferenceArray(56)]
             public ModelResource[] Resources { get; set; }
-
             public MeshCollection Model { get; set; }
 
-            // I think many of these objects are a half-edge structure for 
-            // the individual object like is on the BSP
+            [ReferenceArray(112)]
+            public Node3D[] Node3Ds { get; set; }
+
+            [ReferenceArray(120)]
+            public Common.Collision.Plane[] Planes { get; set; }
+
+            [ReferenceArray(128)]
+            public RawObject3[] RawObject3s { get; set; }
+
+            //[ReferenceArray(136)]
+            public RawObject4[] RawObject4s { get; set; }
+
+            [ReferenceArray(144)]
+            public Node2D[] Node2Ds { get; set; }
+
+            [ReferenceArray(152)]
+            public Face[] Faces { get; set; }
+
+            [ReferenceArray(160)]
+            public HalfEdgeContainer[] HalfEdges { get; set; }
+
+            [ReferenceArray(168)]
+            public Vertex[] Vertices { get; set; }
+
             [FixedLength(56)]
             public class Obj24
             {
                 [PrimitiveArray(0, 10)]
                 public float[] Floats { get; set; }
-            }
-
-
-            [FixedLength(8)]
-            public class Obj112
-            {
-                [PrimitiveArray(0,4)]
-                public short Shorts { get; set; }
-            }
-
-            [FixedLength(16)]
-            public class Obj120
-            {
-                [PrimitiveValue(0)]
-                public Vector3 Position { get; set; }
-
-                [PrimitiveValue(12)]
-                public float Rotation { get; set; }
-            }
-
-            [FixedLength(4)]
-            public class Obj128
-            {
-                [PrimitiveValue(0)]
-                public ushort Flags { get; set; }
-
-                [PrimitiveValue(2)]
-                public ushort Index { get; set; }
-            }
-
-            [FixedLength(4)]
-            public class Obj136
-            {
-                [PrimitiveValue(0)]
-                public ushort Index { get; set; }
-
-                [PrimitiveValue(2)]
-                public byte Unknown { get; set; }
-
-
-                [PrimitiveValue(3)]
-                public byte Flags { get; set; }
-            }
-
-            [FixedLength(16)]
-            public class Obj144
-            {
-                [PrimitiveValue(0)]
-                public Vector3 Position { get; set; }
-
-                [PrimitiveValue(12)]
-                public ushort Start { get; set; }
-
-                [PrimitiveValue(14)]
-                public ushort End { get; set; }
-            }
-
-            [FixedLength(8)]
-            public class Obj152
-            {
-                [PrimitiveValue(0)]
-                public ushort Start { get; set; }
-
-                [PrimitiveValue(2)]
-                public ushort Count { get; set; }
-
-                [PrimitiveValue(4)]
-                public uint UnusedMabye{ get; set; }
-            }
-
-            [FixedLength(12)]
-            public class Obj160
-            {
-
-            }
-
-            [FixedLength(16)]
-            public class Obj168
-            {
-
             }
 
             // Likely the Havok collision info

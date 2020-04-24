@@ -9,6 +9,7 @@ namespace OpenH2.Engine.Components
         public ICollider Collider { get; set; }
         public ITransform Transform { get; }
 
+        public bool IsDynamic { get; private set; }
         private float mass;
         private float inverseMass;
         public float Mass { get => mass; private set { mass = value; inverseMass = 1 / value; } }
@@ -19,15 +20,19 @@ namespace OpenH2.Engine.Components
         public Vector3 Velocity { get; }
         public Vector3 AngularVelocity { get; }
 
+        /// <summary>
+        /// Creates a dynamic RigidBodyComponent
+        /// </summary>
         public RigidBodyComponent(Entity parent, 
             TransformComponent xform, 
             Matrix4x4 inertiaTensor,
+            float mass,
             Vector3 centerOfMassOffset = default)
             : base(parent)
         {
             this.Transform = xform;
             this.CenterOfMass = centerOfMassOffset;
-            this.Mass = 20f;
+            this.Mass = mass;
 
             // Set non-rotational components of matrix to standard values to ensure inversion succeeds
             // TODO: investigate if these components of the matrix have any meaningful data
@@ -40,6 +45,19 @@ namespace OpenH2.Engine.Components
             inertiaTensor.M44 = 1;
 
             this.InertiaTensor = inertiaTensor;
+            this.IsDynamic = true;
+        }
+
+        /// <summary>
+        /// Creates a static RigidBodyComponent
+        /// </summary>
+        public RigidBodyComponent(Entity parent, TransformComponent xform) : base(parent)
+        {
+            this.Transform = xform;
+            this.CenterOfMass = Vector3.Zero;
+            this.InertiaTensor = Matrix4x4.Identity;
+            this.Mass = 0f;
+            this.IsDynamic = false;
         }
     }
 }

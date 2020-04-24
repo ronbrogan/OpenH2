@@ -34,7 +34,7 @@ namespace OpenH2.Engine.EntityFactories
             var orientation = Quaternion.CreateFromYawPitchRoll(instance.Orientation.Y, instance.Orientation.Z, instance.Orientation.X);
             var xform = new TransformComponent(scenery, instance.Position, orientation);
 
-            var body = RigidBodyFactory.Create(scenery, xform, map, tag.PhysicalModel);
+            var body = PhysicsComponentFactory.CreateRigidBody(scenery, xform, map, tag.PhysicalModel);
 
             var comOffset = Vector3.Zero;
 

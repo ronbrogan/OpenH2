@@ -21,35 +21,23 @@ namespace OpenH2.Engine.EntityFactories
 
             if(map.TryGetTag<BaseTag>(instance.ItemCollectionReference, out var itemTag) == false)
                 throw new Exception("Unable to load itmc");
-
-            Entity item = default;
-            List<Component> components = default;
-
-            var xform = new TransformComponent(item, instance.Position, instance.Orientation.ToQuaternion());
             
-
             if (itemTag is ItemCollectionTag itmc)
             {
-                item = new Item();
-                components = CreateFromItemCollection(item, map, itmc);
+                return CreateFromItemCollection(map, itmc, instance)[0];
             }
 
             if(itemTag is VehicleCollectionTag vehc)
             {
-                return CreateFromVehicleCollection(map, vehc, xform)[0];
+                return CreateFromVehicleCollection(map, vehc, instance)[0];
             }
 
-            if (item == default)
-                return new Scenery();
-
-            item.SetComponents(components.ToArray());
-
-            return item;
+            return new Scenery();
         }
 
-        private static List<Component> CreateFromItemCollection(Entity parent, H2vMap map, ItemCollectionTag itmc)
+        private static List<Entity> CreateFromItemCollection(H2vMap map, ItemCollectionTag itmc, ScenarioTag.ItemCollectionPlacement instance)
         {
-            var components = new List<Component>();
+            var entities = new List<Entity>();
 
             // I've only seen 1 item collections though
             foreach (var item in itmc.Items)
@@ -70,7 +58,10 @@ namespace OpenH2.Engine.EntityFactories
                 if (itemHlmt == default)
                     continue;
 
-                components.Add(new RenderModelComponent(parent)
+                var entity = new Item();
+                var components = new List<Component>();
+
+                components.Add(new RenderModelComponent(entity)
                 {
                     RenderModel = new Model<BitmapTag>
                     {
@@ -82,12 +73,19 @@ namespace OpenH2.Engine.EntityFactories
                         Meshes = MeshFactory.GetModelForHlmt(map, itemHlmt)
                     }
                 });
+
+                var xform = new TransformComponent(entity, instance.Position, instance.Orientation.ToQuaternion());
+                components.Add(xform);
+                components.Add(PhysicsComponentFactory.CreateRigidBody(entity, xform, map, itemHlmt));
+
+                entity.SetComponents(components.ToArray());
+                entities.Add(entity);
             }
 
-            return components;
+            return entities;
         }
 
-        private static List<Entity> CreateFromVehicleCollection(H2vMap map, VehicleCollectionTag vehc, TransformComponent xform)
+        private static List<Entity> CreateFromVehicleCollection(H2vMap map, VehicleCollectionTag vehc, ScenarioTag.ItemCollectionPlacement instance)
         {
             var entities = new List<Entity>();
 
@@ -99,8 +97,9 @@ namespace OpenH2.Engine.EntityFactories
                     throw new Exception("No tag found for vehc reference");
                 }
 
-                Entity item = new Vehicle();
-                entities.Add(CreateFromVehicleTag(item, map, xform, vehi));
+                Entity entity = new Vehicle();
+                var xform = new TransformComponent(entity, instance.Position, instance.Orientation.ToQuaternion());
+                entities.Add(CreateFromVehicleTag(entity, map, xform, vehi));
             }
 
             return entities;
@@ -141,7 +140,7 @@ namespace OpenH2.Engine.EntityFactories
                 }
             });
 
-            components.Add(RigidBodyFactory.Create(item, xform, map, vehi.Hlmt));
+            components.Add(PhysicsComponentFactory.CreateRigidBody(item, xform, map, vehi.Hlmt));
 
             item.SetComponents(components.ToArray());
 

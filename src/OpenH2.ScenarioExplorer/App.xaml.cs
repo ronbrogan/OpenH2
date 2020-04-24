@@ -2,6 +2,7 @@
 using System.Threading;
 using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Logging.Serilog;
 using Avalonia.Markup.Xaml;
 using Avalonia.ReactiveUI;
@@ -22,7 +23,7 @@ namespace OpenH2.ScenarioExplorer
             var hexViewer = typeof(HexViewer);
             StartupArgs = args;
 
-            BuildAvaloniaApp().Start(AppMain, args);
+            BuildAvaloniaApp().StartWithClassicDesktopLifetime(args);
         }
 
         /// <summary>
@@ -35,11 +36,12 @@ namespace OpenH2.ScenarioExplorer
             AvaloniaXamlLoader.Load(this);
         }
 
-        // Application entry point. Avalonia is completely initialized.
-        static void AppMain(Application app, string[] args)
+        public override void OnFrameworkInitializationCompleted()
         {
-            // Start the main loop
-            app.Run(new ScenarioExplorer());
+            if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
+                desktop.MainWindow = new ScenarioExplorer();
+
+            base.OnFrameworkInitializationCompleted();
         }
     }
 }

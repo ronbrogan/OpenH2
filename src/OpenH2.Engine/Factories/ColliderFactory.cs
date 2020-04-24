@@ -14,14 +14,8 @@ namespace OpenH2.Engine.Factories
     {
         private static ICollider DefaultCollider = new BoxCollider(IdentityTransform.Instance(), new Vector3(0.5f));
 
-        public static ICollider GetColliderForHlmt(H2vMap map, TagRef<HaloModelTag> hlmtRef, int damageLevel = 0)
+        public static ICollider GetColliderForHlmt(H2vMap map, HaloModelTag hlmt, int damageLevel = 0)
         {
-            if (map.TryGetTag(hlmtRef, out var hlmt) == false)
-            {
-                Console.WriteLine($"Couldn't find HLMT[{hlmtRef.Id}]");
-                return DefaultCollider;
-            }
-
             if (map.TryGetTag(hlmt.ColliderId, out var coll) == false)
             {
                 Console.WriteLine($"Couldn't find COLL[{hlmt.ColliderId.Id}]");

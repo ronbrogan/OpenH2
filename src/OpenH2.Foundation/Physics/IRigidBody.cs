@@ -4,6 +4,7 @@ namespace OpenH2.Foundation.Physics
 {
     public interface IRigidBody : IBody
     {        
+        bool IsDynamic { get; }
         float Mass { get; }
         float InverseMass { get; }
         Vector3 CenterOfMass { get; }

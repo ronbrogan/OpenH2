@@ -1,15 +1,22 @@
 ﻿using OpenH2.Core.Architecture;
 using OpenH2.Foundation.Physics;
+using System.Numerics;
 
 namespace OpenH2.Engine.Components
 {
-    public class StaticGeometryComponent : Component, IBody
+    public class StaticGeometryComponent : Component
     {
-        public StaticGeometryComponent(Entity parent) : base(parent)
-        {
-        }
+        public Vector3[] Vertices { get; set; }
 
-        public ICollider Collider { get; set; }
-        public ITransform Transform { get; set; }
+        /// <summary>
+        /// Array of vertex indices, where each three items constitutes a single triangle
+        /// </summary>
+        public int[] TriangleIndices { get; set; }
+        public TransformComponent Transform { get; }
+
+        public StaticGeometryComponent(Entity parent, TransformComponent xform) : base(parent)
+        {
+            this.Transform = xform;
+        }
     }
 }

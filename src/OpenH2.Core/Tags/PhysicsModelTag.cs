@@ -34,6 +34,9 @@ namespace OpenH2.Core.Tags
         [FixedLength(144)]
         public class BodyParameterSet
         {
+            [PrimitiveValue(60)]
+            public float Mass { get; set; }
+
             [PrimitiveValue(64)]
             public Vector3 CenterOfMass { get; set; }
 

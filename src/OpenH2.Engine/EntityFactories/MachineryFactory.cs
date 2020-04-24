@@ -48,8 +48,8 @@ namespace OpenH2.Engine.EntityFactories
 
             var orientation = Quaternion.CreateFromYawPitchRoll(instance.Orientation.Y, instance.Orientation.Z, instance.Orientation.X);
             var xform = new TransformComponent(scenery, instance.Position, orientation);
-
-            scenery.SetComponents(new Component[] { comp, xform });
+            var body = PhysicsComponentFactory.CreateRigidBody(scenery, xform, map, tag.PhysicalModel);
+            scenery.SetComponents(new Component[] { comp, xform, body });
 
             return scenery;
         }

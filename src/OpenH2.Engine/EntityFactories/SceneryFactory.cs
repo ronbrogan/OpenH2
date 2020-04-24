@@ -45,7 +45,7 @@ namespace OpenH2.Engine.EntityFactories
                 });
             }
 
-            var comp = new RenderModelComponent(scenery)
+            var renderModel = new RenderModelComponent(scenery)
             {
                 RenderModel = new Model<BitmapTag>
                 {
@@ -60,9 +60,11 @@ namespace OpenH2.Engine.EntityFactories
                 Scale = new Vector3(instance.Scale),
             };
 
+            var geom = PhysicsComponentFactory.CreateStaticGeometry(scenery, xform, def);
+
             xform.UpdateDerivedData();
 
-            scenery.SetComponents(new Component[] { comp, xform });
+            scenery.SetComponents(new Component[] { renderModel, xform, geom });
 
             return scenery;
         }
@@ -87,8 +89,9 @@ namespace OpenH2.Engine.EntityFactories
 
             var orientation = Quaternion.CreateFromYawPitchRoll(instance.Orientation.Y, instance.Orientation.Z, instance.Orientation.X);
             var xform = new TransformComponent(scenery, instance.Position, orientation);
+            var body = PhysicsComponentFactory.CreateRigidBody(scenery, xform, map, tag.PhysicalModel);
 
-            scenery.SetComponents(new Component[] { comp, xform });
+            scenery.SetComponents(new Component[] { comp, xform, body });
 
             return scenery;
         }
