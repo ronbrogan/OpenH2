@@ -15,7 +15,7 @@ namespace OpenH2.Core.Tags
         public uint[] Ids { get; set; }
 
         [ReferenceArray(28)]
-        public ColliderDefinition[] ColliderDefinitions { get; set; }
+        public ColliderDefinition[] ColliderComponents { get; set; }
 
         [ReferenceArray(36)]
         public Obj36[] Obj36s { get; set; }
@@ -31,7 +31,7 @@ namespace OpenH2.Core.Tags
             public uint Id { get; set; }
             
             [ReferenceArray(4)]
-            public CollisionContainer[] CollisionContainers { get; set; }
+            public CollisionContainer[] DamageLevels { get; set; }
 
             [FixedLength(20)]
             public class CollisionContainer
@@ -43,7 +43,7 @@ namespace OpenH2.Core.Tags
                 public ushort ValB { get; set; }
 
                 [ReferenceArray(4)]
-                public CollisionInfo[] CollisionInfos { get; set; }
+                public CollisionInfo[] Parts { get; set; }
 
                 [PrimitiveArray(12, 2)]
                 public uint[] Obj12s { get; set; }

@@ -4,6 +4,7 @@ using OpenH2.Engine.Components;
 using OpenH2.Engine.Stores;
 using OpenH2.Foundation;
 using OpenH2.Foundation.Physics;
+using OpenH2.Physics.Colliders;
 using PhysX;
 using PhysX.VisualDebugger;
 using System;
@@ -135,8 +136,18 @@ namespace OpenH2.Engine.Systems
                 // TODO: re-use shared shapes instead of creating exclusive
                 RigidActorExt.CreateExclusiveShape(actor, geom, defaultMat);
             }
-
-            
+            else if(component.Collider is ConvexModelCollider modelCollider)
+            {
+                foreach(var verts in modelCollider.Meshes)
+                {
+                    var desc = new ConvexMeshDesc() { Flags = ConvexFlag.ComputeConvex };
+                    desc.SetPositions(verts);
+                    var mesh = this.physxPhysics.CreateConvexMesh(this.cooker, desc);
+                    var geom = new ConvexMeshGeometry(mesh);
+                    // TODO: re-use shared shapes instead of creating exclusive
+                    RigidActorExt.CreateExclusiveShape(actor, geom, defaultMat);
+                }
+            }
 
             this.physxScene.AddActor(actor);
         }

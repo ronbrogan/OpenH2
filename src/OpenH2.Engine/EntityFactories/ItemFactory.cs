@@ -25,6 +25,9 @@ namespace OpenH2.Engine.EntityFactories
             Entity item = default;
             List<Component> components = default;
 
+            var xform = new TransformComponent(item, instance.Position, instance.Orientation.ToQuaternion());
+            
+
             if (itemTag is ItemCollectionTag itmc)
             {
                 item = new Item();
@@ -33,14 +36,11 @@ namespace OpenH2.Engine.EntityFactories
 
             if(itemTag is VehicleCollectionTag vehc)
             {
-                item = new Vehicle();
-                components = CreateFromVehicleCollection(item, map, vehc);
+                return CreateFromVehicleCollection(map, vehc, xform)[0];
             }
 
             if (item == default)
                 return new Scenery();
-
-            components.Add(new TransformComponent(item, instance.Position, instance.Orientation.ToQuaternion()));
 
             item.SetComponents(components.ToArray());
 
@@ -79,7 +79,7 @@ namespace OpenH2.Engine.EntityFactories
                         //Orientation = baseRotation,
                         //Scale = new Vector3(1.3f),
                         Flags = ModelFlags.Diffuse | ModelFlags.CastsShadows | ModelFlags.ReceivesShadows,
-                        Meshes = MeshFactory.GetModelForHlmt(map, itemHlmt, out var least, out var most)
+                        Meshes = MeshFactory.GetModelForHlmt(map, itemHlmt)
                     }
                 });
             }
@@ -87,9 +87,9 @@ namespace OpenH2.Engine.EntityFactories
             return components;
         }
 
-        private static List<Component> CreateFromVehicleCollection(Entity parent, H2vMap map, VehicleCollectionTag vehc)
+        private static List<Entity> CreateFromVehicleCollection(H2vMap map, VehicleCollectionTag vehc, TransformComponent xform)
         {
-            var components = new List<Component>();
+            var entities = new List<Entity>();
 
             // I've only seen 1 item collections though
             foreach (var vehicle in vehc.VehicleReferences)
@@ -99,27 +99,16 @@ namespace OpenH2.Engine.EntityFactories
                     throw new Exception("No tag found for vehc reference");
                 }
 
-                components.Add(new RenderModelComponent(parent)
-                {
-                    RenderModel = new Model<BitmapTag>
-                    {
-                        Note = $"[{vehi.Id}] {vehi.Name}",
-                        //Position = instance.Position,
-                        //Orientation = baseRotation,
-                        //Scale = new Vector3(1.3f),
-                        Flags = ModelFlags.Diffuse | ModelFlags.CastsShadows | ModelFlags.ReceivesShadows,
-                        Meshes = MeshFactory.GetModelForHlmt(map, vehi.Hlmt, out var least, out var most)
-                    }
-                });
+                Entity item = new Vehicle();
+                entities.Add(CreateFromVehicleTag(item, map, xform, vehi));
             }
 
-            return components;
+            return entities;
         }
 
         public static Entity CreateFromVehicleInstance(H2vMap map, ScenarioTag scenario, ScenarioTag.VehicleInstance instance)
         {
             Entity item = new Vehicle();
-            List<Component> components = new List<Component>();
 
             var def = scenario.VehicleDefinitions[instance.Index];
  
@@ -127,6 +116,17 @@ namespace OpenH2.Engine.EntityFactories
             {
                 throw new Exception("No tag found for vehi reference");
             }
+
+            var xform = new TransformComponent(item, instance.Position, instance.Orientation.ToQuaternion());
+
+            return CreateFromVehicleTag(item, map, xform, vehi);
+        }
+
+        private static Entity CreateFromVehicleTag(Entity item, H2vMap map, TransformComponent xform, VehicleTag vehi)
+        {
+            List<Component> components = new List<Component>();
+
+            components.Add(xform);
 
             components.Add(new RenderModelComponent(item)
             {
@@ -137,11 +137,11 @@ namespace OpenH2.Engine.EntityFactories
                     //Orientation = baseRotation,
                     //Scale = new Vector3(1.3f),
                     Flags = ModelFlags.Diffuse | ModelFlags.CastsShadows | ModelFlags.ReceivesShadows,
-                    Meshes = MeshFactory.GetModelForHlmt(map, vehi.Hlmt, out var least, out var most)
+                    Meshes = MeshFactory.GetModelForHlmt(map, vehi.Hlmt)
                 }
             });
 
-            components.Add(new TransformComponent(item, instance.Position, instance.Orientation.ToQuaternion()));
+            components.Add(RigidBodyFactory.Create(item, xform, map, vehi.Hlmt));
 
             item.SetComponents(components.ToArray());
 

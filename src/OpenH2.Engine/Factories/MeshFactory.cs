@@ -11,34 +11,25 @@ namespace OpenH2.Engine.Factories
     {
         private static Mesh<BitmapTag>[] EmptyModel = Array.Empty<Mesh<BitmapTag>>();
 
-        public static Mesh<BitmapTag>[] GetModelForHlmt(H2vMap map, TagRef<HaloModelTag> hlmtReference, out Vector3 least, out Vector3 most)
+        public static Mesh<BitmapTag>[] GetModelForHlmt(H2vMap map, TagRef<HaloModelTag> hlmtReference, int damageLevel = 0)
         {
             if (map.TryGetTag(hlmtReference, out var hlmt) == false)
             {
                 Console.WriteLine($"Couldn't find HLMT[{hlmtReference.Id}]");
-                least = Vector3.Zero;
-                most = Vector3.Zero;
                 return EmptyModel;
             }
 
             if (map.TryGetTag(hlmt.RenderModel, out var model) == false)
             {
                 Console.WriteLine($"No MODE[{hlmt.RenderModel.Id}] found for HLMT[{hlmt.Id}]");
-                least = Vector3.Zero;
-                most = Vector3.Zero;
                 return EmptyModel;
             }
-
-            // TODO: determine correct BB?
-            var bb = model.BoundingBoxes[0];
-            least = new Vector3(bb.MinX, bb.MinY, bb.MinZ);
-            most = new Vector3(bb.MaxX, bb.MaxY, bb.MaxZ);
 
             var renderModelMeshes = new List<Mesh<BitmapTag>>();
 
             foreach (var lod in model.Components)
             {
-                var partIndex = lod.DamageLevels[0].HighestPieceIndex;
+                var partIndex = lod.DamageLevels[damageLevel].HighestPieceIndex;
 
                 foreach (var mesh in model.Parts[partIndex].Model.Meshes)
                 {
