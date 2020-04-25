@@ -5,7 +5,7 @@ using OpenH2.Rendering.Shaders;
 using OpenH2.Rendering.Shaders.Generic;
 using OpenH2.Rendering.Shaders.Skybox;
 using OpenH2.Rendering.Shaders.Wireframe;
-using OpenTK.Graphics.OpenGL;
+using OpenToolkit.Graphics.OpenGL;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;

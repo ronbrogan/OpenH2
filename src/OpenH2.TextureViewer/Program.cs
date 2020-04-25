@@ -4,8 +4,9 @@ using OpenH2.Core.Tags;
 using OpenH2.Foundation;
 using OpenH2.Rendering.OpenGL;
 using OpenH2.Rendering.Shaders;
-using OpenTK.Graphics.OpenGL;
-using OpenTK.Input;
+using OpenToolkit.Graphics.OpenGL;
+using OpenToolkit.Windowing.Common.Input;
+using OpenToolkit.Windowing.Desktop;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -28,6 +29,7 @@ namespace OpenH2.TextureViewer
         private static Mesh<BitmapTag> quadMesh;
         private static int ShaderHandle;
         private static OpenGLTextureBinder textureBinder = new OpenGLTextureBinder();
+        private static GameWindow window;
 
         static void Main(string[] args)
         {
@@ -57,6 +59,7 @@ namespace OpenH2.TextureViewer
 
             var host = new OpenGLHost();
             host.CreateWindow(new Vector2(1600, 900));
+            window = host.GetWindow();
             Setup();
 
             host.RegisterCallbacks(Update, Render);
@@ -89,7 +92,7 @@ namespace OpenH2.TextureViewer
         private static void Update(double time)
         {
             // read button down, increment CurrentBitmap
-            keyboardState = Keyboard.GetState(0);
+            keyboardState = window.KeyboardState;
             if (KeyPress(Key.Left))
             {
                 SetNextBitmap(-1);

@@ -10,7 +10,7 @@ namespace OpenH2.Rendering.Shaders
         [FieldOffset(0)]
         public PointLightUniform[] PointLights;
 
-        public static readonly int Size = OpenTK.BlittableValueType<LightingUniform>.Stride;
+        public static readonly int Size = Marshal.SizeOf<LightingUniform>();
     }
 
     [StructLayout(LayoutKind.Explicit)]

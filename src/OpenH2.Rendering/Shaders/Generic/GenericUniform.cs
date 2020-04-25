@@ -87,6 +87,6 @@ namespace OpenH2.Rendering.Shaders.Generic
         public long DetailMap2Handle;
         public Vector4 DetailMap2Scale;
 
-        public static readonly int Size = OpenTK.BlittableValueType<GenericUniform>.Stride;
+        public static readonly int Size = Marshal.SizeOf<GenericUniform>();
     }
 }

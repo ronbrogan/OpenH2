@@ -6,6 +6,7 @@ using OpenH2.Engine.Stores;
 using OpenH2.Foundation;
 using OpenH2.Foundation.Physics;
 using OpenH2.Physics.Colliders;
+using OpenToolkit.Windowing.Common.Input;
 using PhysX;
 using PhysX.VisualDebugger;
 using System;
@@ -264,12 +265,12 @@ namespace OpenH2.Engine.Systems
             if (input == null)
                 input = this.world.GetGlobalResource<InputStore>();
 
-            if (input.Keyboard.IsKeyDown(OpenTK.Input.Key.P) && input.Keyboard.IsKeyDown(OpenTK.Input.Key.ShiftRight))
+            if (input.Keyboard.IsKeyDown(Key.P) && input.Keyboard.IsKeyDown(Key.ShiftRight))
                 StepMode = !StepMode;
 
             if (StepMode)
             {
-                ShouldStep = input.Keyboard.IsKeyDown(OpenTK.Input.Key.P);
+                ShouldStep = input.Keyboard.IsKeyDown(Key.P);
 
                 return ShouldStep;
             }

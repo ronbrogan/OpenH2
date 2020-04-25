@@ -1,5 +1,4 @@
-﻿using OpenTK;
-using System.Numerics;
+﻿using System.Numerics;
 using System.Runtime.InteropServices;
 
 namespace OpenH2.Rendering.Shaders
@@ -16,7 +15,7 @@ namespace OpenH2.Rendering.Shaders
         [FieldOffset(128)]
         public System.Numerics.Vector3 ViewPosition;
 
-        public static readonly int Size = BlittableValueType<GlobalUniform>.Stride;
+        public static readonly int Size = Marshal.SizeOf<GlobalUniform>();
 
     }
 }

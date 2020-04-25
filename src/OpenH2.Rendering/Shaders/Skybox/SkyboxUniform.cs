@@ -1,7 +1,5 @@
 ﻿using OpenH2.Core.Tags;
 using OpenH2.Foundation;
-using OpenTK;
-using System.Numerics;
 using System.Runtime.InteropServices;
 using Vector4 = System.Numerics.Vector4;
 
@@ -30,6 +28,6 @@ namespace OpenH2.Rendering.Shaders.Skybox
         public long DiffuseHandle;
         public Vector4 DiffuseColor;
 
-        public static readonly int Size = BlittableValueType<SkyboxUniform>.Stride;
+        public static readonly int Size = Marshal.SizeOf<SkyboxUniform>();
     }
 }

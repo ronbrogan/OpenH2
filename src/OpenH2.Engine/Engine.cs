@@ -7,9 +7,10 @@ using OpenH2.Engine.Entities;
 using OpenH2.Engine.EntityFactories;
 using OpenH2.Foundation;
 using OpenH2.Foundation.Engine;
-using OpenH2.Physics.Colliders;
 using OpenH2.Rendering.Abstractions;
 using OpenH2.Rendering.OpenGL;
+using OpenToolkit.Graphics.ES30;
+using OpenToolkit.Windowing.Desktop;
 using System;
 using System.Diagnostics;
 using System.IO;
@@ -22,13 +23,14 @@ namespace OpenH2.Engine
     {
         IGraphicsHost graphicsHost;
         IGameLoopSource gameLoop;
-        
+        Func<GameWindow> gameWindowGetter;
 
         private World world;
 
         public Engine()
         {
             var host = new OpenGLHost();
+            gameWindowGetter = host.GetWindow;
 
             graphicsHost = host;
             gameLoop = host;
@@ -59,7 +61,7 @@ namespace OpenH2.Engine
                 LoadScene(factory, mapPath);
             });
 
-            var rtWorld = new RealtimeWorld(this);
+            var rtWorld = new RealtimeWorld(this, gameWindowGetter());
             rtWorld.UseGraphicsAdapter(graphicsHost.GetAdapter());
 
             world = rtWorld;

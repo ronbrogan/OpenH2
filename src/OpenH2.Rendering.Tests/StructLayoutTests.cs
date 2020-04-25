@@ -1,3 +1,4 @@
+using OpenH2.Rendering.Shaders;
 using OpenH2.Rendering.Shaders.Generic;
 using System.Reflection;
 using System.Runtime.InteropServices;
@@ -12,12 +13,12 @@ namespace OpenH2.Rendering.Tests
         {
             var targetSize = 0;
 
-            foreach (var field in typeof(TransformUniform).GetFields(BindingFlags.Instance | BindingFlags.Public))
+            foreach (var field in typeof(GenericUniform).GetFields(BindingFlags.Instance | BindingFlags.Public))
             {
                 targetSize += Marshal.SizeOf(field.FieldType);
             }
 
-            Assert.Equal(targetSize, TransformUniform.Size);
+            Assert.Equal(targetSize, GenericUniform.Size);
         }
     }
 }

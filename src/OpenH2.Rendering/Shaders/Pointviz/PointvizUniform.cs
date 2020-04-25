@@ -22,7 +22,7 @@ namespace OpenH2.Rendering.Shaders.Wireframe
         public Vector4 DiffuseColor;
         public float AlphaAmount;
 
-        public static readonly int Size = OpenTK.BlittableValueType<PointvizUniform>.Stride;
+        public static readonly int Size = Marshal.SizeOf<PointvizUniform>();
 
     }
 }

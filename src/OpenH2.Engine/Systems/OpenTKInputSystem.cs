@@ -1,21 +1,25 @@
 ﻿using OpenH2.Core.Architecture;
 using OpenH2.Engine.Stores;
-using OpenTK.Input;
+using OpenToolkit.Windowing.Common.Input;
+using OpenToolkit.Windowing.Desktop;
 
 namespace OpenH2.Engine.Systems
 {
     public class OpenTKInputSystem : WorldSystem
     {
-        public OpenTKInputSystem(World world) : base(world)
+        private readonly GameWindow window;
+
+        public OpenTKInputSystem(World world, GameWindow window) : base(world)
         {
+            this.window = window;
         }
 
         public override void Update(double timestep)
         {
             var inputs = this.world.GetGlobalResource<InputStore>();
 
-            inputs.SetMouse(Mouse.GetCursorState());
-            inputs.SetKeys(Keyboard.GetState());
+            inputs.SetMouse(window.MouseState);
+            inputs.SetKeys(window.KeyboardState);
         }
     }
 }

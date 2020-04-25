@@ -4,19 +4,20 @@ using System;
 using System.Diagnostics;
 using System.IO;
 using System.Text;
-using OpenTK.Graphics.OpenGL;
-using OpenTK.Graphics;
+using OpenToolkit.Graphics.OpenGL;
 using OpenH2.Rendering.OpenGL;
 using OpenH2.Rendering.Shaders;
 using System.Numerics;
 using OpenH2.Foundation;
-using OpenTK;
 using Vector2 = System.Numerics.Vector2;
 using Vector3 = System.Numerics.Vector3;
-using PixelFormat = OpenTK.Graphics.OpenGL.PixelFormat;
+using PixelFormat = OpenToolkit.Graphics.OpenGL.PixelFormat;
 using System.Runtime.InteropServices;
 using Avalonia.Media.Imaging;
 using Avalonia;
+using OpenToolkit.Mathematics;
+using OpenToolkit.Windowing.Common;
+using OpenToolkit.Windowing.Desktop;
 
 namespace OpenH2.ScenarioExplorer
 {
@@ -56,8 +57,22 @@ namespace OpenH2.ScenarioExplorer
                     return null;
 
                 var textureBinder = new OpenGLTextureBinder();
-                var window = new GameWindow(bitm.Width, bitm.Height, GraphicsMode.Default, "OpenH2", GameWindowFlags.Default, DisplayDevice.Default, 4, 0, GraphicsContextFlags.Debug);
-                window.Visible = false;
+
+                var settings = new GameWindowSettings();
+
+                var nsettings = new NativeWindowSettings()
+                {
+                    API = ContextAPI.OpenGL,
+                    AutoLoadBindings = true,
+                    Size = new Vector2i(bitm.Width, bitm.Height),
+                    Title = "OpenH2",
+                    Flags = ContextFlags.Debug | ContextFlags.Offscreen,
+                    APIVersion = new Version(4, 0)
+                };
+
+                var window = new GameWindow(settings, nsettings);
+
+                window.IsVisible = false;
                 window.MakeCurrent();
 
                 GL.Enable(EnableCap.DebugOutput);
@@ -108,7 +123,7 @@ namespace OpenH2.ScenarioExplorer
                     GL.ReadPixels(0, 0, bitm.Width, bitm.Height, PixelFormat.Rgba, PixelType.UnsignedByte, buf.Address);
                 }
 
-                window.Exit();
+                window.Close();
                 window.Dispose();
 
                 return bmp;

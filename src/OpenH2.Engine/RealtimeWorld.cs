@@ -2,6 +2,7 @@
 using OpenH2.Engine.Stores;
 using OpenH2.Engine.Systems;
 using OpenH2.Rendering.Abstractions;
+using OpenToolkit.Windowing.Desktop;
 using System.Collections.Generic;
 
 namespace OpenH2.Engine
@@ -10,10 +11,10 @@ namespace OpenH2.Engine
     {
         private List<object> globalResources = new List<object>();
 
-        public RealtimeWorld(Engine engine)
+        public RealtimeWorld(Engine engine, GameWindow window)
         {
             // new up systems, order here will be order of update
-            Systems.Add(new OpenTKInputSystem(this));
+            Systems.Add(new OpenTKInputSystem(this, window));
             Systems.Add(new MoverSystem(this));
             Systems.Add(new CameraSystem(this));
             Systems.Add(new RenderCollectorSystem(this));

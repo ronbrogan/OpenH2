@@ -22,6 +22,6 @@ namespace OpenH2.Rendering.Shaders
         public Matrix4x4 ModelMatrix;
         public Matrix4x4 NormalMatrix;
 
-        public static readonly int Size = OpenTK.BlittableValueType<TransformUniform>.Stride;
+        public static readonly int Size = Marshal.SizeOf<TransformUniform>();
     }
 }

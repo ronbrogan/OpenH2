@@ -17,7 +17,7 @@ namespace OpenH2.Rendering.Shaders.Wireframe
         public Vector4 DiffuseColor;
         public float AlphaAmount;
 
-        public static readonly int Size = OpenTK.BlittableValueType<WireframeUniform>.Stride;
+        public static readonly int Size = Marshal.SizeOf<WireframeUniform>();
 
     }
 }

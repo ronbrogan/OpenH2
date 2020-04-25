@@ -1,4 +1,4 @@
-﻿using OpenTK.Input;
+﻿using OpenToolkit.Windowing.Common.Input;
 using System.Numerics;
 
 namespace OpenH2.Engine.Stores
