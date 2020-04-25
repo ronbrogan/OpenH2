@@ -15,10 +15,8 @@ namespace OpenH2.Rendering.Shaders.Generic
     [StructLayout(LayoutKind.Sequential)]
     public struct GenericUniform
     {
-        public GenericUniform(IMaterial<BitmapTag> material, MaterialBindings bindings, Matrix4x4 transform, Matrix4x4 inverted)
+        public GenericUniform(IMaterial<BitmapTag> material, MaterialBindings bindings)
         {
-            ModelMatrix = transform;
-            NormalMatrix = Matrix4x4.Transpose(inverted);
             DiffuseColor = material.DiffuseColor;
             UseDiffuse = bindings.DiffuseHandle != default;
             DiffuseHandle = bindings.DiffuseHandle;
@@ -54,9 +52,6 @@ namespace OpenH2.Rendering.Shaders.Generic
             SpecularColor = Vector4.Zero;
             SpecularHandle = 0;
         }
-
-        public Matrix4x4 ModelMatrix;
-        public Matrix4x4 NormalMatrix;
 
         public bool UseDiffuse;
         public float DiffuseAmount;

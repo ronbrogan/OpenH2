@@ -15,7 +15,8 @@ namespace OpenH2.Rendering.Abstractions
         void UseShader(Shader shader);
         void SetSunLight(Vector3 sunDirection);
         void AddLight(PointLight light);
-        void DrawMesh(Mesh<BitmapTag> mesh, Matrix4x4 transform);
+        void UseTransform(Matrix4x4 transform);
+        void DrawMesh(Mesh<BitmapTag> mesh);
         void EndFrame();
     }
 }

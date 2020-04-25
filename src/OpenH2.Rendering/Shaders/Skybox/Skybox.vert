@@ -11,15 +11,18 @@ layout(std140, binding = 0) uniform GlobalUniform
 
 layout(std140, binding = 1) uniform SkyboxUniform
 {
-	mat4 ModelMatrix;
-	mat4 NormalMatrix;
-	
 	bool UseDiffuseMap;
 	float DiffuseAmount;
 	sampler2D DiffuseMap;
 	vec4 DiffuseColor;
 
 } Data;
+
+layout(std140, binding = 2) uniform TransformUniform
+{
+	mat4 ModelMatrix;
+	mat4 NormalMatrix;
+} Transform;
 
 layout(location = 0) in vec3 local_position;
 layout(location = 1) in vec2 in_texture;
@@ -38,7 +41,7 @@ void main() {
 
 	mat4 vm = mat4(mat3(Globals.ViewMatrix));
 
-    vec4 pos = Globals.ProjectionMatrix * vm * Data.ModelMatrix * vec4(local_position, 1);
+    vec4 pos = Globals.ProjectionMatrix * vm * Transform.ModelMatrix * vec4(local_position, 1);
     world_pos = local_position;
 
     world_normal = local_normal;

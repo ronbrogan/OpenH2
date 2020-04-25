@@ -8,12 +8,21 @@ using OpenH2.Rendering.Shaders.Wireframe;
 using OpenTK.Graphics.OpenGL;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Numerics;
 
 namespace OpenH2.Rendering.OpenGL
 {
     public class OpenGLGraphicsAdapter : IGraphicsAdapter
     {
+        // Uniform index used in shaders
+        private class UniformIndices
+        {
+            public const int Global = 0;
+            public const int Shader = 1;
+            public const int Transform = 2;
+        }
+
         private Dictionary<Mesh<BitmapTag>, uint> meshLookup = new Dictionary<Mesh<BitmapTag>, uint>();
         private Dictionary<IMaterial<BitmapTag>, MaterialBindings> boundMaterials = new Dictionary<IMaterial<BitmapTag>, MaterialBindings>();
         private ITextureBinder textureBinder = new OpenGLTextureBinder();
@@ -27,6 +36,8 @@ namespace OpenH2.Rendering.OpenGL
 
         private int LightingUniformHandle;
         private LightingUniform LightingUniform;
+
+        private int TransformUniformHandle;
 
         public OpenGLGraphicsAdapter()
         {
@@ -110,37 +121,37 @@ namespace OpenH2.Rendering.OpenGL
 
             if (material.DiffuseMap != null)
             {
-                textureBinder.Bind(material.DiffuseMap, out var diffuseHandle);
+                textureBinder.GetOrBind(material.DiffuseMap, out var diffuseHandle);
                 bindings.DiffuseHandle = diffuseHandle;
             }
 
             if (material.DetailMap1 != null)
             {
-                textureBinder.Bind(material.DetailMap1, out var handle);
+                textureBinder.GetOrBind(material.DetailMap1, out var handle);
                 bindings.Detail1Handle = handle;
             }
 
             if (material.DetailMap2 != null)
             {
-                textureBinder.Bind(material.DetailMap2, out var handle);
+                textureBinder.GetOrBind(material.DetailMap2, out var handle);
                 bindings.Detail2Handle = handle;
             }
 
             if (material.AlphaMap != null)
             {
-                textureBinder.Bind(material.AlphaMap, out var alphaHandle);
+                textureBinder.GetOrBind(material.AlphaMap, out var alphaHandle);
                 bindings.AlphaHandle = alphaHandle;
             }
 
             if (material.EmissiveMap != null)
             {
-                textureBinder.Bind(material.EmissiveMap, out var emissiveHandle);
+                textureBinder.GetOrBind(material.EmissiveMap, out var emissiveHandle);
                 bindings.EmissiveHandle = emissiveHandle;
             }
 
             if (material.NormalMap != null)
             {
-                textureBinder.Bind(material.NormalMap, out var handle);
+                textureBinder.GetOrBind(material.NormalMap, out var handle);
                 bindings.NormalHandle = handle;
             }
 
@@ -149,33 +160,22 @@ namespace OpenH2.Rendering.OpenGL
             return bindings;
         }
 
-        public void SetupLighting()
+        public void UseTransform(Matrix4x4 transform)
         {
-            if (LightingUniformHandle == default(int))
-            {
-                GL.GenBuffers(1, out LightingUniformHandle);
-                GL.BindBuffer(BufferTarget.UniformBuffer, LightingUniformHandle);
-                GL.BufferData(BufferTarget.UniformBuffer, 320, IntPtr.Zero, BufferUsageHint.DynamicDraw);
-            }
-            else
-            {
-                GL.BindBuffer(BufferTarget.UniformBuffer, LightingUniformHandle);
-            }
+            var success = Matrix4x4.Invert(transform, out var inverted);
+            Debug.Assert(success);
 
-            GL.BufferSubData(BufferTarget.UniformBuffer, IntPtr.Zero, 320, LightingUniform.PointLights);
-
-            GL.BindBufferBase(BufferRangeTarget.UniformBuffer, 2, LightingUniformHandle);
-            GL.BindBuffer(BufferTarget.UniformBuffer, 0);
+            SetupTransformUniform(new TransformUniform(transform, inverted));
         }
 
         // PERF: sort calls by material and vao and deduplicate GL calls 
-        public void DrawMesh(Mesh<BitmapTag> mesh, Matrix4x4 transform)
+        public void DrawMesh(Mesh<BitmapTag> mesh)
         {
             SetupLighting();
 
             var bindings = SetupTextures(mesh.Material);
 
-            CreateAndBindShaderUniform(mesh, bindings, transform);
+            CreateAndBindShaderUniform(mesh, bindings);
 
             BindMesh(mesh);
 
@@ -198,47 +198,62 @@ namespace OpenH2.Rendering.OpenGL
                     GL.DrawElements(PrimitiveType.Triangles, indicies.Length, DrawElementsType.UnsignedInt, 0);
                     break;
             }
+
+            mesh.Dirty = false;
         }
 
-        private void CreateAndBindShaderUniform(Mesh<BitmapTag> mesh, MaterialBindings bindings, Matrix4x4 transform)
+        private Dictionary<IMaterial<BitmapTag>, int[]> MaterialUniforms = new Dictionary<IMaterial<BitmapTag>, int[]>();
+        private void CreateAndBindShaderUniform(Mesh<BitmapTag> mesh, MaterialBindings bindings)
         {
-            if (Matrix4x4.Invert(transform, out var inverted) == false)
+            if (MaterialUniforms.TryGetValue(mesh.Material, out var uniforms) == false)
             {
-                Console.WriteLine("Couldn't invert model matrix: " + mesh.Note);
+                uniforms = new int[(int)Shader.MAX_VALUE];
+                MaterialUniforms[mesh.Material] = uniforms;
+            }
+
+            var existingUniformHandle = uniforms[(int)activeShader];
+
+            // If the uniform was already buffered, we'll just reuse that buffered uniform
+            // Currently these material uniforms never change at runtime - if this changes
+            // there will have to be some sort of invalidation to ensure they're updated
+            if(existingUniformHandle != 0)
+            {
+                GL.BindBufferBase(BufferRangeTarget.UniformBuffer, UniformIndices.Shader, existingUniformHandle);
                 return;
             }
 
             switch (activeShader)
             {
                 case Shader.Skybox:
-                    SetupGenericUniform(
+                    BindAndBufferShaderUniform(
                         activeShader,
-                        new SkyboxUniform(mesh.Material, bindings, transform, inverted),
-                        SkyboxUniform.Size);
+                        new SkyboxUniform(mesh.Material, bindings),
+                        SkyboxUniform.Size,
+                        out existingUniformHandle);
                     break;
                 case Shader.Generic:
-                    SetupGenericUniform(
-                        activeShader, 
-                        new GenericUniform(mesh.Material, bindings, transform, inverted), 
-                        GenericUniform.Size);
+                    BindAndBufferShaderUniform(
+                        activeShader,
+                        new GenericUniform(mesh.Material, bindings),
+                        GenericUniform.Size,
+                        out existingUniformHandle);
                     break;
                 case Shader.Wireframe:
-                    SetupGenericUniform(
+                    BindAndBufferShaderUniform(
                         activeShader,
-                        new WireframeUniform(mesh.Material, bindings, transform, inverted),
-                        WireframeUniform.Size);
+                        new WireframeUniform(mesh.Material),
+                        WireframeUniform.Size,
+                        out existingUniformHandle);
                     break;
                 case Shader.Pointviz:
-                    SetupGenericUniform(
-                        activeShader,
-                        new PointvizUniform(mesh.Material, bindings, transform, inverted),
-                        PointvizUniform.Size);
-                    break;
                 case Shader.TextureViewer:
                     break;
             }
+
+            uniforms[(int)activeShader] = existingUniformHandle;
         }
 
+        private long currentVao = -1;
         private void BindMesh(Mesh<BitmapTag> mesh)
         {
             if (mesh.Dirty || meshLookup.TryGetValue(mesh, out var vaoId) == false)
@@ -246,8 +261,11 @@ namespace OpenH2.Rendering.OpenGL
                 vaoId = UploadMesh(mesh);
             }
 
-            // PERF: dedupe vao bindings
-            GL.BindVertexArray(vaoId);
+            if (currentVao != vaoId)
+            {
+                GL.BindVertexArray(vaoId);
+                currentVao = vaoId;
+            }
         }
 
         private static void SetupVertexFormatAttributes()
@@ -288,28 +306,55 @@ namespace OpenH2.Rendering.OpenGL
 
             GL.BufferSubData(BufferTarget.UniformBuffer, IntPtr.Zero, GlobalUniform.Size, ref GlobalUniform);
 
-            GL.BindBufferBase(BufferRangeTarget.UniformBuffer, 0, GlobalUniformHandle);
+            GL.BindBufferBase(BufferRangeTarget.UniformBuffer, UniformIndices.Global, GlobalUniformHandle);
             GL.BindBuffer(BufferTarget.UniformBuffer, 0);
         }
 
-        private void SetupGenericUniform<T>(Shader shader, T uniform, int size) where T : struct
+        private void BindAndBufferShaderUniform<T>(Shader shader, T uniform, int size, out int handle) where T : struct
         {
-            if (uniformHandles.TryGetValue(shader, out var handle) == false)
-            {
-                GL.GenBuffers(1, out handle);
-                GL.BindBuffer(BufferTarget.UniformBuffer, handle);
-                GL.BufferData(BufferTarget.UniformBuffer, size, IntPtr.Zero, BufferUsageHint.DynamicDraw);
+            GL.GenBuffers(1, out handle);
+            GL.BindBuffer(BufferTarget.UniformBuffer, handle);
+            GL.BufferData(BufferTarget.UniformBuffer, size, ref uniform, BufferUsageHint.DynamicDraw);
 
-                uniformHandles[shader] = handle;
+            GL.BindBufferBase(BufferRangeTarget.UniformBuffer, UniformIndices.Shader, handle);
+            GL.BindBuffer(BufferTarget.UniformBuffer, 0);
+        }
+
+        private void SetupTransformUniform(TransformUniform transform)
+        {
+            if (TransformUniformHandle == default(int))
+            {
+                GL.GenBuffers(1, out TransformUniformHandle);
+                GL.BindBuffer(BufferTarget.UniformBuffer, TransformUniformHandle);
+                GL.BufferData(BufferTarget.UniformBuffer, GlobalUniform.Size, IntPtr.Zero, BufferUsageHint.DynamicDraw);
             }
             else
             {
-                GL.BindBuffer(BufferTarget.UniformBuffer, handle);
+                GL.BindBuffer(BufferTarget.UniformBuffer, TransformUniformHandle);
             }
 
-            GL.BufferSubData(BufferTarget.UniformBuffer, IntPtr.Zero, size, ref uniform);
+            GL.BufferSubData(BufferTarget.UniformBuffer, IntPtr.Zero, TransformUniform.Size, ref transform);
 
-            GL.BindBufferBase(BufferRangeTarget.UniformBuffer, 1, handle);
+            GL.BindBufferBase(BufferRangeTarget.UniformBuffer, UniformIndices.Transform, TransformUniformHandle);
+            GL.BindBuffer(BufferTarget.UniformBuffer, 0);
+        }
+
+        public void SetupLighting()
+        {
+            if (LightingUniformHandle == default(int))
+            {
+                GL.GenBuffers(1, out LightingUniformHandle);
+                GL.BindBuffer(BufferTarget.UniformBuffer, LightingUniformHandle);
+                GL.BufferData(BufferTarget.UniformBuffer, 320, IntPtr.Zero, BufferUsageHint.DynamicDraw);
+            }
+            else
+            {
+                GL.BindBuffer(BufferTarget.UniformBuffer, LightingUniformHandle);
+            }
+
+            GL.BufferSubData(BufferTarget.UniformBuffer, IntPtr.Zero, 320, LightingUniform.PointLights);
+
+            GL.BindBufferBase(BufferRangeTarget.UniformBuffer, 3, LightingUniformHandle);
             GL.BindBuffer(BufferTarget.UniformBuffer, 0);
         }
 

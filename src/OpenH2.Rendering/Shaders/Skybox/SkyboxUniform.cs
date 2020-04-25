@@ -17,18 +17,13 @@ namespace OpenH2.Rendering.Shaders.Skybox
     [StructLayout(LayoutKind.Sequential)]
     public struct SkyboxUniform
     {
-        public SkyboxUniform(IMaterial<BitmapTag> material, MaterialBindings bindings, Matrix4x4 transform, Matrix4x4 inverted)
+        public SkyboxUniform(IMaterial<BitmapTag> material, MaterialBindings bindings)
         {
-            ModelMatrix = transform;
-            NormalMatrix = Matrix4x4.Transpose(inverted);
             DiffuseColor = material.DiffuseColor;
             UseDiffuse = bindings.DiffuseHandle != default;
             DiffuseHandle = bindings.DiffuseHandle;
             DiffuseAmount = 1f;
         }
-
-        public Matrix4x4 ModelMatrix;
-        public Matrix4x4 NormalMatrix;
 
         public bool UseDiffuse;
         public float DiffuseAmount;

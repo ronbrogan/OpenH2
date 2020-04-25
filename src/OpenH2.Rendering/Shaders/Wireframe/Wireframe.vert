@@ -9,11 +9,15 @@ layout(std140, binding = 0) uniform GlobalUniform
 
 layout(std140, binding = 1) uniform WireframeUniform
 {
-	mat4 ModelMatrix;
-	mat4 NormalMatrix;
 	vec4 DiffuseColor;
     float AlphaAmount;
 } Data;
+
+layout(std140, binding = 2) uniform TransformUniform
+{
+	mat4 ModelMatrix;
+	mat4 NormalMatrix;
+} Transform;
 
 layout(location = 0) in vec3 local_position;
 layout(location = 1) in vec2 in_texture;
@@ -31,8 +35,8 @@ out Vertex
 
 void main() {
 
-    mat4 modelView = Globals.ViewMatrix * Data.ModelMatrix;
-	mat3 mat3nm = mat3(Data.NormalMatrix);
+    mat4 modelView = Globals.ViewMatrix * Transform.ModelMatrix;
+	mat3 mat3nm = mat3(Transform.NormalMatrix);
 
 	vert_out.texcoord = in_texture;
 	vert_out.world_normal = normalize(mat3nm * local_normal);

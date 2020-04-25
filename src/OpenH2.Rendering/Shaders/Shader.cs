@@ -8,7 +8,8 @@
         TextureViewer,
         Wireframe,
         Pointviz,
-        
-        ComputeGatherLights
+        ComputeGatherLights,
+
+        MAX_VALUE
     }
 }

@@ -8,7 +8,7 @@ namespace OpenH2.Rendering.Abstractions
     {
         int Bind(Stream data);
         int Bind(string path);
-        int Bind(BitmapTag bitm, out long handle);
+        int GetOrBind(BitmapTag bitm, out long handle);
         int Bind(BitmapData data, int width, int height, PixelFormat inputFormat = PixelFormat.Format24bppRgb);
     }
 }

@@ -78,7 +78,7 @@ namespace OpenH2.ScenarioExplorer
 
                 var shader = ShaderCompiler.CreateShader(Shader.TextureViewer);
 
-                var handle = textureBinder.Bind(bitm, out var _);
+                var handle = textureBinder.GetOrBind(bitm, out var _);
                 GL.ActiveTexture(TextureUnit.Texture0);
                 GL.BindTexture(TextureTarget.Texture2D, handle);
 

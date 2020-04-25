@@ -11,9 +11,6 @@ layout(std140, binding = 0) uniform GlobalUniform
 
 layout(std140, binding = 1) uniform GenericUniform
 {
-	mat4 ModelMatrix;
-	mat4 NormalMatrix;
-	
 	bool UseDiffuseMap;
 	float DiffuseAmount;
 	sampler2D DiffuseMap;
@@ -50,12 +47,18 @@ layout(std140, binding = 1) uniform GenericUniform
 
 } Data;
 
+layout(std140, binding = 2) uniform TransformUniform
+{
+	mat4 ModelMatrix;
+	mat4 NormalMatrix;
+} Transform;
+
 struct PointLight {
 	vec4 Position;
     vec4 ColorAndRange;
 };
 
-layout(std140, binding = 2) uniform LightingUniform
+layout(std140, binding = 3) uniform LightingUniform
 {
 	PointLight[10] pointLights;
 } Lighting;
@@ -77,8 +80,8 @@ out Vertex
 
 void main() {
 
-    mat4 modelView = Globals.ViewMatrix * Data.ModelMatrix;
-	mat3 mat3nm = mat3(Data.NormalMatrix);
+    mat4 modelView = Globals.ViewMatrix * Transform.ModelMatrix;
+	mat3 mat3nm = mat3(Transform.NormalMatrix);
 
 	vertex.texcoord = in_texture;
 	vertex.world_normal = normalize(mat3nm * local_normal);

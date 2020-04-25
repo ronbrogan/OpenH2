@@ -9,11 +9,15 @@ layout(std140, binding = 0) uniform GlobalUniform
 
 layout(std140, binding = 1) uniform WireframeUniform
 {
-	mat4 ModelMatrix;
-	mat4 NormalMatrix;
 	vec4 DiffuseColor;
     float AlphaAmount;
 } Data;
+
+layout(std140, binding = 2) uniform TransformUniform
+{
+	mat4 ModelMatrix;
+	mat4 NormalMatrix;
+} Transform;
 
 in Vertex
 {

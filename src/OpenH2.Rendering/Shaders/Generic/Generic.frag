@@ -17,14 +17,11 @@ const int EmissiveTypeDisabled = -1;
 
 layout(std140, binding = 1) uniform GenericUniform
 {
-	mat4 ModelMatrix;
-	mat4 NormalMatrix;
-	
 	bool UseDiffuseMap;
 	float DiffuseAmount;
 	sampler2D DiffuseMap;
 	vec4 DiffuseColor;
-		
+	
 	bool UseAlpha;
     float AlphaAmount;
     sampler2D AlphaHandle;
@@ -56,12 +53,18 @@ layout(std140, binding = 1) uniform GenericUniform
 
 } Data;
 
+layout(std140, binding = 2) uniform TransformUniform
+{
+	mat4 ModelMatrix;
+	mat4 NormalMatrix;
+} Transform;
+
 struct PointLight {
 	vec4 Position;
     vec4 ColorAndRange;
 };
 
-layout(std140, binding = 2) uniform LightingUniform
+layout(std140, binding = 3) uniform LightingUniform
 {
 	PointLight[10] pointLights;
 } Lighting;

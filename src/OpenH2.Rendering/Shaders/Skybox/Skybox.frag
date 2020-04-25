@@ -11,15 +11,17 @@ layout(std140, binding = 0) uniform GlobalUniform
 
 layout(std140, binding = 1) uniform SkyboxUniform
 {
-	mat4 ModelMatrix;
-	mat4 NormalMatrix;
-	
 	bool UseDiffuseMap;
 	float DiffuseAmount;
 	sampler2D DiffuseMap;
 	vec4 DiffuseColor;
-
 } Data;
+
+layout(std140, binding = 2) uniform TransformUniform
+{
+	mat4 ModelMatrix;
+	mat4 NormalMatrix;
+} Transform;
 
 in vec3 world_pos;
 in vec2 texcoord;

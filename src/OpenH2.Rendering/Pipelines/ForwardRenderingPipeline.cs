@@ -50,9 +50,11 @@ namespace OpenH2.Rendering.Pipelines
                 var renderable = renderables[i];
                 if(RenderPasses.IsSkybox(renderable.Item1))
                 {
+                    this.adapter.UseTransform(renderable.Item2);
+
                     foreach (var mesh in renderable.Item1.Meshes)
                     {
-                        this.adapter.DrawMesh(mesh, renderable.Item2);
+                        this.adapter.DrawMesh(mesh);
                     }
                 }
             }
@@ -64,9 +66,11 @@ namespace OpenH2.Rendering.Pipelines
                 var renderable = renderables[i];
                 if (RenderPasses.IsDiffuse(renderable.Item1))
                 {
+                    this.adapter.UseTransform(renderable.Item2);
+
                     foreach (var mesh in renderable.Item1.Meshes)
                     {
-                        this.adapter.DrawMesh(mesh, renderable.Item2);
+                        this.adapter.DrawMesh(mesh);
                     }
                 }
             }
@@ -77,34 +81,12 @@ namespace OpenH2.Rendering.Pipelines
                 var renderable = renderables[i];
                 if (RenderPasses.IsWireframe(renderable.Item1))
                 {
+                    this.adapter.UseTransform(renderable.Item2);
+
                     foreach (var mesh in renderable.Item1.Meshes)
                     {
-                        this.adapter.DrawMesh(mesh, renderable.Item2);
+                        this.adapter.DrawMesh(mesh);
                     }
-                }
-            }
-
-            this.adapter.UseShader(Shader.Pointviz);
-            for (var i = 0; i < renderables.Count; i++)
-            {
-                var renderable = renderables[i];
-                if (RenderPasses.IsDebugviz(renderable.Item1))
-                {
-                    foreach (var mesh in renderable.Item1.Meshes)
-                    {
-                        if (mesh.ElementType != MeshElementType.Point)
-                            continue;
-
-                        this.adapter.DrawMesh(mesh, renderable.Item2);
-                    }
-                }
-            }
-
-            foreach(var renderable in renderables)
-            {
-                foreach(var mesh in renderable.Item1.Meshes)
-                {
-                    mesh.Dirty = false;
                 }
             }
 

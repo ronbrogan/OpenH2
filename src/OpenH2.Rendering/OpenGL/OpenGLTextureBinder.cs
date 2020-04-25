@@ -42,6 +42,8 @@ namespace OpenH2.Rendering.OpenGL
             { TextureFormat.DXT45, (w,h) => ((w + 3) / 4) * ((h + 3) / 4) * 16 }
         };
 
+        private Dictionary<uint, (int, long)> BoundTextures = new Dictionary<uint, (int, long)>();
+
         public int Bind(string filename)
         {
             var fullPath = Path.GetFullPath(filename);
@@ -65,8 +67,14 @@ namespace OpenH2.Rendering.OpenGL
             return texAddr;
         }
 
-        public int Bind(Core.Tags.BitmapTag bitm, out long handle)
+        public int GetOrBind(Core.Tags.BitmapTag bitm, out long handle)
         {
+            if(BoundTextures.TryGetValue(bitm.Id, out var ids))
+            {
+                handle = ids.Item2;
+                return ids.Item1;
+            }
+
             var width = bitm.Width;
             var height = bitm.Height;
 
@@ -91,6 +99,7 @@ namespace OpenH2.Rendering.OpenGL
 
             CheckTextureBindErrors();
 
+            BoundTextures.Add(bitm.Id, (texId, handle));
             return texId;
         }
 

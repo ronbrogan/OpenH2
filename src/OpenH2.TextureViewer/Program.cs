@@ -104,7 +104,7 @@ namespace OpenH2.TextureViewer
             if (BitmTextureIdLookup.TryGetValue(CurrentBitmap, out var handle) == false)
             {
                 var bitm = Bitmaps[CurrentBitmap];
-                handle = textureBinder.Bind(bitm, out var _);
+                handle = textureBinder.GetOrBind(bitm, out var _);
                 BitmTextureIdLookup[CurrentBitmap] = handle;
             }
 
