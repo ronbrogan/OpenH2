@@ -82,6 +82,7 @@ namespace OpenH2.Engine
             var scene = new Scene();
 
             scene.AddEntity(camera);
+            //scene.AddEntity(new Player());
 
             var watch = new Stopwatch();
             watch.Start();

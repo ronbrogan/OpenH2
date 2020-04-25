@@ -1,13 +1,15 @@
 ﻿using OpenH2.Core.Architecture;
 using OpenH2.Engine.Components;
 using System;
+using System.Collections.Generic;
 using System.Numerics;
+using System.Text;
 
 namespace OpenH2.Engine.Entities
 {
-    public class SpectatorCamera : Entity
+    public class Player : Entity
     {
-        public SpectatorCamera()
+        public Player()
         {
             var xform = new TransformComponent(this, Quaternion.CreateFromYawPitchRoll(0, (float)Math.PI / -2f, 0));
             xform.Position = new Vector3(0, 0, 10);
@@ -25,7 +27,7 @@ namespace OpenH2.Engine.Entities
 
             this.Components = new Component[]
             {
-                new MoverComponent(this, xform, MoverComponent.MovementMode.Freecam),
+                new MoverComponent(this, xform, MoverComponent.MovementMode.CharacterControl),
                 xform,
                 camera
             };

@@ -34,7 +34,7 @@ namespace OpenH2.Engine.Systems
 
             var deltaP = GetPositionDelta(input);
             
-            UpdateMovers(movers, deltaP, yaw, pitch);
+            UpdateMovers(movers, deltaP, yaw, pitch, timestep);
         }
 
         private Vector3 GetPositionDelta(InputStore input)
@@ -71,27 +71,41 @@ namespace OpenH2.Engine.Systems
             return delta;
         }
 
-        public void UpdateMovers(List<MoverComponent> movers, Vector3 deltap, float yaw, float pitch)
+        public void UpdateMovers(List<MoverComponent> movers, Vector3 deltap, float yaw, float pitch, double timestep)
         {
             var yawQuat = Quaternion.CreateFromAxisAngle(new Vector3(0, 0, 1), yaw);
             var pitchQuat = Quaternion.CreateFromAxisAngle(new Vector3(1, 0, 0), pitch);
 
             foreach (var mover in movers)
             {
-                if (mover.TryGetSibling<TransformComponent>(out var xform))
+                var xform = mover.Transform;
+                
+                xform.Orientation = Quaternion.Normalize(pitchQuat * xform.Orientation * yawQuat);
+                var totalOrientation = Quaternion.Normalize(xform.Orientation);
+
+                var forward = Vector3.Transform(new Vector3(0, 1, 0), totalOrientation);
+                forward = Vector3.Normalize(new Vector3(forward.X, forward.Z, 0));
+
+                var up = new Vector3(0, 0, 1);
+                var strafe = Vector3.Cross(forward, up);
+
+                var offset = (deltap.Y * -forward) + (deltap.X * strafe) + (deltap.Z * up);
+
+                if(mover.Mode == MoverComponent.MovementMode.Freecam)
                 {
-                    xform.Orientation = Quaternion.Normalize(pitchQuat * xform.Orientation * yawQuat);
-                    var totalOrientation = Quaternion.Normalize(xform.Orientation);
-
-                    var forward = Vector3.Transform(new Vector3(0, 1, 0), totalOrientation);
-                    forward = Vector3.Normalize(new Vector3(forward.X, forward.Z, 0));
-
-                    var up = new Vector3(0, 0, 1);
-                    var strafe = Vector3.Cross(forward, up);
-
-                    var offset = (deltap.Y * -forward) + (deltap.X * strafe) + (deltap.Z * up);
-
                     xform.Position += offset;
+                }
+                else
+                {
+                    // TODO: gravity?
+                    var gravity = new Vector3(0, 0, -98f);
+                    var LinearDamping = 0.8f;
+
+                    var velocityDueToGravity = Vector3.Multiply(gravity, (float)timestep);
+                    velocityDueToGravity = Vector3.Multiply(velocityDueToGravity, (float)Math.Pow(LinearDamping, timestep));
+                    offset += Vector3.Multiply(velocityDueToGravity, (float)timestep);
+
+                    mover.DisplacementAccumulator = offset;
                 }
             }
         }

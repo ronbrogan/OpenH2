@@ -1,6 +1,7 @@
 ﻿using OpenH2.Core.Architecture;
 using OpenH2.Core.Tags;
 using OpenH2.Engine.Components;
+using OpenH2.Engine.Entities;
 using OpenH2.Engine.Stores;
 using OpenH2.Foundation;
 using OpenH2.Foundation.Physics;
@@ -21,10 +22,12 @@ namespace OpenH2.Engine.Systems
         private PxFoundation physxFoundation;
         private PxPhysics physxPhysics;
         private PxScene physxScene;
+        private ControllerManager controllerManager;
         private Cooking cooker;
         private Material defaultMat;
         private Pvd pvd;
 
+        private Dictionary<MoverComponent, Controller> ControllerMap = new Dictionary<MoverComponent, Controller>();
 
         private InputStore input;
         public bool StepMode = true;
@@ -69,6 +72,7 @@ namespace OpenH2.Engine.Systems
             };
 
             cooker = this.physxPhysics.CreateCooking(cookingParams);
+            this.controllerManager = this.physxScene.CreateControllerManager();
         }
 
         public override void Initialize(Core.Architecture.Scene scene)
@@ -107,17 +111,75 @@ namespace OpenH2.Engine.Systems
                 AddRigidBodyComponent(body);
             }
 
+            var movers = this.world.Components<MoverComponent>();
+            foreach (var mover in movers)
+            {
+                AddCharacterController(mover);
+            }
+
             scene.OnEntityAdd += this.AddEntityRigidBodies;
+        }
+
+        public override void Update(double timestep)
+        {
+            if (TakeStep() == false)
+                return;
+
+            // Update all PhysX transforms, add forces?
+            // 
+            var rigidBodies = this.world.Components<RigidBodyComponent>();
+            foreach (var rigid in rigidBodies)
+            {
+                //if(ActorMap.TryGetValue(rigid, out var actor) && actor is RigidDynamic dynamic)
+                {
+                    //dynamic.AddForce(rigid.ForceAccumulator);
+                    //dynamic.AddTorque(rigid.TorqueAccumulator);
+                }
+            }
+
+            var movers = this.world.Components<MoverComponent>();
+            foreach(var mover in movers)
+            {
+                if(this.ControllerMap.TryGetValue(mover, out var controller))
+                {
+                    controller.Move(mover.DisplacementAccumulator, TimeSpan.FromSeconds(timestep));
+                }
+            }
+
+            // Simulate, fetch results
+            this.physxScene.Simulate((float)timestep);
+            this.physxScene.FetchResults(true);
+
+            // Update all engine transforms, reset forces?
+            foreach (var actor in this.physxScene.RigidDynamicActors)
+            {
+                if (actor.UserData is RigidBodyComponent component)
+                {
+                    component.Transform.UseTransformationMatrix(actor.GlobalPose);
+                }
+            }
+
+            foreach(var controller in this.controllerManager.Controllers)
+            {
+                if(controller.Actor.UserData is MoverComponent mover)
+                {
+                    mover.Transform.Position = controller.Position;
+                    mover.Transform.UpdateDerivedData();
+                }
+            }
         }
 
         public void AddEntityRigidBodies(Entity entity)
         {
-            if(entity.TryGetChild<RigidBodyComponent>(out var rigidBody) == false)
+            if(entity.TryGetChild<RigidBodyComponent>(out var rigidBody))
             {
-                return;
+                AddRigidBodyComponent(rigidBody);
             }
 
-            AddRigidBodyComponent(rigidBody);
+            if(entity.TryGetChild<MoverComponent>(out var mover))
+            {
+                AddCharacterController(mover);
+            }
         }
 
         public void AddRigidBodyComponent(RigidBodyComponent component)
@@ -165,35 +227,36 @@ namespace OpenH2.Engine.Systems
             this.physxScene.AddActor(actor);
         }
 
-        public override void Update(double timestep)
+        public void AddCharacterController(MoverComponent component)
         {
-            if (TakeStep() == false)
+            if (component.Mode != MoverComponent.MovementMode.CharacterControl)
                 return;
 
-            // Update all PhysX transforms, add forces?
-            // 
-            var rigidBodies = this.world.Components<RigidBodyComponent>();
-            foreach(var rigid in rigidBodies)
+            ITransform xform = IdentityTransform.Instance();
+
+            if (component.TryGetSibling<TransformComponent>(out var xformComponent))
             {
-                //if(ActorMap.TryGetValue(rigid, out var actor) && actor is RigidDynamic dynamic)
-                {
-                    //dynamic.AddForce(rigid.ForceAccumulator);
-                    //dynamic.AddTorque(rigid.TorqueAccumulator);
-                }
+                xform = xformComponent;
             }
 
-            // Simulate, fetch results
-            this.physxScene.Simulate((float)timestep);
-            this.physxScene.FetchResults(true);
-
-            // Update all engine transforms, reset forces?
-            foreach (var actor in this.physxScene.RigidDynamicActors)
+            var desc = new CapsuleControllerDesc()
             {
-                if(actor.UserData is RigidBodyComponent component)
-                {
-                    component.Transform.UseTransformationMatrix(actor.GlobalPose);
-                }
-            }
+                Height = 0.725f,
+                Position = xform.Position,
+                Radius = 0.175f,
+                MaxJumpHeight = 1f,
+                UpDirection = new Vector3(0, 0, 1),
+                SlopeLimit = MathF.Cos(0.872665f), // cos(50 degrees)
+                StepOffset = 0.1f,
+                Material = defaultMat,
+                ReportCallback = new CustomHitReport()
+            };
+
+            var controller = this.controllerManager.CreateController<CapsuleController>(desc);
+
+            controller.Actor.UserData = component;
+
+            this.ControllerMap.Add(component, controller);
         }
 
         private bool TakeStep()
@@ -226,6 +289,29 @@ namespace OpenH2.Engine.Systems
             var rigid = this.physxPhysics.CreateRigidStatic(transform);
             RigidActorExt.CreateExclusiveShape(rigid, meshGeom, defaultMat);
             return rigid;
+        }
+
+        private class CustomHitReport : UserControllerHitReport
+        {
+            public override void OnControllerHit(ControllersHit hit)
+            {
+                //throw new NotImplementedException();
+            }
+
+            public override void OnObstacleHit(ControllerObstacleHit hit)
+            {
+                //throw new NotImplementedException();
+            }
+
+            public override void OnShapeHit(ControllerShapeHit hit)
+            {
+                if (hit.Shape.Actor.IsDynamic == false)
+                    return;
+
+                var dynamicActor = hit.Shape.Actor as RigidDynamic;
+
+                dynamicActor.AddForceAtPosition(hit.WorldNormal * 100, hit.WorldPosition);
+            }
         }
 
         private class ConsoleErrorCallback : ErrorCallback

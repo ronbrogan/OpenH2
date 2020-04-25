@@ -60,11 +60,17 @@ namespace OpenH2.Engine.EntityFactories
                 Scale = new Vector3(instance.Scale),
             };
 
-            var geom = PhysicsComponentFactory.CreateStaticGeometry(scenery, xform, def);
+            var comps = new List<Component> { renderModel, xform };
 
+            if (def.Vertices.Length > 0)
+            {
+                var geom = PhysicsComponentFactory.CreateStaticGeometry(scenery, xform, def);
+                comps.Add(geom);
+            }
+            
             xform.UpdateDerivedData();
 
-            scenery.SetComponents(new Component[] { renderModel, xform, geom });
+            scenery.SetComponents(comps.ToArray());
 
             return scenery;
         }

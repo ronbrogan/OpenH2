@@ -22,6 +22,7 @@ namespace OpenH2.Core.Factories
         private MaterialMappingConfig mappingConfig;
         private List<Action> callbacks = new List<Action>();
         private HashSet<uint> stemsWarned = new HashSet<uint>();
+        private Dictionary<uint, Material<BitmapTag>> createdMaterials = new Dictionary<uint, Material<BitmapTag>>();
 
         public MaterialFactory(string configRoot)
         {
@@ -45,7 +46,12 @@ namespace OpenH2.Core.Factories
 
         public Material<BitmapTag> CreateMaterial(H2vMap map, ModelMesh mesh)
         {
-            var mat = new Material<BitmapTag>
+            if(createdMaterials.TryGetValue(mesh.Shader.Id, out var mat))
+            {
+                return mat;
+            }
+
+            mat = new Material<BitmapTag>
             {
                 DiffuseColor = VectorExtensions.RandomColor()
             };
