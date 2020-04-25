@@ -16,9 +16,11 @@ variables:
 
 steps:
 
-- task: DotNetCoreInstaller@0
+- task: UseDotNet@2
+  displayName: 'Use .NET Core sdk'
   inputs:
-    version: '3.1.201' # replace this value with the version that you need for your project
+    packageType: sdk
+    version: 3.1.201
 
 - task: DotNetCoreCLI@2
   inputs:
