@@ -84,7 +84,7 @@ namespace OpenH2.Engine
             var scene = new Scene();
 
             scene.AddEntity(camera);
-            //scene.AddEntity(new Player());
+            //scene.AddEntity(new Player(false));
 
             var watch = new Stopwatch();
             watch.Start();
@@ -149,7 +149,11 @@ namespace OpenH2.Engine
 
             foreach (var item in scenario.VehicleInstances)
             {
-                destination.AddEntity(ItemFactory.CreateFromVehicleInstance(map, scenario, item));
+                // HACK: sometimes maxval, headlong
+                if (item.Index == ushort.MaxValue)
+                    continue;
+
+               destination.AddEntity(ItemFactory.CreateFromVehicleInstance(map, scenario, item));
             }
 
             //PositioningEntities.AddLocators(map, destination);

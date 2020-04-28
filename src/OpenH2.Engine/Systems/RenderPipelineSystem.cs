@@ -5,7 +5,9 @@ using OpenH2.Engine.Stores;
 using OpenH2.Rendering.Abstractions;
 using OpenH2.Rendering.Pipelines;
 using OpenH2.Rendering.Shaders;
+using System;
 using System.Linq;
+using System.Numerics;
 
 namespace OpenH2.Engine.Systems
 {

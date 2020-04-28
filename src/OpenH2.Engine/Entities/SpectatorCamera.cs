@@ -9,8 +9,8 @@ namespace OpenH2.Engine.Entities
     {
         public SpectatorCamera()
         {
-            var xform = new TransformComponent(this, Quaternion.CreateFromYawPitchRoll(0, (float)Math.PI / -2f, 0));
-            xform.Position = new Vector3(0, 0, 10);
+            var xform = new TransformComponent(this, Quaternion.CreateFromAxisAngle(EngineGlobals.Up, MathF.PI/-2f));
+            xform.Position = new Vector3(-11.05469f, 25.309626f, 4.0002475f);
             xform.UpdateDerivedData();
 
             var camera = new CameraComponent(this);
@@ -25,7 +25,7 @@ namespace OpenH2.Engine.Entities
 
             this.Components = new Component[]
             {
-                new MoverComponent(this, xform, MoverComponent.MovementMode.Freecam),
+                new MoverComponent(this, xform, new MoverComponent.MovementConfig(speed: 0.1f)),
                 xform,
                 camera
             };

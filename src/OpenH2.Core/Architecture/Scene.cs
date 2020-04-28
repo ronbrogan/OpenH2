@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 
 namespace OpenH2.Core.Architecture
 {
@@ -9,7 +10,8 @@ namespace OpenH2.Core.Architecture
 
         public List<Component> Components { get; private set; }
 
-        public event EntityAddEventHandler OnEntityAdd = delegate { };
+        public event EntityEventHandler OnEntityAdd = delegate { };
+        public event EntityEventHandler OnEntityRemove = delegate { };
 
         public void AddEntity(Entity e)
         {
@@ -17,6 +19,14 @@ namespace OpenH2.Core.Architecture
             OnEntityAdd.Invoke(e);
         }
 
-        public delegate void EntityAddEventHandler(Entity entity);
+        public void RemoveEntity(Entity e)
+        {
+            Debug.Assert(Entities.ContainsKey(e.Id));
+
+            Entities.Remove(e.Id);
+            OnEntityRemove.Invoke(e);
+        }
+
+        public delegate void EntityEventHandler(Entity entity);
     }
 }

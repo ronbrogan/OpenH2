@@ -1,18 +1,16 @@
 ﻿using OpenH2.Core.Architecture;
 using OpenH2.Engine.Components;
 using System;
-using System.Collections.Generic;
 using System.Numerics;
-using System.Text;
 
 namespace OpenH2.Engine.Entities
 {
     public class Player : Entity
     {
-        public Player()
+        public Player(bool useDynamicController)
         {
-            var xform = new TransformComponent(this, Quaternion.CreateFromYawPitchRoll(0, (float)Math.PI / -2f, 0));
-            xform.Position = new Vector3(0, 0, 10);
+            var xform = new TransformComponent(this, Quaternion.Identity);
+            xform.Position = new Vector3(0, 0, 3);
             xform.UpdateDerivedData();
 
             var camera = new CameraComponent(this);
@@ -25,9 +23,17 @@ namespace OpenH2.Engine.Entities
                 Radius = 20f
             };
 
+            var moverConfig = new MoverComponent.MovementConfig()
+            {
+                Mode = useDynamicController 
+                    ? MoverComponent.MovementMode.DynamicCharacterControl
+                    : MoverComponent.MovementMode.KinematicCharacterControl,
+                Speed = 0.1f,
+            };
+
             this.Components = new Component[]
             {
-                new MoverComponent(this, xform, MoverComponent.MovementMode.CharacterControl),
+                new MoverComponent(this, xform, moverConfig),
                 xform,
                 camera
             };

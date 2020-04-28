@@ -1,4 +1,5 @@
 ﻿using OpenH2.Core.Architecture;
+using OpenH2.Core.Extensions;
 using OpenH2.Core.Representations;
 using OpenH2.Core.Tags;
 using OpenH2.Core.Tags.Scenario;
@@ -12,9 +13,9 @@ namespace OpenH2.Engine.EntityFactories
 {
     public class BlocFactory
     {
-        public static Scenery FromTag(H2vMap map, ScenarioTag scenario,  ScenarioTag.BlocInstance instance)
+        public static Bloc FromTag(H2vMap map, ScenarioTag scenario,  ScenarioTag.BlocInstance instance)
         {
-            var scenery = new Scenery();
+            var scenery = new Bloc();
 
             var bloc = scenario.BlocDefinitions[instance.BlocDefinitionIndex].Bloc;
             map.TryGetTag(bloc, out var tag);
@@ -31,7 +32,7 @@ namespace OpenH2.Engine.EntityFactories
                 }
             };
 
-            var orientation = Quaternion.CreateFromYawPitchRoll(instance.Orientation.Y, instance.Orientation.Z, instance.Orientation.X);
+            var orientation = QuaternionExtensions.FromH2vOrientation(instance.Orientation);
             var xform = new TransformComponent(scenery, instance.Position, orientation);
 
             var body = PhysicsComponentFactory.CreateRigidBody(scenery, xform, map, tag.PhysicalModel);
@@ -48,7 +49,9 @@ namespace OpenH2.Engine.EntityFactories
             var centerOfMass = new BoundsComponent(scenery, comOffset - new Vector3(0.02f), comOffset + new Vector3(0.02f), new Vector4(1f, 1f, 0, 1f));
             var origin = new BoundsComponent(scenery, new Vector3(-0.02f), new Vector3(0.02f), new Vector4(0, 1f, 0, 1f));
 
-            scenery.SetComponents(new Component[] { comp, centerOfMass, origin, xform, body });
+            var originalTag = new OriginalTagComponent(scenery, instance);
+
+            scenery.SetComponents(new Component[] { comp, centerOfMass, origin, xform, body, originalTag });
 
             return scenery;
         }

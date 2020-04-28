@@ -1,4 +1,5 @@
 ﻿using OpenH2.Core.Architecture;
+using OpenH2.Core.Extensions;
 using OpenH2.Engine.Components;
 using OpenH2.Engine.Stores;
 using OpenToolkit.Windowing.Common.Input;
@@ -24,38 +25,38 @@ namespace OpenH2.Engine.Systems
 
             if (input.MouseDown)
             {
-                const float mouseX_Sensitivity = -0.005f;
-                const float mouseY_Sensitivity = -0.005f;
+                const float mouseX_Sensitivity = 0.005f;
+                const float mouseY_Sensitivity = 0.005f;
 
                 yaw = mouseX_Sensitivity * input.MouseDiff.X;
                 pitch = mouseY_Sensitivity * input.MouseDiff.Y;
 
             }
 
-            var deltaP = GetPositionDelta(input);
-            
-            UpdateMovers(movers, deltaP, yaw, pitch, timestep);
+            var inputVector = GetInput(input);
+
+            UpdateMovers(movers, inputVector, yaw, pitch, timestep);
         }
 
-        private Vector3 GetPositionDelta(InputStore input)
+        private Vector3 GetInput(InputStore input)
         {
-            var speed = 0.1f;
+            var speed = 1f;
 
             var kb = input.Keyboard;
 
             if (kb[Key.LControl])
             {
-                speed = 1.0f;
+                speed = 10.0f;
             }
 
             var delta = Vector3.Zero;
 
             var keyMap = new Dictionary<Key, Action>
             {
-                { Key.W, () => delta += new Vector3(0, speed, 0) },
-                { Key.S, () => delta += new Vector3(0, -speed, 0) },
-                { Key.A, () => delta += new Vector3(speed, 0, 0) },
-                { Key.D, () => delta += new Vector3(-speed, 0, 0) },
+                { Key.W, () => delta += new Vector3(speed, 0, 0) },
+                { Key.S, () => delta += new Vector3(-speed, 0, 0) },
+                { Key.A, () => delta += new Vector3(0, -speed, 0) },
+                { Key.D, () => delta += new Vector3(0, speed, 0) },
                 { Key.Space, () => delta += new Vector3(0, 0, speed) },
                 { Key.LShift, () => delta += new Vector3(0, 0, -speed) },
             };
@@ -71,42 +72,99 @@ namespace OpenH2.Engine.Systems
             return delta;
         }
 
-        public void UpdateMovers(List<MoverComponent> movers, Vector3 deltap, float yaw, float pitch, double timestep)
+        public void UpdateMovers(List<MoverComponent> movers, Vector3 inputVector, float yaw, float pitch, double timestep)
         {
-            var yawQuat = Quaternion.CreateFromAxisAngle(new Vector3(0, 0, 1), yaw);
-            var pitchQuat = Quaternion.CreateFromAxisAngle(new Vector3(1, 0, 0), pitch);
+            var yawQuat = Quaternion.CreateFromAxisAngle(EngineGlobals.Up, yaw);
+            var pitchQuat = Quaternion.CreateFromAxisAngle(EngineGlobals.Strafe, pitch);
 
             foreach (var mover in movers)
             {
                 var xform = mover.Transform;
                 
-                xform.Orientation = Quaternion.Normalize(pitchQuat * xform.Orientation * yawQuat);
-                var totalOrientation = Quaternion.Normalize(xform.Orientation);
+                // Update camera orientation
+                xform.Orientation = Quaternion.Normalize(yawQuat * xform.Orientation * pitchQuat);
 
-                var forward = Vector3.Transform(new Vector3(0, 1, 0), totalOrientation);
-                forward = Vector3.Normalize(new Vector3(forward.X, forward.Z, 0));
+                if (inputVector.LengthSquared() == 0)
+                    return;
 
-                var up = new Vector3(0, 0, 1);
-                var strafe = Vector3.Cross(forward, up);
+                var moverInputVector = Vector3.Multiply(inputVector, mover.Config.Speed);
 
-                var offset = (deltap.Y * -forward) + (deltap.X * strafe) + (deltap.Z * up);
+                var forward = Vector3.Transform(EngineGlobals.Forward, xform.Orientation);
+                var strafe = Vector3.Transform(EngineGlobals.Strafe, xform.Orientation);
 
-                if(mover.Mode == MoverComponent.MovementMode.Freecam)
+                if (mover.Mode == MoverComponent.MovementMode.KinematicCharacterControl)
                 {
+                    // TODO: gravity, etc
+                    var offset = (moverInputVector.X * forward) + (moverInputVector.Y * strafe) + (moverInputVector.Z * EngineGlobals.Up);
+                    mover.PhysicsImplementation.Move(offset, timestep);
+                }
+                else if (mover.Mode == MoverComponent.MovementMode.Freecam)
+                {
+                    forward.Z = 0;
+                    var offset = (moverInputVector.X * forward) + (moverInputVector.Y * strafe) + (moverInputVector.Z * EngineGlobals.Up);
                     xform.Position += offset;
                 }
-                else
+                else if(mover.Mode == MoverComponent.MovementMode.DynamicCharacterControl)
                 {
-                    // TODO: gravity?
-                    var gravity = new Vector3(0, 0, -98f);
-                    var LinearDamping = 0.8f;
-
-                    var velocityDueToGravity = Vector3.Multiply(gravity, (float)timestep);
-                    velocityDueToGravity = Vector3.Multiply(velocityDueToGravity, (float)Math.Pow(LinearDamping, timestep));
-                    offset += Vector3.Multiply(velocityDueToGravity, (float)timestep);
-
-                    mover.DisplacementAccumulator = offset;
+                    UpdateDynamicController(mover, moverInputVector, forward, timestep);
                 }
+            }
+        }
+
+        private void UpdateDynamicController(MoverComponent mover, Vector3 inputVector, Vector3 forward, double timestep)
+        {
+            // TODO - config
+            var accelerationRate = 50f;
+            var jumpSpeed = 3f;
+
+            // HACK: boosting input magnitude to get movement as desired
+            inputVector = Vector3.Multiply(inputVector, 20f);
+
+            var grounded = false;
+            var groundNormal = Vector3.Zero;
+            int doJump = 0;
+
+            var footResults = mover.PhysicsImplementation.Raycast(-EngineGlobals.Up, 1f, 1);
+            if(footResults.Length > 0)
+            {
+                grounded = true;
+                groundNormal = footResults[0].Normal;
+            }
+
+            if (grounded)
+            {
+                // align our movement vectors with the ground normal (ground normal = 'up')
+                Vector3 newForward = forward;
+                VectorExtensions.OrthoNormalize(ref groundNormal, ref newForward);
+
+                var deltaV = Vector3.Zero;
+
+                Vector3 targetSpeed = newForward * inputVector.X + Vector3.Cross(newForward, groundNormal) * inputVector.Y;
+                var currentVelocity = mover.PhysicsImplementation.GetVelocity();
+                var squaredDiff = targetSpeed.LengthSquared() - currentVelocity.LengthSquared();
+
+                if (squaredDiff > 0)
+                {
+                    float magDiff = MathF.Sqrt(squaredDiff);
+
+                    // scale velocity gap by magDiff / acceleration
+                    magDiff = 1f / magDiff;
+                    var factor = magDiff;//magDiff * acceleration;
+
+                    var velocityGap = Vector3.Subtract(targetSpeed, currentVelocity);
+
+                    // Scale 
+                    deltaV = Vector3.Multiply(velocityGap, factor);
+                }
+
+                doJump = inputVector.Z > 0f ? 1 : doJump;
+                if (doJump == 1)
+                { 
+                    deltaV.Z = jumpSpeed - currentVelocity.Z;
+                    doJump = 2;
+                }
+
+                mover.PhysicsImplementation.AddVelocity(deltaV);
             }
         }
     }

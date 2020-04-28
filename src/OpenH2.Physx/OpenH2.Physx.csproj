@@ -27,4 +27,8 @@
 		</None>
 	</ItemGroup>
 
+	<ItemGroup>
+	  <ProjectReference Include="..\OpenH2.Physics\OpenH2.Physics.csproj" />
+	</ItemGroup>
+
 </Project>

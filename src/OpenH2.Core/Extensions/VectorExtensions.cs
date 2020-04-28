@@ -39,12 +39,6 @@ namespace OpenH2.Core.Extensions
             return vec.Y;
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static Quaternion ToQuaternion(this Vector3 vec)
-        {
-            return Quaternion.CreateFromYawPitchRoll(vec.Y, vec.Z, vec.X);
-        }
-
         public static Vector4 RandomColor(int shade = 128)
         {
             var mix = new Vector4(shade, shade, shade, 256);
@@ -61,6 +55,19 @@ namespace OpenH2.Core.Extensions
             Random random = new Random();
 
             return new Vector3(random.Next(min, max), random.Next(min, max), random.Next(min, max));
+        }
+
+        public static void OrthoNormalize(ref Vector3 normal, ref Vector3 tangent)
+        {
+            normal = Vector3.Normalize(normal);
+
+            var dot = Vector3.Dot(tangent, normal);
+
+            var proj = Vector3.Multiply(normal, dot);
+
+            tangent = Vector3.Subtract(tangent, proj);
+
+            tangent = Vector3.Normalize(tangent);
         }
     }
 }

@@ -1,8 +1,4 @@
 ﻿using OpenH2.Core.Architecture;
-using OpenH2.Foundation;
-using OpenH2.Foundation.Physics;
-using OpenH2.Physics.Colliders;
-using OpenH2.Physics.SpatialPartitioning;
 using System.Numerics;
 
 namespace OpenH2.Engine.Components

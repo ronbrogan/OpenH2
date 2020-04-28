@@ -74,7 +74,7 @@ namespace OpenH2.Engine.EntityFactories
                     }
                 });
 
-                var xform = new TransformComponent(entity, instance.Position, instance.Orientation.ToQuaternion());
+                var xform = new TransformComponent(entity, instance.Position, QuaternionExtensions.FromH2vOrientation(instance.Orientation));
                 components.Add(xform);
                 components.Add(PhysicsComponentFactory.CreateRigidBody(entity, xform, map, itemHlmt));
 
@@ -98,7 +98,7 @@ namespace OpenH2.Engine.EntityFactories
                 }
 
                 Entity entity = new Vehicle();
-                var xform = new TransformComponent(entity, instance.Position, instance.Orientation.ToQuaternion());
+                var xform = new TransformComponent(entity, instance.Position, QuaternionExtensions.FromH2vOrientation(instance.Orientation));
                 entities.Add(CreateFromVehicleTag(entity, map, xform, vehi));
             }
 
@@ -116,7 +116,7 @@ namespace OpenH2.Engine.EntityFactories
                 throw new Exception("No tag found for vehi reference");
             }
 
-            var xform = new TransformComponent(item, instance.Position, instance.Orientation.ToQuaternion());
+            var xform = new TransformComponent(item, instance.Position, QuaternionExtensions.FromH2vOrientation(instance.Orientation));
 
             return CreateFromVehicleTag(item, map, xform, vehi);
         }

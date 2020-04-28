@@ -33,10 +33,15 @@ namespace OpenH2.Engine.Systems
             var pos =  xform.Position + camera.PositionOffset;
             var orient = Quaternion.Normalize(xform.Orientation);
 
+            var forward = Vector3.Transform(EngineGlobals.Forward, orient);
+            var up = Vector3.Transform(EngineGlobals.Up, orient);
+
+            
+
             var rotation = Matrix4x4.CreateFromQuaternion(orient);
             var translation = Matrix4x4.CreateTranslation(-pos);
 
-            camera.ViewMatrix = Matrix4x4.Multiply(translation, rotation);
+            camera.ViewMatrix = Matrix4x4.CreateLookAt(pos, pos + forward, up);
         }
 
         private void UpdateProjectionMatrix(CameraComponent camera)

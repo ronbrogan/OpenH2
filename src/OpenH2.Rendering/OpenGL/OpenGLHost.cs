@@ -35,7 +35,7 @@ namespace OpenH2.Rendering.OpenGL
         {
             var settings = new GameWindowSettings()
             {
-                
+                IsMultiThreaded = false
             };
 
             var nsettings = new NativeWindowSettings()
@@ -45,7 +45,7 @@ namespace OpenH2.Rendering.OpenGL
                 Size = new Vector2i((int)size.X, (int)size.Y),
                 Title = "OpenH2",
                 Flags = ContextFlags.Debug,
-                APIVersion = new Version(4, 0)
+                APIVersion = new Version(4, 0),
             };
 
             window = new GameWindow(settings, nsettings);

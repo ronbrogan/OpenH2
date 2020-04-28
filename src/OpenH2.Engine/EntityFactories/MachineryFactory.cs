@@ -46,7 +46,7 @@ namespace OpenH2.Engine.EntityFactories
                 }
             };
 
-            var orientation = Quaternion.CreateFromYawPitchRoll(instance.Orientation.Y, instance.Orientation.Z, instance.Orientation.X);
+            var orientation = QuaternionExtensions.FromH2vOrientation(instance.Orientation);
             var xform = new TransformComponent(scenery, instance.Position, orientation);
             var body = PhysicsComponentFactory.CreateRigidBody(scenery, xform, map, tag.PhysicalModel);
             scenery.SetComponents(new Component[] { comp, xform, body });

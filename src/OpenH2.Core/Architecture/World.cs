@@ -41,6 +41,24 @@ namespace OpenH2.Core.Architecture
             return accum;
         }
 
+        public List<T> Entities<T>() where T : Entity
+        {
+            if (Scene == null)
+                return null;
+
+            var accum = new List<T>();
+
+            foreach (var entity in this.Scene.Entities.Values)
+            {
+                if (entity is T tentity)
+                {
+                    accum.Add(tentity);
+                }
+            }
+
+            return accum;
+        }
+
         public abstract T GetGlobalResource<T>() where T : class;
 
         public void Update(double timestep)
