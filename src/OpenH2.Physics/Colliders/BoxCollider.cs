@@ -14,6 +14,7 @@ namespace OpenH2.Physics.Colliders
         public Matrix4x4 Transform => transform.TransformationMatrix;
         public Vector3 Position => transform.Position;
         public Vector3[] Vertices { get; private set; }
+        public int PhysicsMaterial => -1;
 
         public BoxCollider(ITransform xform, Vector3 HalfWidths, Vector3 originOffset = default)
         {

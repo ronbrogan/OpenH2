@@ -4,7 +4,7 @@ using System.Numerics;
 
 namespace OpenH2.Core.Tags
 {
-    [TagLabel(TagName.snd)]
+    [TagLabel(TagName.snd)] // snd!
     public class SoundTag : BaseTag
     {
         public override string Name { get; set; }

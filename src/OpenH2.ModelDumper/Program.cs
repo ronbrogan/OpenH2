@@ -2,8 +2,12 @@
 using OpenH2.Core.Formats;
 using OpenH2.Core.Representations;
 using OpenH2.Core.Tags;
+using OpenH2.Core.Tags.Common.Collision;
+using OpenH2.Core.Tags.Common.Models;
 using OpenH2.Core.Tags.Scenario;
+using OpenH2.Foundation;
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Numerics;
@@ -77,19 +81,42 @@ namespace OpenH2.ModelDumper
                     continue;
                 }
 
-                if (!scene.TryGetTag(bloc.PhysicalModel, out var phmo))
+                if (!scene.TryGetTag(bloc.PhysicalModel, out var hlmt))
                 {
                     continue;
                 }
 
-                if (!scene.TryGetTag(phmo.RenderModel, out var mode))
+                if (scene.TryGetTag(hlmt.RenderModel, out var mode))
                 {
-                    continue;
+                    var part = mode.Components[0].DamageLevels[0].HighestPieceIndex;
+
+                    writer.WriteModel(mode.Parts[part].Model, xform, "bloc_" + blocInstance.BlocDefinitionIndex);
                 }
 
-                var part = mode.Components[0].DamageLevels[0].HighestPieceIndex;
+                if (scene.TryGetTag(hlmt.ColliderId, out var coll))
+                {
+                    var meshes = new List<ModelMesh>();
 
-                writer.WriteModel(mode.Parts[part].Model, xform, "bloc_" + blocInstance.BlocDefinitionIndex);
+                    foreach (var comp in coll.ColliderComponents)
+                    {
+                        var level = comp.DamageLevels[0];
+                        //foreach(var level in comp.DamageLevels)
+                        {
+                            var triMesh = GetTriangulatedCollisionMesh(level.Parts);
+
+                            meshes.Add(new ModelMesh()
+                            {
+                                Indices = triMesh.Item2.ToArray(),
+                                Verticies = triMesh.Item1.Select(v => new VertexFormat(v, Vector2.Zero, Vector3.Zero)).ToArray(),
+                                ElementType = Foundation.MeshElementType.TriangleList
+                            });
+                        }
+                    }
+
+
+                    var model = new MeshCollection(meshes.ToArray());
+                    writer.WriteModel(model, xform, "bloc_" + blocInstance.BlocDefinitionIndex + "_coll");
+                }
             }
 
             foreach (var scenInstance in scenario.SceneryInstances)
@@ -131,17 +158,42 @@ namespace OpenH2.ModelDumper
                     continue;
                 }
 
-                if (!scene.TryGetTag(mach.PhysicalModel, out var phmo))
+                if (!scene.TryGetTag(mach.PhysicalModel, out var hlmt))
                 {
                     continue;
                 }
 
-                if (!scene.TryGetTag(phmo.RenderModel, out var mode))
+                if (scene.TryGetTag(hlmt.RenderModel, out var mode))
                 {
-                    continue;
+                    writer.WriteModel(mode.Parts[0].Model, xform, "mach_" + machInstance.MachineryDefinitionIndex);
                 }
 
-                writer.WriteModel(mode.Parts[0].Model, xform, "mach_" + machInstance.MachineryDefinitionIndex);
+                if(scene.TryGetTag(hlmt.ColliderId, out var coll))
+                {
+                    var meshes = new List<ModelMesh>();
+
+                    foreach(var comp in coll.ColliderComponents)
+                    {
+                        var level = comp.DamageLevels[0];
+                        //foreach(var level in comp.DamageLevels)
+                        {
+                            var triMesh = GetTriangulatedCollisionMesh(level.Parts);
+
+                            meshes.Add(new ModelMesh()
+                            {
+                                Indices = triMesh.Item2.ToArray(),
+                                Verticies = triMesh.Item1.Select(v => new VertexFormat(v, Vector2.Zero, Vector3.Zero)).ToArray(),
+                                ElementType = Foundation.MeshElementType.TriangleList
+                            });
+                        }
+                    }    
+
+
+                    var model = new MeshCollection(meshes.ToArray());
+                    writer.WriteModel(model, xform, "mach_" + machInstance.MachineryDefinitionIndex + "_coll");
+                }
+
+                
             }
 
             foreach (var itemPlacement in scenario.ItemCollectionPlacements)
@@ -211,6 +263,63 @@ namespace OpenH2.ModelDumper
             }
 
             return q;
+        }
+
+        private static (List<Vector3>, List<int>) GetTriangulatedCollisionMesh(ICollisionInfo[] collisionInfos)
+        {
+            var totalFaces = collisionInfos.Sum(c => c.Faces.Length);
+
+            List<Vector3> verts = new List<Vector3>(collisionInfos.Sum(c => c.Vertices.Length));
+            List<int> indices = new List<int>(totalFaces * 4);
+
+            for (var i = 0; i < collisionInfos.Length; i++)
+            {
+                var currentVertStart = verts.Count();
+
+                var col = collisionInfos[i];
+                verts.AddRange(col.Vertices.Select(v => new Vector3(v.x, v.y, v.z)));
+
+                var faceVerts = new List<ushort>(8);
+
+                for (var faceIndex = 0; faceIndex < col.Faces.Length; faceIndex++)
+                {
+                    var face = col.Faces[faceIndex];
+
+                    ushort edgeIndex = face.FirstEdge;
+                    do
+                    {
+                        var edge = col.HalfEdges[edgeIndex];
+
+                        faceVerts.Add(edge.Face0 == faceIndex
+                            ? edge.Vertex0
+                            : edge.Vertex1);
+
+                        edgeIndex = edge.Face0 == faceIndex
+                            ? edge.NextEdge
+                            : edge.PrevEdge;
+
+                    } while (edgeIndex != face.FirstEdge);
+
+                    // Triangulate into a fan, this assumes that we're working with convex
+                    // polygons with no colinear triplets, if this isn't sufficient we'll
+                    // have to resort to ear cutting
+                    var possibleTriangles = faceVerts.Count - 2;
+                    var first = faceVerts[0];
+                    for (var f = 0; f < possibleTriangles; f++)
+                    {
+                        var second = faceVerts[f + 1];
+                        var third = faceVerts[f + 2];
+
+                        indices.Add(currentVertStart + first);
+                        indices.Add(currentVertStart + second);
+                        indices.Add(currentVertStart + third);
+                    }
+
+                    faceVerts.Clear();
+                }
+            }
+
+            return (verts, indices);
         }
     }
 }

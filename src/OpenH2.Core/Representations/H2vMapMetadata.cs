@@ -16,6 +16,7 @@ namespace OpenH2.Core.Representations
 
         public Dictionary<uint, TagIndexEntry> TagIndex { get; internal set; }
 
+        public Dictionary<int, string> InternedStrings { get; internal set; }
         public Dictionary<uint, string> TagNames { get; set; }
     }
 }

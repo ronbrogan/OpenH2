@@ -7,6 +7,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
+using static OpenH2.Core.Tags.BspTag;
 
 namespace OpenH2.Engine.Factories
 {
@@ -27,55 +28,52 @@ namespace OpenH2.Engine.Factories
                 var param = phmo.BodyParameters[0];
 
                 body = new RigidBodyComponent(parent, transform, param.InertiaTensor, param.Mass, param.CenterOfMass);
+                body.Collider = ColliderFactory.GetColliderForHlmt(map, hlmt, damageLevel);
             }
             else
             {
                 body = new RigidBodyComponent(parent, transform);
-            }
-
-            if(hlmt.ColliderId.IsInvalid == false)
-            {
-                body.Collider = ColliderFactory.GetColliderForHlmt(map, hlmt, damageLevel);
-            }
-            
-            
+            }            
             
             return body;
         }
 
-        public static StaticTerrainComponent CreateTerrain(Entity parent, ICollisionInfo[] collisionInfos)
+        public static StaticTerrainComponent CreateTerrain(Entity parent, ICollisionInfo[] collisionInfos, ShaderInfo[] shaders)
         {
-            var (verts, indices) = GetTriangulatedCollisionMesh(collisionInfos);
+            var (verts, indices, matIndices) = GetTriangulatedCollisionMesh(collisionInfos, shaders);
 
             return new StaticTerrainComponent(parent)
             {
                 Vertices = verts.ToArray(),
-                TriangleIndices = indices.ToArray()
+                TriangleIndices = indices.ToArray(),
+                MaterialIndices = matIndices.ToArray()
             };
         }
 
-        public static StaticGeometryComponent CreateStaticGeometry(Entity parent, TransformComponent xform, ICollisionInfo collisionInfos)
+        public static StaticGeometryComponent CreateStaticGeometry(Entity parent, TransformComponent xform, ICollisionInfo collisionInfos, ShaderInfo[] shaders)
         {
-            return CreateStaticGeometry(parent, xform, new[] { collisionInfos });
+            return CreateStaticGeometry(parent, xform, new[] { collisionInfos }, shaders);
         }
 
-        public static StaticGeometryComponent CreateStaticGeometry(Entity parent, TransformComponent xform, ICollisionInfo[] collisionInfos)
+        public static StaticGeometryComponent CreateStaticGeometry(Entity parent, TransformComponent xform, ICollisionInfo[] collisionInfos, ShaderInfo[] shaders)
         {
-            var (verts, indices) = GetTriangulatedCollisionMesh(collisionInfos);
+            var (verts, indices, matIndices) = GetTriangulatedCollisionMesh(collisionInfos, shaders);
 
             return new StaticGeometryComponent(parent, xform)
             {
                 Vertices = verts.ToArray(),
-                TriangleIndices = indices.ToArray()
+                TriangleIndices = indices.ToArray(),
+                MaterialIndices = matIndices.ToArray()
             };
         }
 
-        private static (List<Vector3>,List<int>) GetTriangulatedCollisionMesh(ICollisionInfo[] collisionInfos)
+        private static (List<Vector3>,List<int>,List<int>) GetTriangulatedCollisionMesh(ICollisionInfo[] collisionInfos, ShaderInfo[] shaders)
         {
             var totalFaces = collisionInfos.Sum(c => c.Faces.Length);
 
             List<Vector3> verts = new List<Vector3>(collisionInfos.Sum(c => c.Vertices.Length));
             List<int> indices = new List<int>(totalFaces * 4);
+            List<int> matIndices = new List<int>(totalFaces);
 
             for (var i = 0; i < collisionInfos.Length; i++)
             {
@@ -118,13 +116,23 @@ namespace OpenH2.Engine.Factories
                         indices.Add(currentVertStart + first);
                         indices.Add(currentVertStart + second);
                         indices.Add(currentVertStart + third);
+
+                        if(face.ShaderIndex < shaders.Length)
+                        {
+                            var shader = shaders[face.ShaderIndex];
+                            matIndices.Add(shader.GlobalMaterialId);
+                        }
+                        else
+                        {
+                            matIndices.Add(-1);
+                        }
                     }
 
                     faceVerts.Clear();
                 }
             }
 
-            return (verts, indices);
+            return (verts, indices, matIndices);
         }
     }
 }

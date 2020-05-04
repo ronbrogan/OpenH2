@@ -7,6 +7,7 @@ namespace OpenH2.Physics.Colliders
     {
         public Vector3 Normal { get; set; }
         public float Distance { get; set; }
+        public int PhysicsMaterial => -1;
 
         public PlaneCollider() { }
     }

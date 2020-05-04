@@ -64,7 +64,9 @@
       </Grid>
     </ScrollViewer>
     <StackPanel Orientation="Horizontal" Grid.Row="2" Background="LightGray">
-      <TextBlock Text="Goto" Margin="10" />
+      <TextBlock Text="Basis" Margin="10" />
+      <TextBox MinWidth="80" TextWrapping="NoWrap" AcceptsReturn="False" Name="basisBox" Height="26" />
+      <TextBlock Text="Offset" Margin="10" />
       <TextBox MinWidth="80" TextWrapping="NoWrap" AcceptsReturn="False" Name="gotoBox" Height="26" />
       <Button Margin="6 0 6 0" Name="exportButton" Height="26">Export</Button>
     </StackPanel>

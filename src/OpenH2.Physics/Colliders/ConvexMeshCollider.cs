@@ -7,6 +7,7 @@ namespace OpenH2.Physics.Colliders
     {
         private readonly ITransform xform;
         public Vector3[] Vertices { get; private set; }
+        public int PhysicsMaterial => -1;
 
         public ConvexMeshCollider(ITransform xform, Vector3[] verts)
         {

@@ -53,7 +53,7 @@ namespace OpenH2.Engine.EntityFactories
                 }
             };
 
-            var collisionTerrain = PhysicsComponentFactory.CreateTerrain(terrain, tag.CollisionInfos);
+            var collisionTerrain = PhysicsComponentFactory.CreateTerrain(terrain, tag.CollisionInfos, tag.Shaders);
 
             var xform = new TransformComponent(terrain, Vector3.Zero);
 

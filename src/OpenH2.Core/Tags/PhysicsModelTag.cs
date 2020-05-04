@@ -1,4 +1,5 @@
-﻿using OpenH2.Core.Tags.Layout;
+﻿using OpenH2.Core.Representations;
+using OpenH2.Core.Tags.Layout;
 using System.Numerics;
 
 namespace OpenH2.Core.Tags
@@ -15,21 +16,94 @@ namespace OpenH2.Core.Tags
         [PrimitiveValue(4)]
         public Vector3 Params { get; set; }
 
+        [ReferenceArray(48)]
+        public Obj48[] Obj48s { get; set; }
+
         [ReferenceArray(56)]
         public BodyParameterSet[] BodyParameters { get; set; }
 
         [ReferenceArray(64)]
-        public Obj64[] Obj64s { get; set; }
+        public MaterialReference[] MaterialReferences { get; set; }
+
+        [ReferenceArray(88)]
+        public CapsuleDefinition[] CapsuleDefinitions { get; set; }
 
         [ReferenceArray(96)]
-        public Obj96[] Obj96s { get; set; }
+        public BoxDefinition[] BoxDefinitions { get; set; }
+
+        [ReferenceArray(112)]
+        public MeshDefinition[] MeshDefinitions { get; set; }
+
+        [ReferenceArray(120)]
+        public Obj120[] Obj120s { get; set; }
+
+        [ReferenceArray(128)]
+        // These seem like planes, first 3 floats appear to be unit vectors
+        public ColliderPlane[] ColliderPlanes { get; set; }
+
+        [ReferenceArray(144)]
+        public Obj144[] Obj144s { get; set; }
+
+        [ReferenceArray(152)]
+        public Obj152[] Obj152s { get; set; }
+
+        [ReferenceArray(160)]
+        public Obj160[] Obj160s { get; set; }
+
+        [ReferenceArray(168)]
+        public byte[] RawData1 { get; set; }
+
+        [ReferenceArray(184)]
+        public RagdollComponent[] RagdollComponents { get; set; }
 
         [ReferenceArray(192)]
-        public Obj192[] Obj192s { get; set; }
+        public Variant[] Variants { get; set; }
 
         [ReferenceArray(200)]
         public Obj200[] Obj200s { get; set; }
 
+        [ReferenceArray(232)]
+        public Obj232[] Obj232s { get; set; }
+
+        [FixedLength(24)]
+        public class Obj48
+        {
+            [PrimitiveValue(0)]
+            public ushort ValA { get; set; }
+
+            [PrimitiveValue(2)]
+            public ushort ValB { get; set; }
+
+            [PrimitiveValue(4)]
+            public ushort ValC { get; set; }
+
+            [PrimitiveValue(6)]
+            public ushort ValD { get; set; }
+
+            [ReferenceArray(8)]
+            public Obj48_8[] Obj8s { get; set; }
+
+            [PrimitiveValue(16)]
+            public InternedString MaterialNameA { get; set; }
+
+            [PrimitiveValue(20)]
+            public InternedString MaterialNameB { get; set; }
+
+            [FixedLength(12)]
+            public class Obj48_8
+            {
+                [PrimitiveValue(0)]
+                public ushort ValA { get; set; }
+
+                [PrimitiveValue(2)]
+                public ushort ValB { get; set; }
+
+                // Only zeroes observed @4
+
+                [PrimitiveValue(8)]
+                public float FloatA { get; set; }
+            }
+        }
 
         [FixedLength(144)]
         public class BodyParameterSet
@@ -45,28 +119,237 @@ namespace OpenH2.Core.Tags
 
         }
 
-        [FixedLength(16)]
-        public class Obj64
+        [FixedLength(12)]
+        public class MaterialReference
         {
+            [PrimitiveValue(0)]
+            public InternedString MaterialNameA { get; set; }
 
+            [PrimitiveValue(4)]
+            public InternedString MaterialNameB { get; set; }
+
+            [PrimitiveValue(12)]
+            public float FloatA { get; set; }
+        }
+
+        
+        [FixedLength(80)]
+        public class CapsuleDefinition
+        {
+            [PrimitiveValue(0)]
+            // palm trees are named palm_N_pill - capsule defs?
+            public InternedString ObjName { get; set; } 
+
+            [PrimitiveValue(4)]
+            public ushort ValA { get; set; }
+
+            [PrimitiveValue(6)]
+            public ushort MaterialIndexMaybe { get; set; }
+
+            [PrimitiveValue(8)]
+            public Vector3 Params { get; set; }
+
+            [PrimitiveArray(20, 2)]
+            public float[] FloatsA { get; set; }
+
+            [PrimitiveValue(28)]
+            public ushort ValC { get; set; }
+
+            [PrimitiveValue(30)]
+            public ushort ValD { get; set; }
+
+            // Ends in mat3x3?
         }
 
         [FixedLength(144)]
-        public class Obj96
+        public class BoxDefinition
         {
+            [PrimitiveValue(0)]
+            // flywheel has physics_box here - cuboid collider definition?
+            public InternedString ObjName { get; set; }
 
+            [PrimitiveValue(4)]
+            public ushort ValA { get; set; }
+
+            [PrimitiveValue(6)]
+            public ushort MaterialIndexMaybe { get; set; }
+
+            [PrimitiveValue(8)]
+            public Vector3 Params { get; set; }
+
+            [PrimitiveValue(20)]
+            public float FloatA { get; set; }
+
+            [PrimitiveValue(24)]
+            public float Mass { get; set; }
+
+            [PrimitiveValue(28)]
+            public ushort ValC { get; set; }
+
+            [PrimitiveValue(30)]
+            public ushort ValD { get; set; }
+
+            [PrimitiveValue(32)]
+            public uint ValE { get; set; }
+
+            [PrimitiveValue(36)]
+            public uint ValF { get; set; }
+
+            [PrimitiveValue(40)]
+            public uint ValG { get; set; }
+
+            [PrimitiveValue(44)]
+            public float FloatB { get; set; }
+
+            [PrimitiveValue(48)]
+            public float FloatC { get; set; }
+
+            [PrimitiveValue(52)]
+            public Vector3 HalfWidthsMaybe { get; set; }
+
+            // other stuff, some floats, zeroes
+
+            [PrimitiveValue(80)]
+            public Matrix4x4 Transform { get; set; }
         }
 
-        [FixedLength(28)]
-        public class Obj192
+        [FixedLength(256)]
+        public class MeshDefinition
         {
+            [PrimitiveValue(0)]
+            // flywheel has a physics_mesh name - convex mesh def?
+            public InternedString ObjName { get; set; }
 
+            [PrimitiveValue(4)]
+            public ushort ValA { get; set; }
+
+            [PrimitiveValue(6)]
+            public ushort MaterialIndexMaybe { get; set; }
+
+            [PrimitiveValue(8)]
+            public Vector3 Params { get; set; }
+
+            [PrimitiveArray(20, 2)]
+            public float[] FloatsA { get; set; }
+
+            [PrimitiveArray(28, 6)]
+            public ushort[] ShortsA { get; set; }
+
+            [PrimitiveArray(44, 7)]
+            public float[] FloatsB { get; set; }
+
+            [PrimitiveArray(96, 36)]
+            public float[] FloatsC { get; set; }
+        }
+
+        [FixedLength(48)]
+        public class Obj120
+        {
+            [PrimitiveArray(0, 4)]
+            public Vector3[] VertsMaybe { get; set; }
+        }
+
+        [FixedLength(16)]
+        public class ColliderPlane
+        {
+            [PrimitiveValue(0)]
+            public Vector3 Normal { get; set; }
+
+            [PrimitiveValue(12)]
+            public float Distance { get; set; }
+        }
+
+        [FixedLength(56)]
+        public class Obj144
+        {
+            // Haven't seen anything meaningful yet
+        }
+
+        [FixedLength(8)]
+        public class Obj152
+        {
+            // Haven't seen anything meaningful yet
+        }
+
+        [FixedLength(24)]
+        public class Obj160
+        {
+            // Haven't seen anything meaningful yet
+        }
+
+        [FixedLength(148)]
+        public class RagdollComponent
+        {
+            [PrimitiveValue(0)]
+            public InternedString ComponentName { get; set; }
+        }
+
+        [FixedLength(12)]
+        public class Variant
+        {
+            [PrimitiveValue(0)]
+            public InternedString VariantName { get; set; }
+
+            [ReferenceArray(4)]
+            public DamageLevel[] DamageLevels { get; set; }
+
+
+            [FixedLength(12)]
+            public class DamageLevel
+            {
+                [PrimitiveValue(0)]
+                public InternedString DamageLevelName { get; set; }
+
+                [ReferenceArray(4)]
+                public NestedObj2[] Nested2 { get; set; }
+
+
+                [FixedLength(4)]
+                public class NestedObj2
+                {
+                    [PrimitiveValue(0)]
+                    // Body index?
+                    public ushort ValA { get; set; }
+
+                    [PrimitiveValue(2)]
+                    public ushort ValB { get; set; }
+                }
+            }
         }
 
         [FixedLength(12)]
         public class Obj200
         {
+            [PrimitiveValue(0)]
+            public InternedString ObjName { get; set; }
 
+            [PrimitiveValue(4)]
+            public ushort ValA { get; set; }
+
+            [PrimitiveValue(6)]
+            public ushort ValB { get; set; }
+
+            [PrimitiveValue(8)]
+            public ushort ValC { get; set; }
+
+            [PrimitiveValue(10)]
+            public ushort ValD { get; set; }
+        }
+
+        [FixedLength(132)]
+        public class Obj232
+        {
+            [PrimitiveValue(0)]
+            public InternedString ObjName { get; set; }
+
+            [PrimitiveValue(4)]
+            public ushort ValA { get; set; }
+
+            [PrimitiveValue(6)]
+            public ushort ValB { get; set; }
+
+            [PrimitiveArray(8, 31)]
+            public float[] FloatsA { get; set; }
         }
     }
 }

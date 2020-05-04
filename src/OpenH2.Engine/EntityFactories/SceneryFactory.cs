@@ -64,7 +64,7 @@ namespace OpenH2.Engine.EntityFactories
 
             if (def.Vertices.Length > 0)
             {
-                var geom = PhysicsComponentFactory.CreateStaticGeometry(scenery, xform, def);
+                var geom = PhysicsComponentFactory.CreateStaticGeometry(scenery, xform, def, bsp.Shaders);
                 comps.Add(geom);
             }
             

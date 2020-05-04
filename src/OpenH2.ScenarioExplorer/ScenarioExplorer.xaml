@@ -99,7 +99,7 @@
               </StackPanel>
               <StackPanel Orientation="Horizontal" VerticalAlignment="Center" >
                 <TextBlock Text="Internal Offset: "></TextBlock>
-                <Button Command="{Binding CopyData}" CommandParameter="{Binding InternalOffset}" Content="{Binding InternalOffset}" Padding="0" Background="Transparent" Foreground="Blue"></Button>
+                <Button Click="CopyData" DoubleTapped="GotoAddress" Content="{Binding InternalOffset}" Padding="0" Background="Transparent" Foreground="Blue"></Button>
               </StackPanel>
               <StackPanel Orientation="Horizontal" VerticalAlignment="Center" >
                 <TextBlock Text="Byte: "></TextBlock>
@@ -129,6 +129,10 @@
                 <TextBlock Text="String: "></TextBlock>
                 <Button Command="{Binding CopyData}" CommandParameter="{Binding String}" Content="{Binding String}" Padding="0" Background="Transparent" Foreground="Blue"></Button>
               </StackPanel>
+                <StackPanel Orientation="Horizontal" VerticalAlignment="Center" >
+                    <TextBlock Text="Interned String: "></TextBlock>
+                    <Button Command="{Binding CopyData}" CommandParameter="{Binding InternedString}" Content="{Binding InternedString}" Padding="0" Background="Transparent" Foreground="Blue"></Button>
+                </StackPanel>
             </StackPanel>
           </TabItem>
           <TabItem Header="Object">

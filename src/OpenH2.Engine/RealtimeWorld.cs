@@ -18,7 +18,7 @@ namespace OpenH2.Engine
             Systems.Add(new MoverSystem(this));
             Systems.Add(new CameraSystem(this));
             Systems.Add(new RenderCollectorSystem(this));
-            Systems.Add(new PhysicsSystem(this));
+            Systems.Add(new PhysxPhysicsSystem(this));
 
             globalResources.Add(new RenderListStore());
             globalResources.Add(new InputStore());

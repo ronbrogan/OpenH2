@@ -32,7 +32,7 @@ namespace OpenH2.AvaloniaControls
             AvaloniaProperty.RegisterDirect<HexViewer, HexViewerFeature>(nameof(SelectedFeature), h => h.SelectedFeature, (h, v) => h.SelectedFeature = v);
 
         public static readonly DirectProperty<HexViewer, int> SelectedOffsetProperty =
-            AvaloniaProperty.RegisterDirect<HexViewer, int>(nameof(SelectedOffset), h => h.SelectedOffset, (h, v) => h.SelectedOffset = v, defaultBindingMode: Avalonia.Data.BindingMode.TwoWay);
+            AvaloniaProperty.RegisterDirect<HexViewer, int>(nameof(SelectedOffset), h => h.SelectedOffset, (h, v) => { h.SelectedOffset = v; h.GotoAddress(v); }, defaultBindingMode: Avalonia.Data.BindingMode.TwoWay);
 
         public static readonly DirectProperty<HexViewer, bool> IsDisabledProperty =
             AvaloniaProperty.RegisterDirect<HexViewer, bool>(nameof(IsDisabled), h => h.IsDisabled, (h,v) => h.IsDisabled = v);
@@ -100,7 +100,8 @@ namespace OpenH2.AvaloniaControls
         private TextBlock HexBox { get; set; }
         private TextBlock AsciiBox { get; set; }
         private Button ExportButton { get; set; }
-
+        private TextBox GotoBox { get; }
+        private TextBox BasisBox { get; }
         private TextBlock[] Boxes { get; set; }
 
         private HexViewerViewModel DataVM { get; set; }
@@ -123,6 +124,8 @@ namespace OpenH2.AvaloniaControls
             this.HexBox = this.FindControl<TextBlock>("hexBox");
             this.AsciiBox = this.FindControl<TextBlock>("asciiBox");
             this.ExportButton = this.FindControl<Button>("exportButton");
+            this.GotoBox = this.FindControl<TextBox>("gotoBox");
+            this.BasisBox = this.FindControl<TextBox>("basisBox");
 
             this.Scroller.ObservableForProperty(s => s.Offset).Subscribe(o =>
             {
@@ -142,9 +145,12 @@ namespace OpenH2.AvaloniaControls
                 box.FontSize = 14;
             }
 
-            this.FindControl<TextBox>("gotoBox").KeyDown += this.GotoBox_KeyDown;
+            this.GotoBox.KeyDown += this.OffsetBox_KeyDown;
+            this.BasisBox.KeyDown += this.OffsetBox_KeyDown;
             this.ExportButton.Command = ReactiveCommand.CreateFromTask(ExportButton_Click);
         }
+
+        
 
         private void InitializeComponent()
         {
@@ -256,54 +262,101 @@ namespace OpenH2.AvaloniaControls
             var pos = hit.TextPosition;
 
             this.SelectedOffset = CursorToOffset(pos);
-            this.SelectedFeature = null;
 
-            for(var i = _features.Count - 1; i > 0; i--)
+            if(e.ClickCount == 2)
             {
-                var feature = _features[i];
+                this.BasisBox.Text = this.SelectedOffset.ToString();
+                this.GotoBox.Text = "0";
+            }
+            else
+            {
+                this.SelectedFeature = null;
 
-                var start = OffsetToCursor(feature.Start);
-                var end = OffsetToCursor(feature.Start + feature.Length);
-
-                if (pos >= start && pos < end)
+                for (var i = _features.Count - 1; i > 0; i--)
                 {
-                    this.SelectedFeature = feature;
-                    return;
+                    var feature = _features[i];
+
+                    var start = OffsetToCursor(feature.Start);
+                    var end = OffsetToCursor(feature.Start + feature.Length);
+
+                    if (pos >= start && pos < end)
+                    {
+                        this.SelectedFeature = feature;
+                        return;
+                    }
                 }
             }
         }
+
+        private string LastSaveLocation = "D:\\";
 
         private async Task ExportButton_Click()
         {
             var dialog = new SaveFileDialog
             {
-                InitialDirectory = "D:\\",
+                InitialDirectory = LastSaveLocation,
                 Title = "Save Data"
             };
 
             if(Application.Current.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
             {
-                var path = await dialog.ShowAsync(desktop.MainWindow);
-
-                File.WriteAllBytes(path, this.allData.ToArray());
+                try
+                {
+                    var path = await dialog.ShowAsync(desktop.MainWindow);
+                    File.WriteAllBytes(path, this.allData.ToArray());
+                    LastSaveLocation = Path.GetDirectoryName(path);
+                }
+                catch (Exception e)
+                {
+                    Console.WriteLine(e);
+                }
             }
         }
 
-        private void GotoBox_KeyDown(object sender, Avalonia.Input.KeyEventArgs e)
+        private void OffsetBox_KeyDown(object sender, Avalonia.Input.KeyEventArgs e)
         {
-            var box = (TextBox)sender;
-
             if (e.Key == Avalonia.Input.Key.Enter)
             {
-                if (int.TryParse(box.Text, out var address))
-                {
-                    this.SelectedOffset = address;
-                    var cursor = OffsetToCursor(address);
-                    var hit = this.HexBox.FormattedText.HitTestTextPosition(cursor);
-
-                    this.Scroller.Offset = new Vector(this.Scroller.Offset.X, hit.Y);
-                }
+                UpdateSelectedOffset();
             }
+        }
+
+        private void UpdateSelectedOffset()
+        { 
+            if (int.TryParse(this.BasisBox.Text, out var basis) == false)
+            {
+                this.BasisBox.Text = "0";
+                basis = 0;
+            }
+
+            if(int.TryParse(this.GotoBox.Text, out var offset) == false)
+            {
+                offset = this.SelectedOffset;
+                this.GotoBox.Text = offset.ToString();
+            }
+
+            if(this.SelectedOffset != basis + offset)
+            {
+                this.SelectedOffset = basis + offset;
+            }
+        }
+
+        private void GotoAddress(int address)
+        {
+            int.TryParse(this.BasisBox.Text, out var basis);
+
+            this.GotoBox.Text = (address - basis).ToString();
+            var cursor = OffsetToCursor(address);
+            var hit = this.HexBox.FormattedText.HitTestTextPosition(cursor);
+
+            var offset = this.Scroller.Offset;
+
+            var onScreen = hit.Y > offset.Y && hit.Y < (offset.Y + this.Scroller.Bounds.Height);
+
+            if(onScreen == false)
+            {
+                this.Scroller.Offset = new Vector(this.Scroller.Offset.X, hit.Y);
+            }            
         }
 
         private FormattedTextStyleSpan GetFormattedSpan(HexViewerFeature feature)

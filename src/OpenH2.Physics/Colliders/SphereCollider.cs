@@ -8,5 +8,6 @@ namespace OpenH2.Physics.Colliders
         public Vector3 Center { get; set; }
         public float Radius { get; set; }
         public Matrix4x4 Transform { get; set; }
+        public int PhysicsMaterial => -1;
     }
 }

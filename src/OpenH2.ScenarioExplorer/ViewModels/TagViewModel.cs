@@ -1,6 +1,7 @@
 ﻿using Avalonia.Media;
 using OpenH2.AvaloniaControls.HexViewerImpl;
 using OpenH2.Core.Extensions;
+using OpenH2.Core.Representations;
 using OpenH2.Core.Tags;
 using OpenH2.Core.Tags.Common;
 using OpenH2.Core.Types;
@@ -95,7 +96,7 @@ namespace OpenH2.ScenarioExplorer.ViewModels
         public List<CaoViewModel> Caos { get; set; } = new List<CaoViewModel>();
         public int RawOffset { get; internal set; }
 
-        public void GeneratePointsOfInterest()
+        public void GeneratePointsOfInterest(H2vMap scene)
         {
             // go over all data, create entries for:
             //  - internal offset and count entries
@@ -107,23 +108,34 @@ namespace OpenH2.ScenarioExplorer.ViewModels
                 return;
             }
 
+            var internedStringRefs = new List<int>();
+
             var span = this.Data.Span;
 
             for (var i = 0; i < this.Data.Length; i += 4)
             {
-                var val = span.ReadInt32At(i);
+                var val = span.ReadUInt32At(i);
 
                 if(val > this.InternalOffsetStart && val < this.InternalOffsetEnd)
                 {
                     var cao = new CaoViewModel(i-4)
                     {
-                        Offset = val - InternalOffsetStart,
+                        Offset = (int)val - InternalOffsetStart,
                         Count = span.ReadInt32At(i - 4)
                     };
 
                     this.Caos.Add(cao);
                 }
 
+                var internedStringIndex = val & 0xFFFFFF;
+                var internedStringLength = (byte)(val >> 24);
+
+                if(internedStringIndex > 0
+                    && scene.InternedStrings.TryGetValue((int)internedStringIndex, out var str) 
+                    && str.Length == internedStringLength)
+                {
+                    internedStringRefs.Add(i);
+                }
             }
 
             if(this.Caos.Count == 0)
@@ -147,15 +159,15 @@ namespace OpenH2.ScenarioExplorer.ViewModels
 
             foreach(var cao in this.Caos)
             {
-                if (cao.Origin > 2048)
-                    break;
-
-                Console.WriteLine($"{cao.Origin}\t{cao.Count}\t{cao.Offset}");
-
                 this.Features.Add(new HexViewerFeature(cao.Origin, 8, Brushes.Goldenrod));
                 var chunkFeature = new HexViewerFeature(cao.Offset, cao.Count * cao.ItemSize, Brushes.OliveDrab);
 
                 this.Features.Add(chunkFeature);
+            }
+
+            foreach(var str in internedStringRefs)
+            {
+                this.Features.Add(new HexViewerFeature(str, 4, Brushes.Red));
             }
         }
 

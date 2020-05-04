@@ -109,10 +109,29 @@ namespace OpenH2.Core.Factories
             scene.PrimaryMagic = CalculatePrimaryMagic(scene.IndexHeader);
             scene.TagIndex = GetTagIndex(scene, reader.MapReader, out var firstOffset);
             scene.SecondaryMagic = CalculateSecondaryMagic(scene.Header, firstOffset);
-            scene.TagNames = GetStrings(scene, reader);
+            scene.InternedStrings = GetAllStrings(scene, reader);
+            scene.TagNames = GetTagNames(scene, reader);
         }
 
-        private Dictionary<uint, string> GetStrings(H2vBaseMap scene, H2vReader reader)
+
+        private Dictionary<int, string> GetAllStrings(H2vBaseMap scene, H2vReader reader)
+        {
+            var dict = new Dictionary<int, string>();
+
+            var start = scene.Header.OffsetToScriptReferenceIndex;
+
+            for(var i = 0; i < scene.Header.ScriptReferenceCount; i++)
+            {
+                var offset = reader.MapReader.ReadInt32At(start + i * 4);
+                var value = reader.MapReader.ReadStringStarting(scene.Header.OffsetToScriptReferenceStrings + offset);
+
+                dict.Add(i, value);
+            }
+
+            return dict;
+        }
+
+        private Dictionary<uint, string> GetTagNames(H2vBaseMap scene, H2vReader reader)
         {
             var dict = new Dictionary<uint, string>();
             var index = scene.TagIndex.Values.OrderBy(i => i.Offset.Value);
@@ -203,7 +222,7 @@ namespace OpenH2.Core.Factories
             index.TagListCount =          /**/  span.ReadInt32At(4);
             index.TagIndexOffset =        /**/  scene.PrimaryOffset(span.ReadInt32At(8));
             index.Scenario =              /**/  span.ReadTagRefAt(12);
-            index.TagIDStart =            /**/  span.ReadInt32At(16);
+            index.Globals =               /**/  span.ReadTagRefAt(16);
             index.Unknown1 =              /**/  span.ReadInt32At(20);
             index.TagIndexCount =         /**/  span.ReadInt32At(24);
             index.TagsLabel =             /**/  span.ReadStringFrom(28, 4);

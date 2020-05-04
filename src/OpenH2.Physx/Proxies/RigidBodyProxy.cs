@@ -39,7 +39,7 @@ namespace OpenH2.Physx.Proxies
         public void Move(Vector3 delta, double timestep) => this.RigidBody.GlobalPosePosition += delta;
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public Physics.RaycastHit[] Raycast(Vector3 direction, float maxDistance, int maxResults)
+        public Physics.Core.RaycastHit[] Raycast(Vector3 direction, float maxDistance, int maxResults)
         {
             var hits = this.RigidBody.Scene.Raycast(this.RigidBody.GlobalPosePosition,
                 direction,
@@ -47,7 +47,7 @@ namespace OpenH2.Physx.Proxies
                 maxResults,
                 HitFlag.Default | HitFlag.MeshMultiple);
 
-            var result = new List<Physics.RaycastHit>(hits.Length);
+            var result = new List<Physics.Core.RaycastHit>(hits.Length);
 
             for (var i = 0; i < hits.Length; i++)
             {
@@ -57,7 +57,7 @@ namespace OpenH2.Physx.Proxies
                 if (h.Actor == this.RigidBody)
                     continue;
 
-                result.Add(new Physics.RaycastHit
+                result.Add(new Physics.Core.RaycastHit
                 (
                     h.Distance,
                     h.Flags.HasFlag(HitFlag.Position) ? h.Position : Vector3.Zero,

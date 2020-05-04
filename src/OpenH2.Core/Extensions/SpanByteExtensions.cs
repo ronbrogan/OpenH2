@@ -157,6 +157,15 @@ namespace OpenH2.Core.Extensions
             return new TagRef(data.ReadUInt32At(offset));
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static InternedString ReadInternedStringAt(this Span<byte> data, int offset)
+        {
+            var val = data.ReadUInt32At(offset);
+
+            // top byte is length
+            return new InternedString(val & 0xFFFFFF, val >> 24);
+        }
+
         public static CountAndOffset ReadMetaCaoAt(this Span<byte> data, int offset, TagIndexEntry index)
         {
             return ReadMetaCaoAt(data, offset, index.Offset.Value);

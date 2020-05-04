@@ -1,4 +1,5 @@
-﻿using System.Numerics;
+﻿using OpenH2.Physics.Core;
+using System.Numerics;
 
 namespace OpenH2.Physics.Proxying
 {

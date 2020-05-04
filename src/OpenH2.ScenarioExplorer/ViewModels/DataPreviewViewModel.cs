@@ -13,6 +13,9 @@ namespace OpenH2.ScenarioExplorer.ViewModels
             if (data.Length == 0)
                 return;
 
+            if (offset < 0 || offset > data.Length - 1)
+                return;
+
             this.Byte = data[offset];
             this.Short = data.ReadInt16At(offset);
             this.UShort = data.ReadUInt16At(offset);
@@ -38,6 +41,8 @@ namespace OpenH2.ScenarioExplorer.ViewModels
         public float Float { get; set; }
 
         public string String { get; set; }
+
+        public string InternedString { get; set; }
 
         public long InternalOffset { get; set; }
 

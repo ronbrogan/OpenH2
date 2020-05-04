@@ -2,11 +2,14 @@
 using OpenH2.Core.Configuration;
 using OpenH2.Core.Extensions;
 using OpenH2.Core.Factories;
+using OpenH2.Core.Representations;
 using OpenH2.Engine.Components;
+using OpenH2.Engine.Components.Globals;
 using OpenH2.Engine.Entities;
 using OpenH2.Engine.EntityFactories;
 using OpenH2.Foundation;
 using OpenH2.Foundation.Engine;
+using OpenH2.Physics.Core;
 using OpenH2.Rendering.Abstractions;
 using OpenH2.Rendering.OpenGL;
 using OpenToolkit.Graphics.ES30;
@@ -100,8 +103,17 @@ namespace OpenH2.Engine
             var fs = new FileStream(mapPath, FileMode.Open, FileAccess.Read, FileShare.Read, 8096);
             var map = factory.FromFile(fs);
 
-            map.TryGetTag(map.IndexHeader.Scenario, out var scenario);
+            LoadGlobals(destination, map);
+            LoadScenario(destination, map);
 
+            //PositioningEntities.AddLocators(map, destination);
+
+            //PlaceLights(destination);
+        }
+
+        private static void LoadScenario(Scene destination, H2vMap map)
+        {
+            map.TryGetTag(map.IndexHeader.Scenario, out var scenario);
             var terrains = scenario.Terrains;
 
             foreach (var terrain in terrains)
@@ -110,7 +122,7 @@ namespace OpenH2.Engine
 
                 destination.AddEntity(TerrainFactory.FromBspData(map, bsp));
 
-                foreach(var instance in bsp.InstancedGeometryInstances)
+                foreach (var instance in bsp.InstancedGeometryInstances)
                 {
                     destination.AddEntity(SceneryFactory.FromInstancedGeometry(map, bsp, instance));
                 }
@@ -153,12 +165,28 @@ namespace OpenH2.Engine
                 if (item.Index == ushort.MaxValue)
                     continue;
 
-               destination.AddEntity(ItemFactory.CreateFromVehicleInstance(map, scenario, item));
+                destination.AddEntity(ItemFactory.CreateFromVehicleInstance(map, scenario, item));
+            }
+        }
+
+        private static void LoadGlobals(Scene destination, H2vMap map)
+        {
+            var gotGlobals = map.TryGetTag(map.IndexHeader.Globals, out var globals);
+            Debug.Assert(gotGlobals);
+
+            var globalEntity = new GlobalSettings();
+            var globalMaterials = new MaterialListComponent(globalEntity);
+
+            for (var i = 0; i < globals.MaterialDefinitions.Length; i++)
+            {
+                var def = globals.MaterialDefinitions[i];
+                var mat = new PhysicsMaterial(i, def.Friction, def.Friction, def.Restitution);
+
+                globalMaterials.AddPhysicsMaterial(mat);
             }
 
-            //PositioningEntities.AddLocators(map, destination);
-
-            //PlaceLights(destination);
+            globalEntity.SetComponents(new Component[] { globalMaterials });
+            destination.AddEntity(globalEntity);
         }
 
         private void PlaceLights(Scene destination)

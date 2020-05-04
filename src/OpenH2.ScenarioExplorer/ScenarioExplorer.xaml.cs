@@ -1,5 +1,7 @@
 ﻿using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Input;
+using Avalonia.Interactivity;
 using Avalonia.Markup.Xaml;
 using Avalonia.Media;
 using OpenH2.Core.Extensions;
@@ -52,6 +54,20 @@ namespace OpenH2.ScenarioExplorer
 
             var flipVertically = Matrix.CreateScale(1, -1);
             this.Get<Image>("bitmPreviewImage").RenderTransform = new MatrixTransform(flipVertically);
+        }
+
+        public void CopyData(object sender, RoutedEventArgs e)
+        {
+            var button = (Button)sender;
+            _ = App.Current.Clipboard.SetTextAsync(button.Content.ToString());
+        }
+
+        public void GotoAddress(object sender, RoutedEventArgs e)
+        {
+            var button = (Button)sender;
+            var offset = int.Parse(button.Content.ToString());
+
+            this.DataCtx.SelectedOffset = offset;
         }
 
         private void GotoTagBoxKeyDown(object sender, Avalonia.Input.KeyEventArgs e)

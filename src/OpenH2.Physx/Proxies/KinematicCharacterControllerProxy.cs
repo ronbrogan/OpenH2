@@ -29,11 +29,11 @@ namespace OpenH2.Physx.Proxies
 
         public void UseTransformationMatrix(Matrix4x4 transform) => this.Controller.Position = transform.Translation;
 
-        public Physics.RaycastHit[] Raycast(Vector3 direction, float maxDistance, int maxResults)
+        public Physics.Core.RaycastHit[] Raycast(Vector3 direction, float maxDistance, int maxResults)
         {
             var hits = this.Controller.Actor.Scene.Raycast(this.Controller.Position, direction, maxDistance, maxResults);
 
-            return hits.Select(h => new Physics.RaycastHit(
+            return hits.Select(h => new Physics.Core.RaycastHit(
                 h.Distance,
                 h.Position,
                 h.Normal

@@ -1,11 +1,13 @@
 ﻿using OpenH2.Core.Architecture;
 using OpenH2.Core.Tags;
 using OpenH2.Engine.Components;
+using OpenH2.Engine.Components.Globals;
 using OpenH2.Engine.Entities;
 using OpenH2.Engine.Stores;
 using OpenH2.Foundation;
 using OpenH2.Foundation.Physics;
 using OpenH2.Physics.Colliders;
+using OpenH2.Physics.Core;
 using OpenH2.Physics.Proxying;
 using OpenH2.Physx.Proxies;
 using OpenToolkit.Windowing.Common.Input;
@@ -13,6 +15,8 @@ using PhysX;
 using PhysX.VisualDebugger;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.Linq;
 using System.Numerics;
 using PxFoundation = PhysX.Foundation;
 using PxPhysics = PhysX.Physics;
@@ -20,23 +24,27 @@ using PxScene = PhysX.Scene;
 
 namespace OpenH2.Engine.Systems
 {
-    public class PhysicsSystem : WorldSystem
+    public class PhysxPhysicsSystem : WorldSystem
     {
         private PxFoundation physxFoundation;
         private PxPhysics physxPhysics;
         private PxScene physxScene;
         private ControllerManager controllerManager;
         private Cooking cooker;
-        private Material defaultMat;
         private Pvd pvd;
 
+        private Material defaultMat;
+        private Material invisWallMat;
+        private MaterialListComponent materialList;
+        private Material[] globalMaterials;
+        private Dictionary<int, Material> adhocMaterials = new Dictionary<int, Material>();
         private Dictionary<MoverComponent, Controller> ControllerMap = new Dictionary<MoverComponent, Controller>();
-
+        
         private InputStore input;
         public bool StepMode = true;
         public bool ShouldStep = false;
 
-        public PhysicsSystem(World world) : base(world)
+        public PhysxPhysicsSystem(World world) : base(world)
         {
             // Setup PhysX infra here
 
@@ -49,7 +57,8 @@ namespace OpenH2.Engine.Systems
 #else
             this.physxPhysics = new PxPhysics(this.physxFoundation);
 #endif
-            this.defaultMat = this.physxPhysics.CreateMaterial(0.5f, 0.5f, 0.1f);            
+            this.defaultMat = this.physxPhysics.CreateMaterial(0.5f, 0.5f, 0.1f);
+            this.invisWallMat= this.physxPhysics.CreateMaterial(0f, 0f, 0f);
 
             var sceneDesc = new SceneDesc()
             {
@@ -81,6 +90,21 @@ namespace OpenH2.Engine.Systems
 
         public override void Initialize(Core.Architecture.Scene scene)
         {
+            // Setup materials from globals
+            this.adhocMaterials.Clear();
+            this.materialList = world.Components<MaterialListComponent>().FirstOrDefault();
+            Debug.Assert(this.materialList != null);
+            var allMaterials = this.materialList.GetPhysicsMaterials();
+
+            this.globalMaterials = new Material[allMaterials.Length + 1];
+            this.globalMaterials[0] = this.defaultMat;
+            Debug.Assert(allMaterials.Length > allMaterials.Max(m => m.Id));
+
+            foreach(var mat in allMaterials)
+            {
+                this.GetOrCreateMaterial(mat.Id);
+            }
+
             // Cook terrain and static geom meshes
             var terrains = world.Components<StaticTerrainComponent>();
 
@@ -89,7 +113,8 @@ namespace OpenH2.Engine.Systems
                 var meshDesc = new TriangleMeshDesc()
                 {
                     Points = terrain.Vertices,
-                    Triangles = terrain.TriangleIndices
+                    Triangles = terrain.TriangleIndices,
+                    MaterialIndices = GetMaterialIndices(terrain.MaterialIndices)
                 };
 
                 var actor = CreateStaticActor(meshDesc);
@@ -102,7 +127,8 @@ namespace OpenH2.Engine.Systems
                 var meshDesc = new TriangleMeshDesc()
                 {
                     Points = scenery.Vertices,
-                    Triangles = scenery.TriangleIndices
+                    Triangles = scenery.TriangleIndices,
+                    MaterialIndices = GetMaterialIndices(scenery.MaterialIndices)
                 };
 
                 var actor = CreateStaticActor(meshDesc, scenery.Transform.TransformationMatrix);
@@ -233,8 +259,9 @@ namespace OpenH2.Engine.Systems
                 desc.SetPositions(vertCollider.Vertices);
                 var mesh = this.physxPhysics.CreateConvexMesh(this.cooker, desc);
                 var geom = new ConvexMeshGeometry(mesh);
+                var mat = this.GetOrCreateMaterial(-1);
                 // TODO: re-use shared shapes instead of creating exclusive
-                RigidActorExt.CreateExclusiveShape(body, geom, defaultMat);
+                RigidActorExt.CreateExclusiveShape(body, geom, mat);
             }
             else if(component.Collider is ConvexModelCollider modelCollider)
             {
@@ -244,8 +271,9 @@ namespace OpenH2.Engine.Systems
                     desc.SetPositions(verts);
                     var mesh = this.physxPhysics.CreateConvexMesh(this.cooker, desc);
                     var geom = new ConvexMeshGeometry(mesh);
+                    var mat = this.GetOrCreateMaterial(-1);
                     // TODO: re-use shared shapes instead of creating exclusive
-                    RigidActorExt.CreateExclusiveShape(body, geom, defaultMat);
+                    RigidActorExt.CreateExclusiveShape(body, geom, mat);
                 }
             }
 
@@ -326,8 +354,45 @@ namespace OpenH2.Engine.Systems
             var meshGeom = new TriangleMeshGeometry(finalMesh);
 
             var rigid = this.physxPhysics.CreateRigidStatic(transform);
-            RigidActorExt.CreateExclusiveShape(rigid, meshGeom, defaultMat);
+            RigidActorExt.CreateExclusiveShape(rigid, meshGeom, globalMaterials, null);
             return rigid;
+        }
+
+        private Material GetOrCreateMaterial(int id)
+        {
+            // This method accounts for having defaultMat at location 0 of the globalMaterials array
+            // Because of this, any id check against the array must be incremented by 1 and checked appropriately
+
+            Material mat;
+
+            // If it's a valid index and the expanded mats array can hold it, and it's not null, use it
+            if (id >= 0 && this.globalMaterials.Length-1 > id && this.globalMaterials[id+1] != null)
+                return this.globalMaterials[id+1];
+            else if (this.adhocMaterials.TryGetValue(id, out mat))
+                return mat;
+
+            // Get original def with raw id
+            var matDef = this.materialList?.GetPhysicsMaterial(id);
+
+            if (matDef == null)
+                return this.defaultMat;
+
+            mat = this.physxPhysics.CreateMaterial(matDef.StaticFriction, matDef.DynamicFriction, matDef.Restitution);
+
+            // If it's a valid index and the expanded mats array can hold it, set it
+            if (id >= 0 && this.globalMaterials.Length-1 > id)
+                this.globalMaterials[id+1] = mat;
+            else
+                this.adhocMaterials[id] = mat;
+
+            return mat;
+        }
+
+        private short[] GetMaterialIndices(int[] array)
+        {
+            // Add 1 to the index (account for default mat at 0)
+            // and cast to short for PhysX
+            return array.Select(i => (short)(i + 1)).ToArray();
         }
 
         private class CustomHitReport : UserControllerHitReport

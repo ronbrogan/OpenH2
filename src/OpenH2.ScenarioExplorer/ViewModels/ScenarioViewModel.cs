@@ -16,7 +16,7 @@ namespace OpenH2.ScenarioExplorer.ViewModels
 
         public Dictionary<uint, TagViewModel> TagLookup = new Dictionary<uint, TagViewModel>();
 
-        private readonly H2vMap scene;
+        public H2vMap Scene { get; }
         private readonly Memory<byte> sceneData;
         private readonly bool discoveryMode;
 
@@ -30,7 +30,7 @@ namespace OpenH2.ScenarioExplorer.ViewModels
 
         public ScenarioViewModel(H2vMap scene, Memory<byte> sceneData, bool discoveryMode = true)
         {
-            this.scene = scene;
+            this.Scene = scene;
             this.sceneData = sceneData;
             this.discoveryMode = discoveryMode;
 
@@ -41,6 +41,13 @@ namespace OpenH2.ScenarioExplorer.ViewModels
             {
                 Id = scene.IndexHeader.Scenario,
                 TagName = "scnr - " + scene.TagNames[scene.IndexHeader.Scenario]
+            };
+
+            var globalsVm = GetTagViewModel(scene.IndexHeader.Globals);
+            var globalsEntry = new TagTreeEntryViewModel()
+            {
+                Id = scene.IndexHeader.Globals,
+                TagName = globalsVm.Name
             };
 
 
@@ -54,8 +61,9 @@ namespace OpenH2.ScenarioExplorer.ViewModels
             }
 
             treeProcessor.PopulateChildren(scenarioVm, scenarioEntry);
+            //treeProcessor.PopulateChildren(scenarioVm, globalsEntry);
 
-            this.TreeRoots = new[] { scenarioEntry };
+            this.TreeRoots = new[] { globalsEntry, scenarioEntry };
         }
 
         internal void PopulateTreeChildren(TagTreeEntryViewModel selectedEntry)
@@ -76,7 +84,7 @@ namespace OpenH2.ScenarioExplorer.ViewModels
                 return existingVm;
             }
 
-            if(scene.TryGetTag<BaseTag>(tagId, out var tag) == false)
+            if(Scene.TryGetTag<BaseTag>(tagId, out var tag) == false)
             {
                 return null;
             }
@@ -93,11 +101,11 @@ namespace OpenH2.ScenarioExplorer.ViewModels
 
             if (vm.Data.IsEmpty)
             {
-                vm.Data = scene.ReadData(tag.DataFile, indexEntry.Offset, indexEntry.DataSize);
+                vm.Data = Scene.ReadData(tag.DataFile, indexEntry.Offset, indexEntry.DataSize);
             }
 
             vm.OriginalTag = tag;
-            vm.GeneratePointsOfInterest();
+            vm.GeneratePointsOfInterest(this.Scene);
 
             TagLookup.Add(tagId, vm);
 

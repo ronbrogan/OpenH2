@@ -203,7 +203,7 @@ namespace OpenH2.Core.Tags
             public int Unknown { get; set; }
 
             [PrimitiveValue(8)]
-            public ushort Value1 { get; set; }
+            public ushort GlobalMaterialId { get; set; }
 
             [PrimitiveValue(16)]
             public TagRef<ShaderTag> Shader { get; set; }
