@@ -50,7 +50,9 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "External", "External", "{79
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OpenH2.Physx", "OpenH2.Physx\OpenH2.Physx.csproj", "{3B450D9D-960E-4E3E-969E-B5EFBA02B14C}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OpenH2.PhysicsModelAnalysis", "OpenH2.PhysicsModelAnalysis\OpenH2.PhysicsModelAnalysis.csproj", "{AD8F60AF-422B-44F5-B5F8-1577D8B5C0E8}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OpenH2.PhysicsModelAnalysis", "OpenH2.PhysicsModelAnalysis\OpenH2.PhysicsModelAnalysis.csproj", "{AD8F60AF-422B-44F5-B5F8-1577D8B5C0E8}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OpenH2.Foundation.Tests", "OpenH2.Foundation.Tests\OpenH2.Foundation.Tests.csproj", "{E467DB44-C310-48E6-91AE-5C1BEEC62FC9}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -196,6 +198,14 @@ Global
 		{AD8F60AF-422B-44F5-B5F8-1577D8B5C0E8}.Release|Any CPU.Build.0 = Release|Any CPU
 		{AD8F60AF-422B-44F5-B5F8-1577D8B5C0E8}.Release|x64.ActiveCfg = Release|Any CPU
 		{AD8F60AF-422B-44F5-B5F8-1577D8B5C0E8}.Release|x64.Build.0 = Release|Any CPU
+		{E467DB44-C310-48E6-91AE-5C1BEEC62FC9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E467DB44-C310-48E6-91AE-5C1BEEC62FC9}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E467DB44-C310-48E6-91AE-5C1BEEC62FC9}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{E467DB44-C310-48E6-91AE-5C1BEEC62FC9}.Debug|x64.Build.0 = Debug|Any CPU
+		{E467DB44-C310-48E6-91AE-5C1BEEC62FC9}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E467DB44-C310-48E6-91AE-5C1BEEC62FC9}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E467DB44-C310-48E6-91AE-5C1BEEC62FC9}.Release|x64.ActiveCfg = Release|Any CPU
+		{E467DB44-C310-48E6-91AE-5C1BEEC62FC9}.Release|x64.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -218,6 +228,7 @@ Global
 		{1AA00E4F-5D88-4512-B24F-183871D4DA13} = {F8FDF358-B807-4FC4-AB33-13D15FB1B906}
 		{3B450D9D-960E-4E3E-969E-B5EFBA02B14C} = {795E77E4-EAD0-45E0-B90A-92F278FB9996}
 		{AD8F60AF-422B-44F5-B5F8-1577D8B5C0E8} = {D955C66F-CF2B-4A63-A95F-F8D3F98253DF}
+		{E467DB44-C310-48E6-91AE-5C1BEEC62FC9} = {F8FDF358-B807-4FC4-AB33-13D15FB1B906}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {D941C8C9-2B2C-47A1-82CB-B045206BA267}

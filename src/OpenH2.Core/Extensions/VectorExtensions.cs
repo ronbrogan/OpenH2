@@ -57,7 +57,7 @@ namespace OpenH2.Core.Extensions
             return new Vector3(random.Next(min, max), random.Next(min, max), random.Next(min, max));
         }
 
-        public static void OrthoNormalize(ref Vector3 normal, ref Vector3 tangent)
+        public static Vector3 OrthoNormalize(Vector3 normal, Vector3 tangent)
         {
             normal = Vector3.Normalize(normal);
 
@@ -67,7 +67,7 @@ namespace OpenH2.Core.Extensions
 
             tangent = Vector3.Subtract(tangent, proj);
 
-            tangent = Vector3.Normalize(tangent);
+            return Vector3.Normalize(tangent);
         }
     }
 }

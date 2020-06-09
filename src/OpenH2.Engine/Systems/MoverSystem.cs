@@ -2,6 +2,8 @@
 using OpenH2.Core.Extensions;
 using OpenH2.Engine.Components;
 using OpenH2.Engine.Stores;
+using OpenH2.Engine.Systems.Movement;
+using OpenH2.Foundation.Extensions;
 using OpenToolkit.Windowing.Common.Input;
 using System;
 using System.Collections.Generic;
@@ -106,66 +108,33 @@ namespace OpenH2.Engine.Systems
                 }
                 else if(mover.Mode == MoverComponent.MovementMode.DynamicCharacterControl)
                 {
-                    UpdateDynamicController(mover, moverInputVector, forward, timestep);
+                    UpdateDynamicController(mover, mover.State as DynamicMovementController, moverInputVector, forward, strafe, timestep);
                 }
             }
         }
 
-        private void UpdateDynamicController(MoverComponent mover, Vector3 inputVector, Vector3 forward, double timestep)
+        /// <summary>
+        /// Goals of movement
+        ///  - Foot friction
+        ///  - Inertia (quick reversal of direction causes lag in movement)
+        ///  - There's a "sliding" state where any desired movement along the velocity vector
+        ///      (whether forward or backward) is not taken, however lateral (with respect to the current velocity)
+        ///      movement is honored
+        ///  - Maximum climb angle, slide if above
+        ///  - Slide can happen from going too fast to get traction
+        ///  - Jump works as long as you could typically walk
+        ///  - Friction against walls and ceilings does not slow movement
+        ///  - Crouching reduces friction (causes more sliding)
+        /// </summary>
+
+        private void UpdateDynamicController(MoverComponent mover, 
+            DynamicMovementController dynamic, 
+            Vector3 inputVector, 
+            Vector3 forward, 
+            Vector3 strafe, 
+            double timestep)
         {
-            // TODO - config
-            var accelerationRate = 50f;
-            var jumpSpeed = 3f;
-
-            // HACK: boosting input magnitude to get movement as desired
-            inputVector = Vector3.Multiply(inputVector, 20f);
-
-            var grounded = false;
-            var groundNormal = Vector3.Zero;
-            int doJump = 0;
-
-            var footResults = mover.PhysicsImplementation.Raycast(-EngineGlobals.Up, 1f, 1);
-            if(footResults.Length > 0)
-            {
-                grounded = true;
-                groundNormal = footResults[0].Normal;
-            }
-
-            if (grounded)
-            {
-                // align our movement vectors with the ground normal (ground normal = 'up')
-                Vector3 newForward = forward;
-                VectorExtensions.OrthoNormalize(ref groundNormal, ref newForward);
-
-                var deltaV = Vector3.Zero;
-
-                Vector3 targetSpeed = newForward * inputVector.X + Vector3.Cross(newForward, groundNormal) * inputVector.Y;
-                var currentVelocity = mover.PhysicsImplementation.GetVelocity();
-                var squaredDiff = targetSpeed.LengthSquared() - currentVelocity.LengthSquared();
-
-                if (squaredDiff > 0)
-                {
-                    float magDiff = MathF.Sqrt(squaredDiff);
-
-                    // scale velocity gap by magDiff / acceleration
-                    magDiff = 1f / magDiff;
-                    var factor = magDiff;//magDiff * acceleration;
-
-                    var velocityGap = Vector3.Subtract(targetSpeed, currentVelocity);
-
-                    // Scale 
-                    deltaV = Vector3.Multiply(velocityGap, factor);
-                }
-
-                doJump = inputVector.Z > 0f ? 1 : doJump;
-                if (doJump == 1)
-                { 
-                    deltaV.Z = jumpSpeed - currentVelocity.Z;
-                    doJump = 2;
-                }
-
-                mover.PhysicsImplementation.AddVelocity(deltaV);
-            }
+            dynamic.Move(mover.PhysicsImplementation, inputVector, forward, strafe);
         }
     }
 }

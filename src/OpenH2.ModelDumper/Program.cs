@@ -49,7 +49,7 @@ namespace OpenH2.ModelDumper
 
             foreach(var chunk in bspMeshes)
             { 
-                writer.WriteModel(chunk.Model, default, "bsp");
+                //writer.WriteModel(chunk.Model, default, "bsp");
             }
 
             var instancedGeometries = bsps.SelectMany(b => b.InstancedGeometryInstances
@@ -63,87 +63,87 @@ namespace OpenH2.ModelDumper
                     * Matrix4x4.CreateFromQuaternion(QuatFrom3x3Mat4(geom.Instance.RotationMatrix)) 
                     * Matrix4x4.CreateTranslation(geom.Instance.Position);
 
-                writer.WriteModel(def.Model, xform, "instanced_" + geom.Instance.Index);
+               // writer.WriteModel(def.Model, xform, "instanced_" + geom.Instance.Index);
             }
 
             var scenario = scene.GetLocalTagsOfType<ScenarioTag>().First();
 
-            foreach(var blocInstance in scenario.BlocInstances)
-            {
-                var def = scenario.BlocDefinitions[blocInstance.BlocDefinitionIndex];
+            //foreach(var blocInstance in scenario.BlocInstances)
+            //{
+            //    var def = scenario.BlocDefinitions[blocInstance.BlocDefinitionIndex];
 
-                var xform = Matrix4x4.CreateScale(new Vector3(1))
-                    * Matrix4x4.CreateFromQuaternion(Quaternion.CreateFromYawPitchRoll(blocInstance.Orientation.Y, blocInstance.Orientation.Z, blocInstance.Orientation.X))
-                    * Matrix4x4.CreateTranslation(blocInstance.Position);
+            //    var xform = Matrix4x4.CreateScale(new Vector3(1))
+            //        * Matrix4x4.CreateFromQuaternion(Quaternion.CreateFromYawPitchRoll(blocInstance.Orientation.Y, blocInstance.Orientation.Z, blocInstance.Orientation.X))
+            //        * Matrix4x4.CreateTranslation(blocInstance.Position);
 
-                if(!scene.TryGetTag(def.Bloc, out var bloc))
-                {
-                    continue;
-                }
+            //    if(!scene.TryGetTag(def.Bloc, out var bloc))
+            //    {
+            //        continue;
+            //    }
 
-                if (!scene.TryGetTag(bloc.PhysicalModel, out var hlmt))
-                {
-                    continue;
-                }
+            //    if (!scene.TryGetTag(bloc.PhysicalModel, out var hlmt))
+            //    {
+            //        continue;
+            //    }
 
-                if (scene.TryGetTag(hlmt.RenderModel, out var mode))
-                {
-                    var part = mode.Components[0].DamageLevels[0].HighestPieceIndex;
+            //    if (scene.TryGetTag(hlmt.RenderModel, out var mode))
+            //    {
+            //        var part = mode.Components[0].DamageLevels[0].HighestPieceIndex;
 
-                    writer.WriteModel(mode.Parts[part].Model, xform, "bloc_" + blocInstance.BlocDefinitionIndex);
-                }
+            //        writer.WriteModel(mode.Parts[part].Model, xform, "bloc_" + blocInstance.BlocDefinitionIndex);
+            //    }
 
-                if (scene.TryGetTag(hlmt.ColliderId, out var coll))
-                {
-                    var meshes = new List<ModelMesh>();
+            //    if (scene.TryGetTag(hlmt.ColliderId, out var coll))
+            //    {
+            //        var meshes = new List<ModelMesh>();
 
-                    foreach (var comp in coll.ColliderComponents)
-                    {
-                        var level = comp.DamageLevels[0];
-                        //foreach(var level in comp.DamageLevels)
-                        {
-                            var triMesh = GetTriangulatedCollisionMesh(level.Parts);
+            //        foreach (var comp in coll.ColliderComponents)
+            //        {
+            //            var level = comp.DamageLevels[0];
+            //            //foreach(var level in comp.DamageLevels)
+            //            {
+            //                var triMesh = GetTriangulatedCollisionMesh(level.Parts);
 
-                            meshes.Add(new ModelMesh()
-                            {
-                                Indices = triMesh.Item2.ToArray(),
-                                Verticies = triMesh.Item1.Select(v => new VertexFormat(v, Vector2.Zero, Vector3.Zero)).ToArray(),
-                                ElementType = Foundation.MeshElementType.TriangleList
-                            });
-                        }
-                    }
+            //                meshes.Add(new ModelMesh()
+            //                {
+            //                    Indices = triMesh.Item2.ToArray(),
+            //                    Verticies = triMesh.Item1.Select(v => new VertexFormat(v, Vector2.Zero, Vector3.Zero)).ToArray(),
+            //                    ElementType = Foundation.MeshElementType.TriangleList
+            //                });
+            //            }
+            //        }
 
 
-                    var model = new MeshCollection(meshes.ToArray());
-                    writer.WriteModel(model, xform, "bloc_" + blocInstance.BlocDefinitionIndex + "_coll");
-                }
-            }
+            //        var model = new MeshCollection(meshes.ToArray());
+            //        writer.WriteModel(model, xform, "bloc_" + blocInstance.BlocDefinitionIndex + "_coll");
+            //    }
+            //}
 
-            foreach (var scenInstance in scenario.SceneryInstances)
-            {
-                var def = scenario.SceneryDefinitions[scenInstance.SceneryDefinitionIndex];
+            //foreach (var scenInstance in scenario.SceneryInstances)
+            //{
+            //    var def = scenario.SceneryDefinitions[scenInstance.SceneryDefinitionIndex];
 
-                var xform = Matrix4x4.CreateScale(new Vector3(1))
-                    * Matrix4x4.CreateFromQuaternion(Quaternion.CreateFromYawPitchRoll(scenInstance.Orientation.Y, scenInstance.Orientation.Z, scenInstance.Orientation.X))
-                    * Matrix4x4.CreateTranslation(scenInstance.Position);
+            //    var xform = Matrix4x4.CreateScale(new Vector3(1))
+            //        * Matrix4x4.CreateFromQuaternion(Quaternion.CreateFromYawPitchRoll(scenInstance.Orientation.Y, scenInstance.Orientation.Z, scenInstance.Orientation.X))
+            //        * Matrix4x4.CreateTranslation(scenInstance.Position);
 
-                if (!scene.TryGetTag(def.Scenery, out var scen))
-                {
-                    continue;
-                }
+            //    if (!scene.TryGetTag(def.Scenery, out var scen))
+            //    {
+            //        continue;
+            //    }
 
-                if (!scene.TryGetTag(scen.PhysicalModel, out var phmo))
-                {
-                    continue;
-                }
+            //    if (!scene.TryGetTag(scen.PhysicalModel, out var phmo))
+            //    {
+            //        continue;
+            //    }
 
-                if (!scene.TryGetTag(phmo.RenderModel, out var mode))
-                {
-                    continue;
-                }
+            //    if (!scene.TryGetTag(phmo.RenderModel, out var mode))
+            //    {
+            //        continue;
+            //    }
 
-                writer.WriteModel(mode.Parts[0].Model, xform, "scen_" + scenInstance.SceneryDefinitionIndex);
-            }
+            //    writer.WriteModel(mode.Parts[0].Model, xform, "scen_" + scenInstance.SceneryDefinitionIndex);
+            //}
 
             foreach (var machInstance in scenario.MachineryInstances)
             {
@@ -165,7 +165,7 @@ namespace OpenH2.ModelDumper
 
                 if (scene.TryGetTag(hlmt.RenderModel, out var mode))
                 {
-                    writer.WriteModel(mode.Parts[0].Model, xform, "mach_" + machInstance.MachineryDefinitionIndex);
+                    //writer.WriteModel(mode.Parts[0].Model, xform, "mach_" + machInstance.MachineryDefinitionIndex);
                 }
 
                 if(scene.TryGetTag(hlmt.ColliderId, out var coll))
@@ -227,7 +227,7 @@ namespace OpenH2.ModelDumper
 
                 var index = mode.Components[0].DamageLevels[0].HighestPieceIndex;
                 
-                writer.WriteModel(mode.Parts[index].Model, xform, "itmc_" + itemPlacement.ItemCollectionReference);
+                //writer.WriteModel(mode.Parts[index].Model, xform, "itmc_" + itemPlacement.ItemCollectionReference);
             }
 
             File.WriteAllText(outPath, writer.ToString());

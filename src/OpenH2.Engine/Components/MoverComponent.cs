@@ -14,12 +14,14 @@ namespace OpenH2.Engine.Components
         public TransformComponent Transform { get; }
         public MovementConfig Config { get; }
         public MovementMode Mode { get; }
+        public object State { get; }
 
-        public MoverComponent(Entity parent, TransformComponent xform, MovementConfig config) : base(parent)
+        public MoverComponent(Entity parent, TransformComponent xform, MovementConfig config, object state = null) : base(parent)
         {
             this.Transform = xform;
             this.Config = config;
             this.Mode = config.Mode;
+            this.State = state;
         }
 
         public class MovementConfig

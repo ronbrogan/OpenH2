@@ -18,6 +18,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Numerics;
+using System.Threading.Tasks;
 using PxFoundation = PhysX.Foundation;
 using PxPhysics = PhysX.Physics;
 using PxScene = PhysX.Scene;
@@ -41,7 +42,7 @@ namespace OpenH2.Engine.Systems
         private Dictionary<MoverComponent, Controller> ControllerMap = new Dictionary<MoverComponent, Controller>();
         
         private InputStore input;
-        public bool StepMode = true;
+        public bool StepMode = false;
         public bool ShouldStep = false;
 
         public PhysxPhysicsSystem(World world) : base(world)
@@ -65,8 +66,7 @@ namespace OpenH2.Engine.Systems
                 BroadPhaseType = BroadPhaseType.SweepAndPrune,
                 Gravity = world.Gravity,
                 Flags = SceneFlag.EnableStabilization,
-                SolverType = SolverType.TGS,
-                
+                SolverType = SolverType.TGS
             };
 
             this.physxScene = this.physxPhysics.CreateScene(sceneDesc);
@@ -319,7 +319,10 @@ namespace OpenH2.Engine.Systems
 
                 var capsuleDesc = new CapsuleGeometry(0.175f, 0.725f / 2f);
                 
-                RigidActorExt.CreateExclusiveShape(body, capsuleDesc, defaultMat);
+                var shape = RigidActorExt.CreateExclusiveShape(body, capsuleDesc, defaultMat);
+
+                shape.ContactOffset = 0.5f;
+                shape.RestOffset = 0.1f;
 
                 component.PhysicsImplementation = new RigidBodyProxy(body);
                 this.physxScene.AddActor(body);

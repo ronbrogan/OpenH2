@@ -1,5 +1,6 @@
 ﻿using OpenH2.Core.Architecture;
 using OpenH2.Engine.Components;
+using OpenH2.Engine.Systems.Movement;
 using System;
 using System.Numerics;
 
@@ -33,7 +34,7 @@ namespace OpenH2.Engine.Entities
 
             this.Components = new Component[]
             {
-                new MoverComponent(this, xform, moverConfig),
+                new MoverComponent(this, xform, moverConfig, new DynamicMovementController()),
                 xform,
                 camera
             };
