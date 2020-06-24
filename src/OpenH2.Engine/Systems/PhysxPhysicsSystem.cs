@@ -66,7 +66,7 @@ namespace OpenH2.Engine.Systems
                 BroadPhaseType = BroadPhaseType.SweepAndPrune,
                 Gravity = world.Gravity,
                 Flags = SceneFlag.EnableStabilization,
-                SolverType = SolverType.TGS
+                SolverType = SolverType.TGS,
             };
 
             this.physxScene = this.physxPhysics.CreateScene(sceneDesc);
