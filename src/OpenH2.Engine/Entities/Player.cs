@@ -11,10 +11,10 @@ namespace OpenH2.Engine.Entities
         public Player(bool useDynamicController)
         {
             var xform = new TransformComponent(this, Quaternion.Identity);
-            xform.Position = new Vector3(0, 0, 3);
+            xform.Position = new Vector3(0, 0, 4);
             xform.UpdateDerivedData();
 
-            var camera = new CameraComponent(this);
+            
 
             var light = new PointLightEmitterComponent(this);
             light.Light = new Foundation.PointLight()
@@ -32,9 +32,16 @@ namespace OpenH2.Engine.Entities
                 Speed = 0.1f,
             };
 
+            var dynamic = new DynamicMovementController();
+            var mover = new MoverComponent(this, xform, moverConfig, dynamic);
+            dynamic.Mover = mover;
+
+            var camera = new CameraComponent(this);
+            camera.PositionOffset = moverConfig.EyeOffset;
+
             this.Components = new Component[]
             {
-                new MoverComponent(this, xform, moverConfig, new DynamicMovementController()),
+                mover,
                 xform,
                 camera
             };

@@ -1,13 +1,9 @@
 ﻿using OpenH2.Core.Architecture;
-using OpenH2.Core.Tags;
 using OpenH2.Engine.Components;
 using OpenH2.Engine.Components.Globals;
-using OpenH2.Engine.Entities;
 using OpenH2.Engine.Stores;
-using OpenH2.Foundation;
 using OpenH2.Foundation.Physics;
 using OpenH2.Physics.Colliders;
-using OpenH2.Physics.Core;
 using OpenH2.Physics.Proxying;
 using OpenH2.Physx.Proxies;
 using OpenToolkit.Windowing.Common.Input;
@@ -18,7 +14,6 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Numerics;
-using System.Threading.Tasks;
 using PxFoundation = PhysX.Foundation;
 using PxPhysics = PhysX.Physics;
 using PxScene = PhysX.Scene;
@@ -36,6 +31,7 @@ namespace OpenH2.Engine.Systems
 
         private Material defaultMat;
         private Material invisWallMat;
+        private Material frictionlessMat;
         private MaterialListComponent materialList;
         private Material[] globalMaterials;
         private Dictionary<int, Material> adhocMaterials = new Dictionary<int, Material>();
@@ -60,6 +56,9 @@ namespace OpenH2.Engine.Systems
 #endif
             this.defaultMat = this.physxPhysics.CreateMaterial(0.5f, 0.5f, 0.1f);
             this.invisWallMat= this.physxPhysics.CreateMaterial(0f, 0f, 0f);
+            this.frictionlessMat = this.physxPhysics.CreateMaterial(0f, 0f, 0f);
+            this.frictionlessMat.RestitutionCombineMode = CombineMode.Minimum;
+            this.frictionlessMat.Flags = MaterialFlags.DisableFriction;
 
             var sceneDesc = new SceneDesc()
             {
@@ -280,17 +279,24 @@ namespace OpenH2.Engine.Systems
             this.physxScene.AddActor(body);
         }
 
+        // TODO: Currently, this system is responsible for creating and setting PhysicsImplementation properties
+        //   -issue: PhysicsImplementations can't be passed/delegated before this system is initialized, as the props are unset
+        //   -motive: DynamicMovementController wants to be able to setup callbacks before any physics events happen
         public void AddCharacterController(MoverComponent component)
         {
             var config = component.Config;
 
+            var radius = 0.175f;
+
             if (component.Mode == MoverComponent.MovementMode.KinematicCharacterControl)
             {
+                
+
                 var desc = new CapsuleControllerDesc()
                 {
-                    Height = config.Height-.02f,
+                    Height = config.Height-.02f - (2 * radius),
                     Position = component.Transform.Position,
-                    Radius = 0.175f,
+                    Radius = radius,
                     MaxJumpHeight = 1f,
                     UpDirection = EngineGlobals.Up,
                     SlopeLimit = MathF.Cos(0.872665f), // cos(50 degrees)
@@ -317,12 +323,12 @@ namespace OpenH2.Engine.Systems
                 body.Mass = 175f;
                 body.UserData = component;
 
-                var capsuleDesc = new CapsuleGeometry(0.175f, 0.725f / 2f);
+                var capsuleDesc = new CapsuleGeometry(radius, config.Height / 2f - radius);
                 
                 var shape = RigidActorExt.CreateExclusiveShape(body, capsuleDesc, defaultMat);
 
-                shape.ContactOffset = 0.5f;
-                shape.RestOffset = 0.1f;
+                shape.ContactOffset = 0.1f;
+                shape.RestOffset = 0.09f;
 
                 component.PhysicsImplementation = new RigidBodyProxy(body);
                 this.physxScene.AddActor(body);

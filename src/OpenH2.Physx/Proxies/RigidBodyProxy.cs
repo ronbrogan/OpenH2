@@ -3,6 +3,7 @@ using PhysX;
 using System.Collections.Generic;
 using System.Numerics;
 using System.Runtime.CompilerServices;
+using System.Security.Cryptography.X509Certificates;
 
 namespace OpenH2.Physx.Proxies
 {

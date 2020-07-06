@@ -1,4 +1,5 @@
 ﻿using OpenH2.Core.Extensions;
+using OpenH2.Engine.Components;
 using OpenH2.Foundation.Extensions;
 using OpenH2.Physics.Proxying;
 using System.Numerics;
@@ -16,6 +17,9 @@ namespace OpenH2.Engine.Systems.Movement
         private float jumpSpeed = 1f;
 
         public ControllerState state { get; private set; } = ControllerState.Walking;
+
+        // TODO: this is only present to access IPhysicsImplementation, if we can access it/be provided it, that would be better
+        public MoverComponent Mover { get; internal set; }
 
         public DynamicMovementController()
         {
@@ -42,6 +46,14 @@ namespace OpenH2.Engine.Systems.Movement
             {
                 TryJump(physics, EngineGlobals.Up);   
             }
+        }
+
+        private void SetupPhysicsCallbacks()
+        {
+            var physics = this.Mover.PhysicsImplementation;
+
+            
+
         }
 
         // TODO: Use contacts instead of/in addition to raycasting
