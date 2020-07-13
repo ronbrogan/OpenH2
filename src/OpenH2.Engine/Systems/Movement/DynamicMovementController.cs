@@ -1,8 +1,10 @@
 ﻿using OpenH2.Core.Extensions;
 using OpenH2.Engine.Components;
 using OpenH2.Foundation.Extensions;
+using OpenH2.Physics.Core;
 using OpenH2.Physics.Proxying;
 using System.Numerics;
+using System.Threading;
 
 namespace OpenH2.Engine.Systems.Movement
 {
@@ -10,11 +12,13 @@ namespace OpenH2.Engine.Systems.Movement
 
     public class DynamicMovementController
     {
-        private float desiredAirSpeed = 1.2f;
+        private float desiredAirSpeed = 1.1f;
         private float deltaAirSpeed = 0.4f;
         private float desiredGroundSpeed = 2.5f;
         private float deltaGroundSpeed = 1.0f;
-        private float jumpSpeed = 1f;
+        private float jumpSpeed = 4.7f;
+
+        private ContactInfo GroundContact = null;
 
         public ControllerState state { get; private set; } = ControllerState.Walking;
 
@@ -23,6 +27,14 @@ namespace OpenH2.Engine.Systems.Movement
 
         public DynamicMovementController()
         {
+        }
+
+        public void ContactFound(ContactInfo contact)
+        {
+            if(contact.IsGroundContact)
+            {
+                Interlocked.CompareExchange(ref GroundContact, contact, null);
+            }
         }
 
         public void Move(IPhysicsProxy physics,
@@ -48,28 +60,14 @@ namespace OpenH2.Engine.Systems.Movement
             }
         }
 
-        private void SetupPhysicsCallbacks()
-        {
-            var physics = this.Mover.PhysicsImplementation;
-
-            
-
-        }
-
-        // TODO: Use contacts instead of/in addition to raycasting
-        //   motive: raycasting processes landing too early (by detecting nearby ground early)
-        //   motive: 
         public Vector3 ProcessCollision(IPhysicsProxy physics)
         {
-            var footResults = physics.Raycast(-EngineGlobals.Up, 1f, 1);
-
-            if (footResults.Length == 0)
+            // Early out if no ground contact since last check
+            if(this.GroundContact == null)
             {
                 this.state = ControllerState.Falling;
                 return EngineGlobals.Up;
             }
-
-            var contact = footResults[0];
 
             // Handle landing from a fall
             if(this.state == ControllerState.Falling)
@@ -84,7 +82,11 @@ namespace OpenH2.Engine.Systems.Movement
             // TODO: handle sliding -> walking
             //    - If we're slding and drop below threshold and not too steep, transition back to walking
 
-            return contact.Normal;
+            var contactNormal = GroundContact.Normal;
+
+            GroundContact = null;
+
+            return contactNormal;
         }
 
         public void HandleMovement(IPhysicsProxy physics, Vector3 movement)
@@ -146,6 +148,7 @@ namespace OpenH2.Engine.Systems.Movement
             }            
         }
 
+        // BUG: can get 'stuck' at the top edge of a ramp
         private Vector3 GetVelocityChange(IPhysicsProxy physics, Vector3 movement, float desiredMagnitude, float deltaMagnitude)
         {
             Vector3 currentVelocity = physics.GetVelocity();

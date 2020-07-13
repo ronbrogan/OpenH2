@@ -44,7 +44,7 @@ namespace OpenH2.Engine.Systems
         {
             var speed = 1f;
 
-            var kb = input.Keyboard;
+            var kb = input.DownKeys;
 
             if (kb[Key.LControl])
             {
@@ -59,16 +59,22 @@ namespace OpenH2.Engine.Systems
                 { Key.S, () => delta += new Vector3(-speed, 0, 0) },
                 { Key.A, () => delta += new Vector3(0, -speed, 0) },
                 { Key.D, () => delta += new Vector3(0, speed, 0) },
-                { Key.Space, () => delta += new Vector3(0, 0, speed) },
+                //{ Key.Space, () => delta += new Vector3(0, 0, speed) },
                 { Key.LShift, () => delta += new Vector3(0, 0, -speed) },
             };
 
+            // handle down keys
             foreach (var key in keyMap.Keys)
             {
                 if (kb[key])
                 {
                     keyMap[key]();
                 }
+            }
+
+            if(input.PressedKeys[Key.Space])
+            {
+                delta += new Vector3(0, 0, speed);
             }
 
             return delta;

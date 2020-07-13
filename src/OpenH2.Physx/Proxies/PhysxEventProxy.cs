@@ -27,8 +27,12 @@ namespace OpenH2.Physx.Proxies
                 foreach(var c in contacts)
                 {
                     
+
+                    pairHeader.Actor0.GetShape(0).GetMaterialFromInternalFaceIndex(c.InternalFaceIndex0);
                 }
             }
+
+            
 
             base.OnContact(pairHeader, pairs);
         }

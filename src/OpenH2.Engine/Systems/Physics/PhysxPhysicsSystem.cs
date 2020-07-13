@@ -2,8 +2,11 @@
 using OpenH2.Engine.Components;
 using OpenH2.Engine.Components.Globals;
 using OpenH2.Engine.Stores;
+using OpenH2.Engine.Systems.Movement;
+using OpenH2.Engine.Systems.Physics;
 using OpenH2.Foundation.Physics;
 using OpenH2.Physics.Colliders;
+using OpenH2.Physics.Core;
 using OpenH2.Physics.Proxying;
 using OpenH2.Physx.Proxies;
 using OpenToolkit.Windowing.Common.Input;
@@ -30,13 +33,16 @@ namespace OpenH2.Engine.Systems
         private Pvd pvd;
 
         private Material defaultMat;
-        private Material invisWallMat;
+        private Material characterControlMat;
         private Material frictionlessMat;
         private MaterialListComponent materialList;
         private Material[] globalMaterials;
         private Dictionary<int, Material> adhocMaterials = new Dictionary<int, Material>();
+
         private Dictionary<MoverComponent, Controller> ControllerMap = new Dictionary<MoverComponent, Controller>();
-        
+        private PhysicsForceQueue queuedForces = new PhysicsForceQueue();
+        private IContactCreateProvider contactProvider;
+
         private InputStore input;
         public bool StepMode = false;
         public bool ShouldStep = false;
@@ -49,13 +55,16 @@ namespace OpenH2.Engine.Systems
 
 #if DEBUG
             pvd = new Pvd(this.physxFoundation);
-            pvd.Connect("localhost", 5425, TimeSpan.FromSeconds(10), InstrumentationFlag.All);
+            pvd.Connect("localhost", 5425, TimeSpan.FromSeconds(10), InstrumentationFlag.Debug);
             this.physxPhysics = new PxPhysics(this.physxFoundation, false, pvd);
 #else
             this.physxPhysics = new PxPhysics(this.physxFoundation);
 #endif
             this.defaultMat = this.physxPhysics.CreateMaterial(0.5f, 0.5f, 0.1f);
-            this.invisWallMat= this.physxPhysics.CreateMaterial(0f, 0f, 0f);
+
+            this.characterControlMat = this.physxPhysics.CreateMaterial(0.5f, 0.5f, 0f);
+            this.characterControlMat.RestitutionCombineMode = CombineMode.Minimum;
+
             this.frictionlessMat = this.physxPhysics.CreateMaterial(0f, 0f, 0f);
             this.frictionlessMat.RestitutionCombineMode = CombineMode.Minimum;
             this.frictionlessMat.Flags = MaterialFlags.DisableFriction;
@@ -66,9 +75,19 @@ namespace OpenH2.Engine.Systems
                 Gravity = world.Gravity,
                 Flags = SceneFlag.EnableStabilization,
                 SolverType = SolverType.TGS,
+                FilterShader = new DefaultFilterShader()
             };
 
             this.physxScene = this.physxPhysics.CreateScene(sceneDesc);
+
+            //this.physxScene.SetVisualizationParameter(VisualizationParameter.ContactPoint, true);
+            //this.physxScene.SetVisualizationParameter(VisualizationParameter.ContactNormal, true);
+            //this.physxScene.SetVisualizationParameter(VisualizationParameter.ContactForce, true);
+            //this.physxScene.SetVisualizationParameter(VisualizationParameter.ContactError, true);
+            
+            var pvdClient = this.physxScene.GetPvdSceneClient();
+            pvdClient.SetScenePvdFlags(SceneVisualizationFlags.TransmitContacts | SceneVisualizationFlags.TransmitConstraints | SceneVisualizationFlags.TransmitSceneQueries);
+
             var scale = TolerancesScale.Default;
             var cookingParams = new CookingParams()
             {
@@ -85,6 +104,10 @@ namespace OpenH2.Engine.Systems
 
             cooker = this.physxPhysics.CreateCooking(cookingParams);
             this.controllerManager = this.physxScene.CreateControllerManager();
+
+            var contactProv = new ContactModifyProxy();
+            this.contactProvider = contactProv;
+            this.physxScene.ContactModifyCallback = contactProv;
         }
 
         public override void Initialize(Core.Architecture.Scene scene)
@@ -156,8 +179,29 @@ namespace OpenH2.Engine.Systems
                 return;
 
             // Simulate, fetch results
-            this.physxScene.Simulate((float)timestep);
-            this.physxScene.FetchResults(true);
+            //this.physxScene.Simulate((float)timestep);
+            //this.physxScene.FetchResults(true);
+            
+            // Split simulation to allow modification of current simulation step
+            this.physxScene.Collide((float)timestep);
+            this.physxScene.FetchCollision(block: true);
+
+            // Need to apply any forces here, between FetchCollision and Advance.
+            // However, contacts aren't available here - we'll need to record contacts or something during ContactModify via the Collide phase
+            foreach(var (body,velocity) in this.queuedForces.VelocityChanges)
+            {
+                body.AddVelocity(velocity);
+            }
+
+            foreach (var (body, force) in this.queuedForces.ForceChanges)
+            {
+                body.AddForce(force);
+            }
+
+            this.queuedForces.Clear();
+
+            this.physxScene.Advance();
+            this.physxScene.FetchResults(block: true);
 
             // Update all engine transforms
             foreach (var actor in this.physxScene.RigidDynamicActors)
@@ -325,13 +369,22 @@ namespace OpenH2.Engine.Systems
 
                 var capsuleDesc = new CapsuleGeometry(radius, config.Height / 2f - radius);
                 
-                var shape = RigidActorExt.CreateExclusiveShape(body, capsuleDesc, defaultMat);
+                var shape = RigidActorExt.CreateExclusiveShape(body, capsuleDesc, characterControlMat);
+                // TODO: centralize filter data construction
+                shape.SimulationFilterData = new FilterData((uint)OpenH2FilterData.PlayerCharacter, 0, 0, 0);
 
-                shape.ContactOffset = 0.1f;
-                shape.RestOffset = 0.09f;
+                shape.ContactOffset = 0.001f;
+                shape.RestOffset = 0.0009f;
 
-                component.PhysicsImplementation = new RigidBodyProxy(body);
+                var bodyProxy = new RigidBodyProxy(body);
+                component.PhysicsImplementation = bodyProxy;
                 this.physxScene.AddActor(body);
+
+                if(component.State is DynamicMovementController dynamicMover)
+                {
+                    var contactInfo = ContactCallbackData.Normal;
+                    this.contactProvider.RegisterContactCallback(body, contactInfo, dynamicMover.ContactFound);
+                }
             }
         }
 
@@ -340,12 +393,12 @@ namespace OpenH2.Engine.Systems
             if (input == null)
                 input = this.world.GetGlobalResource<InputStore>();
 
-            if (input.Keyboard.IsKeyDown(Key.P) && input.Keyboard.IsKeyDown(Key.ShiftRight))
+            if (input.DownKeys.IsKeyDown(Key.P) && input.DownKeys.IsKeyDown(Key.ShiftRight))
                 StepMode = !StepMode;
 
             if (StepMode)
             {
-                ShouldStep = input.Keyboard.IsKeyDown(Key.P);
+                ShouldStep = input.DownKeys.IsKeyDown(Key.P);
 
                 return ShouldStep;
             }

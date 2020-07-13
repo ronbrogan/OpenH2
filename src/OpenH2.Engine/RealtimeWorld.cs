@@ -15,10 +15,11 @@ namespace OpenH2.Engine
         {
             // new up systems, order here will be order of update
             Systems.Add(new OpenTKInputSystem(this, window));
+            Systems.Add(new PhysxPhysicsSystem(this));
             Systems.Add(new MoverSystem(this));
             Systems.Add(new CameraSystem(this));
             Systems.Add(new RenderCollectorSystem(this));
-            Systems.Add(new PhysxPhysicsSystem(this));
+            
 
             globalResources.Add(new RenderListStore());
             globalResources.Add(new InputStore());
