@@ -8,6 +8,7 @@ using OpenH2.Foundation.Physics;
 using OpenH2.Physics.Colliders;
 using OpenH2.Physics.Core;
 using OpenH2.Physics.Proxying;
+using OpenH2.Physx.Extensions;
 using OpenH2.Physx.Proxies;
 using OpenToolkit.Windowing.Common.Input;
 using PhysX;
@@ -80,13 +81,15 @@ namespace OpenH2.Engine.Systems
 
             this.physxScene = this.physxPhysics.CreateScene(sceneDesc);
 
-            //this.physxScene.SetVisualizationParameter(VisualizationParameter.ContactPoint, true);
-            //this.physxScene.SetVisualizationParameter(VisualizationParameter.ContactNormal, true);
-            //this.physxScene.SetVisualizationParameter(VisualizationParameter.ContactForce, true);
-            //this.physxScene.SetVisualizationParameter(VisualizationParameter.ContactError, true);
-            
+#if DEBUG
+            this.physxScene.SetVisualizationParameter(VisualizationParameter.ContactPoint, true);
+            this.physxScene.SetVisualizationParameter(VisualizationParameter.ContactNormal, true);
+            this.physxScene.SetVisualizationParameter(VisualizationParameter.ContactForce, true);
+            this.physxScene.SetVisualizationParameter(VisualizationParameter.ContactError, true);
+
             var pvdClient = this.physxScene.GetPvdSceneClient();
             pvdClient.SetScenePvdFlags(SceneVisualizationFlags.TransmitContacts | SceneVisualizationFlags.TransmitConstraints | SceneVisualizationFlags.TransmitSceneQueries);
+#endif
 
             var scale = TolerancesScale.Default;
             var cookingParams = new CookingParams()
@@ -132,29 +135,21 @@ namespace OpenH2.Engine.Systems
 
             foreach (var terrain in terrains)
             {
-                var meshDesc = new TriangleMeshDesc()
-                {
-                    Points = terrain.Vertices,
-                    Triangles = terrain.TriangleIndices,
-                    MaterialIndices = GetMaterialIndices(terrain.MaterialIndices)
-                };
+                var rigid = this.physxPhysics.CreateRigidStatic();
 
-                var actor = CreateStaticActor(meshDesc);
-                this.physxScene.AddActor(actor);
+                AddCollider(rigid, terrain.Collider);
+
+                this.physxScene.AddActor(rigid);
             }
 
             var sceneries = world.Components<StaticGeometryComponent>();
             foreach(var scenery in sceneries)
             {
-                var meshDesc = new TriangleMeshDesc()
-                {
-                    Points = scenery.Vertices,
-                    Triangles = scenery.TriangleIndices,
-                    MaterialIndices = GetMaterialIndices(scenery.MaterialIndices)
-                };
+                var rigid = this.physxPhysics.CreateRigidStatic(scenery.Transform.TransformationMatrix);
 
-                var actor = CreateStaticActor(meshDesc, scenery.Transform.TransformationMatrix);
-                this.physxScene.AddActor(actor);
+                AddCollider(rigid, scenery.Collider);
+
+                this.physxScene.AddActor(rigid);
             }
 
             var rigidBodies = this.world.Components<RigidBodyComponent>();
@@ -177,10 +172,6 @@ namespace OpenH2.Engine.Systems
         {
             if (TakeStep() == false)
                 return;
-
-            // Simulate, fetch results
-            //this.physxScene.Simulate((float)timestep);
-            //this.physxScene.FetchResults(true);
             
             // Split simulation to allow modification of current simulation step
             this.physxScene.Collide((float)timestep);
@@ -287,8 +278,14 @@ namespace OpenH2.Engine.Systems
             }
             else
             {
-                var stat = this.physxPhysics.CreateRigidStatic(component.Transform.TransformationMatrix);
-                component.PhysicsImplementation = NullPhysicsProxy.Instance;
+                // Use kinematic rigidy body for IsDynamic == false
+                var stat = this.physxPhysics.CreateRigidDynamic(component.Transform.TransformationMatrix);
+                stat.CenterOfMassLocalPose = Matrix4x4.CreateTranslation(component.CenterOfMass);
+                stat.MassSpaceInertiaTensor = MathUtil.Diagonalize(component.InertiaTensor);
+                stat.Mass = component.Mass;
+                stat.RigidBodyFlags = RigidBodyFlag.Kinematic;
+
+                component.PhysicsImplementation = new RigidBodyProxy(stat);
 
                 body = stat;
             }
@@ -296,29 +293,7 @@ namespace OpenH2.Engine.Systems
             body.UserData = component;
             body.Name = component.Parent.Id.ToString();
 
-            if (component.Collider is IVertexBasedCollider vertCollider)
-            {
-                var desc = new ConvexMeshDesc() { Flags = ConvexFlag.ComputeConvex };
-                desc.SetPositions(vertCollider.Vertices);
-                var mesh = this.physxPhysics.CreateConvexMesh(this.cooker, desc);
-                var geom = new ConvexMeshGeometry(mesh);
-                var mat = this.GetOrCreateMaterial(-1);
-                // TODO: re-use shared shapes instead of creating exclusive
-                RigidActorExt.CreateExclusiveShape(body, geom, mat);
-            }
-            else if(component.Collider is ConvexModelCollider modelCollider)
-            {
-                foreach(var verts in modelCollider.Meshes)
-                {
-                    var desc = new ConvexMeshDesc() { Flags = ConvexFlag.ComputeConvex };
-                    desc.SetPositions(verts);
-                    var mesh = this.physxPhysics.CreateConvexMesh(this.cooker, desc);
-                    var geom = new ConvexMeshGeometry(mesh);
-                    var mat = this.GetOrCreateMaterial(-1);
-                    // TODO: re-use shared shapes instead of creating exclusive
-                    RigidActorExt.CreateExclusiveShape(body, geom, mat);
-                }
-            }
+            AddCollider(body, component.Collider);
 
             this.physxScene.AddActor(body);
         }
@@ -406,18 +381,60 @@ namespace OpenH2.Engine.Systems
             return true;
         }
 
-        private Actor CreateStaticActor(TriangleMeshDesc meshDesc, Matrix4x4? transform = null)
+        private void AddCollider(RigidActor actor, ICollider collider)
         {
-            // Avoiding offline cook path for now because
-            //   1. Comments in Physx.Net imply memory leak using streams
-            //   2. I don't want to deal with disk caching cooks yet
-            var finalMesh = this.physxPhysics.CreateTriangleMesh(cooker, meshDesc);
+            if (collider is TriangleMeshCollider triCollider)
+            {
+                var desc = triCollider.GetDescriptor(GetMaterialIndices);
 
-            var meshGeom = new TriangleMeshGeometry(finalMesh);
+                // Avoiding offline cook path for now because
+                //   1. Comments in Physx.Net imply memory leak using streams
+                //   2. I don't want to deal with disk caching cooks yet
+                var finalMesh = this.physxPhysics.CreateTriangleMesh(cooker, desc);
 
-            var rigid = this.physxPhysics.CreateRigidStatic(transform);
-            RigidActorExt.CreateExclusiveShape(rigid, meshGeom, globalMaterials, null);
-            return rigid;
+                var meshGeom = new TriangleMeshGeometry(finalMesh);
+
+                RigidActorExt.CreateExclusiveShape(actor, meshGeom, globalMaterials, null);
+            }
+            else if (collider is TriangleModelCollider triModelCollider)
+            {
+                foreach (var mesh in triModelCollider.MeshColliders)
+                {
+                    var desc = mesh.GetDescriptor(GetMaterialIndices);
+
+                    // Avoiding offline cook path for now because
+                    //   1. Comments in Physx.Net imply memory leak using streams
+                    //   2. I don't want to deal with disk caching cooks yet
+                    var finalMesh = this.physxPhysics.CreateTriangleMesh(cooker, desc);
+
+                    var meshGeom = new TriangleMeshGeometry(finalMesh);
+
+                    RigidActorExt.CreateExclusiveShape(actor, meshGeom, globalMaterials, null);
+                }
+            }
+            else if (collider is IVertexBasedCollider vertCollider)
+            {
+                var desc = new ConvexMeshDesc() { Flags = ConvexFlag.ComputeConvex };
+                desc.SetPositions(vertCollider.Vertices);
+                var mesh = this.physxPhysics.CreateConvexMesh(this.cooker, desc);
+                var geom = new ConvexMeshGeometry(mesh);
+                var mat = this.GetOrCreateMaterial(-1);
+                // TODO: re-use shared shapes instead of creating exclusive
+                RigidActorExt.CreateExclusiveShape(actor, geom, mat);
+            }
+            else if (collider is ConvexModelCollider modelCollider)
+            {
+                foreach (var verts in modelCollider.Meshes)
+                {
+                    var desc = new ConvexMeshDesc() { Flags = ConvexFlag.ComputeConvex };
+                    desc.SetPositions(verts);
+                    var mesh = this.physxPhysics.CreateConvexMesh(this.cooker, desc);
+                    var geom = new ConvexMeshGeometry(mesh);
+                    var mat = this.GetOrCreateMaterial(-1);
+                    // TODO: re-use shared shapes instead of creating exclusive
+                    RigidActorExt.CreateExclusiveShape(actor, geom, mat);
+                }
+            }
         }
 
         private Material GetOrCreateMaterial(int id)

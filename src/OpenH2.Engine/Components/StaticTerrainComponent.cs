@@ -1,4 +1,5 @@
 ﻿using OpenH2.Core.Architecture;
+using OpenH2.Physics.Colliders;
 using System.Numerics;
 
 namespace OpenH2.Engine.Components
@@ -9,16 +10,6 @@ namespace OpenH2.Engine.Components
         {
         }
 
-        public Vector3[] Vertices { get; set; }
-
-        /// <summary>
-        /// Array of vertex indices, where each three items constitutes a single triangle
-        /// </summary>
-        public int[] TriangleIndices { get; set; }
-
-        /// <summary>
-        /// Array of material indices, where each item is the given triangles global material index
-        /// </summary>
-        public int[] MaterialIndices { get; set; }
+        public TriangleMeshCollider Collider { get; internal set; }
     }
 }

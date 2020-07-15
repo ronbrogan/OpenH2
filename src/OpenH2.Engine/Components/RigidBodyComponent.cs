@@ -12,7 +12,7 @@ namespace OpenH2.Engine.Components
         public ICollider Collider { get; set; }
         public ITransform Transform { get; }
 
-        public bool IsDynamic { get; private set; }
+        public bool IsDynamic { get; set; }
         private float mass;
         private float inverseMass;
         public float Mass { get => mass; private set { mass = value; inverseMass = 1 / value; } }
@@ -54,6 +54,8 @@ namespace OpenH2.Engine.Components
         /// <summary>
         /// Creates a static RigidBodyComponent
         /// </summary>
+        // TODO: remove IsDynamic and make this path use some defaults, or remove this path altogether
+        //   motive: weapons currently use this path, but they need to simulate in world - implement weapons as kinematic objects?
         public RigidBodyComponent(Entity parent, TransformComponent xform) : base(parent)
         {
             this.Transform = xform;

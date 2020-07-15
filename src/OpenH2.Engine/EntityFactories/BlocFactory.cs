@@ -28,14 +28,14 @@ namespace OpenH2.Engine.EntityFactories
                     //Position = instance.Position,
                     //Orientation = instance.Orientation.ToQuaternion(),
                     Flags = ModelFlags.Diffuse | ModelFlags.CastsShadows | ModelFlags.ReceivesShadows,
-                    Meshes = MeshFactory.GetModelForHlmt(map, tag.PhysicalModel)
+                    Meshes = MeshFactory.GetRenderModel(map, tag.PhysicalModel)
                 }
             };
 
             var orientation = QuaternionExtensions.FromH2vOrientation(instance.Orientation);
             var xform = new TransformComponent(scenery, instance.Position, orientation);
 
-            var body = PhysicsComponentFactory.CreateRigidBody(scenery, xform, map, tag.PhysicalModel);
+            var body = PhysicsComponentFactory.CreateDynamicRigidBody(scenery, xform, map, tag.PhysicalModel);
 
             var comOffset = Vector3.Zero;
 

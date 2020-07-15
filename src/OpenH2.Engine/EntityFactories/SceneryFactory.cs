@@ -70,7 +70,7 @@ namespace OpenH2.Engine.EntityFactories
             
             xform.UpdateDerivedData();
 
-            scenery.SetComponents(comps.ToArray());
+            scenery.SetComponents(comps);
 
             return scenery;
         }
@@ -87,7 +87,7 @@ namespace OpenH2.Engine.EntityFactories
                 RenderModel = new Model<BitmapTag>
                 {
                     Note = $"[{tag.Id}] {tag.Name}",
-                    Meshes = MeshFactory.GetModelForHlmt(map, tag.PhysicalModel),
+                    Meshes = MeshFactory.GetRenderModel(map, tag.Model),
                     Scale = new Vector3(1),
                     Flags = ModelFlags.Diffuse | ModelFlags.CastsShadows | ModelFlags.ReceivesShadows
                 }
@@ -95,9 +95,20 @@ namespace OpenH2.Engine.EntityFactories
 
             var orientation = QuaternionExtensions.FromH2vOrientation(instance.Orientation);
             var xform = new TransformComponent(scenery, instance.Position, orientation);
-            var body = PhysicsComponentFactory.CreateRigidBody(scenery, xform, map, tag.PhysicalModel);
 
-            scenery.SetComponents(new Component[] { comp, xform, body });
+            var components = new List<Component>(3)
+            {
+                comp, xform
+            };
+
+            var body = PhysicsComponentFactory.CreateStaticRigidBody(scenery, xform, map, tag.Model);
+
+            if(body != null)
+            {
+                components.Add(body);
+            }
+
+            scenery.SetComponents(components);
 
             return scenery;
         }

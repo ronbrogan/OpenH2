@@ -108,6 +108,30 @@ namespace OpenH2.Core.Tags
         [FixedLength(144)]
         public class BodyParameterSet
         {
+            [PrimitiveValue(0)]
+            public float UnknownShort1 { get; set; }
+
+            [PrimitiveValue(2)]
+            public float UnknownShort2 { get; set; }
+
+            [PrimitiveValue(8)]
+            public float UnknownFloat0 { get; set; }
+
+            [PrimitiveValue(16)]
+            public float UnknownFloat1 { get; set; }
+
+            [PrimitiveValue(20)]
+            public float UnknownFloat2 { get; set; }
+
+            [PrimitiveValue(32)]
+            public float UnknownFloat3 { get; set; }
+
+            [PrimitiveValue(40)]
+            public float UnknownFloat4 { get; set; }
+
+            [PrimitiveValue(56)]
+            public float UnknownInt { get; set; }
+
             [PrimitiveValue(60)]
             public float Mass { get; set; }
 

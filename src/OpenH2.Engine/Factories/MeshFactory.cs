@@ -13,7 +13,7 @@ namespace OpenH2.Engine.Factories
 
         private static ConcurrentDictionary<ulong, Mesh<BitmapTag>[]> meshes = new ConcurrentDictionary<ulong, Mesh<BitmapTag>[]>();
 
-        public static Mesh<BitmapTag>[] GetModelForHlmt(H2vMap map, TagRef<HaloModelTag> hlmtReference, int damageLevel = 0)
+        public static Mesh<BitmapTag>[] GetRenderModel(H2vMap map, TagRef<HaloModelTag> hlmtReference, int damageLevel = 0)
         {
             var key = (((ulong)hlmtReference.Id) << 32) | (ulong)damageLevel;
 

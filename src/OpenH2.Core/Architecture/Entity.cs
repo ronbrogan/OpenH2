@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace OpenH2.Core.Architecture
 {
@@ -16,6 +17,11 @@ namespace OpenH2.Core.Architecture
         public void SetComponents(Component[] components)
         {
             this.Components = components;
+        }
+
+        public void SetComponents(IEnumerable<Component> components)
+        {
+            this.SetComponents(components.ToArray());
         }
 
         public bool TryGetChild<T>(out T component) where T : Component

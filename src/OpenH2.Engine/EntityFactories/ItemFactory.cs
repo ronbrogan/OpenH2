@@ -70,13 +70,13 @@ namespace OpenH2.Engine.EntityFactories
                         //Orientation = baseRotation,
                         //Scale = new Vector3(1.3f),
                         Flags = ModelFlags.Diffuse | ModelFlags.CastsShadows | ModelFlags.ReceivesShadows,
-                        Meshes = MeshFactory.GetModelForHlmt(map, itemHlmt)
+                        Meshes = MeshFactory.GetRenderModel(map, itemHlmt)
                     }
                 });
 
                 var xform = new TransformComponent(entity, instance.Position, QuaternionExtensions.FromH2vOrientation(instance.Orientation));
                 components.Add(xform);
-                components.Add(PhysicsComponentFactory.CreateRigidBody(entity, xform, map, itemHlmt));
+                components.Add(PhysicsComponentFactory.CreateDynamicRigidBody(entity, xform, map, itemHlmt));
 
                 entity.SetComponents(components.ToArray());
                 entities.Add(entity);
@@ -136,11 +136,11 @@ namespace OpenH2.Engine.EntityFactories
                     //Orientation = baseRotation,
                     //Scale = new Vector3(1.3f),
                     Flags = ModelFlags.Diffuse | ModelFlags.CastsShadows | ModelFlags.ReceivesShadows,
-                    Meshes = MeshFactory.GetModelForHlmt(map, vehi.Hlmt)
+                    Meshes = MeshFactory.GetRenderModel(map, vehi.Hlmt)
                 }
             });
 
-            components.Add(PhysicsComponentFactory.CreateRigidBody(item, xform, map, vehi.Hlmt));
+            components.Add(PhysicsComponentFactory.CreateDynamicRigidBody(item, xform, map, vehi.Hlmt));
 
             item.SetComponents(components.ToArray());
 
