@@ -265,37 +265,28 @@ namespace OpenH2.Engine.Systems
 
         public void AddRigidBodyComponent(RigidBodyComponent component)
         {
-            RigidActor body;
+            var dynamic = this.physxPhysics.CreateRigidDynamic(component.Transform.TransformationMatrix);
+            dynamic.CenterOfMassLocalPose = Matrix4x4.CreateTranslation(component.CenterOfMass);
+            dynamic.MassSpaceInertiaTensor = MathUtil.Diagonalize(component.InertiaTensor);
+            dynamic.Mass = component.Mass;
+            component.PhysicsImplementation = new RigidBodyProxy(dynamic);
+
+            if (component.IsDynamic == false)
+            {
+                dynamic.RigidBodyFlags = RigidBodyFlag.Kinematic;
+            }
+
+            dynamic.UserData = component;
+            dynamic.Name = component.Parent.Id.ToString();
+
+            AddCollider(dynamic, component.Collider);
+
+            this.physxScene.AddActor(dynamic);
 
             if(component.IsDynamic)
             {
-                var dynamic = this.physxPhysics.CreateRigidDynamic(component.Transform.TransformationMatrix);
-                dynamic.CenterOfMassLocalPose = Matrix4x4.CreateTranslation(component.CenterOfMass);
-                dynamic.MassSpaceInertiaTensor = MathUtil.Diagonalize(component.InertiaTensor);
-                dynamic.Mass = component.Mass;
-                component.PhysicsImplementation = new RigidBodyProxy(dynamic);
-                body = dynamic;
+                dynamic.PutToSleep();
             }
-            else
-            {
-                // Use kinematic rigidy body for IsDynamic == false
-                var stat = this.physxPhysics.CreateRigidDynamic(component.Transform.TransformationMatrix);
-                stat.CenterOfMassLocalPose = Matrix4x4.CreateTranslation(component.CenterOfMass);
-                stat.MassSpaceInertiaTensor = MathUtil.Diagonalize(component.InertiaTensor);
-                stat.Mass = component.Mass;
-                stat.RigidBodyFlags = RigidBodyFlag.Kinematic;
-
-                component.PhysicsImplementation = new RigidBodyProxy(stat);
-
-                body = stat;
-            }
-
-            body.UserData = component;
-            body.Name = component.Parent.Id.ToString();
-
-            AddCollider(body, component.Collider);
-
-            this.physxScene.AddActor(body);
         }
 
         // TODO: Currently, this system is responsible for creating and setting PhysicsImplementation properties
