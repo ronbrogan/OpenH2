@@ -20,7 +20,7 @@ namespace OpenH2.Core.Representations
         private readonly H2vLazyLoadingMap mpShared;
         private readonly H2vLazyLoadingMap spShared;
         private Dictionary<uint, BaseTag> Tags = new Dictionary<uint, BaseTag>();
-        private MaterialFactory materialFactory;
+        private IMaterialFactory materialFactory;
 
         internal H2vMap(H2vReader reader, H2vLazyLoadingMap mainMenu, H2vLazyLoadingMap mpShared, H2vLazyLoadingMap spShared)
         {
@@ -36,7 +36,7 @@ namespace OpenH2.Core.Representations
         }
 
         // TODO: consider if material construction belongs here
-        internal void UseMaterialFactory(MaterialFactory materialFactory)
+        internal void UseMaterialFactory(IMaterialFactory materialFactory)
         {
             this.materialFactory = materialFactory;
         }

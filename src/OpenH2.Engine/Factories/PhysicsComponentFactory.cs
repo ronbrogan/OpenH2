@@ -50,7 +50,7 @@ namespace OpenH2.Engine.Factories
 
             if (!map.TryGetTag(hlmt.PhysicsModel, out var phmo) || phmo.BodyParameters.Length == 0)
             {
-                throw new Exception("No PHMO for kinematic body");
+                return null;
             }
 
             var param = phmo.BodyParameters[0];

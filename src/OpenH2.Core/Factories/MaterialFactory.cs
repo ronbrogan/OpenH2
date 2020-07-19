@@ -16,7 +16,7 @@ using System.Text.Json.Serialization;
 
 namespace OpenH2.Core.Factories
 {
-    public sealed class MaterialFactory : IDisposable
+    public sealed class MaterialFactory : IDisposable, IMaterialFactory
     {
         private FileWatcher configWatcher;
         private MaterialMappingConfig mappingConfig;
@@ -28,7 +28,7 @@ namespace OpenH2.Core.Factories
         {
             var configPath = Path.Combine(configRoot, ConfigurationConstants.MaterialConfigName);
 
-            if(File.Exists(configPath) == false)
+            if (File.Exists(configPath) == false)
             {
                 throw new ArgumentException("Material config file does not exist.", nameof(configRoot));
             }
@@ -46,7 +46,7 @@ namespace OpenH2.Core.Factories
 
         public Material<BitmapTag> CreateMaterial(H2vMap map, ModelMesh mesh)
         {
-            if(createdMaterials.TryGetValue(mesh.Shader.Id, out var mat))
+            if (createdMaterials.TryGetValue(mesh.Shader.Id, out var mat))
             {
                 return mat;
             }
@@ -76,7 +76,7 @@ namespace OpenH2.Core.Factories
                 return mat;
             }
 
-            if(stemsWarned.Contains(shader.ShaderTemplate.Id) == false)
+            if (stemsWarned.Contains(shader.ShaderTemplate.Id) == false)
             {
                 Console.WriteLine($"Using heuristic for shader '{shader.Name}' stem[{shader.ShaderTemplate.Id}]");
                 stemsWarned.Add(shader.ShaderTemplate.Id);
@@ -102,7 +102,7 @@ namespace OpenH2.Core.Factories
             {
                 mat.DiffuseColor = new Vector4(mapping.DiffuseColor[0], mapping.DiffuseColor[1], mapping.DiffuseColor[2], mapping.DiffuseColor[3]);
             }
-            else if(mapping.DiffuseColor.Length == 1)
+            else if (mapping.DiffuseColor.Length == 1)
             {
                 mat.DiffuseColor = new Vector4(mapping.DiffuseColor[0]);
             }
@@ -132,7 +132,7 @@ namespace OpenH2.Core.Factories
                     mat.AlphaMap = alpha;
                 }
 
-                if(info.DiffuseBitmap.IsInvalid == false && mat.DiffuseMap == default)
+                if (info.DiffuseBitmap.IsInvalid == false && mat.DiffuseMap == default)
                 {
                     map.TryGetTag(info.DiffuseBitmap, out var diff);
                     mat.DiffuseMap = diff;
@@ -182,7 +182,7 @@ namespace OpenH2.Core.Factories
                     int inputOffset = i;
                     Vector4 detailScale = Vector4.Zero;
 
-                    while((detailScale.X < 1 || detailScale.Y < 1 || detailScale.Z != 0 || detailScale.W != 0) 
+                    while ((detailScale.X < 1 || detailScale.Y < 1 || detailScale.Z != 0 || detailScale.W != 0)
                         && inputOffset < args.ShaderInputs.Length)
                     {
                         detailScale = args.ShaderInputs[inputOffset];

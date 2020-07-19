@@ -16,7 +16,7 @@ namespace OpenH2.Core.Factories
         private const string MultiPlayerSharedName = "shared.map";
         private const string SinglePlayerSharedName = "single_player_shared.map";
         private readonly string configRoot;
-        private readonly MaterialFactory materialFactory;
+        private readonly IMaterialFactory materialFactory;
         private H2vReader baseReader;
         private H2vLazyLoadingMap mainMenu;
         private H2vLazyLoadingMap spShared;
@@ -24,7 +24,7 @@ namespace OpenH2.Core.Factories
 
         // TODO: If sp maps only reference spShared and mp maps only reference mpShared, 
         // only load the relevant maps when a playable map is loaded
-        public MapFactory(string mapRoot, MaterialFactory materialFactory)
+        public MapFactory(string mapRoot, IMaterialFactory materialFactory)
         {
             baseReader = GetBaseReader(mapRoot);
 

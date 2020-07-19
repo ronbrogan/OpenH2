@@ -8,6 +8,7 @@ using OpenH2.Engine.Entities;
 using OpenH2.Engine.Factories;
 using OpenH2.Foundation;
 using System;
+using System.Collections.Generic;
 
 namespace OpenH2.Engine.EntityFactories
 {
@@ -44,8 +45,16 @@ namespace OpenH2.Engine.EntityFactories
 
             var orientation = QuaternionExtensions.FromH2vOrientation(instance.Orientation);
             var xform = new TransformComponent(scenery, instance.Position, orientation);
+
+            var components = new List<Component>() { comp, xform };
+
             var body = PhysicsComponentFactory.CreateKinematicRigidBody(scenery, xform, map, tag.PhysicalModel);
-            scenery.SetComponents(new Component[] { comp, xform, body });
+            if(body != null)
+            {
+                components.Add(body);
+            }
+
+            scenery.SetComponents(components);
 
             return scenery;
         }
