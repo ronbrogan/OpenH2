@@ -3,6 +3,7 @@ using OpenH2.Core.Factories;
 using OpenH2.Core.Tags.Scenario;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -39,8 +40,15 @@ namespace OpenH2.ScriptAnalysis
 
             var text = GetScript(scnr, script);
 
-            Console.WriteLine(SExpNode.ToString(text));
-            TextCopy.ClipboardService.SetText(SExpNode.ToString(text));
+            var debugTree = SExpNode.ToString(text);
+
+            var generator = new PseudocodeGenerator();
+            var pseudocode = generator.Generate(text);
+
+            Console.WriteLine(debugTree);
+
+            
+            TextCopy.ClipboardService.SetText(pseudocode);
         }
 
         private static SExpNode GetScript(ScenarioTag tag, ScenarioTag.Obj440_ScriptMethod method)
@@ -48,7 +56,12 @@ namespace OpenH2.ScriptAnalysis
             var strings = (Span<byte>)tag.ScriptStrings;
             
 
-            var root = new SExpNode();
+            var root = new SExpNode()
+            {
+                Type = NodeType.Statement,
+                Value = method.Description,
+                DataType = NodeDataType.MethodOrOperator
+            };
 
             var childIndices = new Stack<(int, SExpNode)>();
             childIndices.Push((method.ValueA, root));
@@ -61,12 +74,12 @@ namespace OpenH2.ScriptAnalysis
 
                 var current = new SExpNode();
 
-                string value = node.ValueG.ToString();
+                object value = node.ValueG;
                 bool goodValue = false;
 
                 if(stringLookup.TryGetValue(node.ValueG, out var gString))
                 {
-                    value = $"\"{gString}\"";
+                    value = gString;
                     goodValue = true;
                 }
                 else if (stringLookup.TryGetValue(mask(node.ValueG), out var mgString))
@@ -78,10 +91,10 @@ namespace OpenH2.ScriptAnalysis
                 current.Original = node;
                 current.dEnum = node.ValueD;
                 current.hEnum = node.ValueH;
-                current.Type = (NodeType)node.ValueC;
-
-                value += $", [{current.Type.ToString()}] a:{node.ValueA},b:{node.ValueB},c:{node.ValueC},d:{node.ValueD},e:{node.ValueE},f:{node.ValueF},g:{node.ValueG},h:{node.ValueH},i:{node.ValueI},j:{node.ValueJ}";
+                current.DataType = (NodeDataType)node.ValueC;
+                current.Type = (NodeType)node.ValueD;
                 current.Value = value;
+                current.Index = currentIndex;
 
                 parent.Children.Add(current);
 
@@ -108,23 +121,239 @@ namespace OpenH2.ScriptAnalysis
             int mask(int value) => value & 0x3FFF;
         }
 
-        private enum NodeType
+        private enum NodeDataType
         {
             MethodOrOperator = 2,
             StatementStart  = 4,
-            NumericLiteral = 7,
-            StringLIteral = 9,
+            Boolean = 5,
+            Short = 7,
+            // 6 and 8 also appear sometimes to be strings?, h is 1 in those cases, whereas typically 0
+            // but 6 has also been a numeric variable access?
+            String = 9,
+            AI = 19,
+            AIScript = 21,
+            ReferenceGet = 32,
+            Entity = 50,
+            Device = 54,
+            EntityIdentifier = 56,
+        }
+
+        private enum NodeType
+        {
+            ExpressionScope = 8,
+            Statement = 9,
+            VariableAccess = 13
+        }
+
+        private class PseudocodeGenerator
+        {
+            private Stack<ScriptState> state = new Stack<ScriptState>();
+            private StringBuilder builder = new StringBuilder();
+
+            public string Generate(SExpNode root)
+            {
+                var nodes = new Stack<(SExpNode node, bool terminal)>();
+                nodes.Push((root, true));
+                nodes.Push((root, false));
+
+                while (nodes.TryPop(out var current))
+                {
+                    if (current.terminal == false)
+                    {
+                        BeforeWrite(current.node);
+
+                        switch (current.node.Type)
+                        {
+                            case NodeType.ExpressionScope:
+                                switch (current.node.DataType)
+                                {
+                                    case NodeDataType.StatementStart:
+                                        WriteStatementStart(current.node);
+                                        break;
+                                    case NodeDataType.Boolean:
+                                        builder.Append($"Func<{current.node.DataType}>(");
+                                        break;
+                                    default:
+                                        builder.Append($"BT<{current.node.DataType}>({current.node.Value})");
+                                        break;
+                                }
+                                break;
+                            case NodeType.Statement:
+                                switch (current.node.DataType)
+                                {
+                                    case NodeDataType.MethodOrOperator:
+                                        WriteMethodCall(current.node);
+                                        break;
+                                    case NodeDataType.ReferenceGet:
+                                        WriteReferenceGet(current.node);
+                                        break;
+                                    case NodeDataType.StatementStart:
+                                        builder.Append($"WARN: statement start data type inside a statement node");
+                                        break;
+                                    case NodeDataType.Short:
+                                        WriteShortLiteral(current.node);
+                                        break;
+                                    case NodeDataType.Boolean:
+                                        WriteBoolean(current.node);
+                                        break;
+                                    case NodeDataType.String:
+                                        WriteStringLiteral(current.node);
+                                        break;
+                                    default:
+                                        builder.Append($"T<{current.node.DataType}>({current.node.Value})");
+                                        break;
+                                }
+                                break;
+                            case NodeType.VariableAccess:
+                                WriteVariableAccess(current.node);
+                                break;
+                            default:
+                                builder.Append($"Unknown Syntax - {current.node.Value} S[{current.node.Type}] T[{current.node.DataType}]");
+                                break;
+                        }
+
+                        
+
+                        for (var i = current.Item1.Children.Count - 1; i >= 0; i--)
+                        {
+                            var c = current.Item1.Children[i];
+                            nodes.Push((c, true));
+                        }
+
+                        for (var i = current.Item1.Children.Count - 1; i >= 0; i--)
+                        {
+                            var c = current.Item1.Children[i];
+                            nodes.Push((c, false));
+                        }
+                    }
+                    else
+                    {
+                        switch (current.node.Type)
+                        {
+                            case NodeType.ExpressionScope:
+                                break;
+                            case NodeType.Statement:
+                            case NodeType.VariableAccess:
+                                switch (current.node.DataType)
+                                {
+                                    case NodeDataType.MethodOrOperator:
+                                        WriteMethodCallEnd(current.node);
+                                        break;
+                                    case NodeDataType.ReferenceGet:
+                                        break;
+                                    case NodeDataType.StatementStart:
+                                        WriteStatementStartEnd(current.node);
+                                        break;
+                                    case NodeDataType.Short:
+                                        break;
+                                    case NodeDataType.String:
+                                        break;
+                                }
+                                break;
+                        }
+                    }
+                }
+
+                return builder.ToString();
+            }
+
+            
+
+            private void BeforeWrite(SExpNode node)
+            {
+                if(state.TryPeek(out var currentState) == false)
+                {
+                    return;
+                }
+
+                switch (currentState)
+                {
+                    case ScriptState.ScopeStarted:
+                        break;
+                    case ScriptState.MethodStarted:
+                        state.Push(ScriptState.WritingMethodArguments);
+                        break;
+                    case ScriptState.WritingMethodArguments:
+                        builder.Append(", ");
+                        break;
+                }
+            }
+
+            private void WriteMethodCall(SExpNode node)
+            {
+                builder.Append(node.Value).Append("(");
+                state.Push(ScriptState.MethodStarted);
+            }
+
+            private void WriteMethodCallEnd(SExpNode node)
+            {
+                builder.Append(")");
+                var popped = state.Pop();
+                Debug.Assert(popped == ScriptState.MethodStarted || popped == ScriptState.WritingMethodArguments);
+            }
+
+            private void WriteReferenceGet(SExpNode node)
+            {
+                builder.Append("ref(\"").Append(node.Value).Append("\")");
+            }
+
+            private void WriteVariableAccess(SExpNode node)
+            {
+                builder.Append($"var<{node.DataType.ToString()}>(\"").Append(node.Value).Append("\")");
+            }
+
+            private void WriteStatementStart(SExpNode node)
+            {
+                // TODO: indenting?
+                builder.AppendLine();
+            }
+
+            private void WriteStatementStartEnd(SExpNode node)
+            {
+                // TODO: decrement indent?
+            }
+
+            private void WriteStringLiteral(SExpNode node)
+            {
+                builder.Append("\"").Append(node.Value).Append("\"");
+            }
+
+            private void WriteShortLiteral(SExpNode node)
+            {
+                builder.Append(node.Original.ValueI);
+            }
+
+            private void WriteIntLiteral(SExpNode node)
+            {
+                builder.Append((node.Original.ValueJ << 16) | node.Original.ValueI);
+            }
+
+            private void WriteBoolean(SExpNode node)
+            {
+                var val = (node.Original.ValueI & 0xFF) == 0 ? "false" : "true";
+                builder.Append(val);
+            }
+
+            private enum ScriptState
+            {
+                ScopeStarted,
+                MethodStarted,
+                WritingMethodArguments,
+
+            }
         }
 
         private class SExpNode
         {
             public NodeType Type { get; set; }
+            public NodeDataType DataType { get; set; }
             public object Value { get; set; }
             public List<SExpNode> Children { get; set; } = new List<SExpNode>();
 
-            public object Original { get; set; }
+            public ScenarioTag.Obj568_ScriptASTNode Original { get; set; }
             public ushort dEnum { get; internal set; }
             public ushort hEnum { get; internal set; }
+            public int Index { get; internal set; }
 
             public static string ToString(SExpNode root)
             {
@@ -136,14 +365,26 @@ namespace OpenH2.ScriptAnalysis
 
                 while(nodes.TryPop(out var current))
                 {
-                    if(current.terminal == false)
+                    if (current.terminal == false)
                     {
                         var indent = new string(' ', current.indentLevel * 4);
-                        
+
+                        var orig = current.node.Original;
+
                         b.AppendLine()
                             .Append(indent)
-                            .Append("(")
-                            .Append(current.Item1.Value?.ToString());
+                            .Append("(");
+
+                        if (current.node.Value.GetType() == typeof(string))
+                        {
+                            b.Append($"\"{current.node.Value}\"");
+                        }
+                        else
+                        {
+                            b.Append(current.node.Value);
+                        }
+
+                        b.Append($", {current.node.Type}<{current.node.DataType}> @:{current.node.Index} a:{orig?.ValueA},b:{orig?.ValueB},c:{orig?.ValueC},d:{orig?.ValueD},e:{orig?.ValueE},f:{orig?.ValueF},g:{orig?.ValueG},h:{orig?.ValueH},i:{orig?.ValueI},j:{orig?.ValueJ}");
 
                         for (var i = current.Item1.Children.Count - 1; i >= 0; i--)
                         {
