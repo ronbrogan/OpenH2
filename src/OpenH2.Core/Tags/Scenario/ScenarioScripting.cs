@@ -1,4 +1,5 @@
-﻿using OpenH2.Core.Tags.Layout;
+﻿using OpenH2.Core.Scripting;
+using OpenH2.Core.Tags.Layout;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -57,34 +58,40 @@ namespace OpenH2.Core.Tags.Scenario
         public class Obj568_ScriptASTNode
         {
             [PrimitiveValue(0)]
-            public ushort ValueA { get; set; }
+            public ushort Checkval { get; set; }
 
             [PrimitiveValue(2)]
             public ushort ValueB { get; set; }
 
             [PrimitiveValue(4)]
-            public ushort ValueC { get; set; }
+            public NodeDataType DataType { get; set; }
 
             [PrimitiveValue(6)]
-            public ushort ValueD { get; set; }
+            public NodeType NodeType { get; set; }
 
             [PrimitiveValue(8)]
-            public ushort ValueE { get; set; }
+            public ushort NextIndex { get; set; }
 
             [PrimitiveValue(10)]
-            public ushort ValueF { get; set; }
+            public ushort NextCheckval { get; set; }
 
             [PrimitiveValue(12)]
-            public ushort ValueG { get; set; }
+            public ushort NodeString { get; set; }
 
             [PrimitiveValue(14)]
             public ushort ValueH { get; set; }
 
             [PrimitiveValue(16)]
-            public ushort ValueI { get; set; }
+            public uint NodeData_32 { get; set; }
 
-            [PrimitiveValue(18)]
-            public ushort ValueJ { get; set; }
+            public ushort NodeData_H16 => (ushort)(NodeData_32);
+
+            public ushort NodeData_L16 => (ushort)(NodeData_32 >> 16);
+
+            public byte NodeData_B0 => (byte)(NodeData_32 >> 24);
+            public byte NodeData_B1 => (byte)(NodeData_32 >> 16);
+            public byte NodeData_B2 => (byte)(NodeData_32 >> 8);
+            public byte NodeData_B3 => (byte)(NodeData_32);
         }
     }
 }

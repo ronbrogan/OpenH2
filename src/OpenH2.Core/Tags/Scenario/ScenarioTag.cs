@@ -31,7 +31,7 @@ namespace OpenH2.Core.Tags.Scenario
         [ReferenceArray(536)] public Obj536[] Obj536s { get; set; }
         [ReferenceArray(552)] public Obj552[] Obj552s { get; set; }
         [ReferenceArray(560)] public Obj560[] Obj560s { get; set; }
-        [ReferenceArray(568)] public Obj568_ScriptASTNode[] Obj568s_ScriptASTNodes { get; set; }
+        [ReferenceArray(568)] public Obj568_ScriptASTNode[] ScriptSyntaxNodes { get; set; }
         [ReferenceArray(576)] public Obj576[] Obj576s { get; set; }
         [ReferenceArray(584)] public Obj584[] Obj584s { get; set; }
         [ReferenceArray(592)] public Obj592[] Obj592s { get; set; }
