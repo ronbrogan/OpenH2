@@ -36,6 +36,28 @@ namespace OpenH2.Core.Tags.Scenario
         }
 
         [FixedLength(40)]
+        public class ScriptVariableDefinition
+        {
+            [StringValue(0, 32)]
+            public string Description { get; set; }
+
+            [PrimitiveValue(32)]
+            public ScriptDataType DataType { get; set; }
+
+            [PrimitiveValue(36)]
+            public uint Value_32 { get; set; }
+
+            public ushort Value_H16 => (ushort)(Value_32);
+
+            public ushort Value_L16 => (ushort)(Value_32 >> 16);
+
+            public byte Value_B0 => (byte)(Value_32 >> 24);
+            public byte Value_B1 => (byte)(Value_32 >> 16);
+            public byte Value_B2 => (byte)(Value_32 >> 8);
+            public byte Value_B3 => (byte)(Value_32);
+        }
+
+        [FixedLength(40)]
         public class ScriptMethodDefinition
         {
             [StringValue(0, 32)]
@@ -64,7 +86,7 @@ namespace OpenH2.Core.Tags.Scenario
             public ushort ValueB { get; set; }
 
             [PrimitiveValue(4)]
-            public NodeDataType DataType { get; set; }
+            public ScriptDataType DataType { get; set; }
 
             [PrimitiveValue(6)]
             public NodeType NodeType { get; set; }

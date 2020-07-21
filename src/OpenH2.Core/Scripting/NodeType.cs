@@ -1,6 +1,6 @@
 ﻿namespace OpenH2.Core.Scripting
 {
-    public enum NodeDataType : ushort
+    public enum ScriptDataType : ushort
     {
         MethodOrOperator = 2,
         StatementStart = 4,

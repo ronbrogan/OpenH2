@@ -6,10 +6,15 @@ namespace OpenH2.ScriptAnalysis
     {
         private Stack<(T, bool)> store = new Stack<(T, bool)>();
 
-        public void Push(T value)
+        public void PushFull(T value)
         {
             store.Push((value, true));
             store.Push((value, false));
+        }
+
+        public void PushSeparate(T value, bool isContinuation)
+        {
+            store.Push((value, isContinuation));
         }
 
         public bool TryPop(out T value, out bool isContinuation)

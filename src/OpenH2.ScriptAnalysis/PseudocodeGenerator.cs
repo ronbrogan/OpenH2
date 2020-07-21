@@ -30,7 +30,7 @@ namespace OpenH2.ScriptAnalysis
                             case NodeType.ExpressionScope:
                                 switch (current.node.DataType)
                                 {
-                                    case NodeDataType.StatementStart:
+                                    case ScriptDataType.StatementStart:
                                         WriteStatementStart(current.node);
                                         break;
                                     default:
@@ -41,28 +41,28 @@ namespace OpenH2.ScriptAnalysis
                             case NodeType.Statement:
                                 switch (current.node.DataType)
                                 {
-                                    case NodeDataType.MethodOrOperator:
+                                    case ScriptDataType.MethodOrOperator:
                                         WriteMethodCall(current.node);
                                         break;
-                                    case NodeDataType.ReferenceGet:
+                                    case ScriptDataType.ReferenceGet:
                                         WriteReferenceGet(current.node);
                                         break;
-                                    case NodeDataType.StatementStart:
+                                    case ScriptDataType.StatementStart:
                                         builder.Append($"WARN: statement start data type inside a statement node");
                                         break;
-                                    case NodeDataType.Short:
+                                    case ScriptDataType.Short:
                                         WriteShortLiteral(current.node);
                                         break;
-                                    case NodeDataType.Int:
+                                    case ScriptDataType.Int:
                                         WriteIntLiteral(current.node);
                                         break;
-                                    case NodeDataType.Float:
+                                    case ScriptDataType.Float:
                                         WriteFloatLiteral(current.node);
                                         break;
-                                    case NodeDataType.Boolean:
+                                    case ScriptDataType.Boolean:
                                         WriteBoolean(current.node);
                                         break;
-                                    case NodeDataType.String:
+                                    case ScriptDataType.String:
                                         WriteStringLiteral(current.node);
                                         break;
 
@@ -96,7 +96,7 @@ namespace OpenH2.ScriptAnalysis
                             case NodeType.ExpressionScope:
                                 switch(current.node.DataType)
                                 {
-                                    case NodeDataType.StatementStart:
+                                    case ScriptDataType.StatementStart:
                                         break;
                                     default:
                                         WriteScopeEnd(current.node);
@@ -107,17 +107,17 @@ namespace OpenH2.ScriptAnalysis
                             case NodeType.VariableAccess:
                                 switch (current.node.DataType)
                                 {
-                                    case NodeDataType.MethodOrOperator:
+                                    case ScriptDataType.MethodOrOperator:
                                         WriteMethodCallEnd(current.node);
                                         break;
-                                    case NodeDataType.ReferenceGet:
+                                    case ScriptDataType.ReferenceGet:
                                         break;
-                                    case NodeDataType.StatementStart:
+                                    case ScriptDataType.StatementStart:
                                         WriteStatementStartEnd(current.node);
                                         break;
-                                    case NodeDataType.Short:
+                                    case ScriptDataType.Short:
                                         break;
-                                    case NodeDataType.String:
+                                    case ScriptDataType.String:
                                         break;
                                 }
                                 break;

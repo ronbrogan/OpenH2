@@ -1,4 +1,5 @@
 ﻿using OpenH2.Core.Representations;
+using OpenH2.Core.Scripting;
 using OpenH2.Core.Tags.Layout;
 using System.Numerics;
 
@@ -23,7 +24,7 @@ namespace OpenH2.Core.Tags.Scenario
         [ReferenceArray(360)] public Obj360_String[] Obj360s_Locations { get; set; }
         [ReferenceArray(368)] public Obj368[] Obj368s { get; set; }
         [ReferenceArray(440)] public ScriptMethodDefinition[] ScriptMethods { get; set; }
-        [ReferenceArray(448)] public Obj448_String[] Obj448s { get; set; }
+        [ReferenceArray(448)] public ScriptVariableDefinition[] ScriptVariables { get; set; }
         [ReferenceArray(472)] public Obj472[] Obj472s { get; set; }
         [ReferenceArray(480)] public Obj480[] Obj480s { get; set; }
         [ReferenceArray(488)] public Obj488[] Obj488s { get; set; }
@@ -233,19 +234,6 @@ namespace OpenH2.Core.Tags.Scenario
         {
             [PrimitiveValue(4)]
             public TagRef CharacterReference { get; set; }
-        }
-
-        [FixedLength(40)]
-        public class Obj448_String
-        {
-            [StringValue(0, 32)]
-            public string Description { get; set; }
-
-            [PrimitiveValue(32)]
-            public uint Count { get; set; }
-
-            [PrimitiveValue(36)]
-            public TagRef Tag { get; set; }
         }
 
         [FixedLength(8)]

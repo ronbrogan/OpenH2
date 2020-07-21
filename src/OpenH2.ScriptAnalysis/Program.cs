@@ -53,6 +53,12 @@ namespace OpenH2.ScriptAnalysis
             var ns = "OpenH2.Scripts." + string.Join('.', scenarioParts.Take(2));
 
             var csharpGen = new ScriptCSharpGenerator(scnr);
+
+            foreach(var variable in scnr.ScriptVariables)
+            {
+                csharpGen.AddGlobalVariable(variable);
+            }
+
             csharpGen.AddMethod(script);
             var csharp = csharpGen.Generate();
 
@@ -73,7 +79,7 @@ namespace OpenH2.ScriptAnalysis
             {
                 Type = NodeType.Statement,
                 Value = method.Description,
-                DataType = NodeDataType.MethodOrOperator
+                DataType = ScriptDataType.MethodOrOperator
             };
 
             var childIndices = new Stack<(int, ScriptTreeNode)>();
@@ -93,22 +99,22 @@ namespace OpenH2.ScriptAnalysis
                 {
                     switch (node.DataType)
                     {
-                        case NodeDataType.Boolean:
+                        case ScriptDataType.Boolean:
                             value = node.NodeData_B0 == 1;
                             break;
-                        case NodeDataType.Short:
+                        case ScriptDataType.Short:
                             value = node.NodeData_H16;
                             break;
-                        case NodeDataType.String:
-                        case NodeDataType.MethodOrOperator:
-                        case NodeDataType.AI:
-                        case NodeDataType.AIScript:
-                        case NodeDataType.ReferenceGet:
-                        case NodeDataType.Device:
-                        case NodeDataType.EntityIdentifier:
+                        case ScriptDataType.String:
+                        case ScriptDataType.MethodOrOperator:
+                        case ScriptDataType.AI:
+                        case ScriptDataType.AIScript:
+                        case ScriptDataType.ReferenceGet:
+                        case ScriptDataType.Device:
+                        case ScriptDataType.EntityIdentifier:
                             value = strings.ReadStringStarting(node.NodeString);
                             break;
-                        case NodeDataType.Entity:
+                        case ScriptDataType.Entity:
                             break;
                         default:
                             // TODO: hack until everything is tracked down, populating string as value if exists
@@ -164,7 +170,7 @@ namespace OpenH2.ScriptAnalysis
     public class ScriptTreeNode
     {
         public NodeType Type { get; set; }
-        public NodeDataType DataType { get; set; }
+        public ScriptDataType DataType { get; set; }
         public object Value { get; set; }
         public List<ScriptTreeNode> Children { get; set; } = new List<ScriptTreeNode>();
         public ScenarioTag.ScriptSyntaxNode Original { get; set; }

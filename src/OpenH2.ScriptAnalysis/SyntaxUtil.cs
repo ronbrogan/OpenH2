@@ -10,15 +10,37 @@ namespace OpenH2.ScriptAnalysis
 {
     public static class SyntaxUtil
     {
+        public static FieldDeclarationSyntax CreateFieldDeclaration(ScenarioTag tag, ScenarioTag.ScriptVariableDefinition variable)
+        {
+            return variable.DataType switch
+            {
+                ScriptDataType.Float => CreateDeclaration(SyntaxKind.FloatKeyword, LiteralExpression(BitConverter.Int32BitsToSingle((int)variable.Value_32))),
+                ScriptDataType.Int => CreateDeclaration(SyntaxKind.IntKeyword, LiteralExpression((int)variable.Value_32)),
+                ScriptDataType.Boolean => CreateDeclaration(SyntaxKind.BoolKeyword, LiteralExpression(variable.Value_B3 == 1)),
+                ScriptDataType.Short => CreateDeclaration(SyntaxKind.ShortKeyword, LiteralExpression(variable.Value_H16)),
+                ScriptDataType.String => CreateDeclaration(SyntaxKind.StringKeyword, LiteralExpression(((Span<byte>)tag.ScriptStrings).ReadStringStarting((int)variable.Value_H16))),
+
+                _ => throw new NotImplementedException(),
+            };
+
+            FieldDeclarationSyntax CreateDeclaration(SyntaxKind keyword, LiteralExpressionSyntax value)
+            {
+                return FieldDeclaration(VariableDeclaration(PredefinedType(Token(keyword)))
+                    .WithVariables(SingletonSeparatedList<VariableDeclaratorSyntax>(
+                        VariableDeclarator(variable.Description)
+                        .WithInitializer(EqualsValueClause(value)))));
+            }
+        }
+
         public static LiteralExpressionSyntax LiteralExpression(ScenarioTag tag, ScenarioTag.ScriptSyntaxNode node)
         {
             return node.DataType switch
             {
-                NodeDataType.Float => LiteralExpression(BitConverter.Int32BitsToSingle((int)node.NodeData_32)),
-                NodeDataType.Int => LiteralExpression((int)node.NodeData_32),
-                NodeDataType.Boolean=> LiteralExpression(node.NodeData_B0 == 1),
-                NodeDataType.Short => LiteralExpression(node.NodeData_H16),
-                NodeDataType.String => LiteralExpression(((Span<byte>)tag.ScriptStrings).ReadStringStarting(node.NodeString)),
+                ScriptDataType.Float => LiteralExpression(BitConverter.Int32BitsToSingle((int)node.NodeData_32)),
+                ScriptDataType.Int => LiteralExpression((int)node.NodeData_32),
+                ScriptDataType.Boolean=> LiteralExpression(node.NodeData_B0 == 1),
+                ScriptDataType.Short => LiteralExpression(node.NodeData_H16),
+                ScriptDataType.String => LiteralExpression(((Span<byte>)tag.ScriptStrings).ReadStringStarting(node.NodeString)),
 
                 _ => throw new NotImplementedException(),
             };
