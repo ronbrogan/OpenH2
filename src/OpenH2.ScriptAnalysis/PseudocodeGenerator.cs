@@ -2,7 +2,6 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
 using System.Text;
 
 namespace OpenH2.ScriptAnalysis
@@ -87,11 +86,6 @@ namespace OpenH2.ScriptAnalysis
                         {
                             var c = current.Item1.Children[i];
                             nodes.Push((c, true));
-                        }
-
-                        for (var i = current.Item1.Children.Count - 1; i >= 0; i--)
-                        {
-                            var c = current.Item1.Children[i];
                             nodes.Push((c, false));
                         }
                     }
@@ -189,7 +183,13 @@ namespace OpenH2.ScriptAnalysis
             {
                 builder.Append(")");
                 var popped = state.Pop();
-                Debug.Assert(popped == ScriptState.WritingScopeStatements);
+                Debug.Assert(popped == ScriptState.ScopeStarted || popped == ScriptState.WritingScopeStatements);
+
+                if (popped == ScriptState.WritingScopeStatements)
+                {
+                    popped = state.Pop();
+                    Debug.Assert(popped == ScriptState.ScopeStarted);
+                }
             }
 
             private void WriteReferenceGet(ScriptTreeNode node)

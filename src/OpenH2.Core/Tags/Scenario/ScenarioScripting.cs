@@ -36,7 +36,7 @@ namespace OpenH2.Core.Tags.Scenario
         }
 
         [FixedLength(40)]
-        public class Obj440_ScriptMethod
+        public class ScriptMethodDefinition
         {
             [StringValue(0, 32)]
             public string Description { get; set; }
@@ -55,7 +55,7 @@ namespace OpenH2.Core.Tags.Scenario
         }
 
         [FixedLength(20)]
-        public class Obj568_ScriptASTNode
+        public class ScriptSyntaxNode
         {
             [PrimitiveValue(0)]
             public ushort Checkval { get; set; }

@@ -22,7 +22,7 @@ namespace OpenH2.Core.Tags.Scenario
         [ReferenceArray(352)] public Obj352_String[] Obj352s_Units { get; set; }
         [ReferenceArray(360)] public Obj360_String[] Obj360s_Locations { get; set; }
         [ReferenceArray(368)] public Obj368[] Obj368s { get; set; }
-        [ReferenceArray(440)] public Obj440_ScriptMethod[] ScriptMethods { get; set; }
+        [ReferenceArray(440)] public ScriptMethodDefinition[] ScriptMethods { get; set; }
         [ReferenceArray(448)] public Obj448_String[] Obj448s { get; set; }
         [ReferenceArray(472)] public Obj472[] Obj472s { get; set; }
         [ReferenceArray(480)] public Obj480[] Obj480s { get; set; }
@@ -31,7 +31,7 @@ namespace OpenH2.Core.Tags.Scenario
         [ReferenceArray(536)] public Obj536[] Obj536s { get; set; }
         [ReferenceArray(552)] public Obj552[] Obj552s { get; set; }
         [ReferenceArray(560)] public Obj560[] Obj560s { get; set; }
-        [ReferenceArray(568)] public Obj568_ScriptASTNode[] ScriptSyntaxNodes { get; set; }
+        [ReferenceArray(568)] public ScriptSyntaxNode[] ScriptSyntaxNodes { get; set; }
         [ReferenceArray(576)] public Obj576[] Obj576s { get; set; }
         [ReferenceArray(584)] public Obj584[] Obj584s { get; set; }
         [ReferenceArray(592)] public Obj592[] Obj592s { get; set; }

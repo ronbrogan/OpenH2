@@ -46,14 +46,25 @@ namespace OpenH2.ScriptAnalysis
             var generator = new PseudocodeGenerator();
             var pseudocode = generator.Generate(text);
 
+            var scenarioParts = scnr.Name.Split('\\', StringSplitOptions.RemoveEmptyEntries)
+                .Select(p => p.Trim())
+                .ToArray();
+
+            var ns = "OpenH2.Scripts." + string.Join('.', scenarioParts.Take(2));
+
+            var csharpGen = new ScriptCSharpGenerator(scnr);
+            csharpGen.AddMethod(script);
+            var csharp = csharpGen.Generate();
+
             var outRoot = $@"D:\h2scratch\{script.Description}";
 
             File.WriteAllText(outRoot + ".tree", debugTree);
-            File.WriteAllText(outRoot + ".cs", pseudocode);
+            File.WriteAllText(outRoot + ".pseudo.cs", pseudocode);
+            File.WriteAllText(outRoot + ".cs", csharp);
         }
 
         // TODO: Using adhoc ScriptTreeNode until we're in a good state to build a CSharpSyntaxTree directly
-        private static ScriptTreeNode GetScriptTree(ScenarioTag tag, ScenarioTag.Obj440_ScriptMethod method)
+        private static ScriptTreeNode GetScriptTree(ScenarioTag tag, ScenarioTag.ScriptMethodDefinition method)
         {
             var strings = (Span<byte>)tag.ScriptStrings;
             
@@ -148,62 +159,62 @@ namespace OpenH2.ScriptAnalysis
 
             int mask(int value) => value & 0x3FFF;
         }
+    }
 
-        private class ScriptTreeNode
+    public class ScriptTreeNode
+    {
+        public NodeType Type { get; set; }
+        public NodeDataType DataType { get; set; }
+        public object Value { get; set; }
+        public List<ScriptTreeNode> Children { get; set; } = new List<ScriptTreeNode>();
+        public ScenarioTag.ScriptSyntaxNode Original { get; set; }
+        public int Index { get; internal set; }
+
+        public static string ToString(ScriptTreeNode root)
         {
-            public NodeType Type { get; set; }
-            public NodeDataType DataType { get; set; }
-            public object Value { get; set; }
-            public List<ScriptTreeNode> Children { get; set; } = new List<ScriptTreeNode>();
-            public ScenarioTag.Obj568_ScriptASTNode Original { get; set; }
-            public int Index { get; internal set; }
+            var b = new StringBuilder();
 
-            public static string ToString(ScriptTreeNode root)
+            var nodes = new Stack<(ScriptTreeNode node, int indentLevel, bool terminal)>();
+            nodes.Push((root, 0, true));
+            nodes.Push((root, 0, false));
+
+            while (nodes.TryPop(out var current))
             {
-                var b = new StringBuilder();
-                
-                var nodes = new Stack<(ScriptTreeNode node, int indentLevel, bool terminal)>();
-                nodes.Push((root, 0, true));
-                nodes.Push((root, 0, false));
-
-                while(nodes.TryPop(out var current))
+                if (current.terminal == false)
                 {
-                    if (current.terminal == false)
+                    var indent = new string(' ', current.indentLevel * 4);
+
+                    var orig = current.node.Original;
+
+                    b.AppendLine()
+                        .Append(indent)
+                        .Append("(");
+
+                    if (current.node.Value.GetType() == typeof(string))
                     {
-                        var indent = new string(' ', current.indentLevel * 4);
-
-                        var orig = current.node.Original;
-
-                        b.AppendLine()
-                            .Append(indent)
-                            .Append("(");
-
-                        if (current.node.Value.GetType() == typeof(string))
-                        {
-                            b.Append($"\"{current.node.Value}\"");
-                        }
-                        else
-                        {
-                            b.Append(current.node.Value);
-                        }
-
-                        b.Append($", {current.node.Type}<{current.node.DataType}> @:{current.node.Index} a:{orig?.Checkval},b:{orig?.ValueB},c:{(ushort?)orig?.DataType},d:{(ushort?)orig?.NodeType},e:{orig?.NextIndex},f:{orig?.NextCheckval},g:{orig?.NodeString},h:{orig?.ValueH},i:{orig?.NodeData_H16},j:{orig?.NodeData_L16}");
-
-                        for (var i = current.Item1.Children.Count - 1; i >= 0; i--)
-                        {
-                            var c = current.Item1.Children[i];
-                            nodes.Push((c, current.indentLevel + 1, true));
-                            nodes.Push((c, current.indentLevel + 1, false));
-                        }
+                        b.Append($"\"{current.node.Value}\"");
                     }
                     else
                     {
-                        b.Append(")");
+                        b.Append(current.node.Value);
+                    }
+
+                    b.Append($", {current.node.Type}<{current.node.DataType}> @:{current.node.Index} a:{orig?.Checkval},b:{orig?.ValueB},c:{(ushort?)orig?.DataType},d:{(ushort?)orig?.NodeType},e:{orig?.NextIndex},f:{orig?.NextCheckval},g:{orig?.NodeString},h:{orig?.ValueH},i:{orig?.NodeData_H16},j:{orig?.NodeData_L16}");
+
+                    for (var i = current.Item1.Children.Count - 1; i >= 0; i--)
+                    {
+                        var c = current.Item1.Children[i];
+                        nodes.Push((c, current.indentLevel + 1, true));
+                        nodes.Push((c, current.indentLevel + 1, false));
                     }
                 }
-
-                return b.ToString();
+                else
+                {
+                    b.Append(")");
+                }
             }
+
+            return b.ToString();
         }
     }
 }
