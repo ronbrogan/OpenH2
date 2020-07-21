@@ -10,6 +10,20 @@ namespace OpenH2.ScriptAnalysis
 {
     public static class SyntaxUtil
     {
+        public static TypeSyntax ScriptTypeSyntax(ScriptDataType dataType)
+        {
+            return dataType switch
+            {
+                ScriptDataType.Float => PredefinedType(Token(SyntaxKind.FloatKeyword)),
+                ScriptDataType.Int => PredefinedType(Token(SyntaxKind.IntKeyword)),
+                ScriptDataType.Boolean => PredefinedType(Token(SyntaxKind.BoolKeyword)),
+                ScriptDataType.Short => PredefinedType(Token(SyntaxKind.ShortKeyword)),
+                ScriptDataType.String => PredefinedType(Token(SyntaxKind.StringKeyword)),
+                
+                _ => PredefinedType(Token(SyntaxKind.ObjectKeyword)),
+            };
+        }
+
         public static FieldDeclarationSyntax CreateFieldDeclaration(ScenarioTag tag, ScenarioTag.ScriptVariableDefinition variable)
         {
             return variable.DataType switch

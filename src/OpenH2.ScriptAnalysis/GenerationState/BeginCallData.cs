@@ -5,18 +5,17 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace OpenH2.ScriptAnalysis
+namespace OpenH2.ScriptAnalysis.GenerationState
 {
-    public class BeginCallData
+    public class BeginCallData : IScriptGenerationState
     {
-        public List<StatementSyntax> Body { get; }
+        public List<StatementSyntax> Body = new List<StatementSyntax>();
 
-        public BeginCallData(List<StatementSyntax> body)
+        public BeginCallData()
         {
-            this.Body = body;
         }
 
-        internal StatementSyntax GenerateInvocationStatement()
+        internal ExpressionSyntax GenerateInvocationStatement()
         {
             var lastStatement = Body.Last();
 
@@ -27,16 +26,19 @@ namespace OpenH2.ScriptAnalysis
                 Body.Add(returnStatement);
             }
 
-            return SyntaxFactory.ExpressionStatement(
-                SyntaxFactory.InvocationExpression(
+            return SyntaxFactory.InvocationExpression(
                     SyntaxFactory.ParenthesizedLambdaExpression(
                         SyntaxFactory.Block(
-                            SyntaxFactory.List(Body)))));
+                            SyntaxFactory.List(Body))));
         }
 
-        internal object AddExpression(ExpressionSyntax literal)
+        internal BeginCallData AddExpression(ExpressionSyntax exp)
         {
+            Body.Add(SyntaxFactory.ExpressionStatement(exp));
+
             return this;
         }
+
+        IScriptGenerationState IScriptGenerationState.AddExpression(ExpressionSyntax expression) => AddExpression(expression);
     }
 }

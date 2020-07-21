@@ -5,6 +5,7 @@ using Microsoft.VisualBasic.CompilerServices;
 using OpenH2.Core.Extensions;
 using OpenH2.Core.Scripting;
 using OpenH2.Core.Tags.Scenario;
+using OpenH2.ScriptAnalysis.GenerationState;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -18,7 +19,6 @@ namespace OpenH2.ScriptAnalysis
      * - Typed scopes aren't implemented yet, missing many arguments
      *    - Ideally try to find return value to remove redundant casts
      * - Engine mock/stubs
-     * - Script variables
      * - External reference lookups
      * - Create project with generated .cs files and/or compile and make warnings/errors available
      * 
@@ -33,8 +33,8 @@ namespace OpenH2.ScriptAnalysis
         private readonly List<MethodDeclarationSyntax> methods = new List<MethodDeclarationSyntax>();
         private readonly List<FieldDeclarationSyntax> fields = new List<FieldDeclarationSyntax>();
 
-        private Stack<object> stateData = new Stack<object>();
-        private Stack<List<StatementSyntax>> scopes = new Stack<List<StatementSyntax>>();
+        private Stack<IScriptGenerationState> stateData = new Stack<IScriptGenerationState>();
+        private IScriptGenerationState currentState => stateData.Peek();
 
         public const string EngineImplementationClass = "Engine";
 
@@ -47,8 +47,7 @@ namespace OpenH2.ScriptAnalysis
 
             this.nsDecl = NamespaceDeclaration(ParseName(ns));
 
-            var classModifiers = SyntaxTokenList.Create(Token(SyntaxKind.PublicKeyword))
-                .Add(Token(SyntaxKind.StaticKeyword));
+            var classModifiers = SyntaxTokenList.Create(Token(SyntaxKind.PublicKeyword));
 
             // TODO: shorthand attribute creation
             var attr = Attribute(ParseName("OriginScenario"), AttributeArgumentList(SeparatedList(new[] {
@@ -70,15 +69,14 @@ namespace OpenH2.ScriptAnalysis
 
         public void AddMethod(ScenarioTag.ScriptMethodDefinition scriptMethod)
         {
-            var modifiers = SyntaxTokenList.Create(Token(SyntaxKind.PublicKeyword))
-                .Add(Token(SyntaxKind.StaticKeyword));
+            var modifiers = SyntaxTokenList.Create(Token(SyntaxKind.PublicKeyword));
 
-            // TODO: method return type? decorate with additional info?
-            var method = MethodDeclaration(ParseTypeName("void"), scriptMethod.Description)
+            // TODO: Check return type property is correct. Decorate with additional info?
+            var method = MethodDeclaration(SyntaxUtil.ScriptTypeSyntax((ScriptDataType)scriptMethod.Index1), scriptMethod.Description)
                 .WithModifiers(modifiers);
 
             // Push root method body as first scope
-            scopes.Push(new List<StatementSyntax>());
+            stateData.Push(new ScopeBlockData());
 
             var childIndices = new ContinuationStack<int>();
             childIndices.PushFull(scriptMethod.ValueA);
@@ -97,9 +95,11 @@ namespace OpenH2.ScriptAnalysis
                 }
             }
 
-            var scope = scopes.Pop();
+            var scope = stateData.Pop() as ScopeBlockData;
 
-            if (scope.Count == 1 && scope[0].ChildNodes().First() is InvocationExpressionSyntax invocation
+            Debug.Assert(scope != null, "Last scope wasn't a ScopeBlockData");
+
+            if (scope.Statements.Count == 1 && scope.Statements[0].ChildNodes().First() is InvocationExpressionSyntax invocation
                 && invocation.ChildNodes().First() is ParenthesizedLambdaExpressionSyntax lambda
                 && lambda.Body is BlockSyntax lambdaBlock)
             {
@@ -107,12 +107,12 @@ namespace OpenH2.ScriptAnalysis
             }
             else
             {
-                method = method.WithBody(Block().WithStatements(List(scope)));
+                method = method.WithBody(Block().WithStatements(List(scope.Statements)));
             }
 
             methods.Add(method);
 
-            Debug.Assert(scopes.Count == 0, "Extra scopes on stack");
+            Debug.Assert(stateData.Count == 0, "Extra scopes on stack");
         }
 
         private void HandleNodeStart(ScenarioTag.ScriptSyntaxNode node, ContinuationStack<int> indices)
@@ -126,6 +126,7 @@ namespace OpenH2.ScriptAnalysis
                     HandleStatementStart(node, indices);
                     break;
                 case NodeType.VariableAccess:
+                    HandleVariableAccess(node);
                     break;
             }
         }
@@ -156,7 +157,43 @@ namespace OpenH2.ScriptAnalysis
                 // These nodes should be inside of a new scope, so pushing here
                 Debug.Assert(scenario.ScriptSyntaxNodes[node.NodeData_H16].Checkval == node.NodeData_L16, "Scope's next node checkval didn't match");
                 indices.PushFull(node.NodeData_H16);
-                scopes.Push(new List<StatementSyntax>());
+                stateData.Push(new ScopeBlockData());
+            }
+            else
+            {
+                switch (node.DataType)
+                {
+                    case ScriptDataType.MethodOrOperator:
+                        break;
+                    case ScriptDataType.Boolean:
+                        break;
+                    case ScriptDataType.Float:
+                        break;
+                    case ScriptDataType.Short:
+                        break;
+                    case ScriptDataType.Int:
+                        break;
+                    case ScriptDataType.String:
+                        break;
+                    case ScriptDataType.Trigger:
+                        break;
+                    case ScriptDataType.LocationFlag:
+                        break;
+                    case ScriptDataType.AI:
+                        break;
+                    case ScriptDataType.AIScript:
+                        break;
+                    case ScriptDataType.List:
+                        break;
+                    case ScriptDataType.ReferenceGet:
+                        break;
+                    case ScriptDataType.Entity:
+                        break;
+                    case ScriptDataType.Device:
+                        break;
+                    case ScriptDataType.EntityIdentifier:
+                        break;
+                }
             }
         }
 
@@ -210,20 +247,10 @@ namespace OpenH2.ScriptAnalysis
         {
             var methodName = GetScriptString(node);
 
-            object newState;
-
-            switch (methodName)
+            IScriptGenerationState newState = methodName switch
             {
-                case "begin":
-                    // Push a scope for begin's statements to be added to
-                    var b = new BeginCallData(new List<StatementSyntax>());
-                    scopes.Push(b.Body);
-                    newState = b;
-                    break;
-
-                default:
-                    newState = CreateEngineCall(methodName);
-                    break;
+                "begin" => new BeginCallData(),
+                _ => new MethodCallData(methodName),
             };
 
             stateData.Push(newState);
@@ -231,52 +258,35 @@ namespace OpenH2.ScriptAnalysis
 
         private void HandleMethodEnd()
         {
-            switch (stateData.Pop())
+            var state = stateData.Pop() switch
             {
-                case BeginCallData b:
-                    scopes.Pop(); // Ignore Begin's scope, used internally by GenerateInvocationStatement
-                    scopes.Peek().Add(b.GenerateInvocationStatement());
-                    break;
-                case InvocationExpressionSyntax ie:
-                    scopes.Peek().Add(ExpressionStatement(ie));
-                    break;
+                BeginCallData b => currentState.AddExpression(b.GenerateInvocationStatement()),
+                MethodCallData m => currentState.AddExpression(m.GenerateInvocationExpression()),
             };
         }
 
-        private LiteralExpressionSyntax HandleLiteral(ScenarioTag.ScriptSyntaxNode node)
+        private void HandleLiteral(ScenarioTag.ScriptSyntaxNode node)
         {
             var literal = SyntaxUtil.LiteralExpression(scenario, node);
 
-            if (stateData.TryPop(out var currentData))
-            {
-                object mutatedStateData = currentData switch
-                {
-                    BeginCallData b => b.AddExpression(literal),
-                    InvocationExpressionSyntax m => m.AddArgumentListArguments(Argument(literal)),
-                };
-
-                stateData.Push(mutatedStateData ?? currentData);
-            }
-
-            return literal;
+            currentState.AddExpression(literal);
         }
 
-        private IdentifierNameSyntax HandleStaticFieldAccess(ScenarioTag.ScriptSyntaxNode node)
+        private void HandleVariableAccess(ScenarioTag.ScriptSyntaxNode node)
+        {
+            var access = MemberAccessExpression(
+                SyntaxKind.SimpleMemberAccessExpression,
+                ThisExpression(),
+                IdentifierName(GetScriptString(node)));
+
+            currentState.AddExpression(access);
+        }
+
+        private void HandleStaticFieldAccess(ScenarioTag.ScriptSyntaxNode node)
         {
             var id = IdentifierName(GetScriptString(node));
 
-            if (stateData.TryPop(out var currentData))
-            {
-                object mutatedStateData = currentData switch
-                {
-                    BeginCallData b => b.AddExpression(id),
-                    InvocationExpressionSyntax m => m.AddArgumentListArguments(Argument(id)),
-                };
-
-                stateData.Push(mutatedStateData ?? currentData);
-            }
-
-            return id;
+            currentState.AddExpression(id);
         }
 
         private void HandleNodeEnd(ScenarioTag.ScriptSyntaxNode node)
@@ -298,16 +308,18 @@ namespace OpenH2.ScriptAnalysis
         {
             if (node.DataType == ScriptDataType.StatementStart)
             {
-                var endingScope = scopes.Pop();
+                var endingScope = stateData.Pop() as ScopeBlockData;
 
-                if (endingScope.Count == 0)
+                Debug.Assert(endingScope != null, "The ending scope wasn't a ScopeBlockData");
+
+                if (endingScope.Statements.Count == 0)
                     return;
 
                 ExpressionSyntax scopeExpression;
 
-                if (endingScope.Count == 1
-                    && endingScope[0].ChildNodes().Count() == 1
-                    && endingScope[0].ChildNodes().First() is ExpressionSyntax ex)
+                if (endingScope.Statements.Count == 1
+                    && endingScope.Statements[0].ChildNodes().Count() == 1
+                    && endingScope.Statements[0].ChildNodes().First() is ExpressionSyntax ex)
                 {
                     scopeExpression = ex;
                 }
@@ -315,32 +327,10 @@ namespace OpenH2.ScriptAnalysis
                 {
                     scopeExpression = InvocationExpression(
                         ParenthesizedLambdaExpression(
-                            Block(List(endingScope))));
+                            Block(List(endingScope.Statements))));
                 }
 
-                if (stateData.TryPop(out var currentData))
-                {
-                    object mutatedStateData = currentData switch
-                    {
-                        //BeginCallData b => b.AddExpression(scopeExpression),
-                        InvocationExpressionSyntax m => m.AddArgumentListArguments(Argument(scopeExpression)),
-                        _ => null
-                    };
-
-                    stateData.Push(mutatedStateData ?? currentData);
-
-                    // TODO: cleanup copy/paste here
-                    if (mutatedStateData == null)
-                    {
-                        var containingScope = scopes.Peek();
-                        containingScope.Add(ExpressionStatement(scopeExpression));
-                    }
-                }
-                else
-                {
-                    var containingScope = scopes.Peek();
-                    containingScope.Add(ExpressionStatement(scopeExpression));
-                }
+                currentState.AddExpression(scopeExpression);
             }
         }
 
@@ -419,21 +409,9 @@ namespace OpenH2.ScriptAnalysis
             return csharpTree.ToString();
         }
 
-        private InvocationExpressionSyntax CreateEngineCall(string method)
-        {
-            return InvocationExpression(IdentifierName(method))
-                .WithArgumentList(ArgumentList());
-        }
-
         private string GetScriptString(ScenarioTag.ScriptSyntaxNode node)
         {
             return ((Span<byte>)scenario.ScriptStrings).ReadStringStarting(node.NodeString);
-        }
-
-        private enum GenerationState
-        {
-            WritingScope,
-            WritingMethodCall,
         }
     }
 }
