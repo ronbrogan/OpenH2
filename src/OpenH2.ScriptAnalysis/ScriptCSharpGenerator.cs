@@ -1,7 +1,6 @@
 ﻿using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
-using Microsoft.VisualBasic.CompilerServices;
 using OpenH2.Core.Extensions;
 using OpenH2.Core.Scripting;
 using OpenH2.Core.Tags.Scenario;
@@ -33,8 +32,9 @@ namespace OpenH2.ScriptAnalysis
         private readonly List<MethodDeclarationSyntax> methods = new List<MethodDeclarationSyntax>();
         private readonly List<FieldDeclarationSyntax> fields = new List<FieldDeclarationSyntax>();
 
-        private Stack<IScriptGenerationState> stateData = new Stack<IScriptGenerationState>();
         private IScriptGenerationState currentState => stateData.Peek();
+        private Stack<IScriptGenerationState> stateData;
+        private ContinuationStack<int> childIndices;
 
         public const string EngineImplementationClass = "Engine";
 
@@ -69,6 +69,9 @@ namespace OpenH2.ScriptAnalysis
 
         public void AddMethod(ScenarioTag.ScriptMethodDefinition scriptMethod)
         {
+            stateData = new Stack<IScriptGenerationState>();
+            childIndices = new ContinuationStack<int>();
+
             var modifiers = SyntaxTokenList.Create(Token(SyntaxKind.PublicKeyword));
 
             // TODO: Check return type property is correct. Decorate with additional info?
@@ -78,7 +81,7 @@ namespace OpenH2.ScriptAnalysis
             // Push root method body as first scope
             stateData.Push(new ScopeBlockData());
 
-            var childIndices = new ContinuationStack<int>();
+            
             childIndices.PushFull(scriptMethod.ValueA);
 
             while (childIndices.TryPop(out var currentIndex, out var isContinuation))
@@ -87,7 +90,7 @@ namespace OpenH2.ScriptAnalysis
 
                 if (isContinuation == false)
                 {
-                    HandleNodeStart(node, childIndices);
+                    HandleNodeStart(node);
                 }
                 else
                 {
@@ -115,18 +118,30 @@ namespace OpenH2.ScriptAnalysis
             Debug.Assert(stateData.Count == 0, "Extra scopes on stack");
         }
 
-        private void HandleNodeStart(ScenarioTag.ScriptSyntaxNode node, ContinuationStack<int> indices)
+        private void PushNext(ScenarioTag.ScriptSyntaxNode node)
+        {
+            if (node.NextIndex != ushort.MaxValue)
+            {
+                Debug.Assert(scenario.ScriptSyntaxNodes[node.NextIndex].Checkval == node.NextCheckval, "Node's next checkval didn't match");
+                childIndices.PushFull(node.NextIndex);
+            }
+        }
+
+        private void HandleNodeStart(ScenarioTag.ScriptSyntaxNode node)
         {
             switch (node.NodeType)
             {
                 case NodeType.ExpressionScope:
-                    HandleExpressionScopeStart(node, indices);
+                    HandleExpressionScopeStart(node);
                     break;
                 case NodeType.Statement:
-                    HandleStatementStart(node, indices);
+                    HandleStatementStart(node);
                     break;
                 case NodeType.VariableAccess:
                     HandleVariableAccess(node);
+                    break;
+                default:
+                    HandleUnknown(node);
                     break;
             }
         }
@@ -134,78 +149,41 @@ namespace OpenH2.ScriptAnalysis
         // Expression scope seems to use NodeData to specify what is inside the scope
         // and the Next value is used to specify the scope's next sibling instead
         // This is how the linear-ish node structure can expand into a more traditional AST
-        private void HandleExpressionScopeStart(ScenarioTag.ScriptSyntaxNode node, ContinuationStack<int> indices)
+        private void HandleExpressionScopeStart(ScenarioTag.ScriptSyntaxNode node)
         {
+            if (node.NextIndex != ushort.MaxValue)
+            {
+                // If we're not at top level, we need to push behind the current scope's continuation
+                // This makes the 'next' into a 'sibling'
+                bool repushOrig = childIndices.TryPop(out var orig, out var origCont);
+
+                PushNext(node);
+
+                if (repushOrig)
+                {
+                    Debug.Assert(origCont, "Popped scope wasn't a continuation");
+                    childIndices.PushSeparate(orig, origCont);
+                }
+            }
+
+            // These nodes should be inside of a new scope, so pushing here
+            Debug.Assert(scenario.ScriptSyntaxNodes[node.NodeData_H16].Checkval == node.NodeData_L16, "Scope's next node checkval didn't match");
+            childIndices.PushFull(node.NodeData_H16);
+
             if (node.DataType == ScriptDataType.StatementStart)
             {
-                if (node.NextIndex != ushort.MaxValue)
-                {
-                    // If we're not at top level, we need to push behind the current scope's continuation
-                    // This makes the 'next' into a 'sibling'
-                    bool repushOrig = indices.TryPop(out var orig, out var origCont);
-
-                    Debug.Assert(scenario.ScriptSyntaxNodes[node.NextIndex].Checkval == node.NextCheckval, "Node's next checkval didn't match");
-                    indices.PushFull(node.NextIndex);
-
-                    if (repushOrig)
-                    {
-                        Debug.Assert(origCont, "Popped scope wasn't a continuation");
-                        indices.PushSeparate(orig, origCont);
-                    }
-                }
-
-                // These nodes should be inside of a new scope, so pushing here
-                Debug.Assert(scenario.ScriptSyntaxNodes[node.NodeData_H16].Checkval == node.NodeData_L16, "Scope's next node checkval didn't match");
-                indices.PushFull(node.NodeData_H16);
                 stateData.Push(new ScopeBlockData());
             }
             else
             {
-                switch (node.DataType)
-                {
-                    case ScriptDataType.MethodOrOperator:
-                        break;
-                    case ScriptDataType.Boolean:
-                        break;
-                    case ScriptDataType.Float:
-                        break;
-                    case ScriptDataType.Short:
-                        break;
-                    case ScriptDataType.Int:
-                        break;
-                    case ScriptDataType.String:
-                        break;
-                    case ScriptDataType.Trigger:
-                        break;
-                    case ScriptDataType.LocationFlag:
-                        break;
-                    case ScriptDataType.AI:
-                        break;
-                    case ScriptDataType.AIScript:
-                        break;
-                    case ScriptDataType.List:
-                        break;
-                    case ScriptDataType.ReferenceGet:
-                        break;
-                    case ScriptDataType.Entity:
-                        break;
-                    case ScriptDataType.Device:
-                        break;
-                    case ScriptDataType.EntityIdentifier:
-                        break;
-                }
+                // If it's not a StatementStart, it's effectively a data cast for the inside expression
+                stateData.Push(new CastScopeData(node.DataType));
             }
         }
 
-        private void HandleStatementStart(ScenarioTag.ScriptSyntaxNode node, ContinuationStack<int> indices)
+        private void HandleStatementStart(ScenarioTag.ScriptSyntaxNode node)
         {
-            if (node.NextIndex != ushort.MaxValue)
-            {
-                Debug.Assert(scenario.ScriptSyntaxNodes[node.NextIndex].Checkval == node.NextCheckval, "Node's next checkval didn't match");
-                indices.PushFull(node.NextIndex);
-            }
-
-            Span<byte> strings = scenario.ScriptStrings;
+            PushNext(node);
 
             switch (node.DataType)
             {
@@ -235,12 +213,25 @@ namespace OpenH2.ScriptAnalysis
                     break;
                 default:
                     // TODO: hack until everything is tracked down, populating string as value if exists
-                    if (node.NodeString > 0 && strings[node.NodeString - 1] == 0)
-                    {
-                        //value = strings.ReadStringStarting(node.NodeString);
-                    }
+                    HandleUnknown(node);
                     break;
             }
+        }
+
+        private void HandleUnknown(ScenarioTag.ScriptSyntaxNode node)
+        {
+            PushNext(node);
+
+            string unknownDescription = "";
+
+            if (node.NodeString > 0 && scenario.ScriptStrings[node.NodeString - 1] == 0)
+            {
+                unknownDescription = GetScriptString(node);
+            }
+
+            unknownDescription += $" -{node.NodeType}<{node.DataType}>";
+            currentState.AddExpression(InvocationExpression(IdentifierName("UNKNOWN"),
+                ArgumentList(SingletonSeparatedList(Argument(SyntaxUtil.LiteralExpression(unknownDescription))))));
         }
 
         private void HandleMethodStart(ScenarioTag.ScriptSyntaxNode node)
@@ -274,6 +265,8 @@ namespace OpenH2.ScriptAnalysis
 
         private void HandleVariableAccess(ScenarioTag.ScriptSyntaxNode node)
         {
+            PushNext(node);
+
             var access = MemberAccessExpression(
                 SyntaxKind.SimpleMemberAccessExpression,
                 ThisExpression(),
@@ -309,7 +302,6 @@ namespace OpenH2.ScriptAnalysis
             if (node.DataType == ScriptDataType.StatementStart)
             {
                 var endingScope = stateData.Pop() as ScopeBlockData;
-
                 Debug.Assert(endingScope != null, "The ending scope wasn't a ScopeBlockData");
 
                 if (endingScope.Statements.Count == 0)
@@ -331,6 +323,13 @@ namespace OpenH2.ScriptAnalysis
                 }
 
                 currentState.AddExpression(scopeExpression);
+            }
+            else
+            {
+                var endingScope = stateData.Pop() as CastScopeData;
+                Debug.Assert(endingScope != null, "The ending scope wasn't a CastScopeData");
+
+                currentState.AddExpression(endingScope.GenerateCastExpression());
             }
         }
 

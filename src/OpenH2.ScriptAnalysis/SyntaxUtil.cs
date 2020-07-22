@@ -52,7 +52,7 @@ namespace OpenH2.ScriptAnalysis
             {
                 ScriptDataType.Float => LiteralExpression(BitConverter.Int32BitsToSingle((int)node.NodeData_32)),
                 ScriptDataType.Int => LiteralExpression((int)node.NodeData_32),
-                ScriptDataType.Boolean=> LiteralExpression(node.NodeData_B0 == 1),
+                ScriptDataType.Boolean=> LiteralExpression(node.NodeData_B3 == 1),
                 ScriptDataType.Short => LiteralExpression(node.NodeData_H16),
                 ScriptDataType.String => LiteralExpression(((Span<byte>)tag.ScriptStrings).ReadStringStarting(node.NodeString)),
 
