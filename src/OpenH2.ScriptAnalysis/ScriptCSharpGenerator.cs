@@ -241,6 +241,16 @@ namespace OpenH2.ScriptAnalysis
             IScriptGenerationState newState = methodName switch
             {
                 "begin" => new BeginCallData(),
+                "-" =>  new BinaryOperatorData(SyntaxKind.SubtractExpression),
+                "+" =>  new BinaryOperatorData(SyntaxKind.AddExpression),
+                "*" =>  new BinaryOperatorData(SyntaxKind.MultiplyExpression),
+                "/" =>  new BinaryOperatorData(SyntaxKind.DivideExpression),
+                "%" =>  new BinaryOperatorData(SyntaxKind.ModuloExpression),
+                "=" =>  new BinaryOperatorData(SyntaxKind.EqualsExpression),
+                "<" =>  new BinaryOperatorData(SyntaxKind.LessThanExpression),
+                ">" =>  new BinaryOperatorData(SyntaxKind.GreaterThanExpression),
+                "<=" => new BinaryOperatorData(SyntaxKind.LessThanOrEqualExpression),
+                ">=" => new BinaryOperatorData(SyntaxKind.GreaterThanOrEqualExpression),
                 _ => new MethodCallData(methodName),
             };
 
@@ -249,9 +259,10 @@ namespace OpenH2.ScriptAnalysis
 
         private void HandleMethodEnd()
         {
-            var state = stateData.Pop() switch
+            _ = stateData.Pop() switch
             {
                 BeginCallData b => currentState.AddExpression(b.GenerateInvocationStatement()),
+                BinaryOperatorData o => currentState.AddExpression(o.GenerateOperatorExpression()),
                 MethodCallData m => currentState.AddExpression(m.GenerateInvocationExpression()),
             };
         }
