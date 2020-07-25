@@ -17,6 +17,11 @@ namespace OpenH2.ScriptAnalysis.GenerationState
 
         internal ExpressionSyntax GenerateInvocationStatement()
         {
+            if(Body.Count == 1 && Body[0].ChildNodes().First() is ExpressionSyntax onlyExpression)
+            {
+                return onlyExpression;
+            }
+
             var lastStatement = Body.Last();
 
             if (lastStatement.ChildNodes().First() is ExpressionSyntax lastExpression)
