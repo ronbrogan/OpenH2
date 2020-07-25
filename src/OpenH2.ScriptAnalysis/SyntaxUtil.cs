@@ -24,25 +24,25 @@ namespace OpenH2.ScriptAnalysis
             };
         }
 
-        public static FieldDeclarationSyntax CreateFieldDeclaration(ScenarioTag tag, ScenarioTag.ScriptVariableDefinition variable)
+        public static FieldDeclarationSyntax CreateFieldDeclaration(ScenarioTag.ScriptVariableDefinition variable, ExpressionSyntax rightHandSide)
         {
             return variable.DataType switch
             {
-                ScriptDataType.Float => CreateDeclaration(SyntaxKind.FloatKeyword, LiteralExpression(BitConverter.Int32BitsToSingle((int)variable.Value_32))),
-                ScriptDataType.Int => CreateDeclaration(SyntaxKind.IntKeyword, LiteralExpression((int)variable.Value_32)),
-                ScriptDataType.Boolean => CreateDeclaration(SyntaxKind.BoolKeyword, LiteralExpression(variable.Value_B3 == 1)),
-                ScriptDataType.Short => CreateDeclaration(SyntaxKind.ShortKeyword, LiteralExpression(variable.Value_H16)),
-                ScriptDataType.String => CreateDeclaration(SyntaxKind.StringKeyword, LiteralExpression(((Span<byte>)tag.ScriptStrings).ReadStringStarting((int)variable.Value_H16))),
+                ScriptDataType.Float => CreateDeclaration(SyntaxKind.FloatKeyword),
+                ScriptDataType.Int => CreateDeclaration(SyntaxKind.IntKeyword),
+                ScriptDataType.Boolean => CreateDeclaration(SyntaxKind.BoolKeyword),
+                ScriptDataType.Short => CreateDeclaration(SyntaxKind.ShortKeyword),
+                ScriptDataType.String => CreateDeclaration(SyntaxKind.StringKeyword),
 
                 _ => throw new NotImplementedException(),
             };
 
-            FieldDeclarationSyntax CreateDeclaration(SyntaxKind keyword, LiteralExpressionSyntax value)
+            FieldDeclarationSyntax CreateDeclaration(SyntaxKind keyword)
             {
                 return FieldDeclaration(VariableDeclaration(PredefinedType(Token(keyword)))
                     .WithVariables(SingletonSeparatedList<VariableDeclaratorSyntax>(
                         VariableDeclarator(variable.Description)
-                        .WithInitializer(EqualsValueClause(value)))));
+                        .WithInitializer(EqualsValueClause(rightHandSide)))));
             }
         }
 

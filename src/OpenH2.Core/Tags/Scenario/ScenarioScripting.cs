@@ -70,7 +70,7 @@ namespace OpenH2.Core.Tags.Scenario
             public ushort Index2 { get; set; }
 
             [PrimitiveValue(36)]
-            public ushort ValueA { get; set; }
+            public ushort SyntaxNodeIndex { get; set; }
 
             [PrimitiveValue(38)]
             public ushort ValueB { get; set; }

@@ -83,7 +83,7 @@ namespace OpenH2.ScriptAnalysis
             };
 
             var childIndices = new Stack<(int, ScriptTreeNode)>();
-            childIndices.Push((method.ValueA, root));
+            childIndices.Push((method.SyntaxNodeIndex, root));
 
             while (childIndices.Any())
             {

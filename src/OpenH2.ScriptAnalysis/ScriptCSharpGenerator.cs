@@ -64,14 +64,21 @@ namespace OpenH2.ScriptAnalysis
 
         internal void AddGlobalVariable(ScenarioTag.ScriptVariableDefinition variable)
         {
-            fields.Add(SyntaxUtil.CreateFieldDeclaration(scenario, variable));
+            Debug.Assert(variable.Value_H16 < scenario.ScriptSyntaxNodes.Length, "Variable expression is not valid");
+
+            var node = scenario.ScriptSyntaxNodes[variable.Value_H16];
+
+            Debug.Assert(node.Checkval == variable.Value_L16, "Variable expression checkval did not match");
+
+            var scope = EvaluateNodes(variable.Value_H16, new CastScopeData(variable.DataType)) as CastScopeData;
+
+            Debug.Assert(scope != null, "Returned scope was not the correct type");
+
+            fields.Add(SyntaxUtil.CreateFieldDeclaration(variable, scope.GenerateCastExpression()));
         }
 
         public void AddMethod(ScenarioTag.ScriptMethodDefinition scriptMethod)
         {
-            stateData = new Stack<IScriptGenerationState>();
-            childIndices = new ContinuationStack<int>();
-
             var modifiers = SyntaxTokenList.Create(Token(SyntaxKind.PublicKeyword));
 
             // TODO: Check return type property is correct. Decorate with additional info?
@@ -79,26 +86,7 @@ namespace OpenH2.ScriptAnalysis
                 .WithModifiers(modifiers);
 
             // Push root method body as first scope
-            stateData.Push(new ScopeBlockData());
-
-            
-            childIndices.PushFull(scriptMethod.ValueA);
-
-            while (childIndices.TryPop(out var currentIndex, out var isContinuation))
-            {
-                var node = scenario.ScriptSyntaxNodes[currentIndex];
-
-                if (isContinuation == false)
-                {
-                    HandleNodeStart(node);
-                }
-                else
-                {
-                    HandleNodeEnd(node);
-                }
-            }
-
-            var scope = stateData.Pop() as ScopeBlockData;
+            var scope = EvaluateNodes(scriptMethod.SyntaxNodeIndex, new ScopeBlockData()) as ScopeBlockData;
 
             Debug.Assert(scope != null, "Last scope wasn't a ScopeBlockData");
 
@@ -116,6 +104,31 @@ namespace OpenH2.ScriptAnalysis
             methods.Add(method);
 
             Debug.Assert(stateData.Count == 0, "Extra scopes on stack");
+        }
+
+        private IScriptGenerationState EvaluateNodes(int rootIndex, IScriptGenerationState rootScope)
+        {
+            stateData = new Stack<IScriptGenerationState>();
+            stateData.Push(rootScope);
+
+            childIndices = new ContinuationStack<int>();
+            childIndices.PushFull(rootIndex);
+
+            while (childIndices.TryPop(out var currentIndex, out var isContinuation))
+            {
+                var node = scenario.ScriptSyntaxNodes[currentIndex];
+
+                if (isContinuation == false)
+                {
+                    HandleNodeStart(node);
+                }
+                else
+                {
+                    HandleNodeEnd(node);
+                }
+            }
+
+            return stateData.Pop();
         }
 
         private void PushNext(ScenarioTag.ScriptSyntaxNode node)
