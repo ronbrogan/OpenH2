@@ -281,12 +281,9 @@ namespace OpenH2.ScriptAnalysis
             }
 
             var currentBlock = currentState as IScopedScriptGenerationState;
-
             Debug.Assert(currentBlock != null, $"Current scope is not a {nameof(IScopedScriptGenerationState)}");
 
-            // Here we'll be in a ScopeBlockData
             var statements = statementData.GenerateIfStatement(isInStatementScope, out var resultVariable);
-            
             foreach(var statement in statements)
             {
                 currentBlock.AddStatement(statement);
@@ -297,6 +294,7 @@ namespace OpenH2.ScriptAnalysis
                 stateData.Push(popped);
             }
 
+            // TODO: is this check for determining if the result variable is used sufficient?
             if(isInStatementScope == false)
             {
                 currentState.AddExpression(resultVariable);

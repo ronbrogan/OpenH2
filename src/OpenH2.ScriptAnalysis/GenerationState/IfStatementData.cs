@@ -17,7 +17,6 @@ namespace OpenH2.ScriptAnalysis.GenerationState
         {
         }
 
-
         public IScriptGenerationState AddExpression(ExpressionSyntax expression)
         {
             if(condition == null)
@@ -51,13 +50,10 @@ namespace OpenH2.ScriptAnalysis.GenerationState
 
             var resultStatements = new List<StatementSyntax>();
 
-            ExpressionSyntax whenTrueExpression;
+            ExpressionSyntax whenTrueExpression = this.whenTrue;
+            ExpressionSyntax whenFalseExpression = this.whenFalse;
 
-            if (isInStatementScope)
-            {
-                whenTrueExpression = this.whenTrue;
-            }
-            else
+            if (isInStatementScope == false)
             {
                 resultStatements.Add(
                     LocalDeclarationStatement(
@@ -77,11 +73,28 @@ namespace OpenH2.ScriptAnalysis.GenerationState
                     SyntaxKind.SimpleAssignmentExpression,
                     resultVariable,
                     this.whenTrue);
+
+                if(this.whenFalse != null)
+                {
+                    whenFalseExpression = AssignmentExpression(
+                        SyntaxKind.SimpleAssignmentExpression,
+                        resultVariable,
+                        this.whenFalse);
+                }
             }            
 
             var trueBlock = Block(ExpressionStatement(whenTrueExpression));
 
-            resultStatements.Add(IfStatement(this.condition, trueBlock));
+            if(whenFalseExpression == null)
+            {
+                resultStatements.Add(IfStatement(this.condition, trueBlock));
+            }
+            else
+            {
+                var falseBlock = Block(ExpressionStatement(whenFalseExpression));
+
+                resultStatements.Add(IfStatement(this.condition, trueBlock, ElseClause(falseBlock)));
+            }            
 
             return resultStatements.ToArray();
         }
