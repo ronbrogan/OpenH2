@@ -251,6 +251,7 @@ namespace OpenH2.ScriptAnalysis
                 ">" =>  new BinaryOperatorData(SyntaxKind.GreaterThanExpression),
                 "<=" => new BinaryOperatorData(SyntaxKind.LessThanOrEqualExpression),
                 ">=" => new BinaryOperatorData(SyntaxKind.GreaterThanOrEqualExpression),
+                "if" => new IfStatementData(),
                 _ => new MethodCallData(methodName),
             };
 
@@ -264,7 +265,44 @@ namespace OpenH2.ScriptAnalysis
                 BeginCallData b => currentState.AddExpression(b.GenerateInvocationStatement()),
                 BinaryOperatorData o => currentState.AddExpression(o.GenerateOperatorExpression()),
                 MethodCallData m => currentState.AddExpression(m.GenerateInvocationExpression()),
+                IfStatementData i => HoistOrInsertIf(i)
             };
+        }
+
+        private IScriptGenerationState HoistOrInsertIf(IfStatementData statementData)
+        {
+            var isInStatementScope = typeof(IScopedScriptGenerationState).IsAssignableFrom(currentState.GetType());
+
+            var poppedScopes = new Stack<IScriptGenerationState>();
+
+            while (typeof(IScopedScriptGenerationState).IsAssignableFrom(currentState.GetType()) == false)
+            {
+                poppedScopes.Push(stateData.Pop());
+            }
+
+            var currentBlock = currentState as IScopedScriptGenerationState;
+
+            Debug.Assert(currentBlock != null, $"Current scope is not a {nameof(IScopedScriptGenerationState)}");
+
+            // Here we'll be in a ScopeBlockData
+            var statements = statementData.GenerateIfStatement(isInStatementScope, out var resultVariable);
+            
+            foreach(var statement in statements)
+            {
+                currentBlock.AddStatement(statement);
+            }
+
+            while(poppedScopes.TryPop(out var popped))
+            {
+                stateData.Push(popped);
+            }
+
+            if(isInStatementScope == false)
+            {
+                currentState.AddExpression(resultVariable);
+            }
+
+            return statementData;
         }
 
         private void HandleLiteral(ScenarioTag.ScriptSyntaxNode node)
@@ -318,22 +356,27 @@ namespace OpenH2.ScriptAnalysis
                 if (endingScope.Statements.Count == 0)
                     return;
 
-                ExpressionSyntax scopeExpression;
-
-                if (endingScope.Statements.Count == 1
+                if (currentState is IScopedScriptGenerationState currentBlock)
+                {
+                    foreach (var statement in endingScope.Statements)
+                    {
+                        currentBlock.AddStatement(statement);
+                    }
+                }
+                else if (endingScope.Statements.Count == 1
                     && endingScope.Statements[0].ChildNodes().Count() == 1
                     && endingScope.Statements[0].ChildNodes().First() is ExpressionSyntax ex)
                 {
-                    scopeExpression = ex;
+                    currentState.AddExpression(ex);
                 }
                 else
                 {
-                    scopeExpression = InvocationExpression(
+                    currentState.AddExpression(InvocationExpression(
                         ParenthesizedLambdaExpression(
-                            Block(List(endingScope.Statements))));
+                            Block(List(endingScope.Statements)))));
                 }
 
-                currentState.AddExpression(scopeExpression);
+                
             }
             else
             {

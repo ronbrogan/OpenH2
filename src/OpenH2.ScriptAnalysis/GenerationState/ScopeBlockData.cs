@@ -4,9 +4,9 @@ using System.Collections.Generic;
 
 namespace OpenH2.ScriptAnalysis.GenerationState
 {
-    public class ScopeBlockData : IScriptGenerationState
+    public class ScopeBlockData : IScriptGenerationState, IScopedScriptGenerationState
     {
-        public readonly List<StatementSyntax> Statements = new List<StatementSyntax>();
+        public List<StatementSyntax> Statements { get; set; } = new List<StatementSyntax>();
 
         public ScopeBlockData()
         {
@@ -19,6 +19,7 @@ namespace OpenH2.ScriptAnalysis.GenerationState
             return this;
         }
 
+        IScopedScriptGenerationState IScopedScriptGenerationState.AddStatement(StatementSyntax statement) => AddStatement(statement);
         public ScopeBlockData AddStatement(StatementSyntax statement)
         {
             this.Statements.Add(statement);

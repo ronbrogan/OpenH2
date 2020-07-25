@@ -19,6 +19,7 @@ namespace OpenH2.ScriptAnalysis.GenerationState
 
         public IScriptGenerationState AddExpression(ExpressionSyntax expression)
         {
+            Debug.Assert(expression != null, "Expression was not provided");
             Debug.Assert(this.scopedExpression == null, "Scoped expression contains multiple expressions");
 
             this.scopedExpression = expression;

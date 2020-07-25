@@ -7,9 +7,9 @@ using System.Text;
 
 namespace OpenH2.ScriptAnalysis.GenerationState
 {
-    public class BeginCallData : IScriptGenerationState
+    public class BeginCallData : IScriptGenerationState, IScopedScriptGenerationState
     {
-        public List<StatementSyntax> Body = new List<StatementSyntax>();
+        public List<StatementSyntax> Body { get; set; } = new List<StatementSyntax>();
 
         public BeginCallData()
         {
@@ -40,5 +40,11 @@ namespace OpenH2.ScriptAnalysis.GenerationState
         }
 
         IScriptGenerationState IScriptGenerationState.AddExpression(ExpressionSyntax expression) => AddExpression(expression);
+
+        public IScopedScriptGenerationState AddStatement(StatementSyntax statement)
+        {
+            Body.Add(statement);
+            return this;
+        }
     }
 }

@@ -11,7 +11,7 @@ namespace OpenH2.Engine.Entities
         public Player(bool useDynamicController)
         {
             var xform = new TransformComponent(this, Quaternion.Identity);
-            xform.Position = new Vector3(0, 0, 4);
+            xform.Position = new Vector3(0, 0, 8);
             xform.UpdateDerivedData();
 
             
