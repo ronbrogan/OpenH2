@@ -70,52 +70,56 @@ namespace OpenH2.Core.Tags
 
                 var meshes = ModelResouceContainerProcessor.ProcessContainer(part, ModelShaderReferences);
 
-                var bbIndex = 0;
-
-                var maxBounds = new Vector3(
-                    this.BoundingBoxes[bbIndex].MaxX,
-                    this.BoundingBoxes[bbIndex].MaxY,
-                    this.BoundingBoxes[bbIndex].MaxZ);
-
-                var minBounds = new Vector3(
-                    this.BoundingBoxes[bbIndex].MinX,
-                    this.BoundingBoxes[bbIndex].MinY,
-                    this.BoundingBoxes[bbIndex].MinZ);
-
-                var maxUV = new Vector2(
-                    this.BoundingBoxes[bbIndex].MaxU,
-                    this.BoundingBoxes[bbIndex].MaxV);
-
-                var minUV = new Vector2(
-                    this.BoundingBoxes[bbIndex].MinU,
-                    this.BoundingBoxes[bbIndex].MinV);
-
-                var mesh = meshes[0];
-
-                for (var i = 0; i < mesh.Verticies.Length; i++)
+                if(this.BoundingBoxes.Length > 0)
                 {
-                    var vert = mesh.Verticies[i];
 
-                    var newPos = part.Flags.HasFlag(Properties.CompressedVerts) ? new Vector3(
-                        Decompress(vert.Position.X, minBounds.X, maxBounds.X),
-                        Decompress(vert.Position.Y, minBounds.Y, maxBounds.Y),
-                        Decompress(vert.Position.Z, minBounds.Z, maxBounds.Z)
-                        ) : vert.Position;
+                    var bbIndex = 0;
 
-                    var newTex = part.Flags.HasFlag(Properties.CompressedTexCoords) ? new Vector2(
-                        Decompress(vert.TexCoords.X, minUV.X, maxUV.X),
-                        Decompress(vert.TexCoords.Y, minUV.Y, maxUV.Y)
-                        ) : vert.TexCoords;
+                    var maxBounds = new Vector3(
+                        this.BoundingBoxes[bbIndex].MaxX,
+                        this.BoundingBoxes[bbIndex].MaxY,
+                        this.BoundingBoxes[bbIndex].MaxZ);
 
-                    // Workaround for JIT issue
-                    // https://github.com/dotnet/runtime/issues/1241
-                    var newVert = new VertexFormat(newPos,
-                        newTex,
-                        vert.Normal,
-                        vert.Tangent,
-                        vert.Bitangent);
+                    var minBounds = new Vector3(
+                        this.BoundingBoxes[bbIndex].MinX,
+                        this.BoundingBoxes[bbIndex].MinY,
+                        this.BoundingBoxes[bbIndex].MinZ);
 
-                    mesh.Verticies[i] = newVert;
+                    var maxUV = new Vector2(
+                        this.BoundingBoxes[bbIndex].MaxU,
+                        this.BoundingBoxes[bbIndex].MaxV);
+
+                    var minUV = new Vector2(
+                        this.BoundingBoxes[bbIndex].MinU,
+                        this.BoundingBoxes[bbIndex].MinV);
+
+                    var mesh = meshes[0];
+
+                    for (var i = 0; i < mesh.Verticies.Length; i++)
+                    {
+                        var vert = mesh.Verticies[i];
+
+                        var newPos = part.Flags.HasFlag(Properties.CompressedVerts) ? new Vector3(
+                            Decompress(vert.Position.X, minBounds.X, maxBounds.X),
+                            Decompress(vert.Position.Y, minBounds.Y, maxBounds.Y),
+                            Decompress(vert.Position.Z, minBounds.Z, maxBounds.Z)
+                            ) : vert.Position;
+
+                        var newTex = part.Flags.HasFlag(Properties.CompressedTexCoords) ? new Vector2(
+                            Decompress(vert.TexCoords.X, minUV.X, maxUV.X),
+                            Decompress(vert.TexCoords.Y, minUV.Y, maxUV.Y)
+                            ) : vert.TexCoords;
+
+                        // Workaround for JIT issue
+                        // https://github.com/dotnet/runtime/issues/1241
+                        var newVert = new VertexFormat(newPos,
+                            newTex,
+                            vert.Normal,
+                            vert.Tangent,
+                            vert.Bitangent);
+
+                        mesh.Verticies[i] = newVert;
+                    }
                 }
 
                 part.Model = new MeshCollection(meshes);

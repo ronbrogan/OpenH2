@@ -30,44 +30,48 @@ namespace OpenH2.ScriptAnalysis
 
         static void Main(string[] args)
         {
-            var path = @"D:\H2vMaps\05b_deltatowers.map";
+            var maps = Directory.GetFiles(@"D:\H2vMaps", "*.map");
 
-            var factory = new MapFactory(Path.GetDirectoryName(path), NullMaterialFactory.Instance);
-            var scene = factory.FromFile(File.OpenRead(path));
-
-            var scnr = scene.GetLocalTagsOfType<ScenarioTag>().First();
-
-            var scenarioParts = scnr.Name.Split('\\', StringSplitOptions.RemoveEmptyEntries)
-                    .Select(p => p.Trim())
-                    .ToArray();
-
-            var outRoot = $@"D:\h2scratch\{scenarioParts.Last()}";
-            var ns = "OpenH2.Scripts." + string.Join('.', scenarioParts.Take(2));
-
-            var csharpGen = new ScriptCSharpGenerator(scnr);
-
-            csharpGen.OnNodeEnd += CsharpGen_OnNodeEnd;
-
-            foreach (var variable in scnr.ScriptVariables)
+            foreach(var map in maps)
             {
-                csharpGen.AddGlobalVariable(variable);
-            }
+                var factory = new MapFactory(Path.GetDirectoryName(map), NullMaterialFactory.Instance);
+                var scene = factory.FromFile(File.OpenRead(map));
 
-            foreach (var script in scnr.ScriptMethods)
-            {
-                var text = GetScriptTree(scnr, script);
-                var debugTree = ScriptTreeNode.ToString(text);
-                File.WriteAllText(Path.Combine(outRoot, script.Description + ".tree"), debugTree);
+                var scnr = scene.GetLocalTagsOfType<ScenarioTag>().First();
 
-                csharpGen.AddMethod(script);                
-            }
+                var scenarioParts = scnr.Name.Split('\\', StringSplitOptions.RemoveEmptyEntries)
+                        .Select(p => p.Trim())
+                        .ToArray();
 
-            var csharp = csharpGen.Generate();
-            File.WriteAllText(outRoot + "\\scripts.cs", csharp);
+                var outRoot = $@"D:\h2scratch\scripts\{scenarioParts.Last()}";
+                Directory.CreateDirectory(outRoot);
+                var ns = "OpenH2.Scripts." + string.Join('.', scenarioParts.Take(2));
+
+                var csharpGen = new ScriptCSharpGenerator(scnr);
+
+                csharpGen.OnNodeEnd += CsharpGen_OnNodeEnd;
+
+                foreach (var variable in scnr.ScriptVariables)
+                {
+                    csharpGen.AddGlobalVariable(variable);
+                }
+
+                foreach (var script in scnr.ScriptMethods)
+                {
+                    var text = GetScriptTree(scnr, script);
+                    var debugTree = ScriptTreeNode.ToString(text);
+                    File.WriteAllText(Path.Combine(outRoot, script.Description + ".tree"), debugTree);
+
+                    csharpGen.AddMethod(script);
+                }
+
+                var csharp = csharpGen.Generate();
+                File.WriteAllText(outRoot + $"\\{scenarioParts.Last()}.cs", csharp);
+            }            
 
             DedupeMethodInfos();
             var tree = GenerateScriptEngineClass();
-            File.WriteAllText(@"D:\h2scratch\ScriptEngine.cs", tree.ToString());
+            File.WriteAllText(@"D:\h2scratch\scripts\ScriptEngine.cs", tree.ToString());
         }
 
         private static void CsharpGen_OnNodeEnd(GenerationCallbackArgs args)
