@@ -13,60 +13,40 @@ namespace OpenH2.ScriptAnalysis
 {
     partial class Program
     {
-        private static Dictionary<int, string> stringLookup;
-
         static void Main(string[] args)
         {
-            var path = @"D:\H2vMaps\01a_tutorial.map";
-            var scriptIndex = 72;//70;
+            var path = @"D:\H2vMaps\05b_deltatowers.map";
 
             var factory = new MapFactory(Path.GetDirectoryName(path), NullMaterialFactory.Instance);
             var scene = factory.FromFile(File.OpenRead(path));
 
             var scnr = scene.GetLocalTagsOfType<ScenarioTag>().First();
 
-            stringLookup = new Dictionary<int, string>();
-
-            var lastIndex = 0;
-            for(var i = 0; i < scnr.ScriptStrings.Length; i++)
-            {
-                if(scnr.ScriptStrings[i] == 0)
-                {
-                    stringLookup[lastIndex] = SpanByteExtensions.ReadStringStarting(scnr.ScriptStrings, lastIndex);
-                    lastIndex = i + 1;
-                }
-            }
-
-            var script = scnr.ScriptMethods[scriptIndex];
-
-            var text = GetScriptTree(scnr, script);
-
-            var debugTree = ScriptTreeNode.ToString(text);
-
-            var generator = new PseudocodeGenerator();
-            var pseudocode = generator.Generate(text);
-
             var scenarioParts = scnr.Name.Split('\\', StringSplitOptions.RemoveEmptyEntries)
-                .Select(p => p.Trim())
-                .ToArray();
+                    .Select(p => p.Trim())
+                    .ToArray();
 
+            var outRoot = $@"D:\h2scratch\{scenarioParts.Last()}";
             var ns = "OpenH2.Scripts." + string.Join('.', scenarioParts.Take(2));
 
             var csharpGen = new ScriptCSharpGenerator(scnr);
 
-            foreach(var variable in scnr.ScriptVariables)
+            foreach (var variable in scnr.ScriptVariables)
             {
                 csharpGen.AddGlobalVariable(variable);
             }
 
-            csharpGen.AddMethod(script);
+            foreach (var script in scnr.ScriptMethods)
+            {
+                var text = GetScriptTree(scnr, script);
+                var debugTree = ScriptTreeNode.ToString(text);
+                File.WriteAllText(Path.Combine(outRoot, script.Description + ".tree"), debugTree);
+
+                csharpGen.AddMethod(script);                
+            }
+
             var csharp = csharpGen.Generate();
-
-            var outRoot = $@"D:\h2scratch\{script.Description}";
-
-            File.WriteAllText(outRoot + ".tree", debugTree);
-            File.WriteAllText(outRoot + ".pseudo.cs", pseudocode);
-            File.WriteAllText(outRoot + ".cs", csharp);
+            File.WriteAllText(outRoot + "\\scripts.cs", csharp);
         }
 
         // TODO: Using adhoc ScriptTreeNode until we're in a good state to build a CSharpSyntaxTree directly
@@ -77,9 +57,14 @@ namespace OpenH2.ScriptAnalysis
 
             var root = new ScriptTreeNode()
             {
-                Type = NodeType.Statement,
+                Type = NodeType.ExpressionScope,
                 Value = method.Description,
-                DataType = ScriptDataType.MethodOrOperator
+                DataType = method.ReturnType,
+                Original = new ScenarioTag.ScriptSyntaxNode()
+                {
+                    NextIndex = method.SyntaxNodeIndex,
+                    NextCheckval = method.ValueB
+                }
             };
 
             var childIndices = new Stack<(int, ScriptTreeNode)>();
@@ -100,7 +85,7 @@ namespace OpenH2.ScriptAnalysis
                     switch (node.DataType)
                     {
                         case ScriptDataType.Boolean:
-                            value = node.NodeData_B0 == 1;
+                            value = node.NodeData_B3 == 1;
                             break;
                         case ScriptDataType.Short:
                             value = node.NodeData_H16;
@@ -118,9 +103,10 @@ namespace OpenH2.ScriptAnalysis
                             break;
                         default:
                             // TODO: hack until everything is tracked down, populating string as value if exists
-                            if(stringLookup.TryGetValue(node.NodeString, out var defaultString))
+                            if (node.NodeString > 0 && node.NodeString < tag.ScriptStrings.Length
+                                && tag.ScriptStrings[node.NodeString - 1] == 0)
                             {
-                                value = defaultString;
+                                value = SpanByteExtensions.ReadStringStarting(tag.ScriptStrings, node.NodeString);
                             }
                             break;
                     }
@@ -205,7 +191,7 @@ namespace OpenH2.ScriptAnalysis
                         b.Append(current.node.Value);
                     }
 
-                    b.Append($", {current.node.Type}<{current.node.DataType}> @:{current.node.Index} a:{orig?.Checkval},b:{orig?.ValueB},c:{(ushort?)orig?.DataType},d:{(ushort?)orig?.NodeType},e:{orig?.NextIndex},f:{orig?.NextCheckval},g:{orig?.NodeString},h:{orig?.ValueH},i:{orig?.NodeData_H16},j:{orig?.NodeData_L16}");
+                    b.Append($", {current.node.Type}<{current.node.DataType}> @:{current.node.Index} a:{orig?.Checkval},b:{orig?.ScriptIndex},c:{(ushort?)orig?.DataType},d:{(ushort?)orig?.NodeType},e:{orig?.NextIndex},f:{orig?.NextCheckval},g:{orig?.NodeString},h:{orig?.ValueH},i:{orig?.NodeData_H16},j:{orig?.NodeData_L16}");
 
                     for (var i = current.Item1.Children.Count - 1; i >= 0; i--)
                     {

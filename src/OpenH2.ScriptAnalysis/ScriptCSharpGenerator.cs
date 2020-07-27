@@ -82,7 +82,9 @@ namespace OpenH2.ScriptAnalysis
             var modifiers = SyntaxTokenList.Create(Token(SyntaxKind.PublicKeyword));
 
             // TODO: Check return type property is correct. Decorate with additional info?
-            var method = MethodDeclaration(SyntaxUtil.ScriptTypeSyntax((ScriptDataType)scriptMethod.Index1), scriptMethod.Description)
+            var method = MethodDeclaration(
+                    SyntaxUtil.ScriptTypeSyntax(scriptMethod.ReturnType),
+                    SyntaxUtil.SanitizeIdentifier(scriptMethod.Description))
                 .WithModifiers(modifiers);
 
             // Push root method body as first scope
@@ -153,7 +155,11 @@ namespace OpenH2.ScriptAnalysis
                 case NodeType.VariableAccess:
                     HandleVariableAccess(node);
                     break;
+                case NodeType.ScriptInvocation:
+                    HandleScriptInvocation(node);
+                    break;
                 default:
+                    PushNext(node);
                     HandleUnknown(node);
                     break;
             }
@@ -183,7 +189,7 @@ namespace OpenH2.ScriptAnalysis
             Debug.Assert(scenario.ScriptSyntaxNodes[node.NodeData_H16].Checkval == node.NodeData_L16, "Scope's next node checkval didn't match");
             childIndices.PushFull(node.NodeData_H16);
 
-            if (node.DataType == ScriptDataType.StatementStart)
+            if (node.DataType == ScriptDataType.Void)
             {
                 stateData.Push(new ScopeBlockData());
             }
@@ -200,8 +206,9 @@ namespace OpenH2.ScriptAnalysis
 
             switch (node.DataType)
             {
-                case ScriptDataType.StatementStart:
-                    throw new Exception("StatementStart is not a valid statement type");
+                case ScriptDataType.Void:
+                    // TODO: void expressions?
+                    break;
                 case ScriptDataType.MethodOrOperator:
                     HandleMethodStart(node);
                     break;
@@ -215,6 +222,7 @@ namespace OpenH2.ScriptAnalysis
                 case ScriptDataType.Trigger:
                 case ScriptDataType.LocationFlag:
                 case ScriptDataType.List:
+                case ScriptDataType.Emotion:
                     HandleStaticFieldAccess(node);
                     break;
                 case ScriptDataType.Float:
@@ -233,11 +241,10 @@ namespace OpenH2.ScriptAnalysis
 
         private void HandleUnknown(ScenarioTag.ScriptSyntaxNode node)
         {
-            PushNext(node);
-
             string unknownDescription = "";
 
-            if (node.NodeString > 0 && scenario.ScriptStrings[node.NodeString - 1] == 0)
+            if (node.NodeString > 0 && node.NodeString < scenario.ScriptStrings.Length
+                && scenario.ScriptStrings[node.NodeString - 1] == 0)
             {
                 unknownDescription = GetScriptString(node);
             }
@@ -330,16 +337,38 @@ namespace OpenH2.ScriptAnalysis
             var access = MemberAccessExpression(
                 SyntaxKind.SimpleMemberAccessExpression,
                 ThisExpression(),
-                IdentifierName(GetScriptString(node)));
+                IdentifierName(
+                    SyntaxUtil.SanitizeIdentifier(GetScriptString(node))));
 
             currentState.AddExpression(access);
         }
 
+        private void HandleScriptInvocation(ScenarioTag.ScriptSyntaxNode node)
+        {
+            PushNext(node);
+
+            var invocation = InvocationExpression(
+                MemberAccessExpression(
+                    SyntaxKind.SimpleMemberAccessExpression,
+                    ThisExpression(),
+                    IdentifierName(
+                        SyntaxUtil.SanitizeIdentifier(scenario.ScriptMethods[node.ScriptIndex].Description))));
+
+            currentState.AddExpression(invocation);
+        }
+
         private void HandleStaticFieldAccess(ScenarioTag.ScriptSyntaxNode node)
         {
-            var id = IdentifierName(GetScriptString(node));
-
-            currentState.AddExpression(id);
+            if(node.NodeString == 0)
+            {
+                currentState.AddExpression(
+                    DefaultExpression(SyntaxUtil.ScriptTypeSyntax(node.DataType)));
+            }
+            else
+            {
+                currentState.AddExpression(
+                    IdentifierName(SyntaxUtil.SanitizeIdentifier(GetScriptString(node))));
+            }
         }
 
         private void HandleNodeEnd(ScenarioTag.ScriptSyntaxNode node)
@@ -354,12 +383,15 @@ namespace OpenH2.ScriptAnalysis
                     break;
                 case NodeType.VariableAccess:
                     break;
+                case NodeType.ScriptInvocation:
+
+                    break;
             }
         }
 
         private void HandleExpressionScopeEnd(ScenarioTag.ScriptSyntaxNode node)
         {
-            if (node.DataType == ScriptDataType.StatementStart)
+            if (node.DataType == ScriptDataType.Void)
             {
                 var endingScope = stateData.Pop() as ScopeBlockData;
                 Debug.Assert(endingScope != null, "The ending scope wasn't a ScopeBlockData");
@@ -414,7 +446,7 @@ namespace OpenH2.ScriptAnalysis
                 case ScriptDataType.Short:
                 case ScriptDataType.String:
                 case ScriptDataType.Entity:
-                case ScriptDataType.StatementStart:
+                case ScriptDataType.Void:
                 case ScriptDataType.Float:
                 case ScriptDataType.Int:
                 case ScriptDataType.Trigger:

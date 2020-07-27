@@ -67,7 +67,7 @@ namespace OpenH2.Core.Tags.Scenario
             public ushort Index1 { get; set; }
 
             [PrimitiveValue(34)]
-            public ushort Index2 { get; set; }
+            public ScriptDataType ReturnType { get; set; }
 
             [PrimitiveValue(36)]
             public ushort SyntaxNodeIndex { get; set; }
@@ -83,7 +83,7 @@ namespace OpenH2.Core.Tags.Scenario
             public ushort Checkval { get; set; }
 
             [PrimitiveValue(2)]
-            public ushort ValueB { get; set; }
+            public ushort ScriptIndex { get; set; }
 
             [PrimitiveValue(4)]
             public ScriptDataType DataType { get; set; }
