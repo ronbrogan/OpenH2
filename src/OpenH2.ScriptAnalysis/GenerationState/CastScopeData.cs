@@ -6,15 +6,15 @@ using System.Diagnostics;
 
 namespace OpenH2.ScriptAnalysis.GenerationState
 {
-    public class CastScopeData : IScriptGenerationState
+    public class CastScopeData : BaseGenerationState, IScriptGenerationState
     {
-        private readonly ScriptDataType destinationType;
+        public readonly ScriptDataType DestinationType;
 
         private ExpressionSyntax scopedExpression = null;
 
         public CastScopeData(ScriptDataType destinationType)
         {
-            this.destinationType = destinationType;
+            this.DestinationType = destinationType;
         }
 
         public IScriptGenerationState AddExpression(ExpressionSyntax expression)

@@ -1,18 +1,33 @@
-﻿using OpenH2.Core.Extensions;
+﻿using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
+using OpenH2.Core.Extensions;
 using OpenH2.Core.Factories;
 using OpenH2.Core.Scripting;
 using OpenH2.Core.Tags.Scenario;
+using OpenH2.ScriptAnalysis.GenerationState;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Security.Cryptography.X509Certificates;
 using System.Text;
+using static Microsoft.CodeAnalysis.CSharp.SyntaxFactory;
 
 namespace OpenH2.ScriptAnalysis
 {
+    public class EngineMethodInfo
+    {
+        public string Name { get; set; }
+        public ScriptDataType ReturnType { get; set; }
+        public List<ScriptDataType> ArgumentTypes { get; } = new List<ScriptDataType>();
+    }
+
     partial class Program
     {
+        public static List<EngineMethodInfo> engineMethodInfos = new List<EngineMethodInfo>();
+
         static void Main(string[] args)
         {
             var path = @"D:\H2vMaps\05b_deltatowers.map";
@@ -31,6 +46,8 @@ namespace OpenH2.ScriptAnalysis
 
             var csharpGen = new ScriptCSharpGenerator(scnr);
 
+            csharpGen.OnNodeEnd += CsharpGen_OnNodeEnd;
+
             foreach (var variable in scnr.ScriptVariables)
             {
                 csharpGen.AddGlobalVariable(variable);
@@ -47,6 +64,36 @@ namespace OpenH2.ScriptAnalysis
 
             var csharp = csharpGen.Generate();
             File.WriteAllText(outRoot + "\\scripts.cs", csharp);
+
+            DedupeMethodInfos();
+            var tree = GenerateScriptEngineClass();
+            File.WriteAllText(@"D:\h2scratch\ScriptEngine.cs", tree.ToString());
+        }
+
+        private static void CsharpGen_OnNodeEnd(GenerationCallbackArgs args)
+        {
+            if(args.State is MethodCallData m)
+            {
+                var info = new EngineMethodInfo()
+                {
+                    Name = m.MethodName,
+                    ReturnType = m.ReturnType
+                };
+
+                foreach(var meta in m.Metadata)
+                {
+                    if(meta is ScenarioTag.ScriptSyntaxNode argNode)
+                    {
+                        info.ArgumentTypes.Add(argNode.DataType);
+                    }
+                    else
+                    {
+                        //?
+                    }
+                }
+
+                engineMethodInfos.Add(info);
+            }
         }
 
         // TODO: Using adhoc ScriptTreeNode until we're in a good state to build a CSharpSyntaxTree directly
@@ -150,6 +197,77 @@ namespace OpenH2.ScriptAnalysis
             return root;
 
             int mask(int value) => value & 0x3FFF;
+        }
+
+        private static SyntaxTree GenerateScriptEngineClass()
+        {
+            var classMethods = new List<MemberDeclarationSyntax>();
+
+            foreach (var method in engineMethodInfos.OrderBy(i => i.Name))
+            {
+                var paramList = method.ArgumentTypes.Select((a, i) => Parameter(Identifier("param" + i))
+                .WithType(SyntaxUtil.ScriptTypeSyntax(a)));
+
+                classMethods.Add(MethodDeclaration(SyntaxUtil.ScriptTypeSyntax(method.ReturnType), method.Name)
+                    .WithModifiers(new SyntaxTokenList(Token(SyntaxKind.PublicKeyword), Token(SyntaxKind.StaticKeyword)))
+                    .WithParameterList(ParameterList(SeparatedList<ParameterSyntax>(paramList)))
+                    .WithBody(Block()));
+            }
+
+            var classDecl = ClassDeclaration("ScriptEngine")
+                .WithModifiers(SyntaxTokenList.Create(Token(SyntaxKind.PublicKeyword)))
+                .WithMembers(new SyntaxList<MemberDeclarationSyntax>(classMethods));
+
+            var ns = NamespaceDeclaration(ParseName("OpenH2.Engine.Scripting"))
+                .WithMembers(List<MemberDeclarationSyntax>().Add(classDecl));
+
+            return CSharpSyntaxTree.Create(ns.NormalizeWhitespace());
+        }
+
+        private static void DedupeMethodInfos()
+        {
+            var allInfos = new Queue<EngineMethodInfo>(engineMethodInfos);
+            var prunedMethodInfos = new List<EngineMethodInfo>();
+            // Prune method definitions
+            while (allInfos.TryDequeue(out var candidate))
+            {
+                var hasDuplicate = false;
+
+                foreach (var existing in prunedMethodInfos)
+                {
+                    var isExactMatch = true;
+
+                    if (existing.Name != candidate.Name) isExactMatch = false;
+                    if (existing.ReturnType != candidate.ReturnType) isExactMatch = false;
+
+                    if (existing.ArgumentTypes.Count == candidate.ArgumentTypes.Count)
+                    {
+                        for (var i = 0; i < existing.ArgumentTypes.Count; i++)
+                        {
+                            var l = existing.ArgumentTypes[i];
+                            var r = candidate.ArgumentTypes[i];
+
+                            if (l != r) isExactMatch = false;
+                        }
+                    }
+                    else
+                    {
+                        isExactMatch = false;
+                    }
+
+                    if (isExactMatch)
+                    {
+                        hasDuplicate = true;
+                    }
+                }
+
+                if(hasDuplicate == false)
+                {
+                    prunedMethodInfos.Add(candidate);
+                }
+            }
+
+            engineMethodInfos = prunedMethodInfos;
         }
     }
 

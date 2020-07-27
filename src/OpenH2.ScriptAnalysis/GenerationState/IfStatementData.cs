@@ -7,7 +7,7 @@ using static Microsoft.CodeAnalysis.CSharp.SyntaxFactory;
 
 namespace OpenH2.ScriptAnalysis.GenerationState
 {
-    internal class IfStatementData : IScriptGenerationState
+    internal class IfStatementData : BaseGenerationState, IScriptGenerationState
     {
         private ExpressionSyntax condition = null;
         private ExpressionSyntax whenTrue = null;

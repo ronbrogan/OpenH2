@@ -13,19 +13,24 @@ using static Microsoft.CodeAnalysis.CSharp.SyntaxFactory;
 
 namespace OpenH2.ScriptAnalysis
 {
+    
+
+    public delegate void GenerationCallback(GenerationCallbackArgs args);
+    public class GenerationCallbackArgs
+    {
+        public ScenarioTag.ScriptSyntaxNode Node { get; set; }
+        public IScriptGenerationState State { get; set; }
+    }
+
+
     /*
      * TODO:
-     * - Typed scopes aren't implemented yet, missing many arguments
-     *    - Ideally try to find return value to remove redundant casts
      * - Engine mock/stubs
      * - External reference lookups
      * - Create project with generated .cs files and/or compile and make warnings/errors available
-     * 
      */
-
-
     public class ScriptCSharpGenerator
-    {
+    { 
         private readonly ScenarioTag scenario;
         private readonly ClassDeclarationSyntax classDecl;
         private readonly NamespaceDeclarationSyntax nsDecl;
@@ -36,7 +41,9 @@ namespace OpenH2.ScriptAnalysis
         private Stack<IScriptGenerationState> stateData;
         private ContinuationStack<int> childIndices;
 
-        public const string EngineImplementationClass = "Engine";
+        public const string EngineImplementationClass = "ScriptEngine";
+
+        public event GenerationCallback OnNodeEnd;
 
         public ScriptCSharpGenerator(ScenarioTag scnr, string[] refrences = null)
         {
@@ -62,7 +69,7 @@ namespace OpenH2.ScriptAnalysis
                 .WithAttributeLists(classAttrs);
         }
 
-        internal void AddGlobalVariable(ScenarioTag.ScriptVariableDefinition variable)
+        public void AddGlobalVariable(ScenarioTag.ScriptVariableDefinition variable)
         {
             Debug.Assert(variable.Value_H16 < scenario.ScriptSyntaxNodes.Length, "Variable expression is not valid");
 
@@ -81,7 +88,6 @@ namespace OpenH2.ScriptAnalysis
         {
             var modifiers = SyntaxTokenList.Create(Token(SyntaxKind.PublicKeyword));
 
-            // TODO: Check return type property is correct. Decorate with additional info?
             var method = MethodDeclaration(
                     SyntaxUtil.ScriptTypeSyntax(scriptMethod.ReturnType),
                     SyntaxUtil.SanitizeIdentifier(scriptMethod.Description))
@@ -159,9 +165,7 @@ namespace OpenH2.ScriptAnalysis
                     HandleScriptInvocation(node);
                     break;
                 default:
-                    PushNext(node);
-                    HandleUnknown(node);
-                    break;
+                    throw new NotSupportedException($"Node type {node.NodeType} is not yet supported");
             }
         }
 
@@ -239,6 +243,35 @@ namespace OpenH2.ScriptAnalysis
             }
         }
 
+        private void HandleVariableAccess(ScenarioTag.ScriptSyntaxNode node)
+        {
+            PushNext(node);
+
+            var access = MemberAccessExpression(
+                SyntaxKind.SimpleMemberAccessExpression,
+                ThisExpression(),
+                IdentifierName(
+                    SyntaxUtil.SanitizeIdentifier(GetScriptString(node))));
+
+            currentState.AddExpression(access);
+            currentState.AddMetadata(node);
+        }
+
+        private void HandleScriptInvocation(ScenarioTag.ScriptSyntaxNode node)
+        {
+            PushNext(node);
+
+            var invocation = InvocationExpression(
+                MemberAccessExpression(
+                    SyntaxKind.SimpleMemberAccessExpression,
+                    ThisExpression(),
+                    IdentifierName(
+                        SyntaxUtil.SanitizeIdentifier(scenario.ScriptMethods[node.ScriptIndex].Description))));
+
+            currentState.AddExpression(invocation);
+            currentState.AddMetadata(node);
+        }
+
         private void HandleUnknown(ScenarioTag.ScriptSyntaxNode node)
         {
             string unknownDescription = "";
@@ -252,11 +285,23 @@ namespace OpenH2.ScriptAnalysis
             unknownDescription += $" -{node.NodeType}<{node.DataType}>";
             currentState.AddExpression(InvocationExpression(IdentifierName("UNKNOWN"),
                 ArgumentList(SingletonSeparatedList(Argument(SyntaxUtil.LiteralExpression(unknownDescription))))));
+            currentState.AddMetadata(node);
         }
 
         private void HandleMethodStart(ScenarioTag.ScriptSyntaxNode node)
         {
             var methodName = GetScriptString(node);
+
+            ScriptDataType rt = (ScriptDataType)ushort.MaxValue;
+
+            if(currentState is CastScopeData cast)
+            {
+                rt = cast.DestinationType;
+            }
+            else if (currentState is ScopeBlockData scope)
+            {
+                rt = ScriptDataType.Void;
+            }
 
             IScriptGenerationState newState = methodName switch
             {
@@ -272,7 +317,7 @@ namespace OpenH2.ScriptAnalysis
                 "<=" => new BinaryOperatorData(SyntaxKind.LessThanOrEqualExpression),
                 ">=" => new BinaryOperatorData(SyntaxKind.GreaterThanOrEqualExpression),
                 "if" => new IfStatementData(),
-                _ => new MethodCallData(methodName),
+                _ => new MethodCallData(methodName, rt),
             };
 
             stateData.Push(newState);
@@ -328,33 +373,7 @@ namespace OpenH2.ScriptAnalysis
             var literal = SyntaxUtil.LiteralExpression(scenario, node);
 
             currentState.AddExpression(literal);
-        }
-
-        private void HandleVariableAccess(ScenarioTag.ScriptSyntaxNode node)
-        {
-            PushNext(node);
-
-            var access = MemberAccessExpression(
-                SyntaxKind.SimpleMemberAccessExpression,
-                ThisExpression(),
-                IdentifierName(
-                    SyntaxUtil.SanitizeIdentifier(GetScriptString(node))));
-
-            currentState.AddExpression(access);
-        }
-
-        private void HandleScriptInvocation(ScenarioTag.ScriptSyntaxNode node)
-        {
-            PushNext(node);
-
-            var invocation = InvocationExpression(
-                MemberAccessExpression(
-                    SyntaxKind.SimpleMemberAccessExpression,
-                    ThisExpression(),
-                    IdentifierName(
-                        SyntaxUtil.SanitizeIdentifier(scenario.ScriptMethods[node.ScriptIndex].Description))));
-
-            currentState.AddExpression(invocation);
+            currentState.AddMetadata(node);
         }
 
         private void HandleStaticFieldAccess(ScenarioTag.ScriptSyntaxNode node)
@@ -369,10 +388,20 @@ namespace OpenH2.ScriptAnalysis
                 currentState.AddExpression(
                     IdentifierName(SyntaxUtil.SanitizeIdentifier(GetScriptString(node))));
             }
+
+            currentState.AddMetadata(node);
         }
+
+        #region NodeEnd
 
         private void HandleNodeEnd(ScenarioTag.ScriptSyntaxNode node)
         {
+            this.OnNodeEnd(new GenerationCallbackArgs()
+            {
+                Node = node,
+                State = currentState
+            });
+
             switch (node.NodeType)
             {
                 case NodeType.ExpressionScope:
@@ -455,6 +484,8 @@ namespace OpenH2.ScriptAnalysis
                     break;
             }
         }
+
+        #endregion
 
         public string Generate()
         {

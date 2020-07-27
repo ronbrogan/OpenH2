@@ -9,7 +9,7 @@ using System.Text;
 
 namespace OpenH2.ScriptAnalysis.GenerationState
 {
-    public class BinaryOperatorData : IScriptGenerationState
+    public class BinaryOperatorData : BaseGenerationState, IScriptGenerationState
     {
         private readonly List<ExpressionSyntax> operands = new List<ExpressionSyntax>();
         private readonly SyntaxKind operatorSyntaxKind;

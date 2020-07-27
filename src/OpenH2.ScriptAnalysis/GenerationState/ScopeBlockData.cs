@@ -4,7 +4,7 @@ using System.Collections.Generic;
 
 namespace OpenH2.ScriptAnalysis.GenerationState
 {
-    public class ScopeBlockData : IScriptGenerationState, IScopedScriptGenerationState
+    public class ScopeBlockData : BaseGenerationState, IScriptGenerationState, IScopedScriptGenerationState
     {
         public List<StatementSyntax> Statements { get; set; } = new List<StatementSyntax>();
 

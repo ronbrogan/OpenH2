@@ -1,13 +1,11 @@
 ﻿using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
-using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 
 namespace OpenH2.ScriptAnalysis.GenerationState
 {
-    public class BeginCallData : IScriptGenerationState, IScopedScriptGenerationState
+    public class BeginCallData : BaseGenerationState, IScriptGenerationState, IScopedScriptGenerationState
     {
         public List<StatementSyntax> Body { get; set; } = new List<StatementSyntax>();
 
@@ -37,7 +35,7 @@ namespace OpenH2.ScriptAnalysis.GenerationState
                             SyntaxFactory.List(Body))));
         }
 
-        internal BeginCallData AddExpression(ExpressionSyntax exp)
+        public BeginCallData AddExpression(ExpressionSyntax exp)
         {
             Body.Add(SyntaxFactory.ExpressionStatement(exp));
 
