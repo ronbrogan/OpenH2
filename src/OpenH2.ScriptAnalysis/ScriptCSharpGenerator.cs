@@ -41,7 +41,7 @@ namespace OpenH2.ScriptAnalysis
         private Stack<IScriptGenerationState> stateData;
         private ContinuationStack<int> childIndices;
 
-        public const string EngineImplementationClass = "ScriptEngine";
+        public const string EngineImplementationClass = "OpenH2.Engine.Scripting.ScriptEngine";
 
         public event GenerationCallback OnNodeEnd;
 
@@ -50,7 +50,7 @@ namespace OpenH2.ScriptAnalysis
             this.scenario = scnr;
             var scenarioParts = scnr.Name.Split('\\', StringSplitOptions.RemoveEmptyEntries);
 
-            var ns = "OpenH2.Scripts." + string.Join('.', scenarioParts.Take(2));
+            var ns = "OpenH2.Engine.Scripts.Generated" + string.Join('.', scenarioParts.Take(2));
 
             this.nsDecl = NamespaceDeclaration(ParseName(ns));
 
@@ -217,6 +217,14 @@ namespace OpenH2.ScriptAnalysis
                     HandleMethodStart(node);
                     break;
                 case ScriptDataType.ReferenceGet:
+                case ScriptDataType.Animation:
+                case ScriptDataType.Weapon:
+                case ScriptDataType.SpatialPoint:
+                case ScriptDataType.WeaponReference:
+                    // TODO: these are strings with \, need to lookup some other way
+                    HandleMethodStart("GetReference");
+                    HandleLiteral(node);
+                    HandleMethodEnd();
                     break;
                 case ScriptDataType.AI:
                 case ScriptDataType.AIScript:
@@ -227,6 +235,27 @@ namespace OpenH2.ScriptAnalysis
                 case ScriptDataType.LocationFlag:
                 case ScriptDataType.List:
                 case ScriptDataType.Emotion:
+                case ScriptDataType.ScriptReference:
+                case ScriptDataType.DeviceGroup:
+                case ScriptDataType.AIOrders:
+                case ScriptDataType.Bsp:
+                case ScriptDataType.Effect:
+                case ScriptDataType.LoopingSound:
+                case ScriptDataType.GameDifficulty:
+                case ScriptDataType.Unit:
+                case ScriptDataType.Scenery:
+                case ScriptDataType.VehicleSeat:
+                case ScriptDataType.Equipment:
+                case ScriptDataType.NavigationPoint:
+                case ScriptDataType.Model:
+                case ScriptDataType.Team:
+                case ScriptDataType.Vehicle:
+                case ScriptDataType.CameraPathTarget:
+                case ScriptDataType.CinematicTitle:
+                case ScriptDataType.AIBehavior:
+                case ScriptDataType.Damage:
+                case ScriptDataType.DamageState:
+                    // TODO: create fields or some other access for these
                     HandleStaticFieldAccess(node);
                     break;
                 case ScriptDataType.Float:
@@ -292,6 +321,11 @@ namespace OpenH2.ScriptAnalysis
         {
             var methodName = GetScriptString(node);
 
+            HandleMethodStart(methodName);
+        }
+
+        private void HandleMethodStart(string methodName)
+        {
             ScriptDataType rt = (ScriptDataType)ushort.MaxValue;
 
             if(currentState is CastScopeData cast)
@@ -316,7 +350,11 @@ namespace OpenH2.ScriptAnalysis
                 ">" =>  new BinaryOperatorData(SyntaxKind.GreaterThanExpression),
                 "<=" => new BinaryOperatorData(SyntaxKind.LessThanOrEqualExpression),
                 ">=" => new BinaryOperatorData(SyntaxKind.GreaterThanOrEqualExpression),
+                "or" => new BinaryOperatorData(SyntaxKind.LogicalOrExpression),
+                "and" => new BinaryOperatorData(SyntaxKind.LogicalAndExpression),
+                "not" => new UnaryOperatorData(SyntaxKind.LogicalNotExpression),
                 "if" => new IfStatementData(),
+                "set" => new FieldSetData(),
                 _ => new MethodCallData(methodName, rt),
             };
 
@@ -329,15 +367,40 @@ namespace OpenH2.ScriptAnalysis
             {
                 BeginCallData b => currentState.AddExpression(b.GenerateInvocationStatement()),
                 BinaryOperatorData o => currentState.AddExpression(o.GenerateOperatorExpression()),
+                UnaryOperatorData u => currentState.AddExpression(u.GenerateOperatorExpression()),
                 MethodCallData m => currentState.AddExpression(m.GenerateInvocationExpression()),
-                IfStatementData i => HoistOrInsertIf(i)
+                IfStatementData i => HoistOrInsertIf(i),
+                FieldSetData s => HoistOrInsertSet(s)
             };
         }
 
         private IScriptGenerationState HoistOrInsertIf(IfStatementData statementData)
         {
-            var isInStatementScope = typeof(IScopedScriptGenerationState).IsAssignableFrom(currentState.GetType());
+            var hoisted = HoistIntoContainingScope(statementData, out var resultVariable);
 
+            if(hoisted)
+            {
+                currentState.AddExpression(resultVariable);
+            }
+
+            return statementData;
+        }
+
+        private IScriptGenerationState HoistOrInsertSet(FieldSetData setData)
+        {
+            var hoisted = HoistIntoContainingScope(setData, out var resultVariable);
+
+            if (hoisted)
+            {
+                currentState.AddExpression(resultVariable);
+            }
+
+            return setData;
+        }
+
+        private bool HoistIntoContainingScope(IHoistableGenerationState hoistable, out ExpressionSyntax hoistedAccessor)
+        {
+            bool didHoist = false;
             var poppedScopes = new Stack<IScriptGenerationState>();
 
             while (typeof(IScopedScriptGenerationState).IsAssignableFrom(currentState.GetType()) == false)
@@ -348,24 +411,30 @@ namespace OpenH2.ScriptAnalysis
             var currentBlock = currentState as IScopedScriptGenerationState;
             Debug.Assert(currentBlock != null, $"Current scope is not a {nameof(IScopedScriptGenerationState)}");
 
-            var statements = statementData.GenerateIfStatement(isInStatementScope, out var resultVariable);
-            foreach(var statement in statements)
+            StatementSyntax[] statements;
+
+            if (poppedScopes.Count == 0)
+            {
+                statements = hoistable.GenerateNonHoistedStatements();
+                hoistedAccessor = default;
+            }
+            else
+            {
+                statements = hoistable.GenerateHoistedStatements(out hoistedAccessor);
+                didHoist = true;
+            }
+
+            foreach (var statement in statements)
             {
                 currentBlock.AddStatement(statement);
             }
 
-            while(poppedScopes.TryPop(out var popped))
+            while (poppedScopes.TryPop(out var popped))
             {
                 stateData.Push(popped);
             }
 
-            // TODO: is this check for determining if the result variable is used sufficient?
-            if(isInStatementScope == false)
-            {
-                currentState.AddExpression(resultVariable);
-            }
-
-            return statementData;
+            return didHoist;
         }
 
         private void HandleLiteral(ScenarioTag.ScriptSyntaxNode node)
@@ -491,11 +560,11 @@ namespace OpenH2.ScriptAnalysis
         {
             var cls = classDecl;
 
-            bool addedRegion = false;
+            bool addedFieldRegion = false;
             foreach (var field in fields)
             {
                 var f = field;
-                if (addedRegion == false)
+                if (addedFieldRegion == false)
                 {
                     var regionToken = Trivia(
                                 RegionDirectiveTrivia(false).WithEndOfDirectiveToken(
@@ -504,7 +573,7 @@ namespace OpenH2.ScriptAnalysis
                                         TriviaList())));
 
                     f = f.InsertTriviaBefore(f.GetLeadingTrivia().First(), new[] { regionToken });
-                    addedRegion = true;
+                    addedFieldRegion = true;
                 }
 
                 cls = cls.AddMembers(f);
@@ -514,7 +583,7 @@ namespace OpenH2.ScriptAnalysis
             foreach (var method in methods)
             {
                 var m = method;
-                if (addedFieldRegionEnd == false)
+                if (addedFieldRegion && addedFieldRegionEnd == false)
                 {
                     m = m.InsertTriviaBefore(m.GetLeadingTrivia().First(), new[]{ 
                         Trivia(
@@ -526,7 +595,12 @@ namespace OpenH2.ScriptAnalysis
                 cls = cls.AddMembers(m);
             }
 
-            var ns = nsDecl.WithMembers(List<MemberDeclarationSyntax>().Add(cls));
+            var ns = nsDecl
+                .AddMembers(cls)
+                .AddUsings(
+                    UsingDirective(ParseName("OpenH2.Core.Scripting")),
+                    UsingDirective(Token(SyntaxKind.StaticKeyword), null, ParseName(EngineImplementationClass))
+                );
 
             var csharpTree = CSharpSyntaxTree.Create(ns.NormalizeWhitespace());
 

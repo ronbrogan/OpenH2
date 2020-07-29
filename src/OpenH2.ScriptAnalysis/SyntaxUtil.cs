@@ -5,6 +5,7 @@ using OpenH2.Core.Extensions;
 using OpenH2.Core.Scripting;
 using OpenH2.Core.Tags.Scenario;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
 using static Microsoft.CodeAnalysis.CSharp.SyntaxFactory;
@@ -24,7 +25,9 @@ namespace OpenH2.ScriptAnalysis
                 ScriptDataType.String => PredefinedType(Token(SyntaxKind.StringKeyword)),
                 ScriptDataType.Void => PredefinedType(Token(SyntaxKind.VoidKeyword)),
                 
-                _ => PredefinedType(Token(SyntaxKind.ObjectKeyword)).WithTrailingTrivia(Comment($"/*{dataType}*/")),
+                _ => Enum.IsDefined(typeof(ScriptDataType), dataType) 
+                ? ParseTypeName(dataType.ToString())
+                : ParseTypeName(nameof(ScriptDataType) + dataType.ToString()),
             };
         }
 
@@ -54,35 +57,35 @@ namespace OpenH2.ScriptAnalysis
 
         public static FieldDeclarationSyntax CreateFieldDeclaration(ScenarioTag.ScriptVariableDefinition variable, ExpressionSyntax rightHandSide)
         {
-            return variable.DataType switch
-            {
-                ScriptDataType.Float => CreateDeclaration(SyntaxKind.FloatKeyword),
-                ScriptDataType.Int => CreateDeclaration(SyntaxKind.IntKeyword),
-                ScriptDataType.Boolean => CreateDeclaration(SyntaxKind.BoolKeyword),
-                ScriptDataType.Short => CreateDeclaration(SyntaxKind.ShortKeyword),
-                ScriptDataType.String => CreateDeclaration(SyntaxKind.StringKeyword),
-
-                _ => CreateDeclaration(SyntaxKind.ObjectKeyword).WithTrailingTrivia(Comment("// Unhandled Type: " + variable.DataType))
-            };
-
-            FieldDeclarationSyntax CreateDeclaration(SyntaxKind keyword)
-            {
-                return FieldDeclaration(VariableDeclaration(PredefinedType(Token(keyword)))
+            return FieldDeclaration(VariableDeclaration(ScriptTypeSyntax(variable.DataType))
                     .WithVariables(SingletonSeparatedList<VariableDeclaratorSyntax>(
                         VariableDeclarator(SanitizeIdentifier(variable.Description))
                         .WithInitializer(EqualsValueClause(rightHandSide)))));
-            }
         }
+
+        private static HashSet<ScriptDataType> stringLiteralTypes = new HashSet<ScriptDataType>()
+        {
+            { ScriptDataType.String },
+            { ScriptDataType.ReferenceGet },
+            { ScriptDataType.Animation },
+            { ScriptDataType.Weapon },
+            { ScriptDataType.SpatialPoint },
+            { ScriptDataType.WeaponReference }
+        };
 
         public static LiteralExpressionSyntax LiteralExpression(ScenarioTag tag, ScenarioTag.ScriptSyntaxNode node)
         {
+            if(stringLiteralTypes.Contains(node.DataType))
+            {
+                return LiteralExpression(((Span<byte>)tag.ScriptStrings).ReadStringStarting(node.NodeString));
+            }
+
             return node.DataType switch
             {
                 ScriptDataType.Float => LiteralExpression(BitConverter.Int32BitsToSingle((int)node.NodeData_32)),
                 ScriptDataType.Int => LiteralExpression((int)node.NodeData_32),
                 ScriptDataType.Boolean=> LiteralExpression(node.NodeData_B3 == 1),
                 ScriptDataType.Short => LiteralExpression(node.NodeData_H16),
-                ScriptDataType.String => LiteralExpression(((Span<byte>)tag.ScriptStrings).ReadStringStarting(node.NodeString)),
 
                 _ => throw new NotImplementedException(),
             };

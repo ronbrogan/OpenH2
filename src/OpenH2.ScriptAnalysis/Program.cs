@@ -13,6 +13,7 @@ using System.IO;
 using System.Linq;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
+using System.Text.RegularExpressions;
 using static Microsoft.CodeAnalysis.CSharp.SyntaxFactory;
 
 namespace OpenH2.ScriptAnalysis
@@ -45,7 +46,6 @@ namespace OpenH2.ScriptAnalysis
 
                 var outRoot = $@"D:\h2scratch\scripts\{scenarioParts.Last()}";
                 Directory.CreateDirectory(outRoot);
-                var ns = "OpenH2.Scripts." + string.Join('.', scenarioParts.Take(2));
 
                 var csharpGen = new ScriptCSharpGenerator(scnr);
 
@@ -71,7 +71,6 @@ namespace OpenH2.ScriptAnalysis
 
             DedupeMethodInfos();
             var tree = GenerateScriptEngineClass();
-            File.WriteAllText(@"D:\h2scratch\scripts\ScriptEngine.cs", tree.ToString());
         }
 
         private static void CsharpGen_OnNodeEnd(GenerationCallbackArgs args)
@@ -199,18 +198,27 @@ namespace OpenH2.ScriptAnalysis
             }
 
             return root;
+        }
 
-            int mask(int value) => value & 0x3FFF;
+        static string CamelCase(string s)
+        {
+            var x = s.Replace("_", "");
+            if (x.Length == 0) return "Null";
+            x = Regex.Replace(x, "([A-Z])([A-Z]+)($|[A-Z])",
+                m => m.Groups[1].Value + m.Groups[2].Value.ToLower() + m.Groups[3].Value);
+            return char.ToLower(x[0]) + x.Substring(1);
         }
 
         private static SyntaxTree GenerateScriptEngineClass()
         {
             var classMethods = new List<MemberDeclarationSyntax>();
 
+            var camelCase = new Regex("^([A-Z])", RegexOptions.Compiled);
+
             foreach (var method in engineMethodInfos.OrderBy(i => i.Name))
             {
-                var paramList = method.ArgumentTypes.Select((a, i) => Parameter(Identifier("param" + i))
-                .WithType(SyntaxUtil.ScriptTypeSyntax(a)));
+                var paramList = method.ArgumentTypes.Select((a, i) => Parameter(Identifier(CamelCase(a.ToString())))
+                    .WithType(SyntaxUtil.ScriptTypeSyntax(a)));
 
                 classMethods.Add(MethodDeclaration(SyntaxUtil.ScriptTypeSyntax(method.ReturnType), method.Name)
                     .WithModifiers(new SyntaxTokenList(Token(SyntaxKind.PublicKeyword), Token(SyntaxKind.StaticKeyword)))
@@ -223,7 +231,8 @@ namespace OpenH2.ScriptAnalysis
                 .WithMembers(new SyntaxList<MemberDeclarationSyntax>(classMethods));
 
             var ns = NamespaceDeclaration(ParseName("OpenH2.Engine.Scripting"))
-                .WithMembers(List<MemberDeclarationSyntax>().Add(classDecl));
+                .WithMembers(List<MemberDeclarationSyntax>().Add(classDecl))
+                .AddUsings(UsingDirective(ParseName("OpenH2.Core.Scripting")));
 
             return CSharpSyntaxTree.Create(ns.NormalizeWhitespace());
         }
