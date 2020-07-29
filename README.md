@@ -1,7 +1,8 @@
 ﻿[![Build Status](https://dev.azure.com/ronaldbrogan/ronaldbrogan/_apis/build/status/ronbrogan.openh2?branchName=master)](https://dev.azure.com/ronaldbrogan/ronaldbrogan/_build/latest?definitionId=1&branchName=master)
  
 # OpenH2
-OpenH2 is a personal project of reverse engineering the Halo 2 (Vista) map file format. I am explicitly avoiding any reverse engineering of binaries or distributed tooling. 
+
+OpenH2 is an open source game engine and tooling for Halo 2. It serves as a personal project of reverse engineering the Halo 2 (Vista) map file format. I am explicitly avoiding any reverse engineering of binaries or distributed tooling. 
 
 # General architecture
 A map file is deserialized into a version-specific set of types. This map file is then translated to common format types for use in the engine by the Scenario Abstraction Layer (SAL). 
