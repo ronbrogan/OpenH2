@@ -26,24 +26,30 @@ There are a number of dumping and analysis tools also in the solution, but they'
 
 # Progress History
 
-## December 2019
+## [July 2020](https://www.youtube.com/watch?v=nqIXdxn6a88)
+Attempted to implement an ad-hoc physics engine. After abandoning that work was done to integrate PhysX into the engine. Work on parsing game scripts is underway.
 
+[![Physics Fails - July 2020](doc/Assets/2020-07.gif)](https://www.youtube.com/watch?v=nqIXdxn6a88)
+
+[https://www.youtube.com/watch?v=nqIXdxn6a88](https://www.youtube.com/watch?v=nqIXdxn6a88)
+
+## [December 2019](https://www.youtube.com/watch?v=eaFrBpENgwY)
 Fixed mesh loading, now loading all mesh parts, item and vehicle placements, fix for mesh normals, new shader mapping system, more scenario tag loading
 
-![Zanzibar - December 2019](doc/Assets/2019-12.gif)
+[![Zanzibar - December 2019](doc/Assets/2019-12.gif)](https://www.youtube.com/watch?v=eaFrBpENgwY)
 
 [https://www.youtube.com/watch?v=eaFrBpENgwY](https://www.youtube.com/watch?v=eaFrBpENgwY)
 
-## November 2019
+## [November 2019](https://www.youtube.com/watch?v=EiBVZlxRlTA)
 All static geometry and crate objects loading, with textures (although shaders with multiple textures aren't quite right). Animated meshes are incorrect, such as the Zanzibar house gate.
 
-![Zanzibar - November 2019](doc/Assets/2019-11.gif)
+[![Zanzibar - November 2019](doc/Assets/2019-11.gif)](https://www.youtube.com/watch?v=EiBVZlxRlTA)
 
 [https://www.youtube.com/watch?v=EiBVZlxRlTA](https://www.youtube.com/watch?v=EiBVZlxRlTA)
 
-## July 2019
+## [July 2019](https://www.youtube.com/watch?v=j3ZXj8xkp6c)
 Basic map geometry and some textures loading
 
-![Zanzibar - July 2019](https://thumbs.gfycat.com/ShamefulCraftyClam-size_restricted.gif)
+[![Zanzibar - July 2019](https://thumbs.gfycat.com/ShamefulCraftyClam-size_restricted.gif)](https://www.youtube.com/watch?v=j3ZXj8xkp6c)
 
 [https://www.youtube.com/watch?v=j3ZXj8xkp6c](https://www.youtube.com/watch?v=j3ZXj8xkp6c)
