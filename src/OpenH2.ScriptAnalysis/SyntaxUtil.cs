@@ -81,7 +81,7 @@ namespace OpenH2.ScriptAnalysis
         {
             if(stringLiteralTypes.Contains(node.DataType))
             {
-                return LiteralExpression(((Span<byte>)tag.ScriptStrings).ReadStringStarting(node.NodeString));
+                return LiteralExpression(GetScriptString(tag, node));
             }
 
             return node.DataType switch
@@ -93,6 +93,11 @@ namespace OpenH2.ScriptAnalysis
 
                 _ => throw new NotImplementedException(),
             };
+        }
+
+        public static string GetScriptString(ScenarioTag tag, ScenarioTag.ScriptSyntaxNode node)
+        {
+            return ((Span<byte>)tag.ScriptStrings).ReadStringStarting(node.NodeString);
         }
 
         public static LiteralExpressionSyntax LiteralExpression<T>(T value)
@@ -169,7 +174,7 @@ namespace OpenH2.ScriptAnalysis
             }
         }
 
-        public static ExpressionSyntax CreateImmediatelyInvokedFunction(ScriptDataType returnType, List<StatementSyntax> body)
+        public static ExpressionSyntax CreateImmediatelyInvokedFunction(ScriptDataType returnType, IEnumerable<StatementSyntax> body)
         {
             ObjectCreationExpressionSyntax funcObj;
 

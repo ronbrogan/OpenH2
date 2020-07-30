@@ -9,40 +9,31 @@ using static Microsoft.CodeAnalysis.CSharp.SyntaxFactory;
 
 namespace OpenH2.ScriptAnalysis.GenerationState
 {
-    internal class IfStatementData : BaseGenerationState, IScriptGenerationState, IHoistableGenerationState, IScopedScriptGenerationState
+    internal class IfStatementContext : BaseGenerationContext, IExpressionContext, IStatementContext
     {
         private const string AnnotationKind = "IfStatement";
         private const string Annotation_HoistedResultVar = "HoistedResultVar";
+        private readonly Scope containingState;
 
-        private ExpressionSyntax condition = null;
-
-        private bool addingWhenTrueStatements = true;
-        private List<StatementSyntax> whenTrueStatements = new List<StatementSyntax>();
-        private List<StatementSyntax> whenFalseStatements = new List<StatementSyntax>();
+        //private ExpressionSyntax condition = null;
+        //private bool addingWhenTrueStatements = true;
+        //private List<StatementSyntax> whenTrueStatements = new List<StatementSyntax>();
+        //private List<StatementSyntax> whenFalseStatements = new List<StatementSyntax>();
         private IdentifierNameSyntax resultVariable;
 
-        public IfStatementData()
+        private Stack<StatementSyntax> statements = new Stack<StatementSyntax>();
+
+        public IfStatementContext(Scope containingState)
         {
             var resultVarName = "ifResult_" + this.GetHashCode();
 
             resultVariable = IdentifierName(resultVarName);
+            this.containingState = containingState;
         }
 
-        public IScriptGenerationState AddExpression(ExpressionSyntax expression)
+        public IExpressionContext AddExpression(ExpressionSyntax expression)
         {
-            if(condition == null)
-            {
-                condition = expression;
-            }
-            else if(addingWhenTrueStatements)
-            {
-                whenTrueStatements.Add(SyntaxFactory.ExpressionStatement(expression));
-                addingWhenTrueStatements = false;
-            }
-            else
-            {
-                whenFalseStatements.Add(SyntaxFactory.ExpressionStatement(expression));
-            }
+            statements.Push(ExpressionStatement(expression));
 
             return this;
         }
@@ -50,59 +41,58 @@ namespace OpenH2.ScriptAnalysis.GenerationState
         public StatementSyntax CreateResultStatement(ExpressionSyntax resultValue)
         {
             return ExpressionStatement(AssignmentExpression(
-                        SyntaxKind.SimpleAssignmentExpression,
-                        resultVariable,
-                        resultValue))
-                .WithAdditionalAnnotations(ScriptGenAnnotations.ResultStatement);
+                    SyntaxKind.SimpleAssignmentExpression,
+                    resultVariable,
+                    resultValue))
+            .WithAdditionalAnnotations(ScriptGenAnnotations.ResultStatement);
         }
 
-        public IScopedScriptGenerationState AddStatement(StatementSyntax statement)
+        public IStatementContext AddStatement(StatementSyntax statement)
         {
-            if(this.condition == null)
-            {
-                var gotExp = statement.TryGetContainingSimpleExpression(out var exp);
-                Debug.Assert(gotExp, "Unable to get condition expression from statement");
-
-                this.condition = exp;
-            }
-            else if(addingWhenTrueStatements)
-            {
-                whenTrueStatements.Add(statement);
-
-                if(statement.IsKind(SyntaxKind.ReturnStatement))
-                {
-                    addingWhenTrueStatements = false;
-                }
-            }
-            else
-            {
-                whenFalseStatements.Add(statement);
-            }
+            statements.Push(statement);
 
             return this;
         }
 
-        public StatementSyntax[] GenerateHoistedStatements(out ExpressionSyntax resultVar)
+        public StatementSyntax[] GetInnerStatements()
         {
-            resultVar = this.resultVariable;
-            return GenerateIfStatement(true);
+            throw new NotImplementedException();
         }
 
-        public StatementSyntax[] GenerateNonHoistedStatements()
+        public void GenerateInto(Scope scope)
         {
-            return GenerateIfStatement(false);
-        }
+            var isHoisting = !scope.IsInStatementContext;
 
-        internal StatementSyntax[] GenerateIfStatement(bool isHoisting)
-        {
-            Debug.Assert(this.condition != null, "Condition expression was not provided");
-            Debug.Assert(this.whenTrueStatements.Any(), "WhenTrue was not provided");
+            var conditionStatement = statements.Pop();
+
+            Debug.Assert(conditionStatement is ExpressionStatementSyntax, "Condition expression was not provided");
+
+            var condition = ((ExpressionStatementSyntax)conditionStatement).Expression;
+
+            var whenTrueStatements = new List<StatementSyntax>();
+            var whenFalseStatements = new List<StatementSyntax>();
+
+            while (statements.TryPop(out var statement))
+            {
+                whenTrueStatements.Add(statement);
+
+                if(statement is ReturnStatementSyntax)
+                {
+                    break;
+                }
+            }
+
+            while(statements.TryPop(out var statement))
+            {
+                whenFalseStatements.Add(statement);
+            }
+            
+
+            Debug.Assert(whenTrueStatements.Any(), "WhenTrue was not provided");
 
             var generatedStatements = new List<StatementSyntax>();
 
-            if (isHoisting)
-            {
-                generatedStatements.Add(
+            generatedStatements.Add(
                     LocalDeclarationStatement(
                         VariableDeclaration(
                             PredefinedType(
@@ -117,6 +107,8 @@ namespace OpenH2.ScriptAnalysis.GenerationState
                                             SyntaxKind.FalseLiteralExpression))))))
                     .WithAdditionalAnnotations(new SyntaxAnnotation(AnnotationKind, Annotation_HoistedResultVar)));
 
+            if (isHoisting)
+            {
                 if(HasResultVarAssignment(whenTrueStatements) == false)
                 {
                     InsertResultVarAssignment(whenTrueStatements);
@@ -135,17 +127,22 @@ namespace OpenH2.ScriptAnalysis.GenerationState
                 StatementSyntax falseBlock = Block(whenFalseStatements);
 
                 generatedStatements.Add(
-                    IfStatement(this.condition, trueBlock, ElseClause(falseBlock))
+                    IfStatement(condition, trueBlock, ElseClause(falseBlock))
                         .WithAdditionalAnnotations(new SyntaxAnnotation(AnnotationKind)));
             }
             else
             {
                 generatedStatements.Add(
-                    IfStatement(this.condition, trueBlock)
+                    IfStatement(condition, trueBlock)
                         .WithAdditionalAnnotations(new SyntaxAnnotation(AnnotationKind)));
             }
 
-            return generatedStatements.ToArray();
+            foreach(var statement in generatedStatements)
+            {
+                scope.StatementContext.AddStatement(statement);
+            }
+
+            scope.Context.AddExpression(this.resultVariable);
         }
 
         private bool HasResultVarAssignment(IEnumerable<SyntaxNode> roots)

@@ -5,24 +5,17 @@ using System.Diagnostics;
 
 namespace OpenH2.ScriptAnalysis.GenerationState
 {
-    public class UnaryOperatorData : BaseGenerationState, IScriptGenerationState
+    public class UnaryOperatorContext : BaseGenerationContext, IExpressionContext
     {
         private ExpressionSyntax operand;
         private readonly SyntaxKind operatorSyntaxKind;
 
-        public UnaryOperatorData(SyntaxKind operatorSyntaxKind)
+        public UnaryOperatorContext(SyntaxKind operatorSyntaxKind)
         {
             this.operatorSyntaxKind = operatorSyntaxKind;
         }
 
-        public ExpressionSyntax GenerateOperatorExpression()
-        {
-            Debug.Assert(operand != null, "Not enough operands for unary expression");
-
-            return SyntaxFactory.PrefixUnaryExpression(operatorSyntaxKind, operand);
-        }
-
-        public UnaryOperatorData AddOperand(ExpressionSyntax expression)
+        public UnaryOperatorContext AddOperand(ExpressionSyntax expression)
         {
             Debug.Assert(operand == null, "Can't have multiple operands for a unary expression");
 
@@ -30,6 +23,13 @@ namespace OpenH2.ScriptAnalysis.GenerationState
             return this;
         }
 
-        public IScriptGenerationState AddExpression(ExpressionSyntax expression) => AddOperand(expression);
+        public IExpressionContext AddExpression(ExpressionSyntax expression) => AddOperand(expression);
+
+        public void GenerateInto(Scope scope)
+        {
+            Debug.Assert(operand != null, "Not enough operands for unary expression");
+
+            scope.Context.AddExpression(SyntaxFactory.PrefixUnaryExpression(operatorSyntaxKind, operand));
+        }
     }
 }

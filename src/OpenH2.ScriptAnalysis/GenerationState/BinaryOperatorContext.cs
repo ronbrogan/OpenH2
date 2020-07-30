@@ -6,17 +6,17 @@ using System.Linq;
 
 namespace OpenH2.ScriptAnalysis.GenerationState
 {
-    public class BinaryOperatorData : BaseGenerationState, IScriptGenerationState
+    public class BinaryOperatorContext : BaseGenerationContext, IExpressionContext
     {
         private readonly List<ExpressionSyntax> operands = new List<ExpressionSyntax>();
         private readonly SyntaxKind operatorSyntaxKind;
 
-        public BinaryOperatorData(SyntaxKind operatorSyntaxKind)
+        public BinaryOperatorContext(SyntaxKind operatorSyntaxKind)
         {
             this.operatorSyntaxKind = operatorSyntaxKind;
         }
 
-        public ExpressionSyntax GenerateOperatorExpression()
+        public void GenerateInto(Scope scope)
         {
             Debug.Assert(operands.Count >= 2, "Not enough operands for binary expression");
 
@@ -35,15 +35,15 @@ namespace OpenH2.ScriptAnalysis.GenerationState
                     left, ops.Dequeue());
             }
 
-            return left;
+            scope.Context.AddExpression(left);
         }
 
-        public BinaryOperatorData AddOperand(ExpressionSyntax expression)
+        public BinaryOperatorContext AddOperand(ExpressionSyntax expression)
         {
             operands.Add(expression);
             return this;
         }
 
-        public IScriptGenerationState AddExpression(ExpressionSyntax expression) => AddOperand(expression);
+        public IExpressionContext AddExpression(ExpressionSyntax expression) => AddOperand(expression);
     }
 }

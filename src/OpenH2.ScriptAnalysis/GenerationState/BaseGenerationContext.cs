@@ -5,7 +5,7 @@ using System.Text;
 
 namespace OpenH2.ScriptAnalysis.GenerationState
 {
-    public abstract class BaseGenerationState 
+    public abstract class BaseGenerationContext 
     {
         public IReadOnlyList<object> Metadata => _metadata;
         private List<object> _metadata = new List<object>();

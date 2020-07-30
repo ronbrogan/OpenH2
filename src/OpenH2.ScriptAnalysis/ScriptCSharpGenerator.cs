@@ -9,6 +9,8 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Linq.Expressions;
+using System.Reactive.Concurrency;
 using static Microsoft.CodeAnalysis.CSharp.SyntaxFactory;
 
 namespace OpenH2.ScriptAnalysis
@@ -19,7 +21,7 @@ namespace OpenH2.ScriptAnalysis
     public class GenerationCallbackArgs
     {
         public ScenarioTag.ScriptSyntaxNode Node { get; set; }
-        public IScriptGenerationState State { get; set; }
+        public Scope Scope { get; set; }
     }
 
 
@@ -37,8 +39,8 @@ namespace OpenH2.ScriptAnalysis
         private readonly List<MethodDeclarationSyntax> methods = new List<MethodDeclarationSyntax>();
         private readonly List<FieldDeclarationSyntax> fields = new List<FieldDeclarationSyntax>();
 
-        private IScriptGenerationState currentState => stateData.Peek();
-        private Stack<IScriptGenerationState> stateData;
+        private Scope currentScope => scopes.Peek();
+        private Stack<Scope> scopes;
         private ContinuationStack<int> childIndices;
 
         public const string EngineImplementationClass = "OpenH2.Engine.Scripting.ScriptEngine";
@@ -77,11 +79,14 @@ namespace OpenH2.ScriptAnalysis
 
             Debug.Assert(node.Checkval == variable.Value_L16, "Variable expression checkval did not match");
 
-            var scope = EvaluateNodes(variable.Value_H16, new CastScopeData(variable.DataType)) as CastScopeData;
 
-            Debug.Assert(scope != null, "Returned scope was not the correct type");
+            var expressionContext = new SingleExpressionStatementContext();
+            var defScope = new Scope(variable.DataType, expressionContext, expressionContext);
+            var retScope = EvaluateNodes(variable.Value_H16, defScope);
 
-            fields.Add(SyntaxUtil.CreateFieldDeclaration(variable, scope.GenerateCastExpression()));
+            Debug.Assert(retScope == defScope, "Returned scope was not the provided root");
+
+            fields.Add(SyntaxUtil.CreateFieldDeclaration(variable, expressionContext.GetInnerExpression()));
         }
 
         public void AddMethod(ScenarioTag.ScriptMethodDefinition scriptMethod)
@@ -94,22 +99,32 @@ namespace OpenH2.ScriptAnalysis
                 .WithModifiers(modifiers);
 
             // Push root method body as first scope
-            var scope = EvaluateNodes(scriptMethod.SyntaxNodeIndex, new ScopeBlockData()) as ScopeBlockData;
+            var block = new StatementBlockContext();
+            var rootScope = new Scope(scriptMethod.ReturnType, block, block);
+            var retScope = EvaluateNodes(scriptMethod.SyntaxNodeIndex, rootScope);
 
-            Debug.Assert(scope != null, "Last scope wasn't a ScopeBlockData");
+            Debug.Assert(rootScope == retScope, "Last scope wasn't the provided root");
 
-            methods.Add(method.WithBody(Block(List(scope.Statements))));
-
-            Debug.Assert(stateData.Count == 0, "Extra scopes on stack");
+            methods.Add(method.WithBody(Block(retScope.StatementContext.GetInnerStatements())));
         }
 
-        private IScriptGenerationState EvaluateNodes(int rootIndex, IScriptGenerationState rootScope)
+        private Scope EvaluateNodes(int rootIndex, Scope rootScope)
         {
-            stateData = new Stack<IScriptGenerationState>();
-            stateData.Push(rootScope);
+            scopes = new Stack<Scope>();
+            scopes.Push(rootScope);
 
             childIndices = new ContinuationStack<int>();
             childIndices.PushFull(rootIndex);
+
+            var rootNode = scenario.ScriptSyntaxNodes[rootIndex];
+
+            // If the root isn't a scope start, we won't encounter a scope end to generate the top level node
+            var needSyntheticOuterScope = rootNode.NodeType != NodeType.Scope;
+
+            if(needSyntheticOuterScope)
+            {
+                scopes.Push(new Scope(rootScope.Type, rootScope.StatementContext));
+            }
 
             while (childIndices.TryPop(out var currentIndex, out var isContinuation))
             {
@@ -125,7 +140,18 @@ namespace OpenH2.ScriptAnalysis
                 }
             }
 
-            return stateData.Pop();
+            if(needSyntheticOuterScope)
+            {
+                var endingScope = scopes.Pop();
+
+                endingScope.GenerateInto(currentScope);
+            }
+
+            var topScope = scopes.Pop();
+
+            Debug.Assert(scopes.Count == 0, "Extra scopes on stack");
+
+            return topScope;
         }
 
         private void PushNext(ScenarioTag.ScriptSyntaxNode node)
@@ -141,27 +167,30 @@ namespace OpenH2.ScriptAnalysis
         {
             switch (node.NodeType)
             {
-                case NodeType.ExpressionScope:
-                    HandleExpressionScopeStart(node);
+                case NodeType.Scope:
+                    HandleScopeStart(node);
                     break;
-                case NodeType.Statement:
-                    HandleStatementStart(node);
+                case NodeType.Expression:
+                    PushNext(node);
+                    currentScope.AddContext(GetExpressionContext(node));
                     break;
                 case NodeType.VariableAccess:
-                    HandleVariableAccess(node);
+                    PushNext(node);
+                    currentScope.AddContext(new VariableAccessContext(scenario, node));
                     break;
                 case NodeType.ScriptInvocation:
-                    HandleScriptInvocation(node);
+                    PushNext(node);
+                    currentScope.AddContext(new ScriptInvocationContext(scenario, node));
                     break;
                 default:
                     throw new NotSupportedException($"Node type {node.NodeType} is not yet supported");
             }
         }
 
-        // Expression scope seems to use NodeData to specify what is inside the scope
+        // Scopes seems to use NodeData to specify what is inside the scope
         // and the Next value is used to specify the scope's next sibling instead
         // This is how the linear-ish node structure can expand into a more traditional AST
-        private void HandleExpressionScopeStart(ScenarioTag.ScriptSyntaxNode node)
+        private void HandleScopeStart(ScenarioTag.ScriptSyntaxNode node)
         {
             if (node.NextIndex != ushort.MaxValue)
             {
@@ -182,39 +211,25 @@ namespace OpenH2.ScriptAnalysis
             Debug.Assert(scenario.ScriptSyntaxNodes[node.NodeData_H16].Checkval == node.NodeData_L16, "Scope's next node checkval didn't match");
             childIndices.PushFull(node.NodeData_H16);
 
-            if (node.DataType == ScriptDataType.Void)
-            {
-                stateData.Push(new ScopeBlockData());
-            }
-            else
-            {
-                // If it's not a StatementStart, it's effectively a data cast for the inside expression
-                stateData.Push(new CastScopeData(node.DataType));
-            }
+            // Create new scope, retaining current nearest StatementState
+            scopes.Push(new Scope(node.DataType, currentScope.StatementContext));
         }
 
-        private void HandleStatementStart(ScenarioTag.ScriptSyntaxNode node)
+        private IExpressionContext GetExpressionContext(ScenarioTag.ScriptSyntaxNode node)
         {
-            PushNext(node);
-
             switch (node.DataType)
             {
                 case ScriptDataType.Void:
                     // TODO: void expressions?
-                    break;
+                    return NullExpressionContext.Instance;
                 case ScriptDataType.MethodOrOperator:
-                    HandleMethodStart(node);
-                    break;
+                    return GetMethodState(node);
                 case ScriptDataType.ReferenceGet:
                 case ScriptDataType.Animation:
                 case ScriptDataType.Weapon:
                 case ScriptDataType.SpatialPoint:
                 case ScriptDataType.WeaponReference:
-                    // TODO: implement GetReference or rework entirely
-                    HandleMethodStart("GetReference");
-                    HandleLiteral(node);
-                    HandleMethodEnd();
-                    break;
+                    return new ReferenceGetContext(scenario, node);
                 case ScriptDataType.AI:
                 case ScriptDataType.AIScript:
                 case ScriptDataType.Device:
@@ -245,305 +260,68 @@ namespace OpenH2.ScriptAnalysis
                 case ScriptDataType.Damage:
                 case ScriptDataType.DamageState:
                     // TODO: create fields or some other access for these
-                    HandleStaticFieldAccess(node);
-                    break;
+                    return new FieldGetContext(scenario, node);
                 case ScriptDataType.Float:
                 case ScriptDataType.Int:
                 case ScriptDataType.String:
                 case ScriptDataType.Short:
                 case ScriptDataType.Boolean:
-                    HandleLiteral(node);
-                    break;
+                    return new LiteralContext(scenario, node);
                 default:
                     // TODO: hack until everything is tracked down, populating string as value if exists
-                    HandleUnknown(node);
-                    break;
+                    return new UnknownContext(scenario, node);
             }
         }
 
-        private void HandleVariableAccess(ScenarioTag.ScriptSyntaxNode node)
-        {
-            PushNext(node);
-
-            var access = MemberAccessExpression(
-                SyntaxKind.SimpleMemberAccessExpression,
-                ThisExpression(),
-                IdentifierName(
-                    SyntaxUtil.SanitizeIdentifier(GetScriptString(node))));
-
-            currentState.AddExpression(access);
-            currentState.AddMetadata(node);
-        }
-
-        private void HandleScriptInvocation(ScenarioTag.ScriptSyntaxNode node)
-        {
-            PushNext(node);
-
-            var invocation = InvocationExpression(
-                MemberAccessExpression(
-                    SyntaxKind.SimpleMemberAccessExpression,
-                    ThisExpression(),
-                    IdentifierName(
-                        SyntaxUtil.SanitizeIdentifier(scenario.ScriptMethods[node.ScriptIndex].Description))));
-
-            currentState.AddExpression(invocation);
-            currentState.AddMetadata(node);
-        }
-
-        private void HandleUnknown(ScenarioTag.ScriptSyntaxNode node)
-        {
-            string unknownDescription = "";
-
-            if (node.NodeString > 0 && node.NodeString < scenario.ScriptStrings.Length
-                && scenario.ScriptStrings[node.NodeString - 1] == 0)
-            {
-                unknownDescription = GetScriptString(node);
-            }
-
-            unknownDescription += $" -{node.NodeType}<{node.DataType}>";
-            currentState.AddExpression(InvocationExpression(IdentifierName("UNKNOWN"),
-                ArgumentList(SingletonSeparatedList(Argument(SyntaxUtil.LiteralExpression(unknownDescription))))));
-            currentState.AddMetadata(node);
-        }
-
-        private void HandleMethodStart(ScenarioTag.ScriptSyntaxNode node)
+        private IExpressionContext GetMethodState(ScenarioTag.ScriptSyntaxNode node)
         {
             var methodName = GetScriptString(node);
 
-            HandleMethodStart(methodName);
+            return GetMethodState(methodName);
         }
 
-        private void HandleMethodStart(string methodName)
+        private IExpressionContext GetMethodState(string methodName)
         {
-            ScriptDataType rt = (ScriptDataType)ushort.MaxValue;
+            ScriptDataType rt = currentScope.Type;
 
-            if(currentState is CastScopeData cast)
+            return methodName switch
             {
-                rt = cast.DestinationType;
-            }
-            else if (currentState is ScopeBlockData scope)
-            {
-                rt = ScriptDataType.Void;
-            }
-
-            IScriptGenerationState newState = methodName switch
-            {
-                "begin" => new BeginCallData(rt),
-                "-" =>  new BinaryOperatorData(SyntaxKind.SubtractExpression),
-                "+" =>  new BinaryOperatorData(SyntaxKind.AddExpression),
-                "*" =>  new BinaryOperatorData(SyntaxKind.MultiplyExpression),
-                "/" =>  new BinaryOperatorData(SyntaxKind.DivideExpression),
-                "%" =>  new BinaryOperatorData(SyntaxKind.ModuloExpression),
-                "=" =>  new BinaryOperatorData(SyntaxKind.EqualsExpression),
-                "<" =>  new BinaryOperatorData(SyntaxKind.LessThanExpression),
-                ">" =>  new BinaryOperatorData(SyntaxKind.GreaterThanExpression),
-                "<=" => new BinaryOperatorData(SyntaxKind.LessThanOrEqualExpression),
-                ">=" => new BinaryOperatorData(SyntaxKind.GreaterThanOrEqualExpression),
-                "or" => new BinaryOperatorData(SyntaxKind.LogicalOrExpression),
-                "and" => new BinaryOperatorData(SyntaxKind.LogicalAndExpression),
-                "not" => new UnaryOperatorData(SyntaxKind.LogicalNotExpression),
-                "if" => new IfStatementData(),
-                "set" => new FieldSetData(),
-                _ => new MethodCallData(methodName, rt),
-            };
-
-            stateData.Push(newState);
-        }
-
-        private void HandleMethodEnd()
-        {
-            _ = stateData.Pop() switch
-            {
-                BeginCallData b => b.Generate(currentState),
-                BinaryOperatorData o => currentState.AddExpression(o.GenerateOperatorExpression()),
-                UnaryOperatorData u => currentState.AddExpression(u.GenerateOperatorExpression()),
-                MethodCallData m => currentState.AddExpression(m.GenerateInvocationExpression()),
-                IfStatementData i => HoistOrInsertIf(i),
-                FieldSetData s => HoistOrInsertSet(s)
+                "begin" => new BeginCallContext(currentScope, rt),
+                "-" =>  new BinaryOperatorContext(SyntaxKind.SubtractExpression),
+                "+" =>  new BinaryOperatorContext(SyntaxKind.AddExpression),
+                "*" =>  new BinaryOperatorContext(SyntaxKind.MultiplyExpression),
+                "/" =>  new BinaryOperatorContext(SyntaxKind.DivideExpression),
+                "%" =>  new BinaryOperatorContext(SyntaxKind.ModuloExpression),
+                "=" =>  new BinaryOperatorContext(SyntaxKind.EqualsExpression),
+                "<" =>  new BinaryOperatorContext(SyntaxKind.LessThanExpression),
+                ">" =>  new BinaryOperatorContext(SyntaxKind.GreaterThanExpression),
+                "<=" => new BinaryOperatorContext(SyntaxKind.LessThanOrEqualExpression),
+                ">=" => new BinaryOperatorContext(SyntaxKind.GreaterThanOrEqualExpression),
+                "or" => new BinaryOperatorContext(SyntaxKind.LogicalOrExpression),
+                "and" => new BinaryOperatorContext(SyntaxKind.LogicalAndExpression),
+                "not" => new UnaryOperatorContext(SyntaxKind.LogicalNotExpression),
+                "if" => new IfStatementContext(currentScope),
+                "set" => new FieldSetContext(),
+                _ => new MethodCallContext(methodName, rt),
             };
         }
-
-        private IScriptGenerationState HoistOrInsertIf(IfStatementData statementData)
-        {
-            var hoisted = HoistIntoContainingScope(statementData, out var resultVariable);
-
-            if(hoisted)
-            {
-                currentState.AddExpression(resultVariable);
-            }
-
-            return statementData;
-        }
-
-        private IScriptGenerationState HoistOrInsertSet(FieldSetData setData)
-        {
-            var hoisted = HoistIntoContainingScope(setData, out var resultVariable);
-
-            if (hoisted)
-            {
-                currentState.AddExpression(resultVariable);
-            }
-
-            return setData;
-        }
-
-        private bool HoistIntoContainingScope(IHoistableGenerationState hoistable, out ExpressionSyntax hoistedAccessor)
-        {
-            bool didHoist = false;
-            var poppedScopes = new Stack<IScriptGenerationState>();
-
-            while (typeof(IScopedScriptGenerationState).IsAssignableFrom(currentState.GetType()) == false)
-            {
-                poppedScopes.Push(stateData.Pop());
-            }
-
-            var currentBlock = currentState as IScopedScriptGenerationState;
-            Debug.Assert(currentBlock != null, $"Current scope is not a {nameof(IScopedScriptGenerationState)}");
-
-            StatementSyntax[] statements;
-
-            if (poppedScopes.Count == 0)
-            {
-                statements = hoistable.GenerateNonHoistedStatements();
-                hoistedAccessor = default;
-            }
-            else
-            {
-                statements = hoistable.GenerateHoistedStatements(out hoistedAccessor);
-                didHoist = true;
-            }
-
-            foreach (var statement in statements)
-            {
-                currentBlock.AddStatement(statement);
-            }
-
-            while (poppedScopes.TryPop(out var popped))
-            {
-                stateData.Push(popped);
-            }
-
-            return didHoist;
-        }
-
-        private void HandleLiteral(ScenarioTag.ScriptSyntaxNode node)
-        {
-            var literal = SyntaxUtil.LiteralExpression(scenario, node);
-
-            currentState.AddExpression(literal);
-            currentState.AddMetadata(node);
-        }
-
-        private void HandleStaticFieldAccess(ScenarioTag.ScriptSyntaxNode node)
-        {
-            if(node.NodeString == 0)
-            {
-                currentState.AddExpression(
-                    DefaultExpression(SyntaxUtil.ScriptTypeSyntax(node.DataType)));
-            }
-            else
-            {
-                currentState.AddExpression(
-                    IdentifierName(SyntaxUtil.SanitizeIdentifier(GetScriptString(node))));
-            }
-
-            currentState.AddMetadata(node);
-        }
-
-        #region NodeEnd
 
         private void HandleNodeEnd(ScenarioTag.ScriptSyntaxNode node)
         {
-            this.OnNodeEnd(new GenerationCallbackArgs()
+            this.OnNodeEnd?.Invoke(new GenerationCallbackArgs()
             {
                 Node = node,
-                State = currentState
+                Scope = currentScope
             });
 
-            switch (node.NodeType)
+            // Only generate into parent scope when the current scope ends
+            if(node.NodeType == NodeType.Scope)
             {
-                case NodeType.ExpressionScope:
-                    HandleExpressionScopeEnd(node);
-                    break;
-                case NodeType.Statement:
-                    HandleStatementEnd(node);
-                    break;
-                case NodeType.VariableAccess:
-                    break;
-                case NodeType.ScriptInvocation:
+                var endingScope = scopes.Pop();
 
-                    break;
+                endingScope.GenerateInto(currentScope);
             }
         }
-
-        private void HandleExpressionScopeEnd(ScenarioTag.ScriptSyntaxNode node)
-        {
-            if (node.DataType == ScriptDataType.Void)
-            {
-                var endingScope = stateData.Pop() as ScopeBlockData;
-                Debug.Assert(endingScope != null, "The ending void scope wasn't a ScopeBlockData");
-
-                if (endingScope.Statements.Count == 0)
-                    return;
-
-                if (currentState is IScopedScriptGenerationState currentBlock)
-                {
-                    foreach (var statement in endingScope.Statements)
-                    {
-                        currentBlock.AddStatement(statement);
-                    }
-                }
-                else if (endingScope.Statements.Count == 1
-                    && endingScope.Statements[0].ChildNodes().Count() == 1
-                    && endingScope.Statements[0].ChildNodes().First() is ExpressionSyntax ex)
-                {
-                    currentState.AddExpression(ex);
-                }
-                else
-                {
-                    currentState.AddExpression(InvocationExpression(
-                        ParenthesizedLambdaExpression(
-                            Block(List(endingScope.Statements)))));
-                }
-
-                
-            }
-            else
-            {
-                var endingScope = stateData.Pop() as CastScopeData;
-                Debug.Assert(endingScope != null, "The ending scope wasn't a CastScopeData");
-
-                currentState.AddExpression(endingScope.GenerateCastExpression());
-            }
-        }
-
-        private void HandleStatementEnd(ScenarioTag.ScriptSyntaxNode node)
-        {
-            switch (node.DataType)
-            {
-                case ScriptDataType.MethodOrOperator:
-                    HandleMethodEnd();
-                    break;
-                case ScriptDataType.AI:
-                case ScriptDataType.AIScript:
-                case ScriptDataType.ReferenceGet:
-                case ScriptDataType.Device:
-                case ScriptDataType.EntityIdentifier:
-                case ScriptDataType.Boolean:
-                case ScriptDataType.Short:
-                case ScriptDataType.String:
-                case ScriptDataType.Entity:
-                case ScriptDataType.Void:
-                case ScriptDataType.Float:
-                case ScriptDataType.Int:
-                case ScriptDataType.Trigger:
-                case ScriptDataType.LocationFlag:
-                case ScriptDataType.List:
-                    break;
-            }
-        }
-
-        #endregion
 
         public string Generate()
         {

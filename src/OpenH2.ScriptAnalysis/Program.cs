@@ -54,7 +54,7 @@ namespace OpenH2.ScriptAnalysis
 
                 var csharpGen = new ScriptCSharpGenerator(scnr);
 
-                csharpGen.OnNodeEnd += CsharpGen_OnNodeEnd;
+                //csharpGen.OnNodeEnd += CsharpGen_OnNodeEnd;
 
                 foreach (var variable in scnr.ScriptVariables)
                 {
@@ -74,35 +74,35 @@ namespace OpenH2.ScriptAnalysis
                 File.WriteAllText(outRoot + $"\\{scenarioParts.Last()}.cs", csharp);
             }            
 
-            DedupeMethodInfos();
-            var tree = GenerateScriptEngineClass();
+            //DedupeMethodInfos();
+            //var tree = GenerateScriptEngineClass();
         }
 
-        private static void CsharpGen_OnNodeEnd(GenerationCallbackArgs args)
-        {
-            if(args.State is MethodCallData m)
-            {
-                var info = new EngineMethodInfo()
-                {
-                    Name = m.MethodName,
-                    ReturnType = m.ReturnType
-                };
+        //private static void CsharpGen_OnNodeEnd(GenerationCallbackArgs args)
+        //{
+        //    if(args.Scope is MethodCallContext m)
+        //    {
+        //        var info = new EngineMethodInfo()
+        //        {
+        //            Name = m.MethodName,
+        //            ReturnType = m.ReturnType
+        //        };
 
-                foreach(var meta in m.Metadata)
-                {
-                    if(meta is ScenarioTag.ScriptSyntaxNode argNode)
-                    {
-                        info.ArgumentTypes.Add(argNode.DataType);
-                    }
-                    else
-                    {
-                        //?
-                    }
-                }
+        //        foreach(var meta in m.Metadata)
+        //        {
+        //            if(meta is ScenarioTag.ScriptSyntaxNode argNode)
+        //            {
+        //                info.ArgumentTypes.Add(argNode.DataType);
+        //            }
+        //            else
+        //            {
+        //                //?
+        //            }
+        //        }
 
-                engineMethodInfos.Add(info);
-            }
-        }
+        //        engineMethodInfos.Add(info);
+        //    }
+        //}
 
         // TODO: Using adhoc ScriptTreeNode until we're in a good state to build a CSharpSyntaxTree directly
         private static ScriptTreeNode GetScriptTree(ScenarioTag tag, ScenarioTag.ScriptMethodDefinition method)
@@ -112,7 +112,7 @@ namespace OpenH2.ScriptAnalysis
 
             var root = new ScriptTreeNode()
             {
-                Type = NodeType.ExpressionScope,
+                Type = NodeType.Scope,
                 Value = method.Description,
                 DataType = method.ReturnType,
                 Original = new ScenarioTag.ScriptSyntaxNode()
@@ -135,7 +135,7 @@ namespace OpenH2.ScriptAnalysis
 
                 object value = node.NodeData_32;
 
-                if(node.NodeType == NodeType.Statement)
+                if(node.NodeType == NodeType.Expression)
                 {
                     switch (node.DataType)
                     {
@@ -188,7 +188,7 @@ namespace OpenH2.ScriptAnalysis
                 // Expression scope seems to use NodeData to specify what is inside the scope
                 // and the Next value is used to specify the scope's next sibling instead
                 // This is how the linear-ish node structure can expand into a more traditional AST
-                if(node.NodeType == NodeType.ExpressionScope || node.NodeType == NodeType.ScriptInvocation)
+                if(node.NodeType == NodeType.Scope || node.NodeType == NodeType.ScriptInvocation)
                 {
                     // Use scope's parent as next node's parent instead of the scope
                     // This makes the 'next' into a 'sibling'

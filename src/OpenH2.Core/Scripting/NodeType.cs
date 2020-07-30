@@ -47,8 +47,8 @@
 
     public enum NodeType : ushort
     {
-        ExpressionScope = 8,
-        Statement = 9,
+        Scope = 8,
+        Expression = 9,
         ScriptInvocation = 10,
         VariableAccess = 13
     }

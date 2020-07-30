@@ -6,37 +6,37 @@ using System.Diagnostics;
 
 namespace OpenH2.ScriptAnalysis.GenerationState
 {
-    public class CastScopeData : BaseGenerationState, IScriptGenerationState
-    {
-        public readonly ScriptDataType DestinationType;
+    //public class CastScopeData : BaseGenerationContext, IExpressionContext
+    //{
+    //    public readonly ScriptDataType DestinationType;
 
-        private ExpressionSyntax scopedExpression = null;
+    //    private ExpressionSyntax scopedExpression = null;
 
-        public CastScopeData(ScriptDataType destinationType)
-        {
-            this.DestinationType = destinationType;
-        }
+    //    public CastScopeData(ScriptDataType destinationType)
+    //    {
+    //        this.DestinationType = destinationType;
+    //    }
 
-        public IScriptGenerationState AddExpression(ExpressionSyntax expression)
-        {
-            Debug.Assert(expression != null, "Expression was not provided");
-            Debug.Assert(this.scopedExpression == null, "Scoped expression contains multiple expressions");
+    //    public IExpressionContext AddExpression(ExpressionSyntax expression)
+    //    {
+    //        Debug.Assert(expression != null, "Expression was not provided");
+    //        Debug.Assert(this.scopedExpression == null, "Scoped expression contains multiple expressions");
 
-            this.scopedExpression = expression;
+    //        this.scopedExpression = expression;
 
-            return this;
-        }
+    //        return this;
+    //    }
         
-        public ExpressionSyntax GenerateCastExpression()
-        {
-            // Temporarily making this not a blind explicit cast
-            // It adds a lot of noise to the scripts
-            // Future work can detect inner expression type and conditionally cast
-            // My preference at the moment is to allow functions to accept the various params 
-            //  or add implicit casts to the param types
-            //return SyntaxFactory.CastExpression(SyntaxUtil.ScriptTypeSyntax(this.destinationType),
-            //    SyntaxFactory.ParenthesizedExpression(this.scopedExpression));
-            return scopedExpression;
-        }
-    }
+    //    public ExpressionSyntax GenerateCastExpression()
+    //    {
+    //        // Temporarily making this not a blind explicit cast
+    //        // It adds a lot of noise to the scripts
+    //        // Future work can detect inner expression type and conditionally cast
+    //        // My preference at the moment is to allow functions to accept the various params 
+    //        //  or add implicit casts to the param types
+    //        //return SyntaxFactory.CastExpression(SyntaxUtil.ScriptTypeSyntax(this.destinationType),
+    //        //    SyntaxFactory.ParenthesizedExpression(this.scopedExpression));
+    //        return scopedExpression;
+    //    }
+    //}
 }
