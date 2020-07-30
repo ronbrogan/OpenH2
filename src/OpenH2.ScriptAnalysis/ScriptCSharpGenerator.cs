@@ -98,18 +98,7 @@ namespace OpenH2.ScriptAnalysis
 
             Debug.Assert(scope != null, "Last scope wasn't a ScopeBlockData");
 
-            if (scope.Statements.Count == 1 && scope.Statements[0].ChildNodes().First() is InvocationExpressionSyntax invocation
-                && invocation.ChildNodes().First() is ParenthesizedLambdaExpressionSyntax lambda
-                && lambda.Body is BlockSyntax lambdaBlock)
-            {
-                method = method.WithBody(lambdaBlock);
-            }
-            else
-            {
-                method = method.WithBody(Block().WithStatements(List(scope.Statements)));
-            }
-
-            methods.Add(method);
+            methods.Add(method.WithBody(Block(List(scope.Statements))));
 
             Debug.Assert(stateData.Count == 0, "Extra scopes on stack");
         }
@@ -221,7 +210,7 @@ namespace OpenH2.ScriptAnalysis
                 case ScriptDataType.Weapon:
                 case ScriptDataType.SpatialPoint:
                 case ScriptDataType.WeaponReference:
-                    // TODO: these are strings with \, need to lookup some other way
+                    // TODO: implement GetReference or rework entirely
                     HandleMethodStart("GetReference");
                     HandleLiteral(node);
                     HandleMethodEnd();
@@ -234,7 +223,7 @@ namespace OpenH2.ScriptAnalysis
                 case ScriptDataType.Trigger:
                 case ScriptDataType.LocationFlag:
                 case ScriptDataType.List:
-                case ScriptDataType.Emotion:
+                case ScriptDataType.StringId:
                 case ScriptDataType.ScriptReference:
                 case ScriptDataType.DeviceGroup:
                 case ScriptDataType.AIOrders:
@@ -339,7 +328,7 @@ namespace OpenH2.ScriptAnalysis
 
             IScriptGenerationState newState = methodName switch
             {
-                "begin" => new BeginCallData(),
+                "begin" => new BeginCallData(rt),
                 "-" =>  new BinaryOperatorData(SyntaxKind.SubtractExpression),
                 "+" =>  new BinaryOperatorData(SyntaxKind.AddExpression),
                 "*" =>  new BinaryOperatorData(SyntaxKind.MultiplyExpression),
@@ -365,7 +354,7 @@ namespace OpenH2.ScriptAnalysis
         {
             _ = stateData.Pop() switch
             {
-                BeginCallData b => currentState.AddExpression(b.GenerateInvocationStatement()),
+                BeginCallData b => b.Generate(currentState),
                 BinaryOperatorData o => currentState.AddExpression(o.GenerateOperatorExpression()),
                 UnaryOperatorData u => currentState.AddExpression(u.GenerateOperatorExpression()),
                 MethodCallData m => currentState.AddExpression(m.GenerateInvocationExpression()),
@@ -492,7 +481,7 @@ namespace OpenH2.ScriptAnalysis
             if (node.DataType == ScriptDataType.Void)
             {
                 var endingScope = stateData.Pop() as ScopeBlockData;
-                Debug.Assert(endingScope != null, "The ending scope wasn't a ScopeBlockData");
+                Debug.Assert(endingScope != null, "The ending void scope wasn't a ScopeBlockData");
 
                 if (endingScope.Statements.Count == 0)
                     return;
@@ -598,6 +587,7 @@ namespace OpenH2.ScriptAnalysis
             var ns = nsDecl
                 .AddMembers(cls)
                 .AddUsings(
+                    UsingDirective(ParseName("System")),
                     UsingDirective(ParseName("OpenH2.Core.Scripting")),
                     UsingDirective(Token(SyntaxKind.StaticKeyword), null, ParseName(EngineImplementationClass))
                 );

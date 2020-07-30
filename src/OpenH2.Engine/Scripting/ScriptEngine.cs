@@ -4,6 +4,8 @@ namespace OpenH2.Engine.Scripting
 
     public class ScriptEngine
     {
+        public const short TicksPerSecond = 60;
+
         /// <summary>activates a nav point type <string> attached to a team anchored to a flag with a vertical offset <real>. If the player is not local to the machine, this will fail</summary>
         public static void activate_team_nav_point_flag(NavigationPoint navpoint, Team team, LocationFlag cutscene_flag, float real)
         {
@@ -20,9 +22,9 @@ namespace OpenH2.Engine.Scripting
         }
 
         /// <summary>converts an ai reference to an object list.</summary>
-        public static List ai_actors(AI ai)
+        public static ObjectList ai_actors(AI ai)
         {
-            return default(List);
+            return default(ObjectList);
         }
 
         /// <summary>creates an allegiance between two teams.</summary>
@@ -72,7 +74,7 @@ namespace OpenH2.Engine.Scripting
         }
 
         /// <summary>if TRUE, forces all actors to completely disregard the specified units, otherwise lets them acknowledge the units again</summary>
-        public static void ai_disregard(List object_list, bool boolean)
+        public static void ai_disregard(ObjectList object_list, bool boolean)
         {
         }
 
@@ -104,9 +106,9 @@ namespace OpenH2.Engine.Scripting
         }
 
         /// <summary>returns the unit/object corresponding to the given actor</summary>
-        public static List ai_get_object(AI ai)
+        public static ObjectList ai_get_object(AI ai)
         {
-            return default(List);
+            return default(ObjectList);
         }
 
         /// <summary>returns the unit/object corresponding to the given actor</summary>
@@ -116,9 +118,9 @@ namespace OpenH2.Engine.Scripting
         }
 
         /// <summary>returns the unit/object corresponding to the given actor</summary>
-        public static List ai_get_unit(AI ai)
+        public static ObjectList ai_get_unit(AI ai)
         {
-            return default(List);
+            return default(ObjectList);
         }
 
         /// <summary>instantly kills the specified encounter and/or squad.</summary>
@@ -184,25 +186,25 @@ namespace OpenH2.Engine.Scripting
         }
 
         /// <summary>Play the given mission dialogue line on the given ai</summary>
-        public static short ai_play_line(AI ai, Emotion string_id)
+        public static short ai_play_line(AI ai, StringId string_id)
         {
             return default(short);
         }
 
         /// <summary>Play the given mission dialogue line on the given ai, directing the ai's gaze at the nearest visible player</summary>
-        public static short ai_play_line_at_player(AI ai, Emotion string_id)
+        public static short ai_play_line_at_player(AI ai, StringId string_id)
         {
             return default(short);
         }
 
         /// <summary>Play the given mission dialogue line on the given ai, directing the ai's gaze at the nearest visible player</summary>
-        public static short ai_play_line_at_player(Emotion emotion)
+        public static short ai_play_line_at_player(StringId emotion)
         {
             return default(short);
         }
 
         /// <summary>Play the given mission dialogue line on the given object (uses first available variant)</summary>
-        public static short ai_play_line_on_object(Entity entity, Emotion string_id)
+        public static short ai_play_line_on_object(Entity entity, StringId string_id)
         {
             return default(short);
         }
@@ -218,19 +220,19 @@ namespace OpenH2.Engine.Scripting
         }
 
         /// <summary>Start the named scene, with the named command script on the named squad</summary>
-        public static bool ai_scene(Emotion string_id, AIScript ai_command_script, AI ai)
+        public static bool ai_scene(StringId string_id, AIScript ai_command_script, AI ai)
         {
             return default(bool);
         }
 
         /// <summary>Start the named scene, with the named command script on the named set of squads</summary>
-        public static bool ai_scene(Emotion string_id, AIScript ai_command_script, AI ai, AI ai1)
+        public static bool ai_scene(StringId string_id, AIScript ai_command_script, AI ai, AI ai1)
         {
             return default(bool);
         }
 
         /// <summary>Start the named scene, with the named command script on the named squad</summary>
-        public static bool ai_scene(Emotion emotion, AIScript aiScript)
+        public static bool ai_scene(StringId emotion, AIScript aiScript)
         {
             return default(bool);
         }
@@ -333,9 +335,9 @@ namespace OpenH2.Engine.Scripting
         }
 
         /// <summary>Returns the vehicle that the given actor is in.</summary>
-        public static List ai_vehicle_get(AI ai)
+        public static ObjectList ai_vehicle_get(AI ai)
         {
-            return default(List);
+            return default(ObjectList);
         }
 
         /// <summary>Returns the vehicle that was spawned at the given starting location.</summary>
@@ -351,9 +353,9 @@ namespace OpenH2.Engine.Scripting
         }
 
         /// <summary>Returns the vehicle that was spawned at the given starting location.</summary>
-        public static List ai_vehicle_get_from_starting_location(AI ai)
+        public static ObjectList ai_vehicle_get_from_starting_location(AI ai)
         {
-            return default(List);
+            return default(ObjectList);
         }
 
         /// <summary>Returns the vehicle that was spawned at the given starting location.</summary>
@@ -373,12 +375,12 @@ namespace OpenH2.Engine.Scripting
         }
 
         /// <summary>Reserves the given seat on the given vehicle (so that AI may not enter it</summary>
-        public static void ai_vehicle_reserve_seat(Vehicle vehicle, Emotion string_id, bool boolean)
+        public static void ai_vehicle_reserve_seat(Vehicle vehicle, StringId string_id, bool boolean)
         {
         }
 
         /// <summary>Reserves the given seat on the given vehicle (so that AI may not enter it</summary>
-        public static void ai_vehicle_reserve_seat(Emotion emotion, bool boolean)
+        public static void ai_vehicle_reserve_seat(StringId emotion, bool boolean)
         {
         }
 
@@ -420,7 +422,7 @@ namespace OpenH2.Engine.Scripting
         }
 
         /// <summary>predict resources at a frame in camera animation.</summary>
-        public static void camera_predict_resources_at_frame(Emotion emotion, Unit unit, LocationFlag locationFlag, int intValue)
+        public static void camera_predict_resources_at_frame(StringId emotion, Unit unit, LocationFlag locationFlag, int intValue)
         {
         }
 
@@ -435,7 +437,7 @@ namespace OpenH2.Engine.Scripting
         }
 
         /// <summary>begins a prerecorded camera animation synchronized to unit relative to cutscene flag.</summary>
-        public static void camera_set_animation_relative(Emotion emotion, Unit unit, LocationFlag locationFlag)
+        public static void camera_set_animation_relative(StringId emotion, Unit unit, LocationFlag locationFlag)
         {
         }
 
@@ -456,7 +458,7 @@ namespace OpenH2.Engine.Scripting
         }
 
         /// <summary>clone the first player's most reasonable weapon and attach it to the specified object's marker</summary>
-        public static void cinematic_clone_players_weapon(Entity entity, Emotion string_id, Emotion string_id1)
+        public static void cinematic_clone_players_weapon(Entity entity, StringId string_id, StringId string_id1)
         {
         }
 
@@ -561,7 +563,7 @@ namespace OpenH2.Engine.Scripting
         }
 
         /// <summary>displays the named subtitle for <real> seconds</summary>
-        public static void cinematic_subtitle(Emotion string_id, float real)
+        public static void cinematic_subtitle(StringId string_id, float real)
         {
         }
 
@@ -654,7 +656,7 @@ namespace OpenH2.Engine.Scripting
         }
 
         /// <summary>starts a custom animation playing on the unit (interpolates into animation if last parameter is TRUE)</summary>
-        public static void cs_custom_animation(Emotion emotion, float floatValue, bool boolean)
+        public static void cs_custom_animation(StringId emotion, float floatValue, bool boolean)
         {
         }
 
@@ -840,7 +842,7 @@ namespace OpenH2.Engine.Scripting
         }
 
         /// <summary>Play the named line in the current scene</summary>
-        public static void cs_play_line(Emotion string_id)
+        public static void cs_play_line(StringId string_id)
         {
         }
 
@@ -910,7 +912,7 @@ namespace OpenH2.Engine.Scripting
         }
 
         /// <summary>Switch control of the joint command script to the given member</summary>
-        public static void cs_switch(Emotion string_id)
+        public static void cs_switch(StringId string_id)
         {
         }
 
@@ -935,42 +937,42 @@ namespace OpenH2.Engine.Scripting
         }
 
         /// <summary>starts a custom animation playing on a unit (interpolates into animation if last parameter is TRUE)</summary>
-        public static void custom_animation(Emotion emotion, bool boolean)
+        public static void custom_animation(StringId emotion, bool boolean)
         {
         }
 
         /// <summary>starts a custom animation playing on a unit (interpolates into animation if last parameter is TRUE)</summary>
-        public static void custom_animation(Unit unit, Emotion emotion, bool boolean)
+        public static void custom_animation(Unit unit, StringId emotion, bool boolean)
         {
         }
 
         /// <summary>starts a custom animation playing on a unit (interpolates into animation if last parameter is TRUE)</summary>
-        public static void custom_animation_loop(Unit unit, Emotion emotion, bool boolean)
+        public static void custom_animation_loop(Unit unit, StringId emotion, bool boolean)
         {
         }
 
         /// <summary>starts a custom animation playing on a unit (interpolates into animation if last parameter is TRUE)</summary>
-        public static void custom_animation_loop(Emotion emotion, bool boolean)
+        public static void custom_animation_loop(StringId emotion, bool boolean)
         {
         }
 
         /// <summary>starts a custom animation relative to some other object (interpolates into animation if last parameter is TRUE)</summary>
-        public static void custom_animation_relative(Unit unit, Emotion emotion, bool boolean, Entity entity)
+        public static void custom_animation_relative(Unit unit, StringId emotion, bool boolean, Entity entity)
         {
         }
 
         /// <summary>starts a custom animation relative to some other object (interpolates into animation if last parameter is TRUE)</summary>
-        public static void custom_animation_relative(Emotion emotion, bool boolean, Entity entity)
+        public static void custom_animation_relative(StringId emotion, bool boolean, Entity entity)
         {
         }
 
         /// <summary>starts a custom animation relative to some other object (interpolates into animation if last parameter is TRUE)</summary>
-        public static void custom_animation_relative_loop(Unit unit, Emotion emotion, bool boolean, Entity entity)
+        public static void custom_animation_relative_loop(Unit unit, StringId emotion, bool boolean, Entity entity)
         {
         }
 
         /// <summary>starts a custom animation relative to some other object (interpolates into animation if last parameter is TRUE)</summary>
-        public static void custom_animation_relative_loop(Emotion emotion, bool boolean, Entity entity)
+        public static void custom_animation_relative_loop(StringId emotion, bool boolean, Entity entity)
         {
         }
 
@@ -1072,7 +1074,7 @@ namespace OpenH2.Engine.Scripting
         }
 
         /// <summary>set the desired overlay animation to use</summary>
-        public static void device_set_overlay_track(Device device, Emotion string_id)
+        public static void device_set_overlay_track(Device device, StringId string_id)
         {
         }
 
@@ -1087,7 +1089,7 @@ namespace OpenH2.Engine.Scripting
         }
 
         /// <summary>set the desired position track animation to use (optional interpolation time onto track)</summary>
-        public static void device_set_position_track(Device device, Emotion string_id, float real)
+        public static void device_set_position_track(Device device, StringId string_id, float real)
         {
         }
 
@@ -1111,12 +1113,12 @@ namespace OpenH2.Engine.Scripting
         }
 
         /// <summary>starts the specified effect on the specified object at the specified marker.</summary>
-        public static void effect_new_on_object_marker(Effect effect, Entity entity, Emotion string_id)
+        public static void effect_new_on_object_marker(Effect effect, Entity entity, StringId string_id)
         {
         }
 
         /// <summary>starts the specified effect on the specified object at the specified marker.</summary>
-        public static void effect_new_on_object_marker(Effect effect, Emotion emotion)
+        public static void effect_new_on_object_marker(Effect effect, StringId emotion)
         {
         }
 
@@ -1136,12 +1138,12 @@ namespace OpenH2.Engine.Scripting
         }
 
         /// <summary>The flock starts producing boids</summary>
-        public static void flock_start(Emotion string_id)
+        public static void flock_start(StringId string_id)
         {
         }
 
         /// <summary>The flock stops producing boids</summary>
-        public static void flock_stop(Emotion string_id)
+        public static void flock_stop(StringId string_id)
         {
         }
 
@@ -1253,7 +1255,7 @@ namespace OpenH2.Engine.Scripting
         }
 
         /// <summary>sets the string id fo the scripted training text</summary>
-        public static void hud_set_training_text(Emotion string_id)
+        public static void hud_set_training_text(StringId string_id)
         {
         }
 
@@ -1274,7 +1276,7 @@ namespace OpenH2.Engine.Scripting
         }
 
         /// <summary><name> <final value> <time></summary>
-        public static void interpolator_start(Emotion string_id, float real, float real1)
+        public static void interpolator_start(StringId string_id, float real, float real1)
         {
         }
 
@@ -1295,7 +1297,7 @@ namespace OpenH2.Engine.Scripting
         }
 
         /// <summary>returns the number of objects in a list</summary>
-        public static short list_count(List object_list)
+        public static short list_count(ObjectList object_list)
         {
             return default(short);
         }
@@ -1307,13 +1309,7 @@ namespace OpenH2.Engine.Scripting
         }
 
         /// <summary>returns an item in an object list.</summary>
-        public static Entity list_get(short valueValue)
-        {
-            return default(Entity);
-        }
-
-        /// <summary>returns an item in an object list.</summary>
-        public static Entity list_get()
+        public static Entity list_get(ObjectList object_list, short valueValue)
         {
             return default(Entity);
         }
@@ -1341,7 +1337,7 @@ namespace OpenH2.Engine.Scripting
         }
 
         /// <summary>returns the object attached to the marker of the given parent object</summary>
-        public static Entity entity_at_marker(Entity entity, Emotion string_id)
+        public static Entity entity_at_marker(Entity entity, StringId string_id)
         {
             return default(Entity);
         }
@@ -1352,7 +1348,7 @@ namespace OpenH2.Engine.Scripting
         }
 
         /// <summary>allows an object to take damage again</summary>
-        public static void object_can_take_damage(List object_list)
+        public static void object_can_take_damage(ObjectList object_list)
         {
         }
 
@@ -1372,7 +1368,7 @@ namespace OpenH2.Engine.Scripting
         }
 
         /// <summary>prevents an object from taking damage</summary>
-        public static void object_cannot_take_damage(List object_list)
+        public static void object_cannot_take_damage(ObjectList object_list)
         {
         }
 
@@ -1397,7 +1393,7 @@ namespace OpenH2.Engine.Scripting
         }
 
         /// <summary>clears one funciton variables for sin-o-matic use</summary>
-        public static void object_clear_function_variable(Entity entity, Emotion string_id)
+        public static void object_clear_function_variable(Entity entity, StringId string_id)
         {
         }
 
@@ -1427,12 +1423,12 @@ namespace OpenH2.Engine.Scripting
         }
 
         /// <summary>applies damage to a damage section, causing all manner of effects/constraint breakage to occur</summary>
-        public static void object_damage_damage_section(Entity entity, Emotion string_id, float real)
+        public static void object_damage_damage_section(Entity entity, StringId string_id, float real)
         {
         }
 
         /// <summary>applies damage to a damage section, causing all manner of effects/constraint breakage to occur</summary>
-        public static void object_damage_damage_section(Emotion emotion, float floatValue)
+        public static void object_damage_damage_section(StringId emotion, float floatValue)
         {
         }
 
@@ -1519,13 +1515,8 @@ namespace OpenH2.Engine.Scripting
         {
         }
 
-        /// <summary>hides or shows the object passed in</summary>
-        public static void object_hide(bool boolean)
-        {
-        }
-
         /// <summary>returns TRUE if the specified model target is destroyed</summary>
-        public static short object_model_targets_destroyed(Emotion emotion)
+        public static short object_model_targets_destroyed(StringId emotion)
         {
             return default(short);
         }
@@ -1536,22 +1527,22 @@ namespace OpenH2.Engine.Scripting
         }
 
         /// <summary>sets funciton variable for sin-o-matic use</summary>
-        public static void object_set_function_variable(Entity entity, Emotion string_id, float real, float real1)
+        public static void object_set_function_variable(Entity entity, StringId string_id, float real, float real1)
         {
         }
 
         /// <summary>sets funciton variable for sin-o-matic use</summary>
-        public static void object_set_function_variable(Emotion emotion, float floatValue0, float floatValue1)
+        public static void object_set_function_variable(StringId emotion, float floatValue0, float floatValue1)
         {
         }
 
         /// <summary>sets the desired region (use "" for all regions) to the permutation with the given name, e.g. (object_set_permutation flood "right arm" ~damaged)</summary>
-        public static void object_set_permutation(Entity entity, Emotion string_id, Emotion string_id1)
+        public static void object_set_permutation(Entity entity, StringId string_id, StringId string_id1)
         {
         }
 
         /// <summary>sets the desired region (use "" for all regions) to the permutation with the given name, e.g. (object_set_permutation flood "right arm" ~damaged)</summary>
-        public static void object_set_permutation(Emotion emotion, Emotion emotion1)
+        public static void object_set_permutation(StringId emotion, StringId emotion1)
         {
         }
 
@@ -1566,7 +1557,7 @@ namespace OpenH2.Engine.Scripting
         }
 
         /// <summary>sets the desired region (use "" for all regions) to the model state with the given name, e.g. (object_set_region_state marine head destroyed)</summary>
-        public static void object_set_region_state(Entity entity, Emotion string_id, DamageState model_state)
+        public static void object_set_region_state(Entity entity, StringId string_id, DamageState model_state)
         {
         }
 
@@ -1601,22 +1592,7 @@ namespace OpenH2.Engine.Scripting
         }
 
         /// <summary>Sets the (object-relative) forward velocity of the given object</summary>
-        public static void object_set_velocity(float floatValue)
-        {
-        }
-
-        /// <summary>Sets the (object-relative) forward velocity of the given object</summary>
         public static void object_set_velocity(Entity entity, float real, float real1, float real12)
-        {
-        }
-
-        /// <summary>Sets the (object-relative) forward velocity of the given object</summary>
-        public static void object_set_velocity(float floatValue0, float floatValue1, float floatValue2)
-        {
-        }
-
-        /// <summary>moves the specified object to the specified flag.</summary>
-        public static void object_teleport(LocationFlag locationFlag)
         {
         }
 
@@ -1661,22 +1637,22 @@ namespace OpenH2.Engine.Scripting
         }
 
         /// <summary>attaches the second object to the first both strings can be empty</summary>
-        public static void objects_attach(Entity entity, Emotion string_id, Entity entity1, Emotion string_id1)
+        public static void objects_attach(Entity entity, StringId string_id, Entity entity1, StringId string_id1)
         {
         }
 
         /// <summary>attaches the second object to the first both strings can be empty</summary>
-        public static void objects_attach(Entity entity, Emotion emotion0, Emotion emotion1)
+        public static void objects_attach(Entity entity, StringId emotion0, StringId emotion1)
         {
         }
 
         /// <summary>attaches the second object to the first both strings can be empty</summary>
-        public static void objects_attach(Emotion emotion0, Entity entity, Emotion emotion1)
+        public static void objects_attach(StringId emotion0, Entity entity, StringId emotion1)
         {
         }
 
         /// <summary>attaches the second object to the first both strings can be empty</summary>
-        public static void objects_attach(Emotion emotion0, Emotion emotion1)
+        public static void objects_attach(StringId emotion0, StringId emotion1)
         {
         }
 
@@ -1693,7 +1669,7 @@ namespace OpenH2.Engine.Scripting
         }
 
         /// <summary>returns true if any of the specified units are looking within the specified number of degrees of the object.</summary>
-        public static bool objects_can_see_object(List list, float floatValue)
+        public static bool objects_can_see_object(ObjectList list, float floatValue)
         {
             return default(bool);
         }
@@ -1738,7 +1714,7 @@ namespace OpenH2.Engine.Scripting
         }
 
         /// <summary>loads textures/geometry/sounds necessary to present objects that are about to come on-screen</summary>
-        public static void objects_predict(List object_list)
+        public static void objects_predict(ObjectList object_list)
         {
         }
 
@@ -1920,9 +1896,9 @@ namespace OpenH2.Engine.Scripting
         }
 
         /// <summary>returns a list of the players</summary>
-        public static List players()
+        public static ObjectList players()
         {
-            return default(List);
+            return default(ObjectList);
         }
 
         /// <summary>predict a geometry block.</summary>
@@ -2002,17 +1978,17 @@ namespace OpenH2.Engine.Scripting
         }
 
         /// <summary>enable/disable the specified unit to receive cinematic shadows where the shadow is focused about a radius around a marker name</summary>
-        public static void render_lights_enable_cinematic_shadow(bool boolean, Entity entity, Emotion string_id, float real)
+        public static void render_lights_enable_cinematic_shadow(bool boolean, Entity entity, StringId string_id, float real)
         {
         }
 
         /// <summary>starts a custom looping animation playing on a piece of scenery</summary>
-        public static void scenery_animation_start_loop(Scenery scenery, Emotion emotion)
+        public static void scenery_animation_start_loop(Scenery scenery, StringId emotion)
         {
         }
 
         /// <summary>starts a custom animation playing on a piece of scenery relative to a parent object</summary>
-        public static void scenery_animation_start_relative(Scenery scenery, Emotion emotion, Entity entity)
+        public static void scenery_animation_start_relative(Scenery scenery, StringId emotion, Entity entity)
         {
         }
 
@@ -2048,32 +2024,7 @@ namespace OpenH2.Engine.Scripting
         }
 
         /// <summary>pauses execution of this script until the specified condition is true, checking once per second unless a different number of ticks is specified.</summary>
-        public static void sleep_until()
-        {
-        }
-
-        /// <summary>pauses execution of this script until the specified condition is true, checking once per second unless a different number of ticks is specified.</summary>
-        public static void sleep_until(short valueValue)
-        {
-        }
-
-        /// <summary>pauses execution of this script until the specified condition is true, checking once per second unless a different number of ticks is specified.</summary>
-        public static void sleep_until(short boolean, int value)
-        {
-        }
-
-        /// <summary>pauses execution of this script until the specified condition is true, checking once per second unless a different number of ticks is specified.</summary>
-        public static void sleep_until(bool boolean, short value)
-        {
-        }
-
-        /// <summary>pauses execution of this script until the specified condition is true, checking once per second unless a different number of ticks is specified.</summary>
-        public static void sleep_until(bool boolean)
-        {
-        }
-
-        /// <summary>pauses execution of this script until the specified condition is true, checking once per second unless a different number of ticks is specified.</summary>
-        public static void sleep_until(bool boolean, short valueValue, int intValue)
+        public static void sleep_until(bool condition, short ticks = TicksPerSecond)
         {
         }
 
@@ -2104,12 +2055,12 @@ namespace OpenH2.Engine.Scripting
         }
 
         /// <summary>plays an impulse sound from the specified source object (or "none"), with the specified scale and effect.</summary>
-        public static void sound_impulse_start_effect(Entity entity, float floatValue, Emotion emotion)
+        public static void sound_impulse_start_effect(Entity entity, float floatValue, StringId emotion)
         {
         }
 
         /// <summary>plays an impulse sound from the specified source object (or "none"), with the specified scale and effect.</summary>
-        public static void sound_impulse_start_effect(float floatValue, Emotion emotion)
+        public static void sound_impulse_start_effect(float floatValue, StringId emotion)
         {
         }
 
@@ -2175,7 +2126,7 @@ namespace OpenH2.Engine.Scripting
         }
 
         /// <summary>sets the render texture camera to a given object marker</summary>
-        public static void texture_camera_set_object_marker(Entity entity, Emotion string_id, float real)
+        public static void texture_camera_set_object_marker(Entity entity, StringId string_id, float real)
         {
         }
 
@@ -2195,27 +2146,9 @@ namespace OpenH2.Engine.Scripting
         }
 
         /// <summary>converts an object to a unit.</summary>
-        public static Unit unit()
+        public static Unit unit(Entity entity)
         {
             return default(Unit);
-        }
-
-        /// <summary>converts an object to a unit.</summary>
-        public static Unit unitU(Entity entity)
-        {
-            return default(Unit);
-        }
-
-        /// <summary>converts an object to a unit.</summary>
-        public static List unitL()
-        {
-            return default(List);
-        }
-
-        /// <summary>converts an object to a unit.</summary>
-        public static Entity unitE()
-        {
-            return default(Entity);
         }
 
         /// <summary>adds/resets the unit's health, shield, and inventory (weapons and grenades) to the named profile. resets if third parameter is true, adds if false. weapons will be marked as garbage if fourth parameter is true (for respawning equipment).</summary>
@@ -2280,7 +2213,7 @@ namespace OpenH2.Engine.Scripting
         }
 
         /// <summary>prevents any of the given units from being knocked around or playing ping animations</summary>
-        public static void unit_impervious(List object_list, bool boolean)
+        public static void unit_impervious(ObjectList object_list, bool boolean)
         {
         }
 
@@ -2338,12 +2271,12 @@ namespace OpenH2.Engine.Scripting
         }
 
         /// <summary>sets a unit's facial expression by name with weight and transition time</summary>
-        public static void unit_set_emotional_state(Unit unit, Emotion string_id, float real, short value)
+        public static void unit_set_emotional_state(Unit unit, StringId string_id, float real, short value)
         {
         }
 
         /// <summary>sets a unit's facial expression by name with weight and transition time</summary>
-        public static void unit_set_emotional_state(Emotion emotion, float floatValue, short valueValue)
+        public static void unit_set_emotional_state(StringId emotion, float floatValue, short valueValue)
         {
         }
 
@@ -2389,7 +2322,7 @@ namespace OpenH2.Engine.Scripting
         }
 
         /// <summary>makes a list of units (named or by encounter) magically get into a vehicle, in the substring-specified seats (e.g. CD-passenger... empty string matches all seats)</summary>
-        public static void vehicle_load_magic(VehicleSeat vehicleSeat, List list)
+        public static void vehicle_load_magic(VehicleSeat vehicleSeat, ObjectList list)
         {
         }
 
@@ -2399,25 +2332,25 @@ namespace OpenH2.Engine.Scripting
         }
 
         /// <summary>tests whether the named seat has a specified unit in it (use "" to test all seats for this unit)</summary>
-        public static bool vehicle_test_seat(Emotion emotion)
+        public static bool vehicle_test_seat(StringId emotion)
         {
             return default(bool);
         }
 
         /// <summary>tests whether the named seat has an object in the object list (use "" to test all seats for any unit in the list)</summary>
-        public static bool vehicle_test_seat_list(Vehicle vehicle, Emotion emotion)
+        public static bool vehicle_test_seat_list(Vehicle vehicle, StringId emotion)
         {
             return default(bool);
         }
 
         /// <summary>tests whether the named seat has an object in the object list (use "" to test all seats for any unit in the list)</summary>
-        public static bool vehicle_test_seat_list(Emotion emotion)
+        public static bool vehicle_test_seat_list(StringId emotion)
         {
             return default(bool);
         }
 
         /// <summary>tests whether the named seat has an object in the object list (use "" to test all seats for any unit in the list)</summary>
-        public static bool vehicle_test_seat_list(Emotion emotion, List list)
+        public static bool vehicle_test_seat_list(StringId emotion, ObjectList list)
         {
             return default(bool);
         }
@@ -2433,15 +2366,15 @@ namespace OpenH2.Engine.Scripting
         }
 
         /// <summary>returns list of objects in volume or (max 128).</summary>
-        public static List volume_return_objects(Trigger trigger_volume)
+        public static ObjectList volume_return_objects(Trigger trigger_volume)
         {
-            return default(List);
+            return default(ObjectList);
         }
 
         /// <summary>returns list of objects in volume or (max 128).</summary>
-        public static List volume_return_objects_by_type(Trigger trigger_volume, int value)
+        public static ObjectList volume_return_objects_by_type(Trigger trigger_volume, int value)
         {
-            return default(List);
+            return default(ObjectList);
         }
 
         /// <summary>moves all players outside a specified trigger volume to a specified flag.</summary>
@@ -2468,7 +2401,7 @@ namespace OpenH2.Engine.Scripting
         }
 
         /// <summary>returns true if any of the specified objects are within the specified volume. trigger volume must have been postprocessed</summary>
-        public static bool volume_test_objects(Trigger trigger_volume, List object_list)
+        public static bool volume_test_objects(Trigger trigger_volume, ObjectList object_list)
         {
             return default(bool);
         }

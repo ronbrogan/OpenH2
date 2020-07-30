@@ -10,7 +10,7 @@
         Int = 8,
         String = 9,
         ScriptReference = 10,
-        Emotion = 11,
+        StringId = 11,
         VehicleSeat = 12, // unsure
         Trigger = 13,
         LocationFlag = 14,

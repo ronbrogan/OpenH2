@@ -35,6 +35,11 @@ namespace OpenH2.ScriptAnalysis
 
             foreach(var map in maps)
             {
+                if(map.Contains("01a_tutorial") == false)
+                {
+                    continue;
+                }
+
                 var factory = new MapFactory(Path.GetDirectoryName(map), NullMaterialFactory.Instance);
                 var scene = factory.FromFile(File.OpenRead(map));
 
@@ -165,6 +170,10 @@ namespace OpenH2.ScriptAnalysis
                 {
                     value = strings.ReadStringStarting(node.NodeString);
                 }
+                else if(node.NodeType == NodeType.ScriptInvocation)
+                {
+                    value = tag.ScriptMethods[node.ScriptIndex].Description;
+                }
 
                 current.Original = node;
                 current.DataType = node.DataType;
@@ -179,7 +188,7 @@ namespace OpenH2.ScriptAnalysis
                 // Expression scope seems to use NodeData to specify what is inside the scope
                 // and the Next value is used to specify the scope's next sibling instead
                 // This is how the linear-ish node structure can expand into a more traditional AST
-                if(node.NodeType == NodeType.ExpressionScope)
+                if(node.NodeType == NodeType.ExpressionScope || node.NodeType == NodeType.ScriptInvocation)
                 {
                     // Use scope's parent as next node's parent instead of the scope
                     // This makes the 'next' into a 'sibling'

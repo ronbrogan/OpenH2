@@ -8,5 +8,6 @@ namespace OpenH2.ScriptAnalysis.GenerationState
     public interface IScopedScriptGenerationState
     {
         IScopedScriptGenerationState AddStatement(StatementSyntax statement);
+        StatementSyntax CreateResultStatement(ExpressionSyntax resultValue);
     }
 }

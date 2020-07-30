@@ -10,7 +10,6 @@ namespace OpenH2.ScriptAnalysis.GenerationState
 
         public ScopeBlockData()
         {
-
         }
 
         public IScriptGenerationState AddExpression(ExpressionSyntax expression)
@@ -29,6 +28,11 @@ namespace OpenH2.ScriptAnalysis.GenerationState
         public BlockSyntax GenerateBlock()
         {
             return SyntaxFactory.Block(SyntaxFactory.List(Statements));
+        }
+
+        public StatementSyntax CreateResultStatement(ExpressionSyntax resultValue)
+        {
+            return SyntaxFactory.ReturnStatement(resultValue);
         }
     }
 }

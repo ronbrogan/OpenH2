@@ -1,5 +1,8 @@
-﻿using Microsoft.CodeAnalysis.CSharp;
+﻿using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
+using OpenH2.Core.Scripting;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -7,32 +10,61 @@ namespace OpenH2.ScriptAnalysis.GenerationState
 {
     public class BeginCallData : BaseGenerationState, IScriptGenerationState, IScopedScriptGenerationState
     {
+        private readonly ScriptDataType returnType;
+
         public List<StatementSyntax> Body { get; set; } = new List<StatementSyntax>();
 
-        public BeginCallData()
+        public BeginCallData(ScriptDataType returnType)
         {
+            this.returnType = returnType;
         }
 
-        internal ExpressionSyntax GenerateInvocationStatement()
+        internal IScriptGenerationState Generate(IScriptGenerationState state)
         {
-            if(Body.Count == 1 && Body[0].ChildNodes().First() is ExpressionSyntax onlyExpression)
+            if(state is IScopedScriptGenerationState scoped)
             {
-                return onlyExpression;
+                EnsureReturnStatement(scoped.CreateResultStatement);
+
+                foreach (var b in Body)
+                {
+                    scoped.AddStatement(b);
+                }
+
+                return state;
             }
 
-            var lastStatement = Body.Last();
+            //if(Body.Count == 1 && Body[0].ChildNodes().First() is ExpressionSyntax onlyExpression)
+            //{
+            //    return onlyExpression;
+            //}
 
-            if (lastStatement.ChildNodes().First() is ExpressionSyntax lastExpression)
+            EnsureReturnStatement(s => SyntaxFactory.ReturnStatement(s));
+            state.AddExpression(
+                SyntaxUtil.CreateImmediatelyInvokedFunction(returnType, Body));
+
+            return state;
+        }
+
+        private void EnsureReturnStatement(Func<ExpressionSyntax, StatementSyntax> resultGen)
+        {
+            var last = Body.Last();
+            if (last.TryGetContainingSimpleExpression(out var lastExp))
             {
-                var returnStatement = SyntaxFactory.ReturnStatement(lastExpression);
-                Body.Remove(lastStatement);
-                Body.Add(returnStatement);
+                Body.Remove(last);
+                Body.Add(resultGen(lastExp));
             }
-
-            return SyntaxFactory.InvocationExpression(
-                    SyntaxFactory.ParenthesizedLambdaExpression(
-                        SyntaxFactory.Block(
-                            SyntaxFactory.List(Body))));
+            else if (last.TryGetRightHandExpression(out var rhsExp))
+            {
+                Body.Add(resultGen(rhsExp));
+            }
+            else
+            {
+                Body.Add(resultGen(
+                    SyntaxFactory.LiteralExpression(
+                        SyntaxKind.DefaultLiteralExpression,
+                        SyntaxFactory.Token(SyntaxKind.DefaultKeyword)))
+                    .WithTrailingTrivia(SyntaxFactory.Comment("// Unhandled 'begin' return")));
+            }
         }
 
         public BeginCallData AddExpression(ExpressionSyntax exp)
@@ -48,6 +80,12 @@ namespace OpenH2.ScriptAnalysis.GenerationState
         {
             Body.Add(statement);
             return this;
+        }
+
+        public StatementSyntax CreateResultStatement(ExpressionSyntax resultValue)
+        {
+            return SyntaxFactory.ReturnStatement(resultValue)
+                .WithAdditionalAnnotations(ScriptGenAnnotations.ResultStatement);
         }
     }
 }

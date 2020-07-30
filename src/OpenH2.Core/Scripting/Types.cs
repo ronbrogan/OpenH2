@@ -7,8 +7,8 @@
     public class Entity { }
     public class Trigger { }
     public class LocationFlag { }
-    public class List { }
-    public class Emotion { }
+    public class ObjectList { }
+    public class StringId { }
     public class ScriptReference { }
     public class DeviceGroup { }
     public class AIOrders { }

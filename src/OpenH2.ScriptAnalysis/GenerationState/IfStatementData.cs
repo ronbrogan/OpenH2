@@ -1,20 +1,31 @@
-﻿using Microsoft.CodeAnalysis.CSharp;
+﻿using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using static Microsoft.CodeAnalysis.CSharp.SyntaxFactory;
 
 namespace OpenH2.ScriptAnalysis.GenerationState
 {
-    internal class IfStatementData : BaseGenerationState, IScriptGenerationState, IHoistableGenerationState
+    internal class IfStatementData : BaseGenerationState, IScriptGenerationState, IHoistableGenerationState, IScopedScriptGenerationState
     {
+        private const string AnnotationKind = "IfStatement";
+        private const string Annotation_HoistedResultVar = "HoistedResultVar";
+
         private ExpressionSyntax condition = null;
-        private ExpressionSyntax whenTrue = null;
-        private ExpressionSyntax whenFalse = null;
+
+        private bool addingWhenTrueStatements = true;
+        private List<StatementSyntax> whenTrueStatements = new List<StatementSyntax>();
+        private List<StatementSyntax> whenFalseStatements = new List<StatementSyntax>();
+        private IdentifierNameSyntax resultVariable;
 
         public IfStatementData()
         {
+            var resultVarName = "ifResult_" + this.GetHashCode();
+
+            resultVariable = IdentifierName(resultVarName);
         }
 
         public IScriptGenerationState AddExpression(ExpressionSyntax expression)
@@ -23,49 +34,75 @@ namespace OpenH2.ScriptAnalysis.GenerationState
             {
                 condition = expression;
             }
-            else if(whenTrue == null)
+            else if(addingWhenTrueStatements)
             {
-                whenTrue = expression;
-            }
-            else if(whenFalse == null)
-            {
-                whenFalse = expression;
+                whenTrueStatements.Add(SyntaxFactory.ExpressionStatement(expression));
+                addingWhenTrueStatements = false;
             }
             else
             {
-                throw new Exception("Too many expression provided to IfStatementData");
+                whenFalseStatements.Add(SyntaxFactory.ExpressionStatement(expression));
             }
 
             return this;
         }
 
-        public StatementSyntax[] GenerateHoistedStatements(out ExpressionSyntax resultVariable)
+        public StatementSyntax CreateResultStatement(ExpressionSyntax resultValue)
         {
-            return GenerateIfStatement(false, out resultVariable);
+            return ExpressionStatement(AssignmentExpression(
+                        SyntaxKind.SimpleAssignmentExpression,
+                        resultVariable,
+                        resultValue))
+                .WithAdditionalAnnotations(ScriptGenAnnotations.ResultStatement);
+        }
+
+        public IScopedScriptGenerationState AddStatement(StatementSyntax statement)
+        {
+            if(this.condition == null)
+            {
+                var gotExp = statement.TryGetContainingSimpleExpression(out var exp);
+                Debug.Assert(gotExp, "Unable to get condition expression from statement");
+
+                this.condition = exp;
+            }
+            else if(addingWhenTrueStatements)
+            {
+                whenTrueStatements.Add(statement);
+
+                if(statement.IsKind(SyntaxKind.ReturnStatement))
+                {
+                    addingWhenTrueStatements = false;
+                }
+            }
+            else
+            {
+                whenFalseStatements.Add(statement);
+            }
+
+            return this;
+        }
+
+        public StatementSyntax[] GenerateHoistedStatements(out ExpressionSyntax resultVar)
+        {
+            resultVar = this.resultVariable;
+            return GenerateIfStatement(true);
         }
 
         public StatementSyntax[] GenerateNonHoistedStatements()
         {
-            return GenerateIfStatement(true, out _);
+            return GenerateIfStatement(false);
         }
 
-        internal StatementSyntax[] GenerateIfStatement(bool isInStatementScope, out ExpressionSyntax resultVariable)
+        internal StatementSyntax[] GenerateIfStatement(bool isHoisting)
         {
             Debug.Assert(this.condition != null, "Condition expression was not provided");
-            Debug.Assert(this.whenTrue != null, "WhenTrue expression was not provided");
+            Debug.Assert(this.whenTrueStatements.Any(), "WhenTrue was not provided");
 
-            var resultVarName = "ifResult_" + this.GetHashCode();
+            var generatedStatements = new List<StatementSyntax>();
 
-            resultVariable = IdentifierName(resultVarName);
-
-            var resultStatements = new List<StatementSyntax>();
-
-            ExpressionSyntax whenTrueExpression = this.whenTrue;
-            ExpressionSyntax whenFalseExpression = this.whenFalse;
-
-            if (isInStatementScope == false)
+            if (isHoisting)
             {
-                resultStatements.Add(
+                generatedStatements.Add(
                     LocalDeclarationStatement(
                         VariableDeclaration(
                             PredefinedType(
@@ -73,40 +110,102 @@ namespace OpenH2.ScriptAnalysis.GenerationState
                         .WithVariables(
                             SingletonSeparatedList(
                                 VariableDeclarator(
-                                    Identifier(resultVarName))
+                                    resultVariable.Identifier)
                                 .WithInitializer(
                                     EqualsValueClause(
                                         LiteralExpression(
-                                            SyntaxKind.FalseLiteralExpression)))))));
+                                            SyntaxKind.FalseLiteralExpression))))))
+                    .WithAdditionalAnnotations(new SyntaxAnnotation(AnnotationKind, Annotation_HoistedResultVar)));
 
-                whenTrueExpression = AssignmentExpression(
-                    SyntaxKind.SimpleAssignmentExpression,
-                    resultVariable,
-                    this.whenTrue);
-
-                if(this.whenFalse != null)
+                if(HasResultVarAssignment(whenTrueStatements) == false)
                 {
-                    whenFalseExpression = AssignmentExpression(
-                        SyntaxKind.SimpleAssignmentExpression,
-                        resultVariable,
-                        this.whenFalse);
+                    InsertResultVarAssignment(whenTrueStatements);
+                }
+
+                if(whenFalseStatements.Any() && HasResultVarAssignment(whenFalseStatements) == false)
+                {
+                    InsertResultVarAssignment(whenFalseStatements);
                 }
             }            
 
-            var trueBlock = Block(ExpressionStatement(whenTrueExpression));
+            var trueBlock = Block(whenTrueStatements);
 
-            if(whenFalseExpression == null)
+            if (whenFalseStatements.Any())
             {
-                resultStatements.Add(IfStatement(this.condition, trueBlock));
+                StatementSyntax falseBlock = Block(whenFalseStatements);
+
+                generatedStatements.Add(
+                    IfStatement(this.condition, trueBlock, ElseClause(falseBlock))
+                        .WithAdditionalAnnotations(new SyntaxAnnotation(AnnotationKind)));
             }
             else
             {
-                var falseBlock = Block(ExpressionStatement(whenFalseExpression));
+                generatedStatements.Add(
+                    IfStatement(this.condition, trueBlock)
+                        .WithAdditionalAnnotations(new SyntaxAnnotation(AnnotationKind)));
+            }
 
-                resultStatements.Add(IfStatement(this.condition, trueBlock, ElseClause(falseBlock)));
-            }            
+            return generatedStatements.ToArray();
+        }
 
-            return resultStatements.ToArray();
+        private bool HasResultVarAssignment(IEnumerable<SyntaxNode> roots)
+        {
+            foreach(var root in roots)
+            {
+                var checker = new ResultVarChecker(this.resultVariable);
+
+                checker.Visit(root);
+
+                if (checker.HasResultVarAssignment)
+                    return true;
+            }
+
+            return false;
+        }
+
+        private void InsertResultVarAssignment(List<StatementSyntax> statements)
+        {
+            var lastStatement = statements.Last();
+
+            if (lastStatement.TryGetContainingSimpleExpression(out var simple))
+            {
+                var updatedLastTrue = ExpressionStatement(AssignmentExpression(
+                    SyntaxKind.SimpleAssignmentExpression,
+                    resultVariable,
+                    simple));
+
+                statements.Remove(lastStatement);
+                statements.Add(updatedLastTrue);
+            }
+            else if (lastStatement.TryGetRightHandExpression(out var rhs))
+            {
+                var rhsAssignment = ExpressionStatement(AssignmentExpression(
+                    SyntaxKind.SimpleAssignmentExpression,
+                    resultVariable,
+                    rhs));
+
+                statements.Add(rhsAssignment);
+            }
+        }
+
+        private class ResultVarChecker : CSharpSyntaxWalker
+        {
+            private readonly IdentifierNameSyntax resultVar;
+
+            public bool HasResultVarAssignment { get; private set; } = false;
+
+            public ResultVarChecker(IdentifierNameSyntax resultVar)
+            {
+                this.resultVar = resultVar;
+            }
+
+            public override void VisitAssignmentExpression(AssignmentExpressionSyntax node)
+            {
+                if (node.Left == resultVar)
+                    HasResultVarAssignment = true;
+
+                base.VisitAssignmentExpression(node);
+            }
         }
     }
 }

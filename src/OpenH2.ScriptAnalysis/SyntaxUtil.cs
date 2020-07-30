@@ -6,12 +6,16 @@ using OpenH2.Core.Scripting;
 using OpenH2.Core.Tags.Scenario;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Text.RegularExpressions;
 using static Microsoft.CodeAnalysis.CSharp.SyntaxFactory;
 
 namespace OpenH2.ScriptAnalysis
 {
+    public static class ScriptGenAnnotations
+    {
+        public static SyntaxAnnotation ResultStatement { get; } = new SyntaxAnnotation("ResultStatement");
+    }
+
     public static class SyntaxUtil
     {
         public static TypeSyntax ScriptTypeSyntax(ScriptDataType dataType)
@@ -105,6 +109,88 @@ namespace OpenH2.ScriptAnalysis
 
                 _ => throw new NotImplementedException(),
             };
+        }
+
+        public static bool TryGetContainingSimpleExpression(this StatementSyntax statement, out ExpressionSyntax simple)
+        {
+            if (statement is ReturnStatementSyntax ret)
+            {
+                simple = ret.Expression.IsSimpleExpression() ? ret.Expression : default;
+            }
+            else if (statement is ExpressionStatementSyntax exp)
+            {
+                simple = exp.Expression.IsSimpleExpression() ? exp.Expression : default;
+            }
+            else
+            {
+                simple = default;
+            }
+
+            return simple != default;
+        }
+
+        private static HashSet<Type> simpleExpressionTypes = new HashSet<Type>()
+        {
+            { typeof(IdentifierNameSyntax) },
+            { typeof(LiteralExpressionSyntax) },
+            { typeof(InvocationExpressionSyntax) },
+            { typeof(MemberAccessExpressionSyntax) },
+            { typeof(ParenthesizedExpressionSyntax) },
+            { typeof(BinaryExpressionSyntax) },
+            { typeof(PrefixUnaryExpressionSyntax) },
+            { typeof(PostfixUnaryExpressionSyntax) },
+        };
+
+        public static bool IsSimpleExpression(this ExpressionSyntax exp)
+        {
+            return simpleExpressionTypes.Contains(exp.GetType());
+        }
+
+        public static bool TryGetRightHandExpression(this StatementSyntax statement, out ExpressionSyntax rhs)
+        {
+            rhs = statement switch
+            {
+                ExpressionStatementSyntax exp => HandleExpression(exp.Expression),
+                ReturnStatementSyntax ret => HandleExpression(ret.Expression),
+
+                _ => default
+            };
+
+            return rhs != default;
+
+            ExpressionSyntax HandleExpression(ExpressionSyntax exp)
+            {
+                return exp switch
+                {
+                    AssignmentExpressionSyntax ass => ass.Left,
+
+                    _ => default
+                };
+            }
+        }
+
+        public static ExpressionSyntax CreateImmediatelyInvokedFunction(ScriptDataType returnType, List<StatementSyntax> body)
+        {
+            ObjectCreationExpressionSyntax funcObj;
+
+            if (returnType == ScriptDataType.Void)
+            {
+                funcObj = SyntaxFactory.ObjectCreationExpression(
+                    SyntaxFactory.IdentifierName("Action"));
+            }
+            else
+            {
+                funcObj = SyntaxFactory.ObjectCreationExpression(
+                    SyntaxFactory.GenericName("Func")
+                        .AddTypeArgumentListArguments(SyntaxUtil.ScriptTypeSyntax(returnType)));
+            }
+
+            return InvocationExpression(
+                funcObj.AddArgumentListArguments(
+                    Argument(
+                        ParenthesizedLambdaExpression(
+                            Block(
+                                List(body))))));
         }
 
         private static readonly string[] _keywords = new[]
