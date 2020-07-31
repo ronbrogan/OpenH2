@@ -1,16 +1,20 @@
 ﻿using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
+using OpenH2.Core.Scripting;
 using OpenH2.Core.Tags.Scenario;
 using System;
 
 namespace OpenH2.ScriptAnalysis.GenerationState
 {
-    public class UnknownContext : BaseGenerationContext, IExpressionContext
+    public class UnknownContext : BaseGenerationContext, IGenerationContext
     {
         private readonly InvocationExpressionSyntax invocation;
+        public override ScriptDataType? OwnDataType { get; }
 
-        public UnknownContext(ScenarioTag scenario, ScenarioTag.ScriptSyntaxNode node)
+        public UnknownContext(ScenarioTag scenario, ScenarioTag.ScriptSyntaxNode node) : base(node)
         {
+            this.OwnDataType = node.DataType;
+
             string unknownDescription = "";
 
             if (node.NodeString > 0 && node.NodeString < scenario.ScriptStrings.Length
@@ -27,7 +31,7 @@ namespace OpenH2.ScriptAnalysis.GenerationState
                         SyntaxFactory.Argument(SyntaxUtil.LiteralExpression(unknownDescription)))));
         }
 
-        public IExpressionContext AddExpression(ExpressionSyntax expression)
+        public IGenerationContext AddExpression(ExpressionSyntax expression)
         {
             throw new NotImplementedException();
         }

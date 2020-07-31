@@ -8,48 +8,44 @@ namespace OpenH2.ScriptAnalysis.GenerationState
     public class Scope
     {
         public ScriptDataType Type { get; }
-        public IExpressionContext Context { get; private set; }
+        public IGenerationContext Context { get; private set; }
 
-        private Stack<IExpressionContext> childContexts = new Stack<IExpressionContext>();
+        //private Stack<Scope> childContexts = new Stack<Scope>();
         public IStatementContext StatementContext { get; private set; } = null;
 
-        public Scope(ScriptDataType type, IStatementContext nearestStatements)
-        {
-            this.Type = type;
-            this.StatementContext = nearestStatements;
-        }
-
-        public Scope(ScriptDataType type, IExpressionContext context, IStatementContext nearestStatements)
+        public Scope(ScriptDataType type, IGenerationContext context, IStatementContext nearestStatements)
         {
             this.Type = type;
             this.StatementContext = nearestStatements;
             this.Context = context;
         }
 
-        public void AddContext(IExpressionContext context)
+        public Scope CreateChild(IGenerationContext context)
         {
-            if(this.Context == null)
-            {
-                this.Context = context;
+            var child = new Scope(
+                context.OwnDataType ?? this.Type, 
+                context, 
+                context as IStatementContext ?? this.StatementContext);
 
-                if (context is IStatementContext statementContext)
-                {
-                    this.StatementContext = statementContext;
-                }
-            }
-            else
-            {
-                this.childContexts.Push(context);
-            }
+            return child;
         }
+
+        //public void SetContext(IGenerationContext context)
+        //{
+        //    if(this.Context == null)
+        //    {
+        //        this.Context = context;
+
+        //        if (context is IStatementContext statementContext)
+        //        {
+        //            this.StatementContext = statementContext;
+        //        }
+        //    }
+            
+        //}
 
         public void GenerateInto(Scope destination)
         {
-            while(this.childContexts.TryPop(out var context))
-            {
-                context.GenerateInto(this);
-            }
-
             this.Context.GenerateInto(destination);
         }
 

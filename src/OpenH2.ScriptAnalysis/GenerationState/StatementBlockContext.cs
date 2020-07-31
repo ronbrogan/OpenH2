@@ -1,19 +1,20 @@
 ﻿using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
+using OpenH2.Core.Tags.Scenario;
 using System;
 using System.Collections.Generic;
 
 namespace OpenH2.ScriptAnalysis.GenerationState
 {
-    public class StatementBlockContext : BaseGenerationContext, IExpressionContext, IStatementContext
+    public class StatementBlockContext : BaseGenerationContext, IGenerationContext, IStatementContext
     {
         public List<StatementSyntax> Statements { get; set; } = new List<StatementSyntax>();
 
-        public StatementBlockContext()
+        public StatementBlockContext() : base(null)
         {
         }
 
-        public IExpressionContext AddExpression(ExpressionSyntax expression)
+        public IGenerationContext AddExpression(ExpressionSyntax expression)
         {
             this.AddStatement(SyntaxFactory.ExpressionStatement(expression));
             return this;

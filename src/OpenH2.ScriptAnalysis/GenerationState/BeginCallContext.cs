@@ -2,19 +2,22 @@
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using OpenH2.Core.Scripting;
+using OpenH2.Core.Tags.Scenario;
 using System;
 using System.Collections.Generic;
 
 namespace OpenH2.ScriptAnalysis.GenerationState
 {
-    public class BeginCallContext : BaseGenerationContext, IExpressionContext, IStatementContext
+    public class BeginCallContext : BaseGenerationContext, IGenerationContext, IStatementContext
     {
         private readonly Scope context;
         private readonly ScriptDataType returnType;
 
-        public Stack<StatementSyntax> Body { get; } = new Stack<StatementSyntax>();
+        public override bool CreatesScope => true;
 
-        public BeginCallContext(Scope context, ScriptDataType returnType)
+        public List<StatementSyntax> Body { get; } = new List<StatementSyntax>();
+
+        public BeginCallContext(ScenarioTag.ScriptSyntaxNode node, Scope context, ScriptDataType returnType) : base(node)
         {
             this.context = context;
             this.returnType = returnType;
@@ -28,8 +31,6 @@ namespace OpenH2.ScriptAnalysis.GenerationState
                 {
                     scope.StatementContext.AddStatement(b);
                 }
-
-                return;
             }
             else
             {
@@ -42,15 +43,15 @@ namespace OpenH2.ScriptAnalysis.GenerationState
         {
             if (last.TryGetContainingSimpleExpression(out var lastExp))
             {
-                Body.Push(resultGen(lastExp));
+                Body.Add(resultGen(lastExp));
             }
             else if (last.TryGetRightHandExpression(out var rhsExp))
             {
-                Body.Push(resultGen(rhsExp));
+                Body.Add(resultGen(rhsExp));
             }
             else
             {
-                Body.Push(resultGen(
+                Body.Add(resultGen(
                     SyntaxFactory.LiteralExpression(
                         SyntaxKind.DefaultLiteralExpression,
                         SyntaxFactory.Token(SyntaxKind.DefaultKeyword)))
@@ -67,12 +68,12 @@ namespace OpenH2.ScriptAnalysis.GenerationState
             }
             //else { Body.Push(statement); }
 
-            Body.Push(SyntaxFactory.ExpressionStatement(exp));
+            Body.Add(SyntaxFactory.ExpressionStatement(exp));
 
             return this;
         }
 
-        IExpressionContext IExpressionContext.AddExpression(ExpressionSyntax expression) => AddExpression(expression);
+        IGenerationContext IGenerationContext.AddExpression(ExpressionSyntax expression) => AddExpression(expression);
 
         public IStatementContext AddStatement(StatementSyntax statement)
         {
@@ -83,7 +84,7 @@ namespace OpenH2.ScriptAnalysis.GenerationState
             }
             //else { Body.Push(statement); }
 
-            Body.Push(statement);
+            Body.Add(statement);
             return this;
         }
 
@@ -91,11 +92,6 @@ namespace OpenH2.ScriptAnalysis.GenerationState
         {
             return SyntaxFactory.ReturnStatement(resultValue)
                 .WithAdditionalAnnotations(ScriptGenAnnotations.ResultStatement);
-        }
-
-        public StatementSyntax[] GetInnerStatements()
-        {
-            return this.Body.ToArray();
         }
     }
 }

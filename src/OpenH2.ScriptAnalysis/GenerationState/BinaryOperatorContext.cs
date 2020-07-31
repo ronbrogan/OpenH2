@@ -1,17 +1,20 @@
 ﻿using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
+using OpenH2.Core.Tags.Scenario;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 
 namespace OpenH2.ScriptAnalysis.GenerationState
 {
-    public class BinaryOperatorContext : BaseGenerationContext, IExpressionContext
+    public class BinaryOperatorContext : BaseGenerationContext, IGenerationContext
     {
         private readonly List<ExpressionSyntax> operands = new List<ExpressionSyntax>();
         private readonly SyntaxKind operatorSyntaxKind;
 
-        public BinaryOperatorContext(SyntaxKind operatorSyntaxKind)
+        public override bool CreatesScope => true;
+
+        public BinaryOperatorContext(ScenarioTag.ScriptSyntaxNode node, SyntaxKind operatorSyntaxKind) : base(node)
         {
             this.operatorSyntaxKind = operatorSyntaxKind;
         }
@@ -44,6 +47,6 @@ namespace OpenH2.ScriptAnalysis.GenerationState
             return this;
         }
 
-        public IExpressionContext AddExpression(ExpressionSyntax expression) => AddOperand(expression);
+        public IGenerationContext AddExpression(ExpressionSyntax expression) => AddOperand(expression);
     }
 }

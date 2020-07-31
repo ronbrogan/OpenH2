@@ -1,18 +1,21 @@
 ﻿using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using OpenH2.Core.Scripting;
+using OpenH2.Core.Tags.Scenario;
 using System.Collections.Generic;
 
 namespace OpenH2.ScriptAnalysis.GenerationState
 {
-    public class MethodCallContext : BaseGenerationContext, IExpressionContext
+    public class MethodCallContext : BaseGenerationContext, IGenerationContext
     {
         public string MethodName { get; }
         public ScriptDataType ReturnType { get; }
 
-        private Stack<ArgumentSyntax> arguments = new Stack<ArgumentSyntax>();
+        private List<ArgumentSyntax> arguments = new List<ArgumentSyntax>();
 
-        public MethodCallContext(string methodName, ScriptDataType returnType)
+        public override bool CreatesScope => true;
+
+        public MethodCallContext(ScenarioTag.ScriptSyntaxNode node, string methodName, ScriptDataType returnType) : base(node)
         {
             this.MethodName = methodName;
             this.ReturnType = returnType;
@@ -20,11 +23,11 @@ namespace OpenH2.ScriptAnalysis.GenerationState
 
         public MethodCallContext AddArgument(ExpressionSyntax argument)
         {
-            arguments.Push(SyntaxFactory.Argument(argument));
+            arguments.Add(SyntaxFactory.Argument(argument));
             return this;
         }
 
-        public IExpressionContext AddExpression(ExpressionSyntax expression) => AddArgument(expression);
+        public IGenerationContext AddExpression(ExpressionSyntax expression) => AddArgument(expression);
 
         public void GenerateInto(Scope scope)
         {

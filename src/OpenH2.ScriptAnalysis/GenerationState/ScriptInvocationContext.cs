@@ -5,11 +5,11 @@ using System;
 
 namespace OpenH2.ScriptAnalysis.GenerationState
 {
-    public class ScriptInvocationContext : BaseGenerationContext, IExpressionContext
+    public class ScriptInvocationContext : BaseGenerationContext, IGenerationContext
     {
         private readonly InvocationExpressionSyntax invocation;
 
-        public ScriptInvocationContext(ScenarioTag scenario, ScenarioTag.ScriptSyntaxNode node)
+        public ScriptInvocationContext(ScenarioTag scenario, ScenarioTag.ScriptSyntaxNode node) : base(node)
         {
             invocation = SyntaxFactory.InvocationExpression(
                 SyntaxFactory.MemberAccessExpression(
@@ -20,7 +20,7 @@ namespace OpenH2.ScriptAnalysis.GenerationState
                             scenario.ScriptMethods[node.ScriptIndex].Description))));
         }
 
-        public IExpressionContext AddExpression(ExpressionSyntax expression)
+        public IGenerationContext AddExpression(ExpressionSyntax expression)
         {
             throw new NotImplementedException();
         }

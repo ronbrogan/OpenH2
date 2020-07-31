@@ -5,10 +5,9 @@ using System.Text;
 
 namespace OpenH2.ScriptAnalysis.GenerationState
 {
-    public interface IStatementContext
+    public interface IStatementContext : IGenerationContext
     {
         IStatementContext AddStatement(StatementSyntax statement);
         StatementSyntax CreateResultStatement(ExpressionSyntax resultValue);
-        StatementSyntax[] GetInnerStatements();
     }
 }

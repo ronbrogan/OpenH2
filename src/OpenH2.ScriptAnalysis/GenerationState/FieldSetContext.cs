@@ -1,16 +1,23 @@
 ﻿using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
+using OpenH2.Core.Tags.Scenario;
 using System;
 using System.Diagnostics;
 
 namespace OpenH2.ScriptAnalysis.GenerationState
 {
-    public class FieldSetContext : BaseGenerationContext, IExpressionContext
+    public class FieldSetContext : BaseGenerationContext, IGenerationContext
     {
         private ExpressionSyntax field = null;
         private ExpressionSyntax value = null;
 
-        public IExpressionContext AddExpression(ExpressionSyntax expression)
+        public override bool CreatesScope => true;
+
+        public FieldSetContext(ScenarioTag.ScriptSyntaxNode node) : base(node)
+        {
+        }
+
+        public IGenerationContext AddExpression(ExpressionSyntax expression)
         {
             if(field == null)
             {

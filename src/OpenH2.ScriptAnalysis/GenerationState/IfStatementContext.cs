@@ -1,6 +1,7 @@
 ﻿using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
+using OpenH2.Core.Tags.Scenario;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -9,11 +10,13 @@ using static Microsoft.CodeAnalysis.CSharp.SyntaxFactory;
 
 namespace OpenH2.ScriptAnalysis.GenerationState
 {
-    internal class IfStatementContext : BaseGenerationContext, IExpressionContext, IStatementContext
+    internal class IfStatementContext : BaseGenerationContext, IGenerationContext, IStatementContext
     {
         private const string AnnotationKind = "IfStatement";
         private const string Annotation_HoistedResultVar = "HoistedResultVar";
         private readonly Scope containingState;
+
+        public override bool CreatesScope => true;
 
         //private ExpressionSyntax condition = null;
         //private bool addingWhenTrueStatements = true;
@@ -21,9 +24,9 @@ namespace OpenH2.ScriptAnalysis.GenerationState
         //private List<StatementSyntax> whenFalseStatements = new List<StatementSyntax>();
         private IdentifierNameSyntax resultVariable;
 
-        private Stack<StatementSyntax> statements = new Stack<StatementSyntax>();
+        private Queue<StatementSyntax> statements = new Queue<StatementSyntax>();
 
-        public IfStatementContext(Scope containingState)
+        public IfStatementContext(ScenarioTag.ScriptSyntaxNode node, Scope containingState) : base(node)
         {
             var resultVarName = "ifResult_" + this.GetHashCode();
 
@@ -31,9 +34,9 @@ namespace OpenH2.ScriptAnalysis.GenerationState
             this.containingState = containingState;
         }
 
-        public IExpressionContext AddExpression(ExpressionSyntax expression)
+        public IGenerationContext AddExpression(ExpressionSyntax expression)
         {
-            statements.Push(ExpressionStatement(expression));
+            statements.Enqueue(ExpressionStatement(expression));
 
             return this;
         }
@@ -49,21 +52,16 @@ namespace OpenH2.ScriptAnalysis.GenerationState
 
         public IStatementContext AddStatement(StatementSyntax statement)
         {
-            statements.Push(statement);
+            statements.Enqueue(statement);
 
             return this;
-        }
-
-        public StatementSyntax[] GetInnerStatements()
-        {
-            throw new NotImplementedException();
         }
 
         public void GenerateInto(Scope scope)
         {
             var isHoisting = !scope.IsInStatementContext;
 
-            var conditionStatement = statements.Pop();
+            var conditionStatement = statements.Dequeue();
 
             Debug.Assert(conditionStatement is ExpressionStatementSyntax, "Condition expression was not provided");
 
@@ -72,7 +70,7 @@ namespace OpenH2.ScriptAnalysis.GenerationState
             var whenTrueStatements = new List<StatementSyntax>();
             var whenFalseStatements = new List<StatementSyntax>();
 
-            while (statements.TryPop(out var statement))
+            while (statements.TryDequeue(out var statement))
             {
                 whenTrueStatements.Add(statement);
 
@@ -82,7 +80,7 @@ namespace OpenH2.ScriptAnalysis.GenerationState
                 }
             }
 
-            while(statements.TryPop(out var statement))
+            while(statements.TryDequeue(out var statement))
             {
                 whenFalseStatements.Add(statement);
             }

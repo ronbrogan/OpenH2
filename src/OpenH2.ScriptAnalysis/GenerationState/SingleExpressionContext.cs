@@ -1,14 +1,24 @@
 ﻿using Microsoft.CodeAnalysis.CSharp.Syntax;
+using OpenH2.Core.Scripting;
+using OpenH2.Core.Tags.Scenario;
 using System;
 using System.Diagnostics;
 
 namespace OpenH2.ScriptAnalysis.GenerationState
 {
-    public class SingleExpressionStatementContext : BaseGenerationContext, IExpressionContext, IStatementContext
+    public class SingleExpressionStatementContext : BaseGenerationContext, IGenerationContext, IStatementContext
     {
         private ExpressionSyntax expression;
 
-        public IExpressionContext AddExpression(ExpressionSyntax expression)
+        public override bool CreatesScope => true;
+        public override ScriptDataType? OwnDataType { get; }
+
+        public SingleExpressionStatementContext(ScenarioTag.ScriptSyntaxNode node, ScriptDataType scopeType) : base(node)
+        {
+            this.OwnDataType = scopeType;
+        }
+
+        public IGenerationContext AddExpression(ExpressionSyntax expression)
         {
             Debug.Assert(this.expression == null, $"More than one expression added to {nameof(SingleExpressionStatementContext)}");
 

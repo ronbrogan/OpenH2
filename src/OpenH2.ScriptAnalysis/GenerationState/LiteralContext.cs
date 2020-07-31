@@ -1,19 +1,22 @@
 ﻿using Microsoft.CodeAnalysis.CSharp.Syntax;
+using OpenH2.Core.Scripting;
 using OpenH2.Core.Tags.Scenario;
 using System;
 
 namespace OpenH2.ScriptAnalysis.GenerationState
 {
-    public class LiteralContext : BaseGenerationContext, IExpressionContext
+    public class LiteralContext : BaseGenerationContext, IGenerationContext
     {
         private LiteralExpressionSyntax literal;
+        public override ScriptDataType? OwnDataType { get; }
 
-        public LiteralContext(ScenarioTag scenario, ScenarioTag.ScriptSyntaxNode node)
+        public LiteralContext(ScenarioTag scenario, ScenarioTag.ScriptSyntaxNode node) : base(node)
         {
             this.literal = SyntaxUtil.LiteralExpression(scenario, node);
+            this.OwnDataType = node.DataType;
         }
 
-        public IExpressionContext AddExpression(ExpressionSyntax expression)
+        public IGenerationContext AddExpression(ExpressionSyntax expression)
         {
             throw new NotImplementedException();
         }
