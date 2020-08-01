@@ -195,7 +195,8 @@ namespace OpenH2.ScriptAnalysis
             // Create new scope, retaining current nearest StatementState
             //scopes.Push(new Scope(node.DataType, currentScope.StatementContext));
 
-            return new ScopeGenerationContext(node, node.DataType);
+            return NullGenerationContext.Instance;
+            //return new ScopeGenerationContext(node, currentScope);
         }
 
         private IGenerationContext HandleExpression(ScenarioTag.ScriptSyntaxNode node)
@@ -206,7 +207,7 @@ namespace OpenH2.ScriptAnalysis
             {
                 case ScriptDataType.Void:
                     // TODO: void expressions?
-                    return NullExpressionContext.Instance;
+                    return NullGenerationContext.Instance;
                 case ScriptDataType.MethodOrOperator:
                     return GetMethodState(node);
                 case ScriptDataType.ReferenceGet:

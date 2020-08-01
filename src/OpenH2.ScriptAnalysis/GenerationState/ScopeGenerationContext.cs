@@ -1,4 +1,5 @@
-﻿using Microsoft.CodeAnalysis.CSharp;
+﻿using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using OpenH2.Core.Scripting;
 using OpenH2.Core.Tags.Scenario;
@@ -8,26 +9,32 @@ using System.Diagnostics;
 
 namespace OpenH2.ScriptAnalysis.GenerationState
 {
-    public class ScopeGenerationContext : BaseGenerationContext, IGenerationContext, IStatementContext
+    public class ScopeGenerationContext : BaseGenerationContext, IGenerationContext
     {
         private List<StatementSyntax> Body = new List<StatementSyntax>();
+        private readonly Scope containingScope;
 
-        public override bool CreatesScope => true;
+        public override bool CreatesScope => false;
         public override ScriptDataType? OwnDataType { get; }
 
-        public ScopeGenerationContext(ScenarioTag.ScriptSyntaxNode node, ScriptDataType scopeType) : base(node)
+        public ScopeGenerationContext(ScenarioTag.ScriptSyntaxNode node, Scope containingScope) : base(node)
         {
-            this.OwnDataType = scopeType;
+            this.OwnDataType = node.DataType;
+            this.containingScope = containingScope;
         }
 
         public IGenerationContext AddExpression(ExpressionSyntax expression)
         {
-            this.Body.Add(SyntaxFactory.ExpressionStatement(expression));
+            //this.Body.Add(SyntaxFactory.ExpressionStatement(expression));
+            this.containingScope.Context.AddExpression(expression);
             return this;
         }
 
         public void GenerateInto(Scope scope)
         {
+            //scope.Context.AddExpression(SyntaxFactory.BaseExpression().WithLeadingTrivia(SyntaxFactory.Comment($"// Scope<{this.OwnDataType}>")));
+            return;
+
             if (scope.IsInStatementContext)
             {
                 foreach (var b in Body)
@@ -55,16 +62,16 @@ namespace OpenH2.ScriptAnalysis.GenerationState
             }
         }
 
-        public IStatementContext AddStatement(StatementSyntax statement)
-        {
-            this.Body.Add(statement);
-            return this;
-        }
+        //public IStatementContext AddStatement(StatementSyntax statement)
+        //{
+        //    this.containingScope.StatementContext.AddStatement(statement);
+        //    return this;
+        //}
 
-        public StatementSyntax CreateResultStatement(ExpressionSyntax resultValue)
-        {
-            // TODO: cast to type if necessary? Add type annotations to all generated expressions?
-            return SyntaxFactory.ExpressionStatement(resultValue);
-        }
+        //public StatementSyntax CreateResultStatement(ExpressionSyntax resultValue)
+        //{
+        //    // TODO: cast to type if necessary? Add type annotations to all generated expressions?
+        //    return this.containingScope.StatementContext.CreateResultStatement(resultValue);
+        //}
     }
 }

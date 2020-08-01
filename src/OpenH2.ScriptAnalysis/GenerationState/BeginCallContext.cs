@@ -5,12 +5,12 @@ using OpenH2.Core.Scripting;
 using OpenH2.Core.Tags.Scenario;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace OpenH2.ScriptAnalysis.GenerationState
 {
     public class BeginCallContext : BaseGenerationContext, IGenerationContext, IStatementContext
     {
-        private readonly Scope context;
         private readonly ScriptDataType returnType;
 
         public override bool CreatesScope => true;
@@ -19,7 +19,6 @@ namespace OpenH2.ScriptAnalysis.GenerationState
 
         public BeginCallContext(ScenarioTag.ScriptSyntaxNode node, Scope context, ScriptDataType returnType) : base(node)
         {
-            this.context = context;
             this.returnType = returnType;
         }
 
@@ -27,6 +26,9 @@ namespace OpenH2.ScriptAnalysis.GenerationState
         {
             if(scope.IsInStatementContext)
             {
+                var lastExp = Body.Last();
+                EnsureReturnStatement(lastExp, scope.StatementContext.CreateResultStatement);
+
                 foreach (var b in Body)
                 {
                     scope.StatementContext.AddStatement(b);
@@ -34,6 +36,11 @@ namespace OpenH2.ScriptAnalysis.GenerationState
             }
             else
             {
+                var lastExp = Body.Last();
+
+                EnsureReturnStatement(lastExp, e => SyntaxFactory.ReturnStatement(e)
+                    .WithAdditionalAnnotations(ScriptGenAnnotations.ResultStatement));
+
                 scope.Context.AddExpression(
                     SyntaxUtil.CreateImmediatelyInvokedFunction(returnType, Body));
             }
@@ -41,13 +48,19 @@ namespace OpenH2.ScriptAnalysis.GenerationState
 
         private void EnsureReturnStatement(StatementSyntax last, Func<ExpressionSyntax, StatementSyntax> resultGen)
         {
+            if(this.returnType == ScriptDataType.Void)
+            {
+                return;
+            }
+
             if (last.TryGetContainingSimpleExpression(out var lastExp))
             {
+                Body.Remove(last);
                 Body.Add(resultGen(lastExp));
             }
-            else if (last.TryGetRightHandExpression(out var rhsExp))
+            else if (last.TryGetLeftHandExpression(out var lhsExp))
             {
-                Body.Add(resultGen(rhsExp));
+                Body.Add(resultGen(lhsExp));
             }
             else
             {
@@ -61,13 +74,6 @@ namespace OpenH2.ScriptAnalysis.GenerationState
 
         public BeginCallContext AddExpression(ExpressionSyntax exp)
         {
-            if(Body.Count == 0)
-            {
-                // TODO: This is the last expression of the body, ensure result is stored/passed first
-                //EnsureReturnStatement(exp);
-            }
-            //else { Body.Push(statement); }
-
             Body.Add(SyntaxFactory.ExpressionStatement(exp));
 
             return this;
@@ -77,13 +83,6 @@ namespace OpenH2.ScriptAnalysis.GenerationState
 
         public IStatementContext AddStatement(StatementSyntax statement)
         {
-            if (Body.Count == 0)
-            {
-                // TODO: This is the last expression of the body, ensure result is stored/passed first
-                //EnsureReturnStatement(statement);
-            }
-            //else { Body.Push(statement); }
-
             Body.Add(statement);
             return this;
         }

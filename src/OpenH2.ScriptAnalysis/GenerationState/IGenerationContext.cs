@@ -18,11 +18,11 @@ namespace OpenH2.ScriptAnalysis.GenerationState
         void GenerateInto(Scope scope);
     }
 
-    public class NullExpressionContext : IGenerationContext
+    public class NullGenerationContext : IGenerationContext
     {
-        public static IGenerationContext Instance { get; } = new NullExpressionContext();
+        public static IGenerationContext Instance { get; } = new NullGenerationContext();
 
-        private NullExpressionContext() { }
+        private NullGenerationContext() { }
 
         public bool CreatesScope => false;
         public ScriptDataType? OwnDataType => null;

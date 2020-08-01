@@ -1,6 +1,6 @@
-﻿using Microsoft.CodeAnalysis.CSharp;
+﻿using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
-using OpenH2.Core.Tags.Scenario;
 using System;
 using System.Collections.Generic;
 
@@ -29,7 +29,8 @@ namespace OpenH2.ScriptAnalysis.GenerationState
 
         public StatementSyntax CreateResultStatement(ExpressionSyntax resultValue)
         {
-            return SyntaxFactory.ReturnStatement(resultValue);
+            return SyntaxFactory.ReturnStatement(resultValue)
+                .WithAdditionalAnnotations(ScriptGenAnnotations.ResultStatement);
         }
 
         public StatementSyntax[] GetInnerStatements()

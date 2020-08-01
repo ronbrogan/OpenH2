@@ -134,24 +134,24 @@ namespace OpenH2.ScriptAnalysis
             return simple != default;
         }
 
-        private static HashSet<Type> simpleExpressionTypes = new HashSet<Type>()
+        private static Type[] simpleExpressionTypes = new Type[]
         {
-            { typeof(IdentifierNameSyntax) },
-            { typeof(LiteralExpressionSyntax) },
-            { typeof(InvocationExpressionSyntax) },
-            { typeof(MemberAccessExpressionSyntax) },
-            { typeof(ParenthesizedExpressionSyntax) },
-            { typeof(BinaryExpressionSyntax) },
-            { typeof(PrefixUnaryExpressionSyntax) },
-            { typeof(PostfixUnaryExpressionSyntax) },
+            typeof(IdentifierNameSyntax),
+            typeof(LiteralExpressionSyntax),
+            typeof(InvocationExpressionSyntax),
+            typeof(MemberAccessExpressionSyntax),
+            typeof(ParenthesizedExpressionSyntax),
+            typeof(BinaryExpressionSyntax),
+            typeof(PrefixUnaryExpressionSyntax),
+            typeof(PostfixUnaryExpressionSyntax),
         };
 
         public static bool IsSimpleExpression(this ExpressionSyntax exp)
         {
-            return simpleExpressionTypes.Contains(exp.GetType());
+            return Array.IndexOf(simpleExpressionTypes, exp.GetType()) >= 0;
         }
 
-        public static bool TryGetRightHandExpression(this StatementSyntax statement, out ExpressionSyntax rhs)
+        public static bool TryGetLeftHandExpression(this StatementSyntax statement, out ExpressionSyntax rhs)
         {
             rhs = statement switch
             {
