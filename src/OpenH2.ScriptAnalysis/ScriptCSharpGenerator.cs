@@ -195,8 +195,15 @@ namespace OpenH2.ScriptAnalysis
             // Create new scope, retaining current nearest StatementState
             //scopes.Push(new Scope(node.DataType, currentScope.StatementContext));
 
-            return NullGenerationContext.Instance;
-            //return new ScopeGenerationContext(node, currentScope);
+            //return NullGenerationContext.Instance;
+            if(currentScope.IsInStatementContext)
+            {
+                return new ScopeGenerationContext.StatementContext(node, currentScope);
+            }
+            else
+            {
+                return new ScopeGenerationContext(node, currentScope);
+            }
         }
 
         private IGenerationContext HandleExpression(ScenarioTag.ScriptSyntaxNode node)

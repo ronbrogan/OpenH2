@@ -8,6 +8,6 @@ namespace OpenH2.ScriptAnalysis.GenerationState
     public interface IStatementContext : IGenerationContext
     {
         IStatementContext AddStatement(StatementSyntax statement);
-        StatementSyntax CreateResultStatement(ExpressionSyntax resultValue);
+        bool TryCreateResultStatement(ExpressionSyntax resultValue, out StatementSyntax statement);
     }
 }

@@ -27,10 +27,12 @@ namespace OpenH2.ScriptAnalysis.GenerationState
             return this;
         }
 
-        public StatementSyntax CreateResultStatement(ExpressionSyntax resultValue)
+        public bool TryCreateResultStatement(ExpressionSyntax resultValue, out StatementSyntax statement)
         {
-            return SyntaxFactory.ReturnStatement(resultValue)
+            statement = SyntaxFactory.ReturnStatement(resultValue)
                 .WithAdditionalAnnotations(ScriptGenAnnotations.ResultStatement);
+
+            return true;
         }
 
         public StatementSyntax[] GetInnerStatements()

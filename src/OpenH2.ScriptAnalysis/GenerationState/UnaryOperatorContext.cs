@@ -32,7 +32,9 @@ namespace OpenH2.ScriptAnalysis.GenerationState
         {
             Debug.Assert(operand != null, "Not enough operands for unary expression");
 
-            scope.Context.AddExpression(SyntaxFactory.PrefixUnaryExpression(operatorSyntaxKind, operand));
+            scope.Context.AddExpression(SyntaxFactory.PrefixUnaryExpression(
+                operatorSyntaxKind, 
+                SyntaxFactory.ParenthesizedExpression(operand)));
         }
     }
 }

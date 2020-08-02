@@ -14,6 +14,9 @@ namespace OpenH2.ScriptAnalysis
     public static class ScriptGenAnnotations
     {
         public static SyntaxAnnotation ResultStatement { get; } = new SyntaxAnnotation("ResultStatement");
+        public static SyntaxAnnotation FinalScopeStatement { get; } = new SyntaxAnnotation("FinalScopeStatement");
+        public static SyntaxAnnotation IfStatement { get; } = new SyntaxAnnotation("IfStatement");
+        public static SyntaxAnnotation HoistedResultVar { get; } = new SyntaxAnnotation("HoistedResultVar");
     }
 
     public static class SyntaxUtil

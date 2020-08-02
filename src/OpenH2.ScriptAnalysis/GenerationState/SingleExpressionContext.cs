@@ -47,7 +47,7 @@ namespace OpenH2.ScriptAnalysis.GenerationState
             return this;
         }
 
-        public StatementSyntax CreateResultStatement(ExpressionSyntax resultValue)
+        public bool TryCreateResultStatement(ExpressionSyntax resultValue, out StatementSyntax statement)
         {
             throw new NotImplementedException();
         }

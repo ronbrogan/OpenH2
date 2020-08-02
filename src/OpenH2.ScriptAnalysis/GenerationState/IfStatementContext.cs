@@ -1,22 +1,22 @@
 ﻿using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
+using OpenH2.Core.Scripting;
 using OpenH2.Core.Tags.Scenario;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Linq.Expressions;
+using System.Runtime.CompilerServices;
 using static Microsoft.CodeAnalysis.CSharp.SyntaxFactory;
 
 namespace OpenH2.ScriptAnalysis.GenerationState
 {
     internal class IfStatementContext : BaseGenerationContext, IGenerationContext, IStatementContext
     {
-        private const string AnnotationKind = "IfStatement";
-        private const string Annotation_HoistedResultVar = "HoistedResultVar";
         private readonly Scope containingScope;
-        private readonly bool isHoisting;
+        private readonly bool shouldHoistAndStoreResult;
 
         public override bool CreatesScope => true;
 
@@ -35,7 +35,7 @@ namespace OpenH2.ScriptAnalysis.GenerationState
 
             resultVariable = IdentifierName(resultVarName);
             this.containingScope = containingScope;
-            this.isHoisting = !containingScope.IsInStatementContext;
+            this.shouldHoistAndStoreResult = containingScope.Type != ScriptDataType.Void;
         }
 
         public IGenerationContext AddExpression(ExpressionSyntax expression)
@@ -69,7 +69,7 @@ namespace OpenH2.ScriptAnalysis.GenerationState
             else if(this.doneWithTrueBlock == false)
             {
                 whenTrueStatements.Add(statement);
-                if(statement.HasAnnotation(ScriptGenAnnotations.ResultStatement))
+                if(statement.HasAnnotation(ScriptGenAnnotations.ResultStatement) || statement.HasAnnotation(ScriptGenAnnotations.FinalScopeStatement))
                 {
                     doneWithTrueBlock = true;
                 }
@@ -82,22 +82,22 @@ namespace OpenH2.ScriptAnalysis.GenerationState
             return this;
         }
 
-        public StatementSyntax CreateResultStatement(ExpressionSyntax resultValue)
+        public bool TryCreateResultStatement(ExpressionSyntax resultValue, out StatementSyntax statement)
         {
-            if(isHoisting)
+            if (shouldHoistAndStoreResult)
             {
-                return ExpressionStatement(AssignmentExpression(
+                statement = ExpressionStatement(AssignmentExpression(
                     SyntaxKind.SimpleAssignmentExpression,
                     resultVariable,
                     resultValue))
                 .WithAdditionalAnnotations(ScriptGenAnnotations.ResultStatement);
+                return true;
             }
             else
             {
-                return ExpressionStatement(resultValue)
-                    .WithAdditionalAnnotations(ScriptGenAnnotations.ResultStatement);
+                statement = default;
+                return false;
             }
-            
         }
 
         public void GenerateInto(Scope scope)
@@ -108,22 +108,16 @@ namespace OpenH2.ScriptAnalysis.GenerationState
 
             var generatedStatements = new List<StatementSyntax>();
 
-            if (isHoisting)
+            if (this.shouldHoistAndStoreResult)
             {
-                generatedStatements.Add(
-                    LocalDeclarationStatement(
-                        VariableDeclaration(
-                            PredefinedType(
-                                Token(SyntaxKind.BoolKeyword)))
-                        .WithVariables(
-                            SingletonSeparatedList(
-                                VariableDeclarator(
-                                    resultVariable.Identifier)
-                                .WithInitializer(
-                                    EqualsValueClause(
-                                        LiteralExpression(
-                                            SyntaxKind.FalseLiteralExpression))))))
-                    .WithAdditionalAnnotations(new SyntaxAnnotation(AnnotationKind, Annotation_HoistedResultVar)));
+                generatedStatements.Add(LocalDeclarationStatement(VariableDeclaration(PredefinedType(Token(SyntaxKind.BoolKeyword)))
+                    .WithVariables(SingletonSeparatedList(
+                        VariableDeclarator(resultVariable.Identifier)
+                            .WithInitializer(
+                                EqualsValueClause(
+                                    LiteralExpression(
+                                        SyntaxKind.FalseLiteralExpression))))))
+                    .WithAdditionalAnnotations(ScriptGenAnnotations.HoistedResultVar));
 
                 if (HasResultVarAssignment(whenTrueStatements) == false)
                 {
@@ -151,14 +145,14 @@ namespace OpenH2.ScriptAnalysis.GenerationState
                 generatedStatements.Add(
                     IfStatement(condition, trueBlock, ElseClause(falseBlock))
                         .WithLeadingTrivia(SyntaxFactory.Whitespace(Environment.NewLine))
-                        .WithAdditionalAnnotations(new SyntaxAnnotation(AnnotationKind)));
+                        .WithAdditionalAnnotations(ScriptGenAnnotations.IfStatement));
             }
             else
             {
                 generatedStatements.Add(
                     IfStatement(condition, trueBlock)
                         .WithLeadingTrivia(SyntaxFactory.Whitespace(Environment.NewLine))
-                        .WithAdditionalAnnotations(new SyntaxAnnotation(AnnotationKind)));
+                        .WithAdditionalAnnotations(ScriptGenAnnotations.IfStatement));
             }
 
             foreach(var statement in generatedStatements)
@@ -166,15 +160,17 @@ namespace OpenH2.ScriptAnalysis.GenerationState
                 scope.StatementContext.AddStatement(statement);
             }
 
-            if(isHoisting)
+            
+            if (this.shouldHoistAndStoreResult)
             {
                 scope.Context.AddExpression(this.resultVariable);
             }
             else
             {
-                var result = scope.StatementContext.CreateResultStatement(this.resultVariable);
-                scope.StatementContext.AddStatement(result);
+                //var result = scope.StatementContext.CreateResultStatement(this.resultVariable);
+                //scope.StatementContext.AddStatement(result);
             }
+            
         }
 
         private bool HasResultVarAssignment(IEnumerable<SyntaxNode> roots)
@@ -230,7 +226,7 @@ namespace OpenH2.ScriptAnalysis.GenerationState
 
             public override void VisitAssignmentExpression(AssignmentExpressionSyntax node)
             {
-                if (node.Left == resultVar)
+                if (node.Left.IsEquivalentTo(resultVar))
                     HasResultVarAssignment = true;
 
                 base.VisitAssignmentExpression(node);

@@ -11,6 +11,8 @@ namespace OpenH2.ScriptAnalysis.GenerationState
 {
     public class BeginCallContext : BaseGenerationContext, IGenerationContext, IStatementContext
     {
+        private delegate bool ResultVarGenerator(ExpressionSyntax exp, out StatementSyntax statement);
+
         private readonly ScriptDataType returnType;
 
         public override bool CreatesScope => true;
@@ -27,7 +29,7 @@ namespace OpenH2.ScriptAnalysis.GenerationState
             if(scope.IsInStatementContext)
             {
                 var lastExp = Body.Last();
-                EnsureReturnStatement(lastExp, scope.StatementContext.CreateResultStatement);
+                EnsureReturnStatement(lastExp, scope.StatementContext.TryCreateResultStatement);
 
                 foreach (var b in Body)
                 {
@@ -38,37 +40,47 @@ namespace OpenH2.ScriptAnalysis.GenerationState
             {
                 var lastExp = Body.Last();
 
-                EnsureReturnStatement(lastExp, e => SyntaxFactory.ReturnStatement(e)
-                    .WithAdditionalAnnotations(ScriptGenAnnotations.ResultStatement));
+                EnsureReturnStatement(lastExp, (ExpressionSyntax e, out StatementSyntax s) => { 
+                    s = SyntaxFactory.ReturnStatement(e)
+                        .WithAdditionalAnnotations(ScriptGenAnnotations.ResultStatement); 
+                    return true;
+                });
 
                 scope.Context.AddExpression(
                     SyntaxUtil.CreateImmediatelyInvokedFunction(returnType, Body));
             }
         }
 
-        private void EnsureReturnStatement(StatementSyntax last, Func<ExpressionSyntax, StatementSyntax> resultGen)
+        private void EnsureReturnStatement(StatementSyntax last, ResultVarGenerator resultGen)
         {
             if(this.returnType == ScriptDataType.Void)
             {
+                Body.Remove(last);
+                Body.Add(last.WithAdditionalAnnotations(ScriptGenAnnotations.FinalScopeStatement));
                 return;
             }
 
-            if (last.TryGetContainingSimpleExpression(out var lastExp))
+            if (last.TryGetContainingSimpleExpression(out var lastExp) && resultGen(lastExp, out var lastStatement))
             {
                 Body.Remove(last);
-                Body.Add(resultGen(lastExp));
+                Body.Add(lastStatement.WithAdditionalAnnotations(ScriptGenAnnotations.FinalScopeStatement));
             }
-            else if (last.TryGetLeftHandExpression(out var lhsExp))
+            else if (last.TryGetLeftHandExpression(out var lhsExp) && resultGen(lhsExp, out var lhsStatement))
             {
-                Body.Add(resultGen(lhsExp));
+                Body.Add(lhsStatement.WithAdditionalAnnotations(ScriptGenAnnotations.FinalScopeStatement));
             }
             else
             {
-                Body.Add(resultGen(
-                    SyntaxFactory.LiteralExpression(
+                var defaultExp = SyntaxFactory.LiteralExpression(
                         SyntaxKind.DefaultLiteralExpression,
-                        SyntaxFactory.Token(SyntaxKind.DefaultKeyword)))
+                        SyntaxFactory.Token(SyntaxKind.DefaultKeyword));
+
+                if(resultGen(defaultExp, out var defaultStatement))
+                {
+                    Body.Add(defaultStatement
+                    .WithAdditionalAnnotations(ScriptGenAnnotations.FinalScopeStatement)
                     .WithTrailingTrivia(SyntaxFactory.Comment("// Unhandled 'begin' return")));
+                }
             }
         }
 
@@ -87,10 +99,17 @@ namespace OpenH2.ScriptAnalysis.GenerationState
             return this;
         }
 
-        public StatementSyntax CreateResultStatement(ExpressionSyntax resultValue)
+        public bool TryCreateResultStatement(ExpressionSyntax resultValue, out StatementSyntax statement)
         {
-            return SyntaxFactory.ReturnStatement(resultValue)
+            if(this.OwnDataType == ScriptDataType.Void)
+            {
+                statement = default;
+                return false;
+            }
+
+            statement = SyntaxFactory.ReturnStatement(resultValue)
                 .WithAdditionalAnnotations(ScriptGenAnnotations.ResultStatement);
+            return true;
         }
     }
 }
