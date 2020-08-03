@@ -6,6 +6,10 @@ namespace OpenH2.Engine.Scripting
     public class ScriptEngine
     {
         public const short TicksPerSecond = 60;
+        public static T GetReference<T>(string reference)
+        {
+            return default(T);
+        }
 
         /// <summary>activates a nav point type <string> attached to a team anchored to a flag with a vertical offset <real>. If the player is not local to the machine, this will fail</summary>
         public static void activate_team_nav_point_flag(NavigationPoint navpoint, Team team, LocationFlag cutscene_flag, float real)
@@ -692,12 +696,7 @@ namespace OpenH2.Engine.Scripting
         }
 
         /// <summary>Actor faces exactly the point for the remainder of the cs, or until overridden (overrides aim, look)</summary>
-        public static void cs_face(bool boolean)
-        {
-        }
-
-        /// <summary>Actor faces exactly the given object for the duration of the cs, or until overridden (overrides aim, look)</summary>
-        public static void cs_face_object(bool boolean)
+        public static void cs_face(bool boolean, SpatialPoint point = null)
         {
         }
 
@@ -752,7 +751,7 @@ namespace OpenH2.Engine.Scripting
         }
 
         /// <summary>Moves the actor to a specified point</summary>
-        public static void cs_go_to()
+        public static void cs_go_to(SpatialPoint point)
         {
         }
 
@@ -762,7 +761,7 @@ namespace OpenH2.Engine.Scripting
         }
 
         /// <summary>Moves the actor to a specified point and has him face the second point</summary>
-        public static void cs_go_to_and_face()
+        public static void cs_go_to_and_face(SpatialPoint point, SpatialPoint faceTowards)
         {
         }
 
@@ -802,7 +801,7 @@ namespace OpenH2.Engine.Scripting
         }
 
         /// <summary>Actor looks at the point for the remainder of the cs, or until overridden</summary>
-        public static void cs_look(bool boolean)
+        public static void cs_look(bool boolean, SpatialPoint point = null)
         {
         }
 
@@ -854,11 +853,6 @@ namespace OpenH2.Engine.Scripting
 
         /// <summary>Causes the specified actor(s) to start executing a command script immediately (discarding any other command scripts in the queue)</summary>
         public static void cs_run_command_script(AI ai, AIScript ai_command_script)
-        {
-        }
-
-        /// <summary>Causes the specified actor(s) to start executing a command script immediately (discarding any other command scripts in the queue)</summary>
-        public static void cs_run_command_script(AIScript aiScript)
         {
         }
 
@@ -1664,13 +1658,13 @@ namespace OpenH2.Engine.Scripting
         }
 
         /// <summary>returns true if any of the specified units are looking within the specified number of degrees of the object.</summary>
-        public static bool objects_can_see_object(Entity entity, float floatValue)
+        public static bool objects_can_see_object(Entity entity, EntityIdentifier obj, float degrees)
         {
             return default(bool);
         }
 
         /// <summary>returns true if any of the specified units are looking within the specified number of degrees of the object.</summary>
-        public static bool objects_can_see_object(ObjectList list, float floatValue)
+        public static bool objects_can_see_object(ObjectList list, EntityIdentifier obj, float degrees)
         {
             return default(bool);
         }
@@ -1934,18 +1928,6 @@ namespace OpenH2.Engine.Scripting
         }
 
         /// <summary>returns a random value in the range [lower bound, upper bound)</summary>
-        public static short random_range()
-        {
-            return default(short);
-        }
-
-        /// <summary>returns a random value in the range [lower bound, upper bound)</summary>
-        public static short random_range(short valueValue)
-        {
-            return default(short);
-        }
-
-        /// <summary>returns a random value in the range [lower bound, upper bound)</summary>
         public static float random_range(float value, float value1)
         {
             return default(float);
@@ -2005,12 +1987,20 @@ namespace OpenH2.Engine.Scripting
         }
 
         /// <summary>pauses execution of this script (or, optionally, another script) for the specified number of ticks.</summary>
-        public static void sleep(short valueValue)
+        public static void sleep(int ticks)
         {
         }
 
         /// <summary>pauses execution of this script (or, optionally, another script) for the specified number of ticks.</summary>
-        public static void sleep()
+        public static void sleep(short ticks)
+        {
+        }
+
+        /// <summary>
+        /// pauses execution of this script (or, optionally, another script) for the specified number of ticks.
+        /// This overload shouldn't exist, only to support lack of cast detection in code gen
+        /// </summary>
+        public static void sleep(float ticks)
         {
         }
 
@@ -2020,12 +2010,12 @@ namespace OpenH2.Engine.Scripting
         }
 
         /// <summary>pauses execution of this script (or, optionally, another script) forever.</summary>
-        public static void sleep_forever(ScriptReference script)
+        public static void sleep_forever(ScriptReference script = null)
         {
         }
 
         /// <summary>pauses execution of this script until the specified condition is true, checking once per second unless a different number of ticks is specified.</summary>
-        public static void sleep_until(Func<bool> condition, short ticks = TicksPerSecond)
+        public static void sleep_until(bool condition, short ticks = TicksPerSecond)
         {
         }
 
@@ -2035,9 +2025,9 @@ namespace OpenH2.Engine.Scripting
         }
 
         /// <summary>returns the time remaining for the specified impulse sound. DO NOT CALL IN CUTSCENES.</summary>
-        public static float sound_impulse_language_time()
+        public static int sound_impulse_language_time(ReferenceGet soundRef)
         {
-            return default(float);
+            return default;
         }
 
         /// <summary>your mom part 2.</summary>
@@ -2179,12 +2169,6 @@ namespace OpenH2.Engine.Scripting
         }
 
         /// <summary>returns the health [0,1] of the unit, returns -1 if the unit does not exist</summary>
-        public static float unit_get_health()
-        {
-            return default(float);
-        }
-
-        /// <summary>returns the health [0,1] of the unit, returns -1 if the unit does not exist</summary>
         public static float unit_get_health(Unit unit)
         {
             return default(float);
@@ -2203,7 +2187,7 @@ namespace OpenH2.Engine.Scripting
         }
 
         /// <summary>returns TRUE if the <unit> has <object> as a weapon, FALSE otherwise</summary>
-        public static bool unit_has_weapon()
+        public static bool unit_has_weapon(Unit unit, Weapon weapon)
         {
             return default(bool);
         }

@@ -2,6 +2,7 @@
 using OpenH2.Core.Scripting;
 using OpenH2.Core.Tags.Layout;
 using System.Numerics;
+using System.Text.Json.Serialization;
 
 namespace OpenH2.Core.Tags.Scenario
 {
@@ -13,28 +14,30 @@ namespace OpenH2.Core.Tags.Scenario
         {
         }
 
-        [ReferenceArray(72)] public Obj72[] Obj72s { get; set; }
+        [ReferenceArray(72)] public WellKnownItem[] WellKnownItems { get; set; }
         [ReferenceArray(96)] public Obj96[] Obj96s { get; set; }
-        [ReferenceArray(160)] public Obj160_String[] Obj160s { get; set; }
-        [ReferenceArray(264)] public Obj264[] Obj264s { get; set; }
+        [ReferenceArray(160)] public DeviceGroupDefinition[] DeviceGroupDefinitions { get; set; }
+        [ReferenceArray(264)] public TriggerVolume[] TriggerVolumes { get; set; }
         [ReferenceArray(296)] public Obj296[] Obj296s { get; set; }
         [ReferenceArray(304)] public Obj304[] Obj304s { get; set; }
         [ReferenceArray(344)] public Obj344_String[] Obj344s { get; set; }
-        [ReferenceArray(352)] public Obj352_String[] Obj352s_Units { get; set; }
+        [ReferenceArray(352)] public AiReference[] Obj352s_Units { get; set; }
         [ReferenceArray(360)] public Obj360_String[] Obj360s_Locations { get; set; }
         [ReferenceArray(368)] public Obj368[] Obj368s { get; set; }
         [ReferenceArray(440)] public ScriptMethodDefinition[] ScriptMethods { get; set; }
         [ReferenceArray(448)] public ScriptVariableDefinition[] ScriptVariables { get; set; }
         [ReferenceArray(472)] public Obj472[] Obj472s { get; set; }
-        [ReferenceArray(480)] public Obj480[] Obj480s { get; set; }
-        [ReferenceArray(488)] public Obj488[] Obj488s { get; set; }
+        [ReferenceArray(480)] public LocationFlagDefinition[] LocationFlagDefiitions { get; set; }
+        [ReferenceArray(488)] public CameraPathTarget[] CameraPathTargets { get; set; }
         [ReferenceArray(496)] public Obj496[] Obj496s { get; set; }
         [ReferenceArray(536)] public Obj536[] Obj536s { get; set; }
-        [ReferenceArray(552)] public Obj552[] Obj552s { get; set; }
+        [ReferenceArray(552)] public VehicleReference[] VehicleReferences { get; set; }
         [ReferenceArray(560)] public Obj560[] Obj560s { get; set; }
+
+        [JsonIgnore]
         [ReferenceArray(568)] public ScriptSyntaxNode[] ScriptSyntaxNodes { get; set; }
-        [ReferenceArray(576)] public Obj576[] Obj576s { get; set; }
-        [ReferenceArray(584)] public Obj584[] Obj584s { get; set; }
+        [ReferenceArray(576)] public AiOrderDefinition[] AiOrderDefinitions { get; set; }
+        [ReferenceArray(584)] public AiNamedTrigger[] AiNamedTriggers { get; set; }
         [ReferenceArray(592)] public Obj592[] Obj592s { get; set; }
         [ReferenceArray(600)] public Obj600[] Obj600s { get; set; }
         [ReferenceArray(656)] public Obj656[] Obj656s { get; set; }
@@ -73,6 +76,8 @@ namespace OpenH2.Core.Tags.Scenario
         [ReferenceArray(320)] public DecalDefinition[] DecalDefinitions { get; set; }
         [ReferenceArray(336)] public StyleDefinition[] StyleDefinitions { get; set; }
         [ReferenceArray(376)] public CharacterDefinition[] CharacterDefinitions { get; set; }
+        
+        [JsonIgnore]
         [ReferenceArray(432)] public byte[] ScriptStrings { get; set; }
         [ReferenceArray(456)] public SoundDefinition[] SoundDefinitions { get; set; }
         [ReferenceArray(528)] public Terrain[] Terrains { get; set; }
@@ -85,16 +90,16 @@ namespace OpenH2.Core.Tags.Scenario
 
 
         [FixedLength(36)]
-        public class Obj72
+        public class WellKnownItem
         {
             [StringValue(0, 32)]
             public string Description { get; set; }
 
             [PrimitiveValue(32)]
-            public ushort ValueA { get; set; }
+            public ushort ItemType { get; set; }
 
             [PrimitiveValue(34)]
-            public ushort ValueB { get; set; }
+            public ushort Index { get; set; }
         }
 
         // TODO: placement test
@@ -140,7 +145,7 @@ namespace OpenH2.Core.Tags.Scenario
         }
 
         [FixedLength(40)]
-        public class Obj160_String
+        public class DeviceGroupDefinition
         {
             [StringValue(0, 32)]
             public string Description { get; set; }
@@ -172,16 +177,10 @@ namespace OpenH2.Core.Tags.Scenario
         
 
         [FixedLength(68)]
-        public class Obj264
+        public class TriggerVolume
         {
             [PrimitiveValue(0)]
-            public byte ValueA { get; set; }
-
-            [PrimitiveValue(1)]
-            public byte ValueB { get; set; }
-
-            [PrimitiveValue(2)]
-            public ushort Index { get; set; }
+            public InternedString Description { get; set; }
 
             [PrimitiveValue(12)]
             public Vector2 Something { get; set; }
@@ -193,7 +192,10 @@ namespace OpenH2.Core.Tags.Scenario
             public Vector3 Position { get; set; }
 
             [PrimitiveValue(48)]
-            public Vector4[] Dimensions { get; set; }
+            public Vector3 Dimensions { get; set; }
+
+            [PrimitiveValue(60)]
+            public float Rotation { get; set; }
         }
 
         [FixedLength(32)]
@@ -273,7 +275,7 @@ namespace OpenH2.Core.Tags.Scenario
         }
 
         [FixedLength(56)]
-        public class Obj480
+        public class LocationFlagDefinition
         {
             [PrimitiveValue(0)]
             public uint Value { get; set; }
@@ -289,7 +291,7 @@ namespace OpenH2.Core.Tags.Scenario
         }
 
         [FixedLength(64)]
-        public class Obj488
+        public class CameraPathTarget
         {
             [PrimitiveValue(0)]
             public uint Value { get; set; }
@@ -364,7 +366,7 @@ namespace OpenH2.Core.Tags.Scenario
         }
 
         [FixedLength(8)]
-        public class Obj552
+        public class VehicleReference
         {
             [PrimitiveValue(0)]
             public TagRef Tag { get; set; }
@@ -383,7 +385,7 @@ namespace OpenH2.Core.Tags.Scenario
         
 
         [FixedLength(124)]
-        public class Obj576
+        public class AiOrderDefinition
         {
             [StringValue(0, 32)]
             public string Description { get; set; }
@@ -415,7 +417,7 @@ namespace OpenH2.Core.Tags.Scenario
         }
 
         [FixedLength(48)]
-        public class Obj584
+        public class AiNamedTrigger
         {
             [StringValue(0, 32)]
             public string Description { get; set; }

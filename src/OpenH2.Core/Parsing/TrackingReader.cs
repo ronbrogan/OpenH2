@@ -181,12 +181,12 @@ namespace OpenH2.Core.Parsing
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public InternedString ReadInternedStringAt(int offset)
+        public InternedString ReadInternedStringAt(int offset, H2vBaseMap map)
         {
             if (offset >= preloadStart && offset + 4 < preloadStart + preloadLength)
-                return preloadData.AsSpan().ReadInternedStringAt(offset - preloadStart);
+                return preloadData.AsSpan().ReadInternedStringAt(offset - preloadStart, map);
 
-            return Data.ReadInternedStringAt(offset);
+            return Data.ReadInternedStringAt(offset, map);
         }
 
         public CountAndOffset ReadMetaCaoAt(int offset, TagIndexEntry index)

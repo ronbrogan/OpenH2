@@ -28,7 +28,7 @@ namespace OpenH2.ScriptAnalysis
                 ScriptDataType.Float => PredefinedType(Token(SyntaxKind.FloatKeyword)),
                 ScriptDataType.Int => PredefinedType(Token(SyntaxKind.IntKeyword)),
                 ScriptDataType.Boolean => PredefinedType(Token(SyntaxKind.BoolKeyword)),
-                ScriptDataType.Short => PredefinedType(Token(SyntaxKind.ShortKeyword)),
+                ScriptDataType.Short => PredefinedType(Token(SyntaxKind.IntKeyword)),
                 ScriptDataType.String => PredefinedType(Token(SyntaxKind.StringKeyword)),
                 ScriptDataType.Void => PredefinedType(Token(SyntaxKind.VoidKeyword)),
                 
@@ -199,6 +199,63 @@ namespace OpenH2.ScriptAnalysis
                         ParenthesizedLambdaExpression(
                             Block(
                                 List(body))))));
+        }
+
+        public static AccessorListSyntax AutoPropertyAccessorList()
+        {
+            return AccessorList(List<AccessorDeclarationSyntax>(new[] {
+                AccessorDeclaration(SyntaxKind.GetAccessorDeclaration)
+                    .WithSemicolonToken(Token(TriviaList(), SyntaxKind.SemicolonToken, TriviaList(Space))),
+                AccessorDeclaration(SyntaxKind.SetAccessorDeclaration)
+                    .WithSemicolonToken(Token(TriviaList(), SyntaxKind.SemicolonToken, TriviaList(Space)))
+            }));
+        }
+
+        public static CSharpSyntaxNode Normalize(CSharpSyntaxNode node)
+        {
+            node = node.NormalizeWhitespace();
+
+            var norm = new DeNormalizer();
+            var newNode = norm.Visit(node);
+
+
+            return newNode as CSharpSyntaxNode;
+        }
+
+        public class DeNormalizer : CSharpSyntaxRewriter
+        {
+            private AccessorListSyntax autoPropList = AccessorList(List<AccessorDeclarationSyntax>(new[] {
+                AccessorDeclaration(SyntaxKind.GetAccessorDeclaration)
+                    .WithSemicolonToken(Token(TriviaList(), SyntaxKind.SemicolonToken, TriviaList(Space))),
+                AccessorDeclaration(SyntaxKind.SetAccessorDeclaration)
+                    .WithSemicolonToken(Token(TriviaList(), SyntaxKind.SemicolonToken, TriviaList(Space)))
+            }));
+
+            public override SyntaxNode? VisitPropertyDeclaration(PropertyDeclarationSyntax node)
+            {
+                if (AreEquivalent(node.AccessorList, autoPropList, false))
+                {
+                    var newNode = node
+                        .WithIdentifier(node.Identifier.WithTrailingTrivia(Space))
+                        .WithAccessorList(autoPropList.WithOpenBraceToken(
+                            Token(
+                                TriviaList(),
+                                SyntaxKind.OpenBraceToken,
+                                TriviaList(
+                                    Space)))
+                            .WithCloseBraceToken(
+                                Token(
+                                    TriviaList(),
+                                    SyntaxKind.CloseBraceToken,
+                                    TriviaList(
+                                        LineFeed))));
+
+
+                    return base.VisitPropertyDeclaration(newNode);
+                }
+
+                return base.VisitPropertyDeclaration(node);
+            }
         }
 
         private static readonly string[] _keywords = new[]

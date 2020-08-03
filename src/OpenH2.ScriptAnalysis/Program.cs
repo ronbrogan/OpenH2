@@ -61,6 +61,11 @@ namespace OpenH2.ScriptAnalysis
                     csharpGen.AddGlobalVariable(variable);
                 }
 
+                foreach(var externalRef in scnr.WellKnownItems)
+                {
+                    csharpGen.AddPublicProperty(externalRef);
+                }
+
                 foreach (var script in scnr.ScriptMethods)
                 {
                     var text = GetScriptTree(scnr, script);

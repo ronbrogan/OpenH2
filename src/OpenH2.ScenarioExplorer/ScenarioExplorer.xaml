@@ -107,7 +107,7 @@
               </StackPanel>
               <StackPanel Orientation="Horizontal" VerticalAlignment="Center" >
                 <TextBlock Text="Short: "></TextBlock>
-                <Button Command="{Binding CopyData}" CommandParameter="{Binding Short}" Content="{Binding SelectedOffset}" Padding="0" Background="Transparent" Foreground="Blue"></Button>
+                <Button Command="{Binding CopyData}" CommandParameter="{Binding Short}" Content="{Binding Short}" Padding="0" Background="Transparent" Foreground="Blue"></Button>
               </StackPanel>
               <StackPanel Orientation="Horizontal" VerticalAlignment="Center" >
                 <TextBlock Text="UShort: "></TextBlock>

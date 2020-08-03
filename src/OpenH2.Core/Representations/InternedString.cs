@@ -1,5 +1,8 @@
-﻿namespace OpenH2.Core.Representations
+﻿using System.Diagnostics;
+
+namespace OpenH2.Core.Representations
 {
+    [DebuggerDisplay("\"{Value}\"")]
     public struct InternedString
     {
         public InternedString(uint id, uint length)

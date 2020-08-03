@@ -203,12 +203,19 @@ namespace OpenH2.Core.Extensions
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static InternedString ReadInternedStringAt(this Stream data, int offset)
+        public static InternedString ReadInternedStringAt(this Stream data, int offset, H2vBaseMap map)
         {
             var val = data.ReadUInt32At(offset);
 
             // top byte is length
-            return new InternedString(val & 0xFFFFFF, val >> 24);
+            var i = new InternedString(val & 0xFFFFFF, val >> 24);
+
+            if (map.InternedStrings.TryGetValue((int)i.Id, out var s))
+            {
+                i.Value = s;
+            }
+
+            return i;
         }
 
         public static CountAndOffset ReadMetaCaoAt(this Stream data, int offset, TagIndexEntry index)

@@ -1,7 +1,9 @@
-﻿using OpenH2.Core.Scripting;
+﻿using OpenH2.Core.Representations;
+using OpenH2.Core.Scripting;
 using OpenH2.Core.Tags.Layout;
 using System;
 using System.Collections.Generic;
+using System.Numerics;
 using System.Text;
 
 namespace OpenH2.Core.Tags.Scenario
@@ -22,10 +24,26 @@ namespace OpenH2.Core.Tags.Scenario
         }
 
         [FixedLength(116)]
-        public class Obj352_String
+        public class AiReference
         {
             [StringValue(0, 32)]
             public string Description { get; set; }
+
+            [ReferenceArray(72)]
+            public StartingLocation[] StartingLocations { get; set; }
+
+            [FixedLength(100)]
+            public class StartingLocation
+            {
+                [PrimitiveValue(0)]
+                public InternedString Description { get; set; }
+
+                [PrimitiveValue(4)]
+                public Vector3 Position { get; set; }
+
+                [PrimitiveValue(20)]
+                public float Rotation { get; set; }
+            }
         }
 
         [FixedLength(56)]

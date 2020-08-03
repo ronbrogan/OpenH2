@@ -38,6 +38,7 @@ namespace OpenH2.ScriptAnalysis
         private readonly NamespaceDeclarationSyntax nsDecl;
         private readonly List<MethodDeclarationSyntax> methods = new List<MethodDeclarationSyntax>();
         private readonly List<FieldDeclarationSyntax> fields = new List<FieldDeclarationSyntax>();
+        private readonly List<PropertyDeclarationSyntax> properties = new List<PropertyDeclarationSyntax>();
 
         private Scope currentScope => scopes.Peek();
         private Stack<Scope> scopes;
@@ -70,6 +71,14 @@ namespace OpenH2.ScriptAnalysis
             this.classDecl = ClassDeclaration("scnr_" + scenarioParts.Last())
                 .WithModifiers(classModifiers)
                 .WithAttributeLists(classAttrs);
+        }
+
+        internal void AddPublicProperty(ScenarioTag.WellKnownItem externalRef)
+        {
+            properties.Add(PropertyDeclaration(
+                PredefinedType(Token(SyntaxKind.ObjectKeyword)), externalRef.Description)
+                    .WithModifiers(TokenList(Token(SyntaxKind.PublicKeyword)))
+                    .WithAccessorList(SyntaxUtil.AutoPropertyAccessorList()));
         }
 
         public void AddGlobalVariable(ScenarioTag.ScriptVariableDefinition variable)
@@ -332,11 +341,15 @@ namespace OpenH2.ScriptAnalysis
         {
             var cls = classDecl;
 
-            bool addedFieldRegion = false;
+            bool addedFieldRegionStart = false;
+            bool addedFieldRegionEnd = false;
+            bool addedPropertyRegionStart = false;
+            bool addedPropertyRegionEnd = false;
+
             foreach (var field in fields)
             {
                 var f = field;
-                if (addedFieldRegion == false)
+                if (addedFieldRegionStart == false)
                 {
                     var regionToken = Trivia(
                                 RegionDirectiveTrivia(false).WithEndOfDirectiveToken(
@@ -345,23 +358,49 @@ namespace OpenH2.ScriptAnalysis
                                         TriviaList())));
 
                     f = f.InsertTriviaBefore(f.GetLeadingTrivia().First(), new[] { regionToken });
-                    addedFieldRegion = true;
+                    addedFieldRegionStart = true;
                 }
 
                 cls = cls.AddMembers(f);
             }
 
-            bool addedFieldRegionEnd = false;
+            foreach(var prop in properties)
+            {
+                var p = prop;
+                if (addedPropertyRegionStart == false)
+                {
+                    var regionToken = Trivia(
+                                RegionDirectiveTrivia(false).WithEndOfDirectiveToken(
+                                    Token(TriviaList(PreprocessingMessage("External Data")),
+                                        SyntaxKind.EndOfDirectiveToken,
+                                        TriviaList())));
+
+                    p = p.InsertTriviaBefore(p.GetLeadingTrivia().First(), new[] { regionToken });
+                    addedPropertyRegionStart = true;
+                }
+
+                if (addedFieldRegionStart && addedFieldRegionEnd == false)
+                {
+                    p = p.InsertTriviaBefore(p.GetLeadingTrivia().First(), new[]{
+                        Trivia(
+                            EndRegionDirectiveTrivia(false))});
+
+                    addedFieldRegionEnd = true;
+                }
+
+                cls = cls.AddMembers(p);
+            }
+            
             foreach (var method in methods)
             {
                 var m = method;
-                if (addedFieldRegion && addedFieldRegionEnd == false)
+                if (addedPropertyRegionStart && addedPropertyRegionEnd == false)
                 {
                     m = m.InsertTriviaBefore(m.GetLeadingTrivia().First(), new[]{ 
                         Trivia(
                             EndRegionDirectiveTrivia(false))});
 
-                    addedFieldRegionEnd = true;
+                    addedPropertyRegionEnd = true;
                 }
 
                 cls = cls.AddMembers(m);
@@ -375,7 +414,7 @@ namespace OpenH2.ScriptAnalysis
                     UsingDirective(Token(SyntaxKind.StaticKeyword), null, ParseName(EngineImplementationClass))
                 );
 
-            var csharpTree = CSharpSyntaxTree.Create(ns.NormalizeWhitespace());
+            var csharpTree = CSharpSyntaxTree.Create(SyntaxUtil.Normalize(ns));
 
             //var compilation = CSharpCompilation.Create("OpenH2ScriptGen", new[] { csharpTree });
             //compilation.Emit()

@@ -57,19 +57,19 @@ namespace OpenH2.Engine.EntityFactories
                 AddAtLocation(112, obj.Position, colors[1], destination);
             }
 
-            foreach (var obj in scenario.Obj264s)
+            foreach (var obj in scenario.TriggerVolumes)
             {
                 // Script triggers?
                 AddAtLocation(264, obj.Position, colors[3], destination);
             }
 
-            foreach (var obj in scenario.Obj480s)
+            foreach (var obj in scenario.LocationFlagDefiitions)
             {
                 // Zone triggers?
                 AddAtLocation(480, obj.Position, colors[4], destination);
             }
 
-            foreach (var obj in scenario.Obj488s)
+            foreach (var obj in scenario.CameraPathTargets)
             {
                 AddAtLocation(488, obj.Position, colors[5], destination);
             }

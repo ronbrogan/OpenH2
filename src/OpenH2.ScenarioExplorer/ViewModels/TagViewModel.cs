@@ -29,6 +29,7 @@ namespace OpenH2.ScenarioExplorer.ViewModels
             serializerOptions.Converters.Add(new Vector3Converter());
             serializerOptions.Converters.Add(new Vector4Converter());
             serializerOptions.Converters.Add(new NopConverter());
+            serializerOptions.Converters.Add(new InternedStringConverter());
         }
 
 
@@ -179,7 +180,8 @@ namespace OpenH2.ScenarioExplorer.ViewModels
             public override bool CanConvert(Type type)
             {
                 return type == typeof(VertexFormat[])
-                || type == typeof(Vertex[]);
+                || type == typeof(Vertex[])
+                || type == typeof(byte[]);
             }
 
             public override object Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
@@ -229,6 +231,18 @@ namespace OpenH2.ScenarioExplorer.ViewModels
             public override void Write(Utf8JsonWriter writer, Vector4 value, JsonSerializerOptions options)
             {
                 writer.WriteStringValue(string.Format("({0}, {1}, {2}, {3})", value.X, value.Y, value.Z, value.W));
+            }
+        }
+
+        public class InternedStringConverter : JsonConverter<InternedString>
+        {
+            public override bool CanConvert(Type typeToConvert) => typeToConvert == typeof(InternedString);
+
+            public override InternedString Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options) => throw new NotImplementedException();
+
+            public override void Write(Utf8JsonWriter writer, InternedString value, JsonSerializerOptions options)
+            {
+                writer.WriteStringValue(value.Value);
             }
         }
     }

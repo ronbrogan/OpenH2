@@ -1,5 +1,6 @@
 ﻿using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
+using static Microsoft.CodeAnalysis.CSharp.SyntaxFactory;
 using OpenH2.Core.Scripting;
 using OpenH2.Core.Tags.Scenario;
 using System;
@@ -15,11 +16,12 @@ namespace OpenH2.ScriptAnalysis.GenerationState
         {
             this.OwnDataType = node.DataType;
 
-            invocation = SyntaxFactory.InvocationExpression(
-                SyntaxFactory.IdentifierName("GetReference"),
-                SyntaxFactory.ArgumentList(
-                    SyntaxFactory.SingletonSeparatedList(
-                        SyntaxFactory.Argument(
+            invocation = InvocationExpression(GenericName(Identifier("GetReference"))
+                .WithTypeArgumentList(TypeArgumentList(SingletonSeparatedList(
+                    SyntaxUtil.ScriptTypeSyntax(this.OwnDataType.Value)))),
+                ArgumentList(
+                    SingletonSeparatedList(
+                        Argument(
                             SyntaxUtil.LiteralExpression(
                                 SyntaxUtil.GetScriptString(scenario, node))))));
         }
