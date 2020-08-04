@@ -86,8 +86,8 @@ namespace OpenH2.Engine
 
             var scene = new Scene();
 
-            //scene.AddEntity(camera);
-            scene.AddEntity(new Player(true));
+            scene.AddEntity(camera);
+            //scene.AddEntity(new Player(true));
 
             var watch = new Stopwatch();
             watch.Start();
@@ -166,6 +166,11 @@ namespace OpenH2.Engine
                     continue;
 
                 destination.AddEntity(ItemFactory.CreateFromVehicleInstance(map, scenario, item));
+            }
+
+            foreach(var item in scenario.TriggerVolumes)
+            {
+                destination.AddEntity(TriggerFactory.FromScenarioTriggerVolume(scenario, item));
             }
         }
 

@@ -21,7 +21,7 @@ namespace OpenH2.Core.Tags.Scenario
         [ReferenceArray(296)] public Obj296[] Obj296s { get; set; }
         [ReferenceArray(304)] public Obj304[] Obj304s { get; set; }
         [ReferenceArray(344)] public Obj344_String[] Obj344s { get; set; }
-        [ReferenceArray(352)] public AiReference[] Obj352s_Units { get; set; }
+        [ReferenceArray(352)] public AiReference[] AiReferences { get; set; }
         [ReferenceArray(360)] public Obj360_String[] Obj360s_Locations { get; set; }
         [ReferenceArray(368)] public Obj368[] Obj368s { get; set; }
         [ReferenceArray(440)] public ScriptMethodDefinition[] ScriptMethods { get; set; }
@@ -182,20 +182,29 @@ namespace OpenH2.Core.Tags.Scenario
             [PrimitiveValue(0)]
             public InternedString Description { get; set; }
 
-            [PrimitiveValue(12)]
-            public Vector2 Something { get; set; }
+            [PrimitiveValue(4)]
+            public uint Unknown { get; set; }
 
-            [PrimitiveValue(32)]
-            public float Param { get; set; }
+            [PrimitiveValue(8)]
+            public InternedString String2 { get; set; }
+
+            [PrimitiveValue(16)]
+            public Vector3 Orientation { get; set; }
+
+            [PrimitiveValue(28)]
+            public Vector2 Something { get; set; }
 
             [PrimitiveValue(36)]
             public Vector3 Position { get; set; }
 
             [PrimitiveValue(48)]
-            public Vector3 Dimensions { get; set; }
+            public Vector3 Size { get; set; }
 
             [PrimitiveValue(60)]
-            public float Rotation { get; set; }
+            public float Param { get; set; }
+
+            [PrimitiveValue(64)]
+            public uint Unknown2 { get; set; }
         }
 
         [FixedLength(32)]

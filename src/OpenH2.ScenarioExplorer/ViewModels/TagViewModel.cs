@@ -242,7 +242,9 @@ namespace OpenH2.ScenarioExplorer.ViewModels
 
             public override void Write(Utf8JsonWriter writer, InternedString value, JsonSerializerOptions options)
             {
-                writer.WriteStringValue(value.Value);
+                var strValue = value.Value ?? (value.Id != ushort.MaxValue ? value.Id.ToString() : null);
+
+                writer.WriteStringValue(strValue);
             }
         }
     }

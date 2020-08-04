@@ -203,17 +203,17 @@ namespace OpenH2.Core.Extensions
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static InternedString ReadInternedStringAt(this Stream data, int offset, H2vBaseMap map)
+        public static InternedString ReadInternedStringAt(this Stream data, int offset)
         {
             var val = data.ReadUInt32At(offset);
 
             // top byte is length
             var i = new InternedString(val & 0xFFFFFF, val >> 24);
 
-            if (map.InternedStrings.TryGetValue((int)i.Id, out var s))
-            {
-                i.Value = s;
-            }
+            //if (map.InternedStrings.TryGetValue((int)i.Id, out var s))
+            //{
+            //    i.Value = s;
+            //}
 
             return i;
         }
@@ -244,6 +244,12 @@ namespace OpenH2.Core.Extensions
         public static Vector4 ReadVec4At(this Stream data, int offset)
         {
             return new Vector4(data.ReadFloatAt(offset), data.ReadFloatAt(offset + 4), data.ReadFloatAt(offset + 8), data.ReadFloatAt(offset + 12));
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static Quaternion ReadQuaternionAt(this Stream data, int offset)
+        {
+            return new Quaternion(data.ReadFloatAt(offset), data.ReadFloatAt(offset + 4), data.ReadFloatAt(offset + 8), data.ReadFloatAt(offset + 12));
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

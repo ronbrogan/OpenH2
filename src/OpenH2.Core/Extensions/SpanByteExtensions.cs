@@ -158,17 +158,17 @@ namespace OpenH2.Core.Extensions
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static InternedString ReadInternedStringAt(this Span<byte> data, int offset, H2vBaseMap map)
+        public static InternedString ReadInternedStringAt(this Span<byte> data, int offset)
         {
             var val = data.ReadUInt32At(offset);
 
             // top byte is length
             var i = new InternedString(val & 0xFFFFFF, val >> 24);
 
-            if(map.InternedStrings.TryGetValue((int)i.Id, out var s))
-            {
-                i.Value = s;
-            }
+            //if(map.InternedStrings.TryGetValue((int)i.Id, out var s))
+            //{
+            //    i.Value = s;
+            //}
 
             return i;
         }
@@ -208,6 +208,15 @@ namespace OpenH2.Core.Extensions
             vectorConverter.Guid = new Guid(vectorConverterBytes);
 
             return vectorConverter.Vec4;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static Quaternion ReadQuaternionAt(this Span<byte> data, int offset)
+        {
+            data.Slice(offset, 16).CopyTo(vectorConverterBytes);
+            vectorConverter.Guid = new Guid(vectorConverterBytes);
+
+            return vectorConverter.Quaternion;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -267,6 +276,9 @@ namespace OpenH2.Core.Extensions
 
             [FieldOffset(0)]
             public Vector4 Vec4;
+
+            [FieldOffset(0)]
+            public Quaternion Quaternion;
         }
 
         [StructLayout(LayoutKind.Explicit)]

@@ -181,12 +181,12 @@ namespace OpenH2.Core.Parsing
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public InternedString ReadInternedStringAt(int offset, H2vBaseMap map)
+        public InternedString ReadInternedStringAt(int offset)
         {
             if (offset >= preloadStart && offset + 4 < preloadStart + preloadLength)
-                return preloadData.AsSpan().ReadInternedStringAt(offset - preloadStart, map);
+                return preloadData.AsSpan().ReadInternedStringAt(offset - preloadStart);
 
-            return Data.ReadInternedStringAt(offset, map);
+            return Data.ReadInternedStringAt(offset);
         }
 
         public CountAndOffset ReadMetaCaoAt(int offset, TagIndexEntry index)
@@ -230,6 +230,15 @@ namespace OpenH2.Core.Parsing
                 return preloadData.AsSpan().ReadVec4At(offset - preloadStart);
 
             return Data.ReadVec4At(offset);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public Quaternion ReadQuaternionAt(int offset)
+        {
+            if (offset >= preloadStart && offset + 16 < preloadStart + preloadLength)
+                return preloadData.AsSpan().ReadQuaternionAt(offset - preloadStart);
+
+            return Data.ReadQuaternionAt(offset);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

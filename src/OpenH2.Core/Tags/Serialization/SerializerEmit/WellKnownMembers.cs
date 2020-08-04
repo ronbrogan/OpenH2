@@ -55,6 +55,7 @@ namespace OpenH2.Core.Tags.Serialization.SerializerEmit
             { typeof(Vector2), typeof(Parsing.TrackingReader).GetMethod(nameof(Parsing.TrackingReader.ReadVec2At)) },
             { typeof(Vector3), typeof(Parsing.TrackingReader).GetMethod(nameof(Parsing.TrackingReader.ReadVec3At)) },
             { typeof(Vector4), typeof(Parsing.TrackingReader).GetMethod(nameof(Parsing.TrackingReader.ReadVec4At)) },
+            { typeof(Quaternion), typeof(Parsing.TrackingReader).GetMethod(nameof(Parsing.TrackingReader.ReadQuaternionAt)) },
             { typeof(Matrix4x4), typeof(Parsing.TrackingReader).GetMethod(nameof(Parsing.TrackingReader.ReadMatrix4x4At)) },
 
             { typeof(TagRef), typeof(Parsing.TrackingReader).GetMethod(nameof(Parsing.TrackingReader.ReadTagRefAt)) },
