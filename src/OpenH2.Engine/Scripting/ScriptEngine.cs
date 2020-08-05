@@ -2036,22 +2036,12 @@ namespace OpenH2.Engine.Scripting
         }
 
         /// <summary>plays an impulse sound from the specified source object (or "none"), with the specified scale.</summary>
-        public static void sound_impulse_start(Entity entity, float floatValue)
-        {
-        }
-
-        /// <summary>plays an impulse sound from the specified source object (or "none"), with the specified scale.</summary>
-        public static void sound_impulse_start(float floatValue)
+        public static void sound_impulse_start(object sound, Entity entity, float floatValue)
         {
         }
 
         /// <summary>plays an impulse sound from the specified source object (or "none"), with the specified scale and effect.</summary>
         public static void sound_impulse_start_effect(Entity entity, float floatValue, StringId emotion)
-        {
-        }
-
-        /// <summary>plays an impulse sound from the specified source object (or "none"), with the specified scale and effect.</summary>
-        public static void sound_impulse_start_effect(float floatValue, StringId emotion)
         {
         }
 

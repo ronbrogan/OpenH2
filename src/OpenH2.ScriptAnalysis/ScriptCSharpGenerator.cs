@@ -27,9 +27,8 @@ namespace OpenH2.ScriptAnalysis
 
     /*
      * TODO:
-     * - Engine mock/stubs
-     * - External reference lookups
      * - Create project with generated .cs files and/or compile and make warnings/errors available
+     * - Sanitize/normalize property names, there are invalid identifiers, duplicates, and empties
      */
     public class ScriptCSharpGenerator
     { 
@@ -49,7 +48,7 @@ namespace OpenH2.ScriptAnalysis
 
         public event GenerationCallback OnNodeEnd;
 
-        public ScriptCSharpGenerator(ScenarioTag scnr, string[] refrences = null)
+        public ScriptCSharpGenerator(ScenarioTag scnr, string[] refrences = null, AttributeSyntax[] classAttributes = null)
         {
             this.scenario = scnr;
             var scenarioParts = scnr.Name.Split('\\', StringSplitOptions.RemoveEmptyEntries);
@@ -58,25 +57,45 @@ namespace OpenH2.ScriptAnalysis
 
             this.nsDecl = NamespaceDeclaration(ParseName(ns));
 
-            var classModifiers = SyntaxTokenList.Create(Token(SyntaxKind.PublicKeyword));
-
-            // TODO: shorthand attribute creation
-            var attr = Attribute(ParseName("OriginScenario"), AttributeArgumentList(SeparatedList(new[] {
-                AttributeArgument(LiteralExpression(SyntaxKind.StringLiteralExpression, Literal(scnr.Name)))
-            })));
-
-            var classAttrs = List<AttributeListSyntax>()
-                .Add(AttributeList(SeparatedList(new[] { attr })));
+            var classModifiers = SyntaxTokenList.Create(Token(SyntaxKind.PublicKeyword))
+                .Add(Token(SyntaxKind.PartialKeyword));            
 
             this.classDecl = ClassDeclaration("scnr_" + scenarioParts.Last())
-                .WithModifiers(classModifiers)
-                .WithAttributeLists(classAttrs);
+                .WithModifiers(classModifiers);
+
+            if(classAttributes != null && classAttributes.Any())
+            {
+                var classAttrs = List<AttributeListSyntax>()
+                    .Add(AttributeList(SeparatedList(classAttributes)));
+
+                this.classDecl = this.classDecl.WithAttributeLists(classAttrs);
+            }
+        }
+
+        internal void AddPublicProperty(ScenarioTag.AiOrderDefinition order)
+        {
+            AddPublicProperty(SyntaxUtil.ScriptTypeSyntax(ScriptDataType.AIOrders), order.Description);
+        }
+
+        internal void AddPublicProperty(ScenarioTag.AiReference ai)
+        {
+            AddPublicProperty(SyntaxUtil.ScriptTypeSyntax(ScriptDataType.AI), ai.Description);
+        }
+
+        internal void AddPublicProperty(ScenarioTag.CameraPathTarget cam)
+        {
+            AddPublicProperty(SyntaxUtil.ScriptTypeSyntax(ScriptDataType.CameraPathTarget), cam.Description);
         }
 
         internal void AddPublicProperty(ScenarioTag.WellKnownItem externalRef)
         {
-            properties.Add(PropertyDeclaration(
-                PredefinedType(Token(SyntaxKind.ObjectKeyword)), externalRef.Description)
+            // TODO: type from external ref
+            AddPublicProperty(SyntaxUtil.ScriptTypeSyntax(ScriptDataType.Entity), externalRef.Description);
+        }
+
+        internal void AddPublicProperty(TypeSyntax type, string name)
+        {
+            properties.Add(PropertyDeclaration(type, name)
                     .WithModifiers(TokenList(Token(SyntaxKind.PublicKeyword)))
                     .WithAccessorList(SyntaxUtil.AutoPropertyAccessorList()));
         }
@@ -343,8 +362,6 @@ namespace OpenH2.ScriptAnalysis
 
             bool addedFieldRegionStart = false;
             bool addedFieldRegionEnd = false;
-            bool addedPropertyRegionStart = false;
-            bool addedPropertyRegionEnd = false;
 
             foreach (var field in fields)
             {
@@ -366,41 +383,19 @@ namespace OpenH2.ScriptAnalysis
 
             foreach(var prop in properties)
             {
-                var p = prop;
-                if (addedPropertyRegionStart == false)
-                {
-                    var regionToken = Trivia(
-                                RegionDirectiveTrivia(false).WithEndOfDirectiveToken(
-                                    Token(TriviaList(PreprocessingMessage("External Data")),
-                                        SyntaxKind.EndOfDirectiveToken,
-                                        TriviaList())));
-
-                    p = p.InsertTriviaBefore(p.GetLeadingTrivia().First(), new[] { regionToken });
-                    addedPropertyRegionStart = true;
-                }
-
-                if (addedFieldRegionStart && addedFieldRegionEnd == false)
-                {
-                    p = p.InsertTriviaBefore(p.GetLeadingTrivia().First(), new[]{
-                        Trivia(
-                            EndRegionDirectiveTrivia(false))});
-
-                    addedFieldRegionEnd = true;
-                }
-
-                cls = cls.AddMembers(p);
+                cls = cls.AddMembers(prop);
             }
             
             foreach (var method in methods)
             {
                 var m = method;
-                if (addedPropertyRegionStart && addedPropertyRegionEnd == false)
+                if (addedFieldRegionStart && addedFieldRegionEnd == false)
                 {
                     m = m.InsertTriviaBefore(m.GetLeadingTrivia().First(), new[]{ 
                         Trivia(
                             EndRegionDirectiveTrivia(false))});
 
-                    addedPropertyRegionEnd = true;
+                    addedFieldRegionEnd = true;
                 }
 
                 cls = cls.AddMembers(m);

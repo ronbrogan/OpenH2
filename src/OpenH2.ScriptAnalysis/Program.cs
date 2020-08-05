@@ -35,10 +35,10 @@ namespace OpenH2.ScriptAnalysis
 
             foreach(var map in maps)
             {
-                if(map.Contains("01a_tutorial") == false)
-                {
-                    continue;
-                }
+                //if(map.Contains("01a_tutorial") == false)
+                //{
+                //    continue;
+                //}
 
                 var factory = new MapFactory(Path.GetDirectoryName(map), NullMaterialFactory.Instance);
                 var scene = factory.FromFile(File.OpenRead(map));
@@ -52,18 +52,37 @@ namespace OpenH2.ScriptAnalysis
                 var outRoot = $@"D:\h2scratch\scripts\{scenarioParts.Last()}";
                 Directory.CreateDirectory(outRoot);
 
-                var csharpGen = new ScriptCSharpGenerator(scnr);
+                var dataGen = new ScriptCSharpGenerator(scnr);
 
-                //csharpGen.OnNodeEnd += CsharpGen_OnNodeEnd;
+                foreach (var externalRef in scnr.WellKnownItems)
+                {
+                    dataGen.AddPublicProperty(externalRef);
+                }
+
+                foreach(var cam in scnr.CameraPathTargets)
+                {
+                    dataGen.AddPublicProperty(cam);
+                }
+
+                foreach (var ai in scnr.AiReferences)
+                {
+                    dataGen.AddPublicProperty(ai);
+                }
+
+                foreach (var order in scnr.AiOrderDefinitions)
+                {
+                    dataGen.AddPublicProperty(order);
+                }
+
+                var originAttr = Attribute(ParseName("OriginScenario"), AttributeArgumentList(SeparatedList(new[] {
+                    AttributeArgument(LiteralExpression(SyntaxKind.StringLiteralExpression, Literal(scnr.Name)))
+                })));
+
+                var classGen = new ScriptCSharpGenerator(scnr, classAttributes: new[] { originAttr });
 
                 foreach (var variable in scnr.ScriptVariables)
                 {
-                    csharpGen.AddGlobalVariable(variable);
-                }
-
-                foreach(var externalRef in scnr.WellKnownItems)
-                {
-                    csharpGen.AddPublicProperty(externalRef);
+                    classGen.AddGlobalVariable(variable);
                 }
 
                 foreach (var script in scnr.ScriptMethods)
@@ -72,42 +91,16 @@ namespace OpenH2.ScriptAnalysis
                     var debugTree = ScriptTreeNode.ToString(text);
                     File.WriteAllText(Path.Combine(outRoot, script.Description + ".tree"), debugTree);
 
-                    csharpGen.AddMethod(script);
+                    classGen.AddMethod(script);
                 }
 
-                var csharp = csharpGen.Generate();
+                var csharp = classGen.Generate();
                 File.WriteAllText(outRoot + $"\\{scenarioParts.Last()}.cs", csharp);
-            }            
 
-            //DedupeMethodInfos();
-            //var tree = GenerateScriptEngineClass();
+                var dataCsharp = dataGen.Generate();
+                File.WriteAllText(outRoot + $"\\{scenarioParts.Last()}.Data.cs", dataCsharp);
+            }
         }
-
-        //private static void CsharpGen_OnNodeEnd(GenerationCallbackArgs args)
-        //{
-        //    if(args.Scope is MethodCallContext m)
-        //    {
-        //        var info = new EngineMethodInfo()
-        //        {
-        //            Name = m.MethodName,
-        //            ReturnType = m.ReturnType
-        //        };
-
-        //        foreach(var meta in m.Metadata)
-        //        {
-        //            if(meta is ScenarioTag.ScriptSyntaxNode argNode)
-        //            {
-        //                info.ArgumentTypes.Add(argNode.DataType);
-        //            }
-        //            else
-        //            {
-        //                //?
-        //            }
-        //        }
-
-        //        engineMethodInfos.Add(info);
-        //    }
-        //}
 
         // TODO: Using adhoc ScriptTreeNode until we're in a good state to build a CSharpSyntaxTree directly
         private static ScriptTreeNode GetScriptTree(ScenarioTag tag, ScenarioTag.ScriptMethodDefinition method)

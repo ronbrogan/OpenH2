@@ -49,6 +49,12 @@ namespace OpenH2.Core.Tags.Scenario
         {
             [PrimitiveValue(0)]
             public Vector3 Position { get; set; }
+
+            [PrimitiveValue(12)]
+            public float Heading { get; set; }
+
+            [PrimitiveValue(20)]
+            public int Flags { get; set; }
         }
     }
 }
