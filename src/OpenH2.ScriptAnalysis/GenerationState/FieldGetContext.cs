@@ -22,9 +22,17 @@ namespace OpenH2.ScriptAnalysis.GenerationState
             }
             else
             {
-                accessor = SyntaxFactory.IdentifierName(
-                    SyntaxUtil.SanitizeIdentifier(
-                        SyntaxUtil.GetScriptString(scenario, node)));
+                var stringVal = SyntaxUtil.GetScriptString(scenario, node);
+
+                if(stringVal == "none")
+                {
+                    accessor = SyntaxFactory.DefaultExpression(SyntaxUtil.ScriptTypeSyntax(node.DataType));
+                }
+                else
+                {
+                    accessor = SyntaxFactory.IdentifierName(
+                        SyntaxUtil.SanitizeIdentifier(stringVal));
+                }
             }
         }
 

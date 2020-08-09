@@ -72,30 +72,58 @@ namespace OpenH2.ScriptAnalysis
             }
         }
 
-        internal void AddPublicProperty(ScenarioTag.AiOrderDefinition order)
+        internal void AddPublicProperty(ScenarioTag.AiOrderDefinition order, int itemIndex)
         {
-            AddPublicProperty(SyntaxUtil.ScriptTypeSyntax(ScriptDataType.AIOrders), order.Description);
+            AddPublicProperty(SyntaxUtil.ScriptTypeSyntax(ScriptDataType.AIOrders), order.Description, itemIndex);
         }
 
-        internal void AddPublicProperty(ScenarioTag.AiReference ai)
+        internal void AddPublicProperty(ScenarioTag.AiReference ai, int itemIndex)
         {
-            AddPublicProperty(SyntaxUtil.ScriptTypeSyntax(ScriptDataType.AI), ai.Description);
+            AddPublicProperty(SyntaxUtil.ScriptTypeSyntax(ScriptDataType.AI), ai.Description, itemIndex);
         }
 
-        internal void AddPublicProperty(ScenarioTag.CameraPathTarget cam)
+        internal void AddPublicProperty(ScenarioTag.CameraPathTarget cam, int itemIndex)
         {
-            AddPublicProperty(SyntaxUtil.ScriptTypeSyntax(ScriptDataType.CameraPathTarget), cam.Description);
+            AddPublicProperty(SyntaxUtil.ScriptTypeSyntax(ScriptDataType.CameraPathTarget), cam.Description, itemIndex);
         }
 
-        internal void AddPublicProperty(ScenarioTag.WellKnownItem externalRef)
+        internal void AddPublicProperty(ScenarioTag.LocationFlagDefinition flag, int itemIndex)
         {
-            // TODO: type from external ref
-            AddPublicProperty(SyntaxUtil.ScriptTypeSyntax(ScriptDataType.Entity), externalRef.Description);
+            AddPublicProperty(SyntaxUtil.ScriptTypeSyntax(ScriptDataType.LocationFlag), flag.Description, itemIndex);
         }
 
-        internal void AddPublicProperty(TypeSyntax type, string name)
+        internal void AddPublicProperty(ScenarioTag.CinematicTitleDefinition title, int itemIndex)
         {
-            properties.Add(PropertyDeclaration(type, name)
+            AddPublicProperty(SyntaxUtil.ScriptTypeSyntax(ScriptDataType.CinematicTitle), "InternedString_" + title.Title.Id, itemIndex);
+        }
+
+
+        internal void AddPublicProperty(ScenarioTag.WellKnownItem externalRef, int itemIndex)
+        {
+            var varType = externalRef.ItemType switch
+            {
+                ScenarioTag.WellKnownVarType.Unit => ScriptDataType.Unit,
+                ScenarioTag.WellKnownVarType.Vehicle => ScriptDataType.Vehicle,
+                ScenarioTag.WellKnownVarType.Weapon => ScriptDataType.Weapon,
+                ScenarioTag.WellKnownVarType.Scenery => ScriptDataType.Scenery,
+                ScenarioTag.WellKnownVarType.Machinery => ScriptDataType.Device,
+                ScenarioTag.WellKnownVarType.Controller => ScriptDataType.Device,
+                _ => ScriptDataType.Entity
+            };
+
+            AddPublicProperty(SyntaxUtil.ScriptTypeSyntax(varType), externalRef.Description, itemIndex);
+        }
+
+        internal void AddPublicProperty(TypeSyntax type, string name, int itemIndex)
+        {
+            var sanitized = SyntaxUtil.SanitizeIdentifier(name);
+
+            if(string.IsNullOrWhiteSpace(sanitized))
+            {
+                sanitized = type.ToString() + "_" + itemIndex;
+            }
+
+            properties.Add(PropertyDeclaration(type, sanitized)
                     .WithModifiers(TokenList(Token(SyntaxKind.PublicKeyword)))
                     .WithAccessorList(SyntaxUtil.AutoPropertyAccessorList()));
         }
@@ -250,6 +278,8 @@ namespace OpenH2.ScriptAnalysis
                 case ScriptDataType.Weapon:
                 case ScriptDataType.SpatialPoint:
                 case ScriptDataType.WeaponReference:
+                case ScriptDataType.Bsp:
+                case ScriptDataType.Model:
                     return new ReferenceGetContext(scenario, node);
                 case ScriptDataType.AI:
                 case ScriptDataType.AIScript:
@@ -259,11 +289,9 @@ namespace OpenH2.ScriptAnalysis
                 case ScriptDataType.Trigger:
                 case ScriptDataType.LocationFlag:
                 case ScriptDataType.List:
-                case ScriptDataType.StringId:
                 case ScriptDataType.ScriptReference:
                 case ScriptDataType.DeviceGroup:
                 case ScriptDataType.AIOrders:
-                case ScriptDataType.Bsp:
                 case ScriptDataType.Effect:
                 case ScriptDataType.LoopingSound:
                 case ScriptDataType.GameDifficulty:
@@ -272,7 +300,6 @@ namespace OpenH2.ScriptAnalysis
                 case ScriptDataType.VehicleSeat:
                 case ScriptDataType.Equipment:
                 case ScriptDataType.NavigationPoint:
-                case ScriptDataType.Model:
                 case ScriptDataType.Team:
                 case ScriptDataType.Vehicle:
                 case ScriptDataType.CameraPathTarget:
@@ -287,6 +314,7 @@ namespace OpenH2.ScriptAnalysis
                 case ScriptDataType.String:
                 case ScriptDataType.Short:
                 case ScriptDataType.Boolean:
+                case ScriptDataType.StringId:
                     return new LiteralContext(scenario, node);
                 default:
                     // TODO: hack until everything is tracked down, populating string as value if exists

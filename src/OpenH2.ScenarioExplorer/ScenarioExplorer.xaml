@@ -175,5 +175,14 @@
         </TabControl>
       </Panel>
     </Grid>
+
+    <StackPanel Grid.Row="2" Grid.ColumnSpan="3" Orientation="Horizontal">
+      <TextBlock Text="Primary Magic:" Margin="3" />
+      <!--<TextBlock Text="{Binding Path=LoadedScenario.PrimaryMagic}" Margin="3" />-->
+      <Button Command="{Binding CopyData}" CommandParameter="{Binding Path=LoadedScenario.PrimaryMagic}" Content="{Binding Path=LoadedScenario.PrimaryMagic}" Padding="0" Background="Transparent" Foreground="Blue"></Button>
+      <TextBlock Text="Secondary Magic:" Margin="3" />
+      <!--<TextBlock Text="{Binding Path=LoadedScenario.SecondaryMagic}" Margin="3" />-->
+      <Button Command="{Binding CopyData}" CommandParameter="{Binding Path=LoadedScenario.SecondaryMagic}" Content="{Binding Path=LoadedScenario.SecondaryMagic}" Padding="0" Background="Transparent" Foreground="Blue"></Button>
+    </StackPanel>
   </Grid>
 </Window>

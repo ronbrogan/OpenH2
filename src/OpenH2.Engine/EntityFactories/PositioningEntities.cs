@@ -63,7 +63,7 @@ namespace OpenH2.Engine.EntityFactories
                 AddAtLocation(264, obj.Position, colors[3], destination);
             }
 
-            foreach (var obj in scenario.LocationFlagDefiitions)
+            foreach (var obj in scenario.LocationFlagDefinitions)
             {
                 // Zone triggers?
                 AddAtLocation(480, obj.Position, colors[4], destination);

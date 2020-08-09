@@ -54,24 +54,40 @@ namespace OpenH2.ScriptAnalysis
 
                 var dataGen = new ScriptCSharpGenerator(scnr);
 
-                foreach (var externalRef in scnr.WellKnownItems)
+                for (int i = 0; i < scnr.WellKnownItems.Length; i++)
                 {
-                    dataGen.AddPublicProperty(externalRef);
+                    var externalRef = scnr.WellKnownItems[i];
+                    dataGen.AddPublicProperty(externalRef, i);
                 }
 
-                foreach(var cam in scnr.CameraPathTargets)
+                for (int i = 0; i < scnr.CameraPathTargets.Length; i++)
                 {
-                    dataGen.AddPublicProperty(cam);
+                    var cam = scnr.CameraPathTargets[i];
+                    dataGen.AddPublicProperty(cam, i);
                 }
 
-                foreach (var ai in scnr.AiReferences)
+                for (int i = 0; i < scnr.AiReferences.Length; i++)
                 {
-                    dataGen.AddPublicProperty(ai);
+                    var ai = scnr.AiReferences[i];
+                    dataGen.AddPublicProperty(ai, i);
                 }
 
-                foreach (var order in scnr.AiOrderDefinitions)
+                for (int i = 0; i < scnr.AiOrderDefinitions.Length; i++)
                 {
-                    dataGen.AddPublicProperty(order);
+                    var order = scnr.AiOrderDefinitions[i];
+                    dataGen.AddPublicProperty(order, i);
+                }
+
+                for (int i = 0; i < scnr.LocationFlagDefinitions.Length; i++)
+                {
+                    var flag = scnr.LocationFlagDefinitions[i];
+                    dataGen.AddPublicProperty(flag, i);
+                }
+
+                for (int i = 0; i < scnr.CinematicTitleDefinitions.Length; i++)
+                {
+                    var title = scnr.CinematicTitleDefinitions[i];
+                    dataGen.AddPublicProperty(title, i);
                 }
 
                 var originAttr = Attribute(ParseName("OriginScenario"), AttributeArgumentList(SeparatedList(new[] {

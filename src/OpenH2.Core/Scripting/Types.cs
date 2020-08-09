@@ -20,13 +20,13 @@
     public class LoopingSound { }
     public class GameDifficulty { }
     public class Unit : Entity { }
-    public class Scenery { }
+    public class Scenery : Entity { }
     public class VehicleSeat { }
     public class Equipment { }
     public class NavigationPoint { }
     public class Model { }
     public class Team { }
-    public class Vehicle { }
+    public class Vehicle : Unit { }
     public class Weapon { }
     public class CameraPathTarget { }
     public class CinematicTitle { }

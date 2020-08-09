@@ -73,6 +73,7 @@ namespace OpenH2.ScriptAnalysis
         private static HashSet<ScriptDataType> stringLiteralTypes = new HashSet<ScriptDataType>()
         {
             { ScriptDataType.String },
+            { ScriptDataType.StringId },
             { ScriptDataType.ReferenceGet },
             { ScriptDataType.Animation },
             { ScriptDataType.Weapon },

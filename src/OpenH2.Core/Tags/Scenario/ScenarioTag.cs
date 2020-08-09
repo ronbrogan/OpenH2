@@ -27,9 +27,9 @@ namespace OpenH2.Core.Tags.Scenario
         [ReferenceArray(440)] public ScriptMethodDefinition[] ScriptMethods { get; set; }
         [ReferenceArray(448)] public ScriptVariableDefinition[] ScriptVariables { get; set; }
         [ReferenceArray(472)] public Obj472[] Obj472s { get; set; }
-        [ReferenceArray(480)] public LocationFlagDefinition[] LocationFlagDefiitions { get; set; }
+        [ReferenceArray(480)] public LocationFlagDefinition[] LocationFlagDefinitions { get; set; }
         [ReferenceArray(488)] public CameraPathTarget[] CameraPathTargets { get; set; }
-        [ReferenceArray(496)] public Obj496[] Obj496s { get; set; }
+        [ReferenceArray(496)] public CinematicTitleDefinition[] CinematicTitleDefinitions { get; set; }
         [ReferenceArray(536)] public Obj536[] Obj536s { get; set; }
         [ReferenceArray(552)] public VehicleReference[] VehicleReferences { get; set; }
         [ReferenceArray(560)] public Obj560[] Obj560s { get; set; }
@@ -96,10 +96,21 @@ namespace OpenH2.Core.Tags.Scenario
             public string Description { get; set; }
 
             [PrimitiveValue(32)]
-            public ushort ItemType { get; set; }
+            public WellKnownVarType ItemType { get; set; }
 
             [PrimitiveValue(34)]
             public ushort Index { get; set; }
+        }
+
+        public enum WellKnownVarType : ushort
+        {
+            Unit = 0,
+            Vehicle = 1,
+            Weapon = 2,
+
+            Scenery = 6,
+            Machinery = 7, // As Device
+            Controller = 8 // As Device
         }
 
         // TODO: placement test
@@ -317,16 +328,10 @@ namespace OpenH2.Core.Tags.Scenario
 
 
         [FixedLength(36)]
-        public class Obj496
+        public class CinematicTitleDefinition
         {
             [PrimitiveValue(0)]
-            public byte Index { get; set; }
-
-            [PrimitiveValue(1)]
-            public byte Flags { get; set; }
-
-            [PrimitiveValue(3)]
-            public byte Flags2 { get; set; }
+            public InternedString Title { get; set; }
 
             [PrimitiveValue(4)]
             public ushort OneHundred { get; set; }

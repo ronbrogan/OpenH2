@@ -191,25 +191,25 @@ namespace OpenH2.Engine.Scripting
         }
 
         /// <summary>Play the given mission dialogue line on the given ai</summary>
-        public static short ai_play_line(AI ai, StringId string_id)
+        public static short ai_play_line(AI ai, string /*id*/ string_id)
         {
             return default(short);
         }
 
         /// <summary>Play the given mission dialogue line on the given ai, directing the ai's gaze at the nearest visible player</summary>
-        public static short ai_play_line_at_player(AI ai, StringId string_id)
+        public static short ai_play_line_at_player(AI ai, string /*id*/ string_id)
         {
             return default(short);
         }
 
         /// <summary>Play the given mission dialogue line on the given ai, directing the ai's gaze at the nearest visible player</summary>
-        public static short ai_play_line_at_player(StringId emotion)
+        public static short ai_play_line_at_player(string /*id*/ emotion)
         {
             return default(short);
         }
 
         /// <summary>Play the given mission dialogue line on the given object (uses first available variant)</summary>
-        public static short ai_play_line_on_object(Entity entity, StringId string_id)
+        public static short ai_play_line_on_object(Entity entity, string /*id*/ string_id)
         {
             return default(short);
         }
@@ -225,19 +225,19 @@ namespace OpenH2.Engine.Scripting
         }
 
         /// <summary>Start the named scene, with the named command script on the named squad</summary>
-        public static bool ai_scene(StringId string_id, AIScript ai_command_script, AI ai)
+        public static bool ai_scene(string /*id*/ string_id, AIScript ai_command_script, AI ai)
         {
             return default(bool);
         }
 
         /// <summary>Start the named scene, with the named command script on the named set of squads</summary>
-        public static bool ai_scene(StringId string_id, AIScript ai_command_script, AI ai, AI ai1)
+        public static bool ai_scene(string /*id*/ string_id, AIScript ai_command_script, AI ai, AI ai1)
         {
             return default(bool);
         }
 
         /// <summary>Start the named scene, with the named command script on the named squad</summary>
-        public static bool ai_scene(StringId emotion, AIScript aiScript)
+        public static bool ai_scene(string /*id*/ emotion, AIScript aiScript)
         {
             return default(bool);
         }
@@ -380,12 +380,12 @@ namespace OpenH2.Engine.Scripting
         }
 
         /// <summary>Reserves the given seat on the given vehicle (so that AI may not enter it</summary>
-        public static void ai_vehicle_reserve_seat(Vehicle vehicle, StringId string_id, bool boolean)
+        public static void ai_vehicle_reserve_seat(Vehicle vehicle, string /*id*/ string_id, bool boolean)
         {
         }
 
         /// <summary>Reserves the given seat on the given vehicle (so that AI may not enter it</summary>
-        public static void ai_vehicle_reserve_seat(StringId emotion, bool boolean)
+        public static void ai_vehicle_reserve_seat(string /*id*/ emotion, bool boolean)
         {
         }
 
@@ -427,7 +427,7 @@ namespace OpenH2.Engine.Scripting
         }
 
         /// <summary>predict resources at a frame in camera animation.</summary>
-        public static void camera_predict_resources_at_frame(StringId emotion, Unit unit, LocationFlag locationFlag, int intValue)
+        public static void camera_predict_resources_at_frame(string /*id*/ emotion, Unit unit, LocationFlag locationFlag, int intValue)
         {
         }
 
@@ -442,7 +442,7 @@ namespace OpenH2.Engine.Scripting
         }
 
         /// <summary>begins a prerecorded camera animation synchronized to unit relative to cutscene flag.</summary>
-        public static void camera_set_animation_relative(StringId emotion, Unit unit, LocationFlag locationFlag)
+        public static void camera_set_animation_relative(Animation animation, string /*id*/ id, Unit unit, LocationFlag locationFlag)
         {
         }
 
@@ -463,7 +463,7 @@ namespace OpenH2.Engine.Scripting
         }
 
         /// <summary>clone the first player's most reasonable weapon and attach it to the specified object's marker</summary>
-        public static void cinematic_clone_players_weapon(Entity entity, StringId string_id, StringId string_id1)
+        public static void cinematic_clone_players_weapon(Entity entity, string /*id*/ string_id, string /*id*/ string_id1)
         {
         }
 
@@ -568,7 +568,7 @@ namespace OpenH2.Engine.Scripting
         }
 
         /// <summary>displays the named subtitle for <real> seconds</summary>
-        public static void cinematic_subtitle(StringId string_id, float real)
+        public static void cinematic_subtitle(string /*id*/ string_id, float real)
         {
         }
 
@@ -661,7 +661,7 @@ namespace OpenH2.Engine.Scripting
         }
 
         /// <summary>starts a custom animation playing on the unit (interpolates into animation if last parameter is TRUE)</summary>
-        public static void cs_custom_animation(StringId emotion, float floatValue, bool boolean)
+        public static void cs_custom_animation(string /*id*/ emotion, float floatValue, bool boolean)
         {
         }
 
@@ -842,7 +842,7 @@ namespace OpenH2.Engine.Scripting
         }
 
         /// <summary>Play the named line in the current scene</summary>
-        public static void cs_play_line(StringId string_id)
+        public static void cs_play_line(string /*id*/ string_id)
         {
         }
 
@@ -907,7 +907,7 @@ namespace OpenH2.Engine.Scripting
         }
 
         /// <summary>Switch control of the joint command script to the given member</summary>
-        public static void cs_switch(StringId string_id)
+        public static void cs_switch(string /*id*/ string_id)
         {
         }
 
@@ -932,42 +932,42 @@ namespace OpenH2.Engine.Scripting
         }
 
         /// <summary>starts a custom animation playing on a unit (interpolates into animation if last parameter is TRUE)</summary>
-        public static void custom_animation(StringId emotion, bool boolean)
+        public static void custom_animation(string /*id*/ emotion, bool boolean)
         {
         }
 
         /// <summary>starts a custom animation playing on a unit (interpolates into animation if last parameter is TRUE)</summary>
-        public static void custom_animation(Unit unit, StringId emotion, bool boolean)
+        public static void custom_animation(Unit unit, string /*id*/ emotion, bool boolean)
         {
         }
 
         /// <summary>starts a custom animation playing on a unit (interpolates into animation if last parameter is TRUE)</summary>
-        public static void custom_animation_loop(Unit unit, StringId emotion, bool boolean)
+        public static void custom_animation_loop(Unit unit, string /*id*/ emotion, bool boolean)
         {
         }
 
         /// <summary>starts a custom animation playing on a unit (interpolates into animation if last parameter is TRUE)</summary>
-        public static void custom_animation_loop(StringId emotion, bool boolean)
+        public static void custom_animation_loop(string /*id*/ emotion, bool boolean)
         {
         }
 
         /// <summary>starts a custom animation relative to some other object (interpolates into animation if last parameter is TRUE)</summary>
-        public static void custom_animation_relative(Unit unit, StringId emotion, bool boolean, Entity entity)
+        public static void custom_animation_relative(Unit unit, string /*id*/ emotion, bool boolean, Entity entity)
         {
         }
 
         /// <summary>starts a custom animation relative to some other object (interpolates into animation if last parameter is TRUE)</summary>
-        public static void custom_animation_relative(StringId emotion, bool boolean, Entity entity)
+        public static void custom_animation_relative(Unit entity, Animation animation, string /*id*/ emotion, bool boolean, Entity other)
         {
         }
 
         /// <summary>starts a custom animation relative to some other object (interpolates into animation if last parameter is TRUE)</summary>
-        public static void custom_animation_relative_loop(Unit unit, StringId emotion, bool boolean, Entity entity)
+        public static void custom_animation_relative_loop(Unit unit, string /*id*/ emotion, bool boolean, Entity entity)
         {
         }
 
         /// <summary>starts a custom animation relative to some other object (interpolates into animation if last parameter is TRUE)</summary>
-        public static void custom_animation_relative_loop(StringId emotion, bool boolean, Entity entity)
+        public static void custom_animation_relative_loop(string /*id*/ emotion, bool boolean, Entity entity)
         {
         }
 
@@ -1069,7 +1069,7 @@ namespace OpenH2.Engine.Scripting
         }
 
         /// <summary>set the desired overlay animation to use</summary>
-        public static void device_set_overlay_track(Device device, StringId string_id)
+        public static void device_set_overlay_track(Device device, string /*id*/ string_id)
         {
         }
 
@@ -1084,7 +1084,7 @@ namespace OpenH2.Engine.Scripting
         }
 
         /// <summary>set the desired position track animation to use (optional interpolation time onto track)</summary>
-        public static void device_set_position_track(Device device, StringId string_id, float real)
+        public static void device_set_position_track(Device device, string /*id*/ string_id, float real)
         {
         }
 
@@ -1108,12 +1108,12 @@ namespace OpenH2.Engine.Scripting
         }
 
         /// <summary>starts the specified effect on the specified object at the specified marker.</summary>
-        public static void effect_new_on_object_marker(Effect effect, Entity entity, StringId string_id)
+        public static void effect_new_on_object_marker(Effect effect, Entity entity, string /*id*/ string_id)
         {
         }
 
         /// <summary>starts the specified effect on the specified object at the specified marker.</summary>
-        public static void effect_new_on_object_marker(Effect effect, StringId emotion)
+        public static void effect_new_on_object_marker(Effect effect, string /*id*/ emotion)
         {
         }
 
@@ -1133,12 +1133,12 @@ namespace OpenH2.Engine.Scripting
         }
 
         /// <summary>The flock starts producing boids</summary>
-        public static void flock_start(StringId string_id)
+        public static void flock_start(string /*id*/ string_id)
         {
         }
 
         /// <summary>The flock stops producing boids</summary>
-        public static void flock_stop(StringId string_id)
+        public static void flock_stop(string /*id*/ string_id)
         {
         }
 
@@ -1250,7 +1250,7 @@ namespace OpenH2.Engine.Scripting
         }
 
         /// <summary>sets the string id fo the scripted training text</summary>
-        public static void hud_set_training_text(StringId string_id)
+        public static void hud_set_training_text(string /*id*/ string_id)
         {
         }
 
@@ -1271,7 +1271,7 @@ namespace OpenH2.Engine.Scripting
         }
 
         /// <summary><name> <final value> <time></summary>
-        public static void interpolator_start(StringId string_id, float real, float real1)
+        public static void interpolator_start(string /*id*/ string_id, float real, float real1)
         {
         }
 
@@ -1332,7 +1332,7 @@ namespace OpenH2.Engine.Scripting
         }
 
         /// <summary>returns the object attached to the marker of the given parent object</summary>
-        public static Entity entity_at_marker(Entity entity, StringId string_id)
+        public static Entity entity_at_marker(Entity entity, string /*id*/ string_id)
         {
             return default(Entity);
         }
@@ -1388,7 +1388,7 @@ namespace OpenH2.Engine.Scripting
         }
 
         /// <summary>clears one funciton variables for sin-o-matic use</summary>
-        public static void object_clear_function_variable(Entity entity, StringId string_id)
+        public static void object_clear_function_variable(Entity entity, string /*id*/ string_id)
         {
         }
 
@@ -1397,8 +1397,18 @@ namespace OpenH2.Engine.Scripting
         {
         }
 
+        /// <summary>creates an object from the scenario.</summary>
+        public static void object_create(Entity object_name)
+        {
+        }
+
         /// <summary>creates an object, destroying it first if it already exists.</summary>
         public static void object_create_anew(EntityIdentifier object_name)
+        {
+        }
+
+        /// <summary>creates an object, destroying it first if it already exists.</summary>
+        public static void object_create_anew(Entity entity)
         {
         }
 
@@ -1418,12 +1428,12 @@ namespace OpenH2.Engine.Scripting
         }
 
         /// <summary>applies damage to a damage section, causing all manner of effects/constraint breakage to occur</summary>
-        public static void object_damage_damage_section(Entity entity, StringId string_id, float real)
+        public static void object_damage_damage_section(Entity entity, string /*id*/ string_id, float real)
         {
         }
 
         /// <summary>applies damage to a damage section, causing all manner of effects/constraint breakage to occur</summary>
-        public static void object_damage_damage_section(StringId emotion, float floatValue)
+        public static void object_damage_damage_section(string /*id*/ emotion, float floatValue)
         {
         }
 
@@ -1511,7 +1521,7 @@ namespace OpenH2.Engine.Scripting
         }
 
         /// <summary>returns TRUE if the specified model target is destroyed</summary>
-        public static short object_model_targets_destroyed(StringId emotion)
+        public static short object_model_targets_destroyed(string /*id*/ emotion)
         {
             return default(short);
         }
@@ -1522,22 +1532,22 @@ namespace OpenH2.Engine.Scripting
         }
 
         /// <summary>sets funciton variable for sin-o-matic use</summary>
-        public static void object_set_function_variable(Entity entity, StringId string_id, float real, float real1)
+        public static void object_set_function_variable(Entity entity, string /*id*/ string_id, float real, float real1)
         {
         }
 
         /// <summary>sets funciton variable for sin-o-matic use</summary>
-        public static void object_set_function_variable(StringId emotion, float floatValue0, float floatValue1)
+        public static void object_set_function_variable(string /*id*/ emotion, float floatValue0, float floatValue1)
         {
         }
 
         /// <summary>sets the desired region (use "" for all regions) to the permutation with the given name, e.g. (object_set_permutation flood "right arm" ~damaged)</summary>
-        public static void object_set_permutation(Entity entity, StringId string_id, StringId string_id1)
+        public static void object_set_permutation(Entity entity, string /*id*/ string_id, string /*id*/ string_id1)
         {
         }
 
         /// <summary>sets the desired region (use "" for all regions) to the permutation with the given name, e.g. (object_set_permutation flood "right arm" ~damaged)</summary>
-        public static void object_set_permutation(StringId emotion, StringId emotion1)
+        public static void object_set_permutation(string /*id*/ emotion, string /*id*/ emotion1)
         {
         }
 
@@ -1552,7 +1562,7 @@ namespace OpenH2.Engine.Scripting
         }
 
         /// <summary>sets the desired region (use "" for all regions) to the model state with the given name, e.g. (object_set_region_state marine head destroyed)</summary>
-        public static void object_set_region_state(Entity entity, StringId string_id, DamageState model_state)
+        public static void object_set_region_state(Entity entity, string /*id*/ string_id, DamageState model_state)
         {
         }
 
@@ -1632,22 +1642,22 @@ namespace OpenH2.Engine.Scripting
         }
 
         /// <summary>attaches the second object to the first both strings can be empty</summary>
-        public static void objects_attach(Entity entity, StringId string_id, Entity entity1, StringId string_id1)
+        public static void objects_attach(Entity entity, string /*id*/ string_id, Entity entity1, string /*id*/ string_id1)
         {
         }
 
         /// <summary>attaches the second object to the first both strings can be empty</summary>
-        public static void objects_attach(Entity entity, StringId emotion0, StringId emotion1)
+        public static void objects_attach(Entity entity, string /*id*/ emotion0, string /*id*/ emotion1)
         {
         }
 
         /// <summary>attaches the second object to the first both strings can be empty</summary>
-        public static void objects_attach(StringId emotion0, Entity entity, StringId emotion1)
+        public static void objects_attach(string /*id*/ emotion0, Entity entity, string /*id*/ emotion1)
         {
         }
 
         /// <summary>attaches the second object to the first both strings can be empty</summary>
-        public static void objects_attach(StringId emotion0, StringId emotion1)
+        public static void objects_attach(string /*id*/ emotion0, string /*id*/ emotion1)
         {
         }
 
@@ -1961,17 +1971,22 @@ namespace OpenH2.Engine.Scripting
         }
 
         /// <summary>enable/disable the specified unit to receive cinematic shadows where the shadow is focused about a radius around a marker name</summary>
-        public static void render_lights_enable_cinematic_shadow(bool boolean, Entity entity, StringId string_id, float real)
+        public static void render_lights_enable_cinematic_shadow(bool boolean, Entity entity, string /*id*/ string_id, float real)
         {
         }
 
         /// <summary>starts a custom looping animation playing on a piece of scenery</summary>
-        public static void scenery_animation_start_loop(Scenery scenery, StringId emotion)
+        public static void scenery_animation_start_loop(Scenery scenery, string /*id*/ emotion)
         {
         }
 
         /// <summary>starts a custom animation playing on a piece of scenery relative to a parent object</summary>
-        public static void scenery_animation_start_relative(Scenery scenery, StringId emotion, Entity entity)
+        public static void scenery_animation_start_relative(Scenery scenery, string /*id*/ emotion, Entity entity)
+        {
+        }
+
+        /// <summary>starts a custom animation playing on a piece of scenery relative to a parent object</summary>
+        public static void scenery_animation_start_relative(Scenery scenery, Animation animation, string /*id*/ emotion, Entity entity)
         {
         }
 
@@ -2031,7 +2046,7 @@ namespace OpenH2.Engine.Scripting
         }
 
         /// <summary>your mom part 2.</summary>
-        public static void sound_impulse_predict()
+        public static void sound_impulse_predict(ReferenceGet soundRef)
         {
         }
 
@@ -2041,7 +2056,7 @@ namespace OpenH2.Engine.Scripting
         }
 
         /// <summary>plays an impulse sound from the specified source object (or "none"), with the specified scale and effect.</summary>
-        public static void sound_impulse_start_effect(Entity entity, float floatValue, StringId emotion)
+        public static void sound_impulse_start_effect(Entity entity, float floatValue, string /*id*/ emotion)
         {
         }
 
@@ -2107,7 +2122,7 @@ namespace OpenH2.Engine.Scripting
         }
 
         /// <summary>sets the render texture camera to a given object marker</summary>
-        public static void texture_camera_set_object_marker(Entity entity, StringId string_id, float real)
+        public static void texture_camera_set_object_marker(Entity entity, string /*id*/ string_id, float real)
         {
         }
 
@@ -2246,12 +2261,12 @@ namespace OpenH2.Engine.Scripting
         }
 
         /// <summary>sets a unit's facial expression by name with weight and transition time</summary>
-        public static void unit_set_emotional_state(Unit unit, StringId string_id, float real, short value)
+        public static void unit_set_emotional_state(Unit unit, string /*id*/ string_id, float real, short value)
         {
         }
 
         /// <summary>sets a unit's facial expression by name with weight and transition time</summary>
-        public static void unit_set_emotional_state(StringId emotion, float floatValue, short valueValue)
+        public static void unit_set_emotional_state(string /*id*/ emotion, float floatValue, short valueValue)
         {
         }
 
@@ -2307,25 +2322,25 @@ namespace OpenH2.Engine.Scripting
         }
 
         /// <summary>tests whether the named seat has a specified unit in it (use "" to test all seats for this unit)</summary>
-        public static bool vehicle_test_seat(StringId emotion)
+        public static bool vehicle_test_seat(string /*id*/ emotion)
         {
             return default(bool);
         }
 
         /// <summary>tests whether the named seat has an object in the object list (use "" to test all seats for any unit in the list)</summary>
-        public static bool vehicle_test_seat_list(Vehicle vehicle, StringId emotion)
+        public static bool vehicle_test_seat_list(Vehicle vehicle, string /*id*/ emotion)
         {
             return default(bool);
         }
 
         /// <summary>tests whether the named seat has an object in the object list (use "" to test all seats for any unit in the list)</summary>
-        public static bool vehicle_test_seat_list(StringId emotion)
+        public static bool vehicle_test_seat_list(string /*id*/ emotion)
         {
             return default(bool);
         }
 
         /// <summary>tests whether the named seat has an object in the object list (use "" to test all seats for any unit in the list)</summary>
-        public static bool vehicle_test_seat_list(StringId emotion, ObjectList list)
+        public static bool vehicle_test_seat_list(string /*id*/ emotion, ObjectList list)
         {
             return default(bool);
         }
