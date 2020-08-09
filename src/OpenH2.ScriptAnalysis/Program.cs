@@ -66,9 +66,15 @@ namespace OpenH2.ScriptAnalysis
                     dataGen.AddPublicProperty(cam, i);
                 }
 
-                for (int i = 0; i < scnr.AiReferences.Length; i++)
+                for (int i = 0; i < scnr.AiSquadDefinitions.Length; i++)
                 {
-                    var ai = scnr.AiReferences[i];
+                    var ai = scnr.AiSquadDefinitions[i];
+                    dataGen.AddPublicProperty(ai, i);
+                }
+
+                for (int i = 0; i < scnr.AiSquadGroupDefinitions.Length; i++)
+                {
+                    var ai = scnr.AiSquadGroupDefinitions[i];
                     dataGen.AddPublicProperty(ai, i);
                 }
 
@@ -88,6 +94,12 @@ namespace OpenH2.ScriptAnalysis
                 {
                     var title = scnr.CinematicTitleDefinitions[i];
                     dataGen.AddPublicProperty(title, i);
+                }
+
+                for (int i = 0; i < scnr.TriggerVolumes.Length; i++)
+                {
+                    var tv = scnr.TriggerVolumes[i];
+                    dataGen.AddPublicProperty(tv, i);
                 }
 
                 var originAttr = Attribute(ParseName("OriginScenario"), AttributeArgumentList(SeparatedList(new[] {

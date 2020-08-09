@@ -3,7 +3,7 @@
     public class AI { }
     //public class AIScript { }
     public delegate void AIScript();
-    public class Device { }
+    public class Device : Entity { }
     public class EntityIdentifier { }
     public class Entity { }
     public class Trigger { }
@@ -27,7 +27,8 @@
     public class Model { }
     public class Team { }
     public class Vehicle : Unit { }
-    public class Weapon { }
+    public class Weapon : Entity { }
+    public class WeaponReference { }
     public class CameraPathTarget { }
     public class CinematicTitle { }
     public class AIBehavior { }

@@ -185,6 +185,11 @@ namespace OpenH2.Engine.Scripting
         {
         }
 
+        /// <summary>places the specified squad on the map.</summary>
+        public static void ai_place(AI ai, float value)
+        {
+        }
+
         /// <summary>places the specified squad (1st arg) on the map in the vehicles belonging to the specified vehicle squad (2nd arg).</summary>
         public static void ai_place_in_vehicle(AI ai, AI ai1)
         {
@@ -716,27 +721,17 @@ namespace OpenH2.Engine.Scripting
         }
 
         /// <summary>Flies the actor through the given point</summary>
-        public static void cs_fly_by(float point_reference)
+        public static void cs_fly_by(SpatialPoint point, float tolerance = 0f)
         {
         }
 
-        /// <summary>Flies the actor to the given point</summary>
-        public static void cs_fly_to(float point_reference)
+        /// <summary>Flies the actor to the given point (within the given tolerance)</summary>
+        public static void cs_fly_to(SpatialPoint point, float tolerance = 0f)
         {
         }
 
-        /// <summary>Flies the actor to the given point</summary>
-        public static void cs_fly_to()
-        {
-        }
-
-        /// <summary>Flies the actor to the given point and orients him in the appropriate direction</summary>
-        public static void cs_fly_to_and_face(float floatValue)
-        {
-        }
-
-        /// <summary>Flies the actor to the given point and orients him in the appropriate direction</summary>
-        public static void cs_fly_to_and_face()
+        /// <summary>Flies the actor to the given point and orients him in the appropriate direction (within the given tolerance)</summary>
+        public static void cs_fly_to_and_face(SpatialPoint point, SpatialPoint face, float tolerance = 0f)
         {
         }
 
@@ -872,7 +867,7 @@ namespace OpenH2.Engine.Scripting
         }
 
         /// <summary>Actor shoots at given point</summary>
-        public static void cs_shoot_point(bool boolean)
+        public static void cs_shoot_point(bool boolean, SpatialPoint point)
         {
         }
 
@@ -1148,9 +1143,13 @@ namespace OpenH2.Engine.Scripting
         }
 
         /// <summary>returns the current difficulty setting, but lies to you and will never return easy, instead returning normal</summary>
-        public static GameDifficulty game_difficulty_get()
+        // public static GameDifficulty game_difficulty_get()
+        // {
+        //     return default(GameDifficulty);
+        // }
+        public static string game_difficulty_get()
         {
-            return default(GameDifficulty);
+            return "";
         }
 
         /// <summary>returns the actual current difficulty setting without lying</summary>
@@ -1662,7 +1661,13 @@ namespace OpenH2.Engine.Scripting
         }
 
         /// <summary>returns true if any of the specified units are looking within the specified number of degrees of the flag.</summary>
-        public static bool objects_can_see_flag(LocationFlag locationFlag, float floatValue)
+        public static bool objects_can_see_flag(Entity entity, LocationFlag locationFlag, float floatValue)
+        {
+            return default(bool);
+        }
+
+        /// <summary>returns true if any of the specified units are looking within the specified number of degrees of the flag.</summary>
+        public static bool objects_can_see_flag(ObjectList list, LocationFlag locationFlag, float floatValue)
         {
             return default(bool);
         }
@@ -1749,10 +1754,17 @@ namespace OpenH2.Engine.Scripting
         }
 
         /// <summary>returns the first value pinned between the second two</summary>
-        public static short pin(float floatValue0, float floatValue1)
+        public static short pin(short value, short min, short max)
         {
             return default(short);
         }
+
+        /// <summary>returns the first value pinned between the second two</summary>
+        public static float pin(float value, float min, float max)
+        {
+            return default(float);
+        }
+
 
         /// <summary>ur...</summary>
         public static void play_credits()
@@ -2056,7 +2068,7 @@ namespace OpenH2.Engine.Scripting
         }
 
         /// <summary>plays an impulse sound from the specified source object (or "none"), with the specified scale and effect.</summary>
-        public static void sound_impulse_start_effect(Entity entity, float floatValue, string /*id*/ emotion)
+        public static void sound_impulse_start_effect(ReferenceGet sound, Entity entity, float floatValue, string /*id*/ effect)
         {
         }
 
@@ -2413,7 +2425,7 @@ namespace OpenH2.Engine.Scripting
         }
 
         /// <summary>turns the trigger for a weapon  on/off</summary>
-        public static void weapon_hold_trigger(int intValue, bool boolean)
+        public static void weapon_hold_trigger(WeaponReference weapon, int triggerIndex, bool boolean)
         {
         }
 

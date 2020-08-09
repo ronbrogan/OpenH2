@@ -77,7 +77,12 @@ namespace OpenH2.ScriptAnalysis
             AddPublicProperty(SyntaxUtil.ScriptTypeSyntax(ScriptDataType.AIOrders), order.Description, itemIndex);
         }
 
-        internal void AddPublicProperty(ScenarioTag.AiReference ai, int itemIndex)
+        internal void AddPublicProperty(ScenarioTag.AiSquadDefinition ai, int itemIndex)
+        {
+            AddPublicProperty(SyntaxUtil.ScriptTypeSyntax(ScriptDataType.AI), ai.Description, itemIndex);
+        }
+
+        internal void AddPublicProperty(ScenarioTag.AiSquadGroupDefinition ai, int itemIndex)
         {
             AddPublicProperty(SyntaxUtil.ScriptTypeSyntax(ScriptDataType.AI), ai.Description, itemIndex);
         }
@@ -97,6 +102,10 @@ namespace OpenH2.ScriptAnalysis
             AddPublicProperty(SyntaxUtil.ScriptTypeSyntax(ScriptDataType.CinematicTitle), "InternedString_" + title.Title.Id, itemIndex);
         }
 
+        internal void AddPublicProperty(ScenarioTag.TriggerVolume tv, int itemIndex)
+        {
+            AddPublicProperty(SyntaxUtil.ScriptTypeSyntax(ScriptDataType.Trigger), "InternedString_" + tv.Description.Id, itemIndex);
+        }
 
         internal void AddPublicProperty(ScenarioTag.WellKnownItem externalRef, int itemIndex)
         {
@@ -280,6 +289,8 @@ namespace OpenH2.ScriptAnalysis
                 case ScriptDataType.WeaponReference:
                 case ScriptDataType.Bsp:
                 case ScriptDataType.Model:
+                case ScriptDataType.LoopingSound:
+                case ScriptDataType.Effect:
                     return new ReferenceGetContext(scenario, node);
                 case ScriptDataType.AI:
                 case ScriptDataType.AIScript:
@@ -292,9 +303,6 @@ namespace OpenH2.ScriptAnalysis
                 case ScriptDataType.ScriptReference:
                 case ScriptDataType.DeviceGroup:
                 case ScriptDataType.AIOrders:
-                case ScriptDataType.Effect:
-                case ScriptDataType.LoopingSound:
-                case ScriptDataType.GameDifficulty:
                 case ScriptDataType.Unit:
                 case ScriptDataType.Scenery:
                 case ScriptDataType.VehicleSeat:
@@ -307,7 +315,6 @@ namespace OpenH2.ScriptAnalysis
                 case ScriptDataType.AIBehavior:
                 case ScriptDataType.Damage:
                 case ScriptDataType.DamageState:
-                    // TODO: create fields or some other access for these
                     return new FieldGetContext(scenario, node);
                 case ScriptDataType.Float:
                 case ScriptDataType.Int:
@@ -315,6 +322,7 @@ namespace OpenH2.ScriptAnalysis
                 case ScriptDataType.Short:
                 case ScriptDataType.Boolean:
                 case ScriptDataType.StringId:
+                case ScriptDataType.GameDifficulty:
                     return new LiteralContext(scenario, node);
                 default:
                     // TODO: hack until everything is tracked down, populating string as value if exists

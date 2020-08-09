@@ -11,7 +11,7 @@ namespace OpenH2.Core.Tags.Scenario
     public partial class ScenarioTag
     {
         [FixedLength(36)]
-        public class Obj344_String
+        public class AiSquadGroupDefinition
         {
             [StringValue(0, 32)]
             public string Description { get; set; }
@@ -24,16 +24,16 @@ namespace OpenH2.Core.Tags.Scenario
         }
 
         [FixedLength(116)]
-        public class AiReference
+        public class AiSquadDefinition
         {
             [StringValue(0, 32)]
             public string Description { get; set; }
 
             [ReferenceArray(72)]
-            public StartingLocation[] StartingLocations { get; set; }
+            public SquadMember[] SquadMembers { get; set; }
 
             [FixedLength(100)]
-            public class StartingLocation
+            public class SquadMember
             {
                 [PrimitiveValue(0)]
                 public InternedString Description { get; set; }

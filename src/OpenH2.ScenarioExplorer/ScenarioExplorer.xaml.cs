@@ -24,6 +24,7 @@ namespace OpenH2.ScenarioExplorer
         private ScenarioExplorerViewModel DataCtx;
         private PreferencesManager prefManager;
         private AppPreferences prefs;
+        private List<Window> childWindows = new List<Window>();
 
         private string loadedMap = null;
 
@@ -156,6 +157,13 @@ namespace OpenH2.ScenarioExplorer
 
         public void LoadScenario(string path)
         {
+            foreach(var c in childWindows)
+            {
+                c.Close();
+            }
+
+            childWindows.Clear();
+
             if (string.IsNullOrEmpty(path))
             {
                 prefManager.StoreAppPreferences(prefs);
@@ -192,6 +200,16 @@ namespace OpenH2.ScenarioExplorer
             prefs.DiscoveryMode = !prefs.DiscoveryMode;
             LoadScenario(loadedMap);
         }
+
+        public void ShowInternedStringsView()
+        {
+            var interned = new InternedStrings();
+            interned.Bind(this.DataCtx.LoadedScenario);
+            interned.Show();
+
+            childWindows.Add(interned);
+        }
+
 
         private void CreateMenu(string[] recents, ScenarioExplorerViewModel vm)
         {
@@ -244,6 +262,19 @@ namespace OpenH2.ScenarioExplorer
                 Items = fileItems
             };
 
+            var view = new MenuItem
+            {
+                Header = "View",
+                Items = new List<Control>
+                {
+                    new MenuItem()
+                    {
+                        Header = "Interned Strings",
+                        Command = ReactiveCommand.Create(ShowInternedStringsView)
+                    }
+                }
+            };
+
             var edit = new MenuItem
             {
                 Header = "Edit",
@@ -257,7 +288,7 @@ namespace OpenH2.ScenarioExplorer
                 }
             };
             
-            vm.MenuItems = new Control[] { file, edit };
+            vm.MenuItems = new Control[] { file, view, edit };
         }
     }
 }

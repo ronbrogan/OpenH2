@@ -78,7 +78,8 @@ namespace OpenH2.ScriptAnalysis
             { ScriptDataType.Animation },
             { ScriptDataType.Weapon },
             { ScriptDataType.SpatialPoint },
-            { ScriptDataType.WeaponReference }
+            { ScriptDataType.WeaponReference },
+            { ScriptDataType.GameDifficulty }
         };
 
         public static LiteralExpressionSyntax LiteralExpression(ScenarioTag tag, ScenarioTag.ScriptSyntaxNode node)

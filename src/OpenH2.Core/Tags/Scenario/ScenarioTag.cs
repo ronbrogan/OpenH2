@@ -20,8 +20,8 @@ namespace OpenH2.Core.Tags.Scenario
         [ReferenceArray(264)] public TriggerVolume[] TriggerVolumes { get; set; }
         [ReferenceArray(296)] public Obj296[] Obj296s { get; set; }
         [ReferenceArray(304)] public Obj304[] Obj304s { get; set; }
-        [ReferenceArray(344)] public Obj344_String[] Obj344s { get; set; }
-        [ReferenceArray(352)] public AiReference[] AiReferences { get; set; }
+        [ReferenceArray(344)] public AiSquadGroupDefinition[] AiSquadGroupDefinitions { get; set; }
+        [ReferenceArray(352)] public AiSquadDefinition[] AiSquadDefinitions { get; set; }
         [ReferenceArray(360)] public Obj360_String[] Obj360s_Locations { get; set; }
         [ReferenceArray(368)] public Obj368[] Obj368s { get; set; }
         [ReferenceArray(440)] public ScriptMethodDefinition[] ScriptMethods { get; set; }

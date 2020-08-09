@@ -29,6 +29,8 @@ namespace OpenH2.ScenarioExplorer.ViewModels
         public int PrimaryMagic => Scene.PrimaryMagic;
         public int SecondaryMagic => Scene.SecondaryMagic;
 
+        public Dictionary<int, string> InternedStrings => Scene.InternedStrings;
+
         public ScenarioViewModel() { }
 
         public ScenarioViewModel(H2vMap scene, Memory<byte> sceneData, bool discoveryMode = true)

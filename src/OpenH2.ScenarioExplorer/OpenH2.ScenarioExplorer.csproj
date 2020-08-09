@@ -11,19 +11,21 @@
     <None Remove="App.xaml" />
     <None Remove="Images\checkerboard.bmp" />
     <None Remove="Images\reload.bmp" />
+    <None Remove="InternedStrings.axaml" />
     <None Remove="ScenarioExplorer.xaml" />
   </ItemGroup>
 
   <ItemGroup>
     <EmbeddedResource Include="App.xaml" />
     <EmbeddedResource Include="Images\checkerboard.bmp" />
+    <EmbeddedResource Include="InternedStrings.axaml" />
     <EmbeddedResource Include="ScenarioExplorer.xaml" />
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Avalonia" Version="0.9.1" />
-    <PackageReference Include="Avalonia.Desktop" Version="0.9.1" />
-    <PackageReference Include="Avalonia.ReactiveUI" Version="0.9.1" />
+    <PackageReference Include="Avalonia" Version="0.9.12" />
+    <PackageReference Include="Avalonia.Desktop" Version="0.9.12" />
+    <PackageReference Include="Avalonia.ReactiveUI" Version="0.9.12" />
     <PackageReference Include="System.Text.Json" Version="4.7.0" />
     <PackageReference Include="PropertyChanged.Fody" Version="3.2.8" />
     <PackageReference Include="ReactiveUI" Version="11.0.1" />
