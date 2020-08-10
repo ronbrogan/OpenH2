@@ -16,11 +16,11 @@ namespace OpenH2.Core.Tags
         [FixedLength(180)]
         public class MaterialDefinition
         {
-            [PrimitiveValue(0)]
-            public InternedString MaterialName { get; set; }
+            [InternedString(0)]
+            public string MaterialName { get; set; }
 
-            [PrimitiveValue(4)]
-            public InternedString BaseMaterialName1 { get; set; }
+            [InternedString(4)]
+            public string BaseMaterialName1 { get; set; }
 
             [PrimitiveValue(8)]
             public ushort ValA { get; set; }
@@ -28,8 +28,8 @@ namespace OpenH2.Core.Tags
             [PrimitiveValue(14)]
             public ushort ValB { get; set; }
 
-            [PrimitiveValue(16)]
-            public InternedString BaseMaterialName2 { get; set; }
+            [InternedString(16)]
+            public string BaseMaterialName2 { get; set; }
 
             [PrimitiveValue(28)]
             public float Friction { get; set; }

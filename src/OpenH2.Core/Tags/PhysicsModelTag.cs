@@ -83,11 +83,11 @@ namespace OpenH2.Core.Tags
             [ReferenceArray(8)]
             public Obj48_8[] Obj8s { get; set; }
 
-            [PrimitiveValue(16)]
-            public InternedString MaterialNameA { get; set; }
+            [InternedString(16)]
+            public string MaterialNameA { get; set; }
 
-            [PrimitiveValue(20)]
-            public InternedString MaterialNameB { get; set; }
+            [InternedString(20)]
+            public string MaterialNameB { get; set; }
 
             [FixedLength(12)]
             public class Obj48_8
@@ -146,11 +146,11 @@ namespace OpenH2.Core.Tags
         [FixedLength(12)]
         public class MaterialReference
         {
-            [PrimitiveValue(0)]
-            public InternedString MaterialNameA { get; set; }
+            [InternedString(0)]
+            public string MaterialNameA { get; set; }
 
-            [PrimitiveValue(4)]
-            public InternedString MaterialNameB { get; set; }
+            [InternedString(4)]
+            public string MaterialNameB { get; set; }
 
             [PrimitiveValue(12)]
             public float FloatA { get; set; }
@@ -160,9 +160,9 @@ namespace OpenH2.Core.Tags
         [FixedLength(80)]
         public class CapsuleDefinition
         {
-            [PrimitiveValue(0)]
+            [InternedString(0)]
             // palm trees are named palm_N_pill - capsule defs?
-            public InternedString ObjName { get; set; } 
+            public string ObjName { get; set; } 
 
             [PrimitiveValue(4)]
             public ushort ValA { get; set; }
@@ -188,9 +188,9 @@ namespace OpenH2.Core.Tags
         [FixedLength(144)]
         public class BoxDefinition
         {
-            [PrimitiveValue(0)]
+            [InternedString(0)]
             // flywheel has physics_box here - cuboid collider definition?
-            public InternedString ObjName { get; set; }
+            public string ObjName { get; set; }
 
             [PrimitiveValue(4)]
             public ushort ValA { get; set; }
@@ -240,9 +240,9 @@ namespace OpenH2.Core.Tags
         [FixedLength(256)]
         public class MeshDefinition
         {
-            [PrimitiveValue(0)]
+            [InternedString(0)]
             // flywheel has a physics_mesh name - convex mesh def?
-            public InternedString ObjName { get; set; }
+            public string ObjName { get; set; }
 
             [PrimitiveValue(4)]
             public ushort ValA { get; set; }
@@ -304,15 +304,15 @@ namespace OpenH2.Core.Tags
         [FixedLength(148)]
         public class RagdollComponent
         {
-            [PrimitiveValue(0)]
-            public InternedString ComponentName { get; set; }
+            [InternedString(0)]
+            public string ComponentName { get; set; }
         }
 
         [FixedLength(12)]
         public class Variant
         {
-            [PrimitiveValue(0)]
-            public InternedString VariantName { get; set; }
+            [InternedString(0)]
+            public string VariantName { get; set; }
 
             [ReferenceArray(4)]
             public DamageLevel[] DamageLevels { get; set; }
@@ -321,8 +321,8 @@ namespace OpenH2.Core.Tags
             [FixedLength(12)]
             public class DamageLevel
             {
-                [PrimitiveValue(0)]
-                public InternedString DamageLevelName { get; set; }
+                [InternedString(0)]
+                public string DamageLevelName { get; set; }
 
                 [ReferenceArray(4)]
                 public NestedObj2[] Nested2 { get; set; }
@@ -344,8 +344,8 @@ namespace OpenH2.Core.Tags
         [FixedLength(12)]
         public class Obj200
         {
-            [PrimitiveValue(0)]
-            public InternedString ObjName { get; set; }
+            [InternedString(0)]
+            public string ObjName { get; set; }
 
             [PrimitiveValue(4)]
             public ushort ValA { get; set; }
@@ -363,8 +363,8 @@ namespace OpenH2.Core.Tags
         [FixedLength(132)]
         public class Obj232
         {
-            [PrimitiveValue(0)]
-            public InternedString ObjName { get; set; }
+            [InternedString(0)]
+            public string ObjName { get; set; }
 
             [PrimitiveValue(4)]
             public ushort ValA { get; set; }

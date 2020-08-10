@@ -1,7 +1,6 @@
 ﻿using OpenH2.Core.Representations;
 using OpenH2.Core.Tags.Common.Collision;
 using OpenH2.Core.Tags.Layout;
-using System.Numerics;
 
 namespace OpenH2.Core.Tags
 {
@@ -13,7 +12,7 @@ namespace OpenH2.Core.Tags
         }
 
         [ReferenceArray(20)]
-        public InternedString[] Ids { get; set; }
+        public Id[] Ids { get; set; }
 
         [ReferenceArray(28)]
         public ColliderDefinition[] ColliderComponents { get; set; }
@@ -24,12 +23,18 @@ namespace OpenH2.Core.Tags
         [ReferenceArray(44)]
         public Obj44[] Obj44s { get; set; }
 
+        [FixedLength(4)]
+        public class Id
+        {
+            [InternedString(0)]
+            public string Value { get; set; }
+        }
 
         [FixedLength(12)] 
         public class ColliderDefinition 
         {
-            [PrimitiveValue(0)]
-            public InternedString DefName { get; set; }
+            [InternedString(0)]
+            public string DefName { get; set; }
             
             [ReferenceArray(4)]
             public CollisionContainer[] DamageLevels { get; set; }
@@ -37,8 +42,8 @@ namespace OpenH2.Core.Tags
             [FixedLength(20)]
             public class CollisionContainer
             {
-                [PrimitiveValue(0)]
-                public InternedString CollName { get; set; }
+                [InternedString(0)]
+                public string CollName { get; set; }
 
                 [ReferenceArray(4)]
                 public CollisionInfo[] Parts { get; set; }
