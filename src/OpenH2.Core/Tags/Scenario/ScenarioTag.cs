@@ -190,14 +190,14 @@ namespace OpenH2.Core.Tags.Scenario
         [FixedLength(68)]
         public class TriggerVolume
         {
-            [PrimitiveValue(0)]
-            public InternedString Description { get; set; }
+            [InternedString(0)]
+            public string Description { get; set; }
 
             [PrimitiveValue(4)]
             public uint Unknown { get; set; }
 
-            [PrimitiveValue(8)]
-            public InternedString String2 { get; set; }
+            [InternedString(8)]
+            public string String2 { get; set; }
 
             [PrimitiveValue(16)]
             public Vector3 Orientation { get; set; }
@@ -330,8 +330,8 @@ namespace OpenH2.Core.Tags.Scenario
         [FixedLength(36)]
         public class CinematicTitleDefinition
         {
-            [PrimitiveValue(0)]
-            public InternedString Title { get; set; }
+            [InternedString(0)]
+            public string Title { get; set; }
 
             [PrimitiveValue(4)]
             public ushort OneHundred { get; set; }

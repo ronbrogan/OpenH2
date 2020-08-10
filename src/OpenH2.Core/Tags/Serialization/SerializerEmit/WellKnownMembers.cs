@@ -17,7 +17,7 @@ namespace OpenH2.Core.Tags.Serialization.SerializerEmit
             Id,
             Name,
             Data,
-            SecondaryMagic,
+            Map,
             StartAt,
             Length
         }
@@ -27,7 +27,7 @@ namespace OpenH2.Core.Tags.Serialization.SerializerEmit
             { Name.Id, typeof(uint) },
             { Name.Name, typeof(string) },
             { Name.Data, typeof(TrackingReader) },
-            { Name.SecondaryMagic, typeof(int) },
+            { Name.Map, typeof(H2vBaseMap) },
             { Name.StartAt, typeof(int) },
             { Name.Length, typeof(int) }
         };
@@ -95,6 +95,18 @@ namespace OpenH2.Core.Tags.Serialization.SerializerEmit
             
             public static MethodInfo ReadArray = typeof(Parsing.TrackingReader)
                 .GetMethod(nameof(Parsing.TrackingReader.ReadArray), new[] { typeof(int), typeof(int) });
+        }
+
+        public static class Map
+        {
+            public static MethodInfo GetSecondaryMagic = typeof(H2vBaseMap)
+                .GetProperty(nameof(H2vBaseMap.SecondaryMagic)).GetGetMethod();
+
+            public static MethodInfo GetInternedStringsDictionary = typeof(H2vBaseMap)
+                .GetProperty(nameof(H2vBaseMap.InternedStrings)).GetGetMethod();
+
+            public static MethodInfo InternedStringDictionaryLookup = typeof(Dictionary<int, string>)
+                .GetMethod("get_Item", new[] { typeof(int) });
         }
 
         public static class Cao

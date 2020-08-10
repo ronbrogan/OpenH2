@@ -1,4 +1,5 @@
 ﻿using OpenH2.Core.Offsets;
+using OpenH2.Core.Representations;
 using OpenH2.Core.Tags.Layout;
 using System;
 using System.Collections.Generic;
@@ -110,7 +111,8 @@ namespace OpenH2.Core.Tags.Serialization.SerializerEmit
             {
                 // Set tag offset
                 gen.Emit(OpCodes.Ldloc, tagLocal);
-                gen.Emit(OpCodes.Ldarg, TagCreatorArguments.GetArgumentLocation(TagCreatorArguments.Name.SecondaryMagic));
+                gen.Emit(OpCodes.Ldarg, TagCreatorArguments.GetArgumentLocation(TagCreatorArguments.Name.Map));
+                gen.Emit(OpCodes.Call, MI.Map.GetSecondaryMagic); // load magic from map
                 gen.Emit(OpCodes.Ldarg, TagCreatorArguments.GetArgumentLocation(TagCreatorArguments.Name.StartAt));
                 gen.Emit(OpCodes.Add);
                 gen.Emit(OpCodes.Callvirt, tagMagicProp.GetSetMethod());
@@ -138,6 +140,10 @@ namespace OpenH2.Core.Tags.Serialization.SerializerEmit
 
                     case StringValueAttribute str:
                         GenerateStringProperty(gen, tagLocal, prop, tagType, str);
+                        break;
+
+                    case InternedStringAttribute interned:
+                        GenerateInternedStringProperty(gen, tagLocal, prop, tagType, interned);
                         break;
                 }
             }
@@ -167,6 +173,51 @@ namespace OpenH2.Core.Tags.Serialization.SerializerEmit
             }
 
             gen.Emit(OpCodes.Ret);
+        }
+
+        private static void GenerateInternedStringProperty(ILGenerator gen, LocalBuilder tagLocal, TagProperty prop, Type tagType, InternedStringAttribute interned)
+        {
+            var type = prop.Type;
+
+            if (type != typeof(string))
+            {
+                throw new Exception("StringValueAttributes must be on string properties");
+            }
+
+            // Load tag onto evalstack for later
+            if (tagType.IsClass)
+            {
+                gen.Emit(OpCodes.Ldloc, tagLocal);
+            }
+            else
+            {
+                // Must load the address when value type
+                gen.Emit(OpCodes.Ldloca, tagLocal);
+            }
+
+            gen.Emit(OpCodes.Ldarg, TagCreatorArguments.GetArgumentLocation(TagCreatorArguments.Name.Map));
+            gen.Emit(OpCodes.Call, MI.Map.GetInternedStringsDictionary); // load interned strings dict
+
+            // Get InternedString struct instance
+            {
+                gen.Emit(OpCodes.Ldarg, TagCreatorArguments.GetArgumentLocation(TagCreatorArguments.Name.Data)); // Load Span<byte> onto evalstack
+
+                gen.Emit(OpCodes.Ldarg, TagCreatorArguments.GetArgumentLocation(TagCreatorArguments.Name.StartAt));
+                gen.Emit(OpCodes.Ldc_I4, prop.LayoutAttribute.Offset); // Load offset onto evalstack
+                gen.Emit(OpCodes.Add);
+
+                var readerMethod = MI.PrimitiveReaders[typeof(InternedString)];
+                gen.Emit(OpCodes.Call, readerMethod); // Consume span, offset, length
+            }
+
+            var idField = typeof(InternedString).GetField(nameof(InternedString.Id));
+            gen.Emit(OpCodes.Ldfld, idField); // Get Id field from InternedString instance on stack
+
+
+            gen.Emit(OpCodes.Call, MI.Map.InternedStringDictionaryLookup); // get string value
+
+            // Consume tag and returned value args, set tag val
+            gen.Emit(OpCodes.Call, prop.Setter);
         }
 
         private static void GenerateStringProperty(ILGenerator gen, LocalBuilder tagLocal, TagProperty prop, Type tagType, StringValueAttribute str)
@@ -388,7 +439,7 @@ namespace OpenH2.Core.Tags.Serialization.SerializerEmit
                     gen.Emit(OpCodes.Ldarg, TagCreatorArguments.GetArgumentLocation(TagCreatorArguments.Name.Id)); // load id
                     gen.Emit(OpCodes.Ldarg, TagCreatorArguments.GetArgumentLocation(TagCreatorArguments.Name.Name)); // load name
                     gen.Emit(OpCodes.Ldarg, TagCreatorArguments.GetArgumentLocation(TagCreatorArguments.Name.Data)); // load span
-                    gen.Emit(OpCodes.Ldarg, TagCreatorArguments.GetArgumentLocation(TagCreatorArguments.Name.SecondaryMagic)); // load magic
+                    gen.Emit(OpCodes.Ldarg, TagCreatorArguments.GetArgumentLocation(TagCreatorArguments.Name.Map)); // load map
                 }
 
 
@@ -470,7 +521,8 @@ namespace OpenH2.Core.Tags.Serialization.SerializerEmit
             gen.Emit(OpCodes.Ldc_I4, prop.LayoutAttribute.Offset); // Load offset onto evalstack
             gen.Emit(OpCodes.Add); // start + offset
 
-            gen.Emit(OpCodes.Ldarg, TagCreatorArguments.GetArgumentLocation(TagCreatorArguments.Name.SecondaryMagic)); // load magic
+            gen.Emit(OpCodes.Ldarg, TagCreatorArguments.GetArgumentLocation(TagCreatorArguments.Name.Map)); // load map
+            gen.Emit(OpCodes.Call, MI.Map.GetSecondaryMagic); // load magic from map
 
             gen.Emit(OpCodes.Call, MI.TrackingReader.ReadMetaCaoAt); // consume count from above and InternalOffset
 

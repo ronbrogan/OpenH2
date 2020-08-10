@@ -1,4 +1,5 @@
 ﻿using OpenH2.Core.Parsing;
+using OpenH2.Core.Representations;
 using OpenH2.Core.Tags.Serialization.SerializerEmit;
 using System;
 using System.Collections.Generic;
@@ -7,8 +8,8 @@ using System.Reflection.Emit;
 
 namespace OpenH2.Core.Tags.Serialization
 {
-    public delegate object TagCreator(uint id, string name, TrackingReader data, int secondaryMagic, int startAt, int length);
-    public delegate T TagCreator<T>(uint id, string name, TrackingReader data, int secondaryMagic, int startAt, int length);
+    public delegate object TagCreator(uint id, string name, TrackingReader data, H2vBaseMap map, int startAt, int length);
+    public delegate T TagCreator<T>(uint id, string name, TrackingReader data, H2vBaseMap map, int startAt, int length);
 
     public class TagCreatorGenerator
     {
@@ -91,7 +92,7 @@ namespace OpenH2.Core.Tags.Serialization
 
             var creator = GetTagCreator(tagType);
 
-            return new TagCreator<T>((uint id, string name, TrackingReader r, int i, int o, int l) => (T)creator(id, name, r, i, o, l));
+            return new TagCreator<T>((uint id, string name, TrackingReader r, H2vBaseMap map, int o, int l) => (T)creator(id, name, r, map, o, l));
         }
 
         public TagCreator GetTagCreator(Type tagType)

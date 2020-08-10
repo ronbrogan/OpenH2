@@ -9,7 +9,12 @@
     public class Trigger { }
     public class Animation { }
     public class LocationFlag { }
-    public class ObjectList { }
+    public class ObjectList 
+    {
+        public Entity[] Objects { get; set; }
+
+        public static implicit operator Entity (ObjectList o) => o.Objects[0];
+    }
     public class StringId { }
     //public class ScriptReference { }
     public delegate void ScriptReference();

@@ -92,7 +92,7 @@ namespace OpenH2.ScriptAnalysis
                 {
                     dataClassProps.Add(SyntaxUtil.CreateProperty(
                         ScriptDataType.AI, 
-                        "InternedString_" + ai.Description.Id, 
+                        ai.Description, 
                         m++));
                 }
 
@@ -142,12 +142,12 @@ namespace OpenH2.ScriptAnalysis
 
         internal void AddPublicProperty(ScenarioTag.CinematicTitleDefinition title, int itemIndex)
         {
-            AddPublicProperty(ScriptDataType.CinematicTitle, "InternedString_" + title.Title.Id, itemIndex);
+            AddPublicProperty(ScriptDataType.CinematicTitle, title.Title, itemIndex);
         }
 
         internal void AddPublicProperty(ScenarioTag.TriggerVolume tv, int itemIndex)
         {
-            AddPublicProperty(ScriptDataType.Trigger, "InternedString_" + tv.Description.Id, itemIndex);
+            AddPublicProperty(ScriptDataType.Trigger, tv.Description, itemIndex);
         }
 
         internal void AddPublicProperty(ScenarioTag.WellKnownItem externalRef, int itemIndex)

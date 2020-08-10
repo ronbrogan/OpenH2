@@ -14,7 +14,7 @@ namespace OpenH2.Core.Factories
     {
         private static TagCreatorGenerator generator = new TagCreatorGenerator();
 
-        public static BaseTag CreateTag(uint id, string name, TagIndexEntry index, int secondaryMagic, H2vReader reader)
+        public static BaseTag CreateTag(uint id, string name, TagIndexEntry index, H2vBaseMap map, H2vReader reader)
         {
             var tagType = GetTypeForTag(index.Tag);
 
@@ -27,7 +27,7 @@ namespace OpenH2.Core.Factories
                     Name = name,
                     Length = (uint)index.DataSize,
                     Offset = (uint)index.Offset.Value,
-                    InternalSecondaryMagic = secondaryMagic + index.Offset.Value
+                    InternalSecondaryMagic = map.SecondaryMagic + index.Offset.Value
                 };
             }
             else
@@ -39,7 +39,7 @@ namespace OpenH2.Core.Factories
                 // Preload tag data for faster reads
                 mapData.Preload(index.Offset.Value, index.DataSize);
 
-                tag = tagCreator(id, name, mapData, secondaryMagic, index.Offset.Value, index.DataSize) as BaseTag;
+                tag = tagCreator(id, name, mapData, map, index.Offset.Value, index.DataSize) as BaseTag;
             }
 
             tag.TagIndexEntry = index;

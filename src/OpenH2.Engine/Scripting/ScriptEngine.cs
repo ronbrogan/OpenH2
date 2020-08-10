@@ -1319,13 +1319,25 @@ namespace OpenH2.Engine.Scripting
         }
 
         /// <summary>returns the maximum of all specified expressions.</summary>
-        public static short max(float numbers)
+        public static float max(params float[] numbers)
         {
-            return default(short);
+            return default(float);
+        }
+
+        /// <summary>returns the maximum of all specified expressions.</summary>
+        public static short max(params short[] numbers)
+        {
+            return default(float);
         }
 
         /// <summary>returns the minimum of all specified expressions.</summary>
-        public static short min(float numbers)
+        public static float min(params float[] numbers)
+        {
+            return default(float);
+        }
+
+        /// <summary>returns the minimum of all specified expressions.</summary>
+        public static short min(params short[] numbers)
         {
             return default(short);
         }
@@ -2042,12 +2054,12 @@ namespace OpenH2.Engine.Scripting
         }
 
         /// <summary>pauses execution of this script until the specified condition is true, checking once per second unless a different number of ticks is specified.</summary>
-        public static void sleep_until(bool condition, short ticks = TicksPerSecond)
+        public static void sleep_until(bool condition, int ticks = TicksPerSecond)
         {
         }
 
         /// <summary>changes the gain on the specified sound class(es) to the specified gain over the specified number of ticks.</summary>
-        public static void sound_class_set_gain(string value, float gain, short ticks)
+        public static void sound_class_set_gain(string value, float gain, int ticks)
         {
         }
 

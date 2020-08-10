@@ -35,8 +35,8 @@ namespace OpenH2.Core.Tags.Scenario
             [FixedLength(100)]
             public class SquadMember
             {
-                [PrimitiveValue(0)]
-                public InternedString Description { get; set; }
+                [InternedString(0)]
+                public string Description { get; set; }
 
                 [PrimitiveValue(4)]
                 public Vector3 Position { get; set; }

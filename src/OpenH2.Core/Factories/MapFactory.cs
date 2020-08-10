@@ -178,7 +178,7 @@ namespace OpenH2.Core.Factories
         {
             var name = scene.TagNames[entry.ID];
 
-            return TagFactory.CreateTag(entry.ID, name, entry, scene.SecondaryMagic, reader);
+            return TagFactory.CreateTag(entry.ID, name, entry, scene, reader);
         }
 
         private H2vMapHeader GetSceneHeader(H2vBaseMap scene, TrackingReader reader)
