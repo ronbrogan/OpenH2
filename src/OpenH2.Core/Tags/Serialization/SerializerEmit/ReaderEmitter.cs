@@ -195,10 +195,29 @@ namespace OpenH2.Core.Tags.Serialization.SerializerEmit
                 gen.Emit(OpCodes.Ldloca, tagLocal);
             }
 
-            gen.Emit(OpCodes.Ldarg, TagCreatorArguments.GetArgumentLocation(TagCreatorArguments.Name.Map));
-            gen.Emit(OpCodes.Call, MI.Map.GetInternedStringsDictionary); // load interned strings dict
+            // Equivalent code
+            //var start = scene.Header.InternedStringIndexOffset;
+            //var i = internedString.Id;
+            //var offset = MapReader.ReadInt32At(start + i * 4);
+            //var value = MapReader.ReadStringStarting(sceneHeader.InternedStringsOffset + offset);
 
-            // Get InternedString struct instance
+            // Load Map reader for string read
+            gen.Emit(OpCodes.Ldarg, TagCreatorArguments.GetArgumentLocation(TagCreatorArguments.Name.Data));
+
+            // Load header for strings offset fetch
+            gen.Emit(OpCodes.Ldarg, TagCreatorArguments.GetArgumentLocation(TagCreatorArguments.Name.Map));
+            gen.Emit(OpCodes.Call, MI.Map.GetHeader);
+            gen.Emit(OpCodes.Call, MI.Map.Header.GetStringsOffset);
+
+            // Load Map reader for index read
+            gen.Emit(OpCodes.Ldarg, TagCreatorArguments.GetArgumentLocation(TagCreatorArguments.Name.Data));
+
+            // Load header for index offset fetch
+            gen.Emit(OpCodes.Ldarg, TagCreatorArguments.GetArgumentLocation(TagCreatorArguments.Name.Map));
+            gen.Emit(OpCodes.Call, MI.Map.GetHeader);
+            gen.Emit(OpCodes.Call, MI.Map.Header.GetStringIndexOffset);
+
+            // Push string index onto stack
             {
                 gen.Emit(OpCodes.Ldarg, TagCreatorArguments.GetArgumentLocation(TagCreatorArguments.Name.Data)); // Load Span<byte> onto evalstack
 
@@ -208,13 +227,23 @@ namespace OpenH2.Core.Tags.Serialization.SerializerEmit
 
                 var readerMethod = MI.PrimitiveReaders[typeof(InternedString)];
                 gen.Emit(OpCodes.Call, readerMethod); // Consume span, offset, length
+
+                var idField = typeof(InternedString).GetField(nameof(InternedString.Id));
+                gen.Emit(OpCodes.Ldfld, idField); // Get Id field from InternedString instance on stack
             }
 
-            var idField = typeof(InternedString).GetField(nameof(InternedString.Id));
-            gen.Emit(OpCodes.Ldfld, idField); // Get Id field from InternedString instance on stack
+            gen.Emit(OpCodes.Ldc_I4_4);
+            gen.Emit(OpCodes.Mul);
+            gen.Emit(OpCodes.Add);
 
+            gen.Emit(OpCodes.Call, MI.TrackingReader.ReadInt32At);
 
-            gen.Emit(OpCodes.Call, MI.Map.InternedStringDictionaryLookup); // get string value
+            // Add 'offset to strings' to 'index offset'
+            gen.Emit(OpCodes.Add);
+
+            // PERF: Create an overload that reads string verbatim from stream to reduce allocation overhead, 
+            //       we have the exact length from the InternedString struct
+            gen.Emit(OpCodes.Call, MI.TrackingReader.ReadStringStarting);
 
             // Consume tag and returned value args, set tag val
             gen.Emit(OpCodes.Call, prop.Setter);

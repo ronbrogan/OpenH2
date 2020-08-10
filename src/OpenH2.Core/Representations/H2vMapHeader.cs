@@ -32,8 +32,8 @@ namespace OpenH2.Core.Representations
         public int OffsetToUnknownSection { get; set; }
         public int ScriptReferenceCount { get; set; }
         public int SizeOfScriptReference { get; set; }
-        public int OffsetToScriptReferenceIndex { get; set; }
-        public int OffsetToScriptReferenceStrings { get; set; }
+        public int InternedStringIndexOffset { get; set; }
+        public int InternedStringsOffset { get; set; }
 
         // 36 bytes of unknown
 

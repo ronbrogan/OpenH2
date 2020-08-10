@@ -118,12 +118,12 @@ namespace OpenH2.Core.Factories
         {
             var dict = new Dictionary<int, string>();
 
-            var start = scene.Header.OffsetToScriptReferenceIndex;
+            var start = scene.Header.InternedStringIndexOffset;
 
             for(var i = 0; i < scene.Header.ScriptReferenceCount; i++)
             {
                 var offset = reader.MapReader.ReadInt32At(start + i * 4);
-                var value = reader.MapReader.ReadStringStarting(scene.Header.OffsetToScriptReferenceStrings + offset);
+                var value = reader.MapReader.ReadStringStarting(scene.Header.InternedStringsOffset + offset);
 
                 dict.Add(i, value);
             }
@@ -196,8 +196,8 @@ namespace OpenH2.Core.Factories
             head.OffsetToUnknownSection =          /**/  chunk.ReadInt32At(364);
             head.ScriptReferenceCount =            /**/  chunk.ReadInt32At(368);
             head.SizeOfScriptReference =           /**/  chunk.ReadInt32At(372);
-            head.OffsetToScriptReferenceIndex =    /**/  chunk.ReadInt32At(376);
-            head.OffsetToScriptReferenceStrings =  /**/  chunk.ReadInt32At(380);
+            head.InternedStringIndexOffset =    /**/  chunk.ReadInt32At(376);
+            head.InternedStringsOffset =  /**/  chunk.ReadInt32At(380);
             head.Name =                            /**/  chunk.ReadStringFrom(420, 32);
             head.ScenarioPath =                    /**/  chunk.ReadStringFrom(456, 256);
             head.FileCount =                       /**/  chunk.ReadInt32At(716);

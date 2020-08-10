@@ -95,6 +95,9 @@ namespace OpenH2.Core.Tags.Serialization.SerializerEmit
             
             public static MethodInfo ReadArray = typeof(Parsing.TrackingReader)
                 .GetMethod(nameof(Parsing.TrackingReader.ReadArray), new[] { typeof(int), typeof(int) });
+
+            public static MethodInfo ReadStringStarting = typeof(Parsing.TrackingReader)
+                .GetMethod(nameof(Parsing.TrackingReader.ReadStringStarting));
         }
 
         public static class Map
@@ -107,6 +110,18 @@ namespace OpenH2.Core.Tags.Serialization.SerializerEmit
 
             public static MethodInfo InternedStringDictionaryLookup = typeof(Dictionary<int, string>)
                 .GetMethod("get_Item", new[] { typeof(int) });
+
+            public static MethodInfo GetHeader = typeof(H2vBaseMap)
+                .GetProperty(nameof(H2vBaseMap.Header)).GetGetMethod();
+
+            public static class Header
+            {
+                public static MethodInfo GetStringIndexOffset = typeof(H2vMapHeader)
+                    .GetProperty(nameof(H2vMapHeader.InternedStringIndexOffset)).GetGetMethod();
+
+                public static MethodInfo GetStringsOffset = typeof(H2vMapHeader)
+                    .GetProperty(nameof(H2vMapHeader.InternedStringsOffset)).GetGetMethod();
+            }
         }
 
         public static class Cao
