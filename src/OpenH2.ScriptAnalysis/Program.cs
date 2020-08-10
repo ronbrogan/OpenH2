@@ -66,11 +66,7 @@ namespace OpenH2.ScriptAnalysis
                     dataGen.AddPublicProperty(cam, i);
                 }
 
-                for (int i = 0; i < scnr.AiSquadDefinitions.Length; i++)
-                {
-                    var ai = scnr.AiSquadDefinitions[i];
-                    dataGen.AddPublicProperty(ai, i);
-                }
+                dataGen.AddSquadData(scnr);
 
                 for (int i = 0; i < scnr.AiSquadGroupDefinitions.Length; i++)
                 {

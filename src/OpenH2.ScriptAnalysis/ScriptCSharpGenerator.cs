@@ -38,6 +38,7 @@ namespace OpenH2.ScriptAnalysis
         private readonly List<MethodDeclarationSyntax> methods = new List<MethodDeclarationSyntax>();
         private readonly List<FieldDeclarationSyntax> fields = new List<FieldDeclarationSyntax>();
         private readonly List<PropertyDeclarationSyntax> properties = new List<PropertyDeclarationSyntax>();
+        private readonly List<ClassDeclarationSyntax> nestedDataClasses = new List<ClassDeclarationSyntax>();
 
         private Scope currentScope => scopes.Peek();
         private Stack<Scope> scopes;
@@ -74,37 +75,79 @@ namespace OpenH2.ScriptAnalysis
 
         internal void AddPublicProperty(ScenarioTag.AiOrderDefinition order, int itemIndex)
         {
-            AddPublicProperty(SyntaxUtil.ScriptTypeSyntax(ScriptDataType.AIOrders), order.Description, itemIndex);
+            AddPublicProperty(ScriptDataType.AIOrders, order.Description, itemIndex);
         }
 
-        internal void AddPublicProperty(ScenarioTag.AiSquadDefinition ai, int itemIndex)
+        // Make squads into nested static classes
+        internal void AddSquadData(ScenarioTag tag)
         {
-            AddPublicProperty(SyntaxUtil.ScriptTypeSyntax(ScriptDataType.AI), ai.Description, itemIndex);
+            for (var i = 0; i < tag.AiSquadDefinitions.Length; i++)
+            {
+                var squad = tag.AiSquadDefinitions[i];
+
+                var dataClassProps = new List<PropertyDeclarationSyntax>();
+
+                var m = 0;
+                foreach(var ai in squad.SquadMembers)
+                {
+                    dataClassProps.Add(SyntaxUtil.CreateProperty(
+                        ScriptDataType.AI, 
+                        "InternedString_" + ai.Description.Id, 
+                        m++));
+                }
+
+                // This is so the script can reference the squad itself, need special init handling
+                dataClassProps.Add(SyntaxUtil.CreateProperty(ScriptDataType.AI, "Squad", m++));
+
+                var squadTypeName = "Squad_" + SyntaxUtil.SanitizeIdentifier(squad.Description);
+
+                var cls = ClassDeclaration(squadTypeName)
+                    .AddModifiers(Token(SyntaxKind.PublicKeyword))
+                    .WithMembers(new SyntaxList<MemberDeclarationSyntax>(dataClassProps))
+                    .AddMembers(
+                        ConversionOperatorDeclaration(Token(SyntaxKind.ImplicitKeyword), SyntaxUtil.ScriptTypeSyntax(ScriptDataType.AI))
+                            .AddModifiers(Token(SyntaxKind.PublicKeyword), Token(SyntaxKind.StaticKeyword))
+                            .WithOperatorKeyword(Token(SyntaxKind.OperatorKeyword))
+                            .AddParameterListParameters(Parameter(Identifier("s")).WithType(ParseTypeName(squadTypeName)))
+                            .WithExpressionBody(
+                                ArrowExpressionClause(
+                                    MemberAccessExpression(
+                                        SyntaxKind.SimpleMemberAccessExpression,
+                                        IdentifierName("s"),
+                                        IdentifierName("Squad"))))
+                            .WithSemicolonToken(Token(SyntaxKind.SemicolonToken)));
+
+                nestedDataClasses.Add(cls);
+
+                properties.Add(PropertyDeclaration(ParseTypeName(squadTypeName), SyntaxUtil.SanitizeIdentifier(squad.Description))
+                    .AddModifiers(Token(SyntaxKind.PublicKeyword))
+                    .WithAccessorList(SyntaxUtil.AutoPropertyAccessorList()));
+            }            
         }
 
         internal void AddPublicProperty(ScenarioTag.AiSquadGroupDefinition ai, int itemIndex)
         {
-            AddPublicProperty(SyntaxUtil.ScriptTypeSyntax(ScriptDataType.AI), ai.Description, itemIndex);
+            AddPublicProperty(ScriptDataType.AI, ai.Description, itemIndex);
         }
 
         internal void AddPublicProperty(ScenarioTag.CameraPathTarget cam, int itemIndex)
         {
-            AddPublicProperty(SyntaxUtil.ScriptTypeSyntax(ScriptDataType.CameraPathTarget), cam.Description, itemIndex);
+            AddPublicProperty(ScriptDataType.CameraPathTarget, cam.Description, itemIndex);
         }
 
         internal void AddPublicProperty(ScenarioTag.LocationFlagDefinition flag, int itemIndex)
         {
-            AddPublicProperty(SyntaxUtil.ScriptTypeSyntax(ScriptDataType.LocationFlag), flag.Description, itemIndex);
+            AddPublicProperty(ScriptDataType.LocationFlag, flag.Description, itemIndex);
         }
 
         internal void AddPublicProperty(ScenarioTag.CinematicTitleDefinition title, int itemIndex)
         {
-            AddPublicProperty(SyntaxUtil.ScriptTypeSyntax(ScriptDataType.CinematicTitle), "InternedString_" + title.Title.Id, itemIndex);
+            AddPublicProperty(ScriptDataType.CinematicTitle, "InternedString_" + title.Title.Id, itemIndex);
         }
 
         internal void AddPublicProperty(ScenarioTag.TriggerVolume tv, int itemIndex)
         {
-            AddPublicProperty(SyntaxUtil.ScriptTypeSyntax(ScriptDataType.Trigger), "InternedString_" + tv.Description.Id, itemIndex);
+            AddPublicProperty(ScriptDataType.Trigger, "InternedString_" + tv.Description.Id, itemIndex);
         }
 
         internal void AddPublicProperty(ScenarioTag.WellKnownItem externalRef, int itemIndex)
@@ -120,21 +163,12 @@ namespace OpenH2.ScriptAnalysis
                 _ => ScriptDataType.Entity
             };
 
-            AddPublicProperty(SyntaxUtil.ScriptTypeSyntax(varType), externalRef.Description, itemIndex);
+            AddPublicProperty(varType, externalRef.Description, itemIndex);
         }
 
-        internal void AddPublicProperty(TypeSyntax type, string name, int itemIndex)
+        internal void AddPublicProperty(ScriptDataType type, string name, int itemIndex)
         {
-            var sanitized = SyntaxUtil.SanitizeIdentifier(name);
-
-            if(string.IsNullOrWhiteSpace(sanitized))
-            {
-                sanitized = type.ToString() + "_" + itemIndex;
-            }
-
-            properties.Add(PropertyDeclaration(type, sanitized)
-                    .WithModifiers(TokenList(Token(SyntaxKind.PublicKeyword)))
-                    .WithAccessorList(SyntaxUtil.AutoPropertyAccessorList()));
+            properties.Add(SyntaxUtil.CreateProperty(type, name, itemIndex));
         }
 
         public void AddGlobalVariable(ScenarioTag.ScriptVariableDefinition variable)
@@ -152,7 +186,7 @@ namespace OpenH2.ScriptAnalysis
 
             Debug.Assert(retScope == defScope, "Returned scope was not the provided root");
 
-            fields.Add(SyntaxUtil.CreateFieldDeclaration(variable, expressionContext.GetInnerExpression()));
+            fields.Add(SyntaxUtil.CreateField(variable, expressionContext.GetInnerExpression()));
         }
 
         public void AddMethod(ScenarioTag.ScriptMethodDefinition scriptMethod)
@@ -291,8 +325,10 @@ namespace OpenH2.ScriptAnalysis
                 case ScriptDataType.Model:
                 case ScriptDataType.LoopingSound:
                 case ScriptDataType.Effect:
+                case ScriptDataType.Damage:
                     return new ReferenceGetContext(scenario, node);
                 case ScriptDataType.AI:
+                    return new AiGetContext(scenario, node);
                 case ScriptDataType.AIScript:
                 case ScriptDataType.Device:
                 case ScriptDataType.EntityIdentifier:
@@ -313,7 +349,6 @@ namespace OpenH2.ScriptAnalysis
                 case ScriptDataType.CameraPathTarget:
                 case ScriptDataType.CinematicTitle:
                 case ScriptDataType.AIBehavior:
-                case ScriptDataType.Damage:
                 case ScriptDataType.DamageState:
                     return new FieldGetContext(scenario, node);
                 case ScriptDataType.Float:
@@ -435,6 +470,12 @@ namespace OpenH2.ScriptAnalysis
                 }
 
                 cls = cls.AddMembers(m);
+            }
+
+
+            foreach (var nested in nestedDataClasses)
+            {
+                cls = cls.AddMembers(nested);
             }
 
             var ns = nsDecl

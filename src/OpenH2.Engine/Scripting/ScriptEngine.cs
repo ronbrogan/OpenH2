@@ -746,12 +746,7 @@ namespace OpenH2.Engine.Scripting
         }
 
         /// <summary>Moves the actor to a specified point</summary>
-        public static void cs_go_to(SpatialPoint point)
-        {
-        }
-
-        /// <summary>Moves the actor to a specified point</summary>
-        public static void cs_go_to(float point_reference)
+        public static void cs_go_to(SpatialPoint point, float tolerance)
         {
         }
 

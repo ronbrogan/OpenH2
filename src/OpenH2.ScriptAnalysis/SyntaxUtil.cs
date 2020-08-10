@@ -62,12 +62,26 @@ namespace OpenH2.ScriptAnalysis
             return name;
         }
 
-        public static FieldDeclarationSyntax CreateFieldDeclaration(ScenarioTag.ScriptVariableDefinition variable, ExpressionSyntax rightHandSide)
+        public static FieldDeclarationSyntax CreateField(ScenarioTag.ScriptVariableDefinition variable, ExpressionSyntax rightHandSide)
         {
             return FieldDeclaration(VariableDeclaration(ScriptTypeSyntax(variable.DataType))
                     .WithVariables(SingletonSeparatedList<VariableDeclaratorSyntax>(
                         VariableDeclarator(SanitizeIdentifier(variable.Description))
                         .WithInitializer(EqualsValueClause(rightHandSide)))));
+        }
+
+        public static PropertyDeclarationSyntax CreateProperty(ScriptDataType type, string name, int itemIndex)
+        {
+            var sanitized = SanitizeIdentifier(name);
+
+            if (string.IsNullOrWhiteSpace(sanitized))
+            {
+                sanitized = type.ToString() + "_" + itemIndex;
+            }
+
+            return PropertyDeclaration(ScriptTypeSyntax(type), sanitized)
+                    .WithModifiers(TokenList(Token(SyntaxKind.PublicKeyword)))
+                    .WithAccessorList(AutoPropertyAccessorList());
         }
 
         private static HashSet<ScriptDataType> stringLiteralTypes = new HashSet<ScriptDataType>()
