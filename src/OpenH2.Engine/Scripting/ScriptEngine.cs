@@ -38,7 +38,12 @@ namespace OpenH2.Engine.Scripting
         }
 
         /// <summary>attaches the specified list of units to the specified encounter.</summary>
-        public static void ai_attach_units(AI ai)
+        public static void ai_attach_units(ObjectList units, AI ai)
+        {
+        }
+
+        /// <summary>attaches the specified list of units to the specified encounter.</summary>
+        public static void ai_attach_units(Unit unit, AI ai)
         {
         }
 
@@ -432,7 +437,7 @@ namespace OpenH2.Engine.Scripting
         }
 
         /// <summary>predict resources at a frame in camera animation.</summary>
-        public static void camera_predict_resources_at_frame(string /*id*/ emotion, Unit unit, LocationFlag locationFlag, int intValue)
+        public static void camera_predict_resources_at_frame(Animation animation, string /*id*/ emotion, Unit unit, LocationFlag locationFlag, int intValue)
         {
         }
 
@@ -609,7 +614,7 @@ namespace OpenH2.Engine.Scripting
         }
 
         /// <summary>Actor aims at the point for the remainder of the cs, or until overridden (overrides look)</summary>
-        public static void cs_aim(bool boolean)
+        public static void cs_aim(bool boolean, SpatialPoint point)
         {
         }
 
@@ -746,7 +751,7 @@ namespace OpenH2.Engine.Scripting
         }
 
         /// <summary>Moves the actor to a specified point</summary>
-        public static void cs_go_to(SpatialPoint point, float tolerance)
+        public static void cs_go_to(SpatialPoint point, float tolerance = 1f)
         {
         }
 
@@ -756,7 +761,7 @@ namespace OpenH2.Engine.Scripting
         }
 
         /// <summary>Given a point set, AI goes toward the nearest point</summary>
-        public static void cs_go_to_nearest()
+        public static void cs_go_to_nearest(SpatialPoint destination)
         {
         }
 
@@ -882,7 +887,7 @@ namespace OpenH2.Engine.Scripting
         }
 
         /// <summary>Moves the actor to a specified point. DOES NOT BLOCK SCRIPT EXECUTION.</summary>
-        public static void cs_start_to()
+        public static void cs_start_to(SpatialPoint destination)
         {
         }
 
@@ -899,10 +904,10 @@ namespace OpenH2.Engine.Scripting
         /// <summary>Switch control of the joint command script to the given member</summary>
         public static void cs_switch(string /*id*/ string_id)
         {
-        }
 
+        }
         /// <summary>Actor teleports to point1 facing point2</summary>
-        public static void cs_teleport()
+        public static void cs_teleport(SpatialPoint destination, SpatialPoint facing)
         {
         }
 
@@ -2155,12 +2160,7 @@ namespace OpenH2.Engine.Scripting
         }
 
         /// <summary>adds/resets the unit's health, shield, and inventory (weapons and grenades) to the named profile. resets if third parameter is true, adds if false. weapons will be marked as garbage if fourth parameter is true (for respawning equipment).</summary>
-        public static void unit_add_equipment(Equipment equipment, bool boolean, bool boolean2)
-        {
-        }
-
-        /// <summary>adds/resets the unit's health, shield, and inventory (weapons and grenades) to the named profile. resets if third parameter is true, adds if false. weapons will be marked as garbage if fourth parameter is true (for respawning equipment).</summary>
-        public static void unit_add_equipment(Unit unit, Equipment starting_profile, bool boolean, bool boolean1)
+        public static void unit_add_equipment(Unit unit, Equipment starting_profile, bool reset, bool isGarbage)
         {
         }
 
@@ -2314,7 +2314,7 @@ namespace OpenH2.Engine.Scripting
         }
 
         /// <summary>makes a list of units (named or by encounter) magically get into a vehicle, in the substring-specified seats (e.g. CD-passenger... empty string matches all seats)</summary>
-        public static void vehicle_load_magic(VehicleSeat vehicleSeat)
+        public static void vehicle_load_magic(Entity object, VehicleSeat vehicleSeat, ObjectList units)
         {
         }
 
@@ -2350,11 +2350,6 @@ namespace OpenH2.Engine.Scripting
         public static bool vehicle_test_seat_list(string /*id*/ emotion, ObjectList list)
         {
             return default(bool);
-        }
-
-        /// <summary>makes units get out of an object from the substring-specified seats (e.g. CD-passenger... empty string matches all seats)</summary>
-        public static void vehicle_unload(VehicleSeat vehicleSeat)
-        {
         }
 
         /// <summary>makes units get out of an object from the substring-specified seats (e.g. CD-passenger... empty string matches all seats)</summary>
