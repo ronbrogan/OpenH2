@@ -88,11 +88,11 @@ namespace OpenH2.ScriptAnalysis
                 var dataClassProps = new List<PropertyDeclarationSyntax>();
 
                 var m = 0;
-                foreach(var ai in squad.SquadMembers)
+                foreach (var ai in squad.StartingLocations)
                 {
                     dataClassProps.Add(SyntaxUtil.CreateProperty(
-                        ScriptDataType.AI, 
-                        ai.Description, 
+                        ScriptDataType.AI,
+                        ai.Description,
                         m++));
                 }
 
@@ -176,9 +176,7 @@ namespace OpenH2.ScriptAnalysis
             Debug.Assert(variable.Value_H16 < scenario.ScriptSyntaxNodes.Length, "Variable expression is not valid");
 
             var node = scenario.ScriptSyntaxNodes[variable.Value_H16];
-
             Debug.Assert(node.Checkval == variable.Value_L16, "Variable expression checkval did not match");
-
 
             var expressionContext = new SingleExpressionStatementContext(null, variable.DataType);
             var defScope = new Scope(variable.DataType, expressionContext, expressionContext);
@@ -291,10 +289,6 @@ namespace OpenH2.ScriptAnalysis
             Debug.Assert(scenario.ScriptSyntaxNodes[node.NodeData_H16].Checkval == node.NodeData_L16, "Scope's next node checkval didn't match");
             childIndices.PushFull(node.NodeData_H16);
 
-            // Create new scope, retaining current nearest StatementState
-            //scopes.Push(new Scope(node.DataType, currentScope.StatementContext));
-
-            //return NullGenerationContext.Instance;
             if(currentScope.IsInStatementContext)
             {
                 return new ScopeGenerationContext.StatementContext(node, currentScope);
@@ -341,7 +335,6 @@ namespace OpenH2.ScriptAnalysis
                 case ScriptDataType.AIOrders:
                 case ScriptDataType.Unit:
                 case ScriptDataType.Scenery:
-                case ScriptDataType.VehicleSeat:
                 case ScriptDataType.Equipment:
                 case ScriptDataType.NavigationPoint:
                 case ScriptDataType.Team:
@@ -358,6 +351,7 @@ namespace OpenH2.ScriptAnalysis
                 case ScriptDataType.Boolean:
                 case ScriptDataType.StringId:
                 case ScriptDataType.GameDifficulty:
+                case ScriptDataType.VehicleSeat:
                     return new LiteralContext(scenario, node);
                 default:
                     // TODO: hack until everything is tracked down, populating string as value if exists
@@ -478,11 +472,14 @@ namespace OpenH2.ScriptAnalysis
                 cls = cls.AddMembers(nested);
             }
 
+            cls = cls.AddBaseListTypes(SimpleBaseType(ParseTypeName("ScenarioScriptBase")));
+
             var ns = nsDecl
                 .AddMembers(cls)
                 .AddUsings(
                     UsingDirective(ParseName("System")),
                     UsingDirective(ParseName("OpenH2.Core.Scripting")),
+                    UsingDirective(ParseName("OpenH2.Engine.Scripting")),
                     UsingDirective(Token(SyntaxKind.StaticKeyword), null, ParseName(EngineImplementationClass))
                 );
 

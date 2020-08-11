@@ -70,7 +70,7 @@ namespace OpenH2.ScriptAnalysis
                         .WithInitializer(EqualsValueClause(rightHandSide)))));
         }
 
-        public static PropertyDeclarationSyntax CreateProperty(ScriptDataType type, string name, int itemIndex)
+        public static PropertyDeclarationSyntax CreateProperty(ScriptDataType type, string name, int itemIndex = 0)
         {
             var sanitized = SanitizeIdentifier(name);
 
@@ -93,7 +93,8 @@ namespace OpenH2.ScriptAnalysis
             { ScriptDataType.Weapon },
             { ScriptDataType.SpatialPoint },
             { ScriptDataType.WeaponReference },
-            { ScriptDataType.GameDifficulty }
+            { ScriptDataType.GameDifficulty },
+            { ScriptDataType.VehicleSeat }
         };
 
         public static LiteralExpressionSyntax LiteralExpression(ScenarioTag tag, ScenarioTag.ScriptSyntaxNode node)

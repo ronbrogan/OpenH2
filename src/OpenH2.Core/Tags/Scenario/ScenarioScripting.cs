@@ -30,10 +30,10 @@ namespace OpenH2.Core.Tags.Scenario
             public string Description { get; set; }
 
             [ReferenceArray(72)]
-            public SquadMember[] SquadMembers { get; set; }
+            public StartingLocation[] StartingLocations { get; set; }
 
             [FixedLength(100)]
-            public class SquadMember
+            public class StartingLocation
             {
                 [InternedString(0)]
                 public string Description { get; set; }
@@ -43,6 +43,9 @@ namespace OpenH2.Core.Tags.Scenario
 
                 [PrimitiveValue(20)]
                 public float Rotation { get; set; }
+
+                [StringValue(64, 32)]
+                public string AnotherDescription { get; set; }
             }
         }
 

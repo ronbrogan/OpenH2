@@ -26,7 +26,7 @@ namespace OpenH2.Engine.Factories
                 || coll.ColliderComponents[0].DamageLevels.Length <= damageLevel
                 || coll.ColliderComponents[0].DamageLevels[damageLevel].Parts.Length == 0)
             {
-                Console.WriteLine($"No colliders defined in coll[{coll.Id}] for damage level {damageLevel}");
+                Console.WriteLine($"No colliders defined in coll[{hlmt.ColliderId}] for damage level {damageLevel}");
                 return DefaultCollider;
             }
 
@@ -59,7 +59,7 @@ namespace OpenH2.Engine.Factories
                 || coll.ColliderComponents[0].DamageLevels.Length <= damageLevel
                 || coll.ColliderComponents[0].DamageLevels[damageLevel].Parts.Length == 0)
             {
-                Console.WriteLine($"No colliders defined in coll[{coll.Id}] for damage level {damageLevel}");
+                Console.WriteLine($"No colliders defined in coll[{hlmt.ColliderId}] for damage level {damageLevel}");
                 return DefaultCollider;
             }
 

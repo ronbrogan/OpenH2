@@ -26,7 +26,7 @@ namespace OpenH2.Core.Tags.Scenario
         [ReferenceArray(368)] public Obj368[] Obj368s { get; set; }
         [ReferenceArray(440)] public ScriptMethodDefinition[] ScriptMethods { get; set; }
         [ReferenceArray(448)] public ScriptVariableDefinition[] ScriptVariables { get; set; }
-        [ReferenceArray(472)] public Obj472[] Obj472s { get; set; }
+        [ReferenceArray(472)] public SpatialPointStuff[] SpatialPointStuffs { get; set; }
         [ReferenceArray(480)] public LocationFlagDefinition[] LocationFlagDefinitions { get; set; }
         [ReferenceArray(488)] public CameraPathTarget[] CameraPathTargets { get; set; }
         [ReferenceArray(496)] public CinematicTitleDefinition[] CinematicTitleDefinitions { get; set; }
@@ -265,31 +265,36 @@ namespace OpenH2.Core.Tags.Scenario
             public TagRef<SoundTag> Sound { get; set; }
         }
 
-        // TODO: this structure is incorrect
         [FixedLength(128)]
-        public class Obj472
+        public class SpatialPointStuff
         {
-            //[ReferenceArray(0)]
-            public Obj0_String[] Obj0s { get; set; }
+            [ReferenceArray(0)]
+            public SpatialPointCollection[] SpatialPointCollections { get; set; }
 
-            [FixedLength(40)]
-            public class Obj0_String
+            [FixedLength(48)]
+            public class SpatialPointCollection
             {
                 [StringValue(0, 32)]
                 public string Description { get; set; }
 
                 [ReferenceArray(32)]
-                public Obj32_String[] Obj32s { get; set; }
+                public SpatialPointDefinition[] SpatialPoints { get; set; }
 
 
                 [FixedLength(60)]
-                public class Obj32_String
+                public class SpatialPointDefinition
                 {
                     [StringValue(0, 32)]
                     public string Description { get; set; }
 
                     [PrimitiveValue(32)]
                     public Vector3 Position { get; set; }
+
+                    [PrimitiveValue(48)]
+                    public short Value { get; set; }
+
+                    [PrimitiveValue(52)]
+                    public Vector2 Unknown { get; set; }
                 }
             }
         }

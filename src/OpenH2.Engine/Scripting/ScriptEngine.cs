@@ -17,11 +17,6 @@ namespace OpenH2.Engine.Scripting
         }
 
         /// <summary>activates a nav point type <string> attached to a team anchored to an object with a vertical offset <real>. If the player is not local to the machine, this will fail</summary>
-        public static void activate_team_nav_point_object(NavigationPoint navigationPoint, Team team, float floatValue)
-        {
-        }
-
-        /// <summary>activates a nav point type <string> attached to a team anchored to an object with a vertical offset <real>. If the player is not local to the machine, this will fail</summary>
         public static void activate_team_nav_point_object(NavigationPoint navpoint, Team team, Entity entity, float real)
         {
         }
@@ -110,27 +105,15 @@ namespace OpenH2.Engine.Scripting
         }
 
         /// <summary>returns the unit/object corresponding to the given actor</summary>
-        public static Entity ai_get_objectE(AI ai)
+        public static Entity ai_get_object(AI ai)
         {
             return default(Entity);
         }
 
         /// <summary>returns the unit/object corresponding to the given actor</summary>
-        public static ObjectList ai_get_object(AI ai)
-        {
-            return default(ObjectList);
-        }
-
-        /// <summary>returns the unit/object corresponding to the given actor</summary>
-        public static Unit ai_get_unitU(AI ai)
+        public static Unit ai_get_unit(AI ai)
         {
             return default(Unit);
-        }
-
-        /// <summary>returns the unit/object corresponding to the given actor</summary>
-        public static ObjectList ai_get_unit(AI ai)
-        {
-            return default(ObjectList);
         }
 
         /// <summary>instantly kills the specified encounter and/or squad.</summary>
@@ -312,17 +295,17 @@ namespace OpenH2.Engine.Scripting
         }
 
         /// <summary>tells a group of actors to get into a vehicle, in the substring-specified seats (e.g. passenger for pelican)... does not interrupt any actors who are already going to vehicles</summary>
-        public static void ai_vehicle_enter(AI ai, Unit unit, VehicleSeat unit_seat_mapping)
+        public static void ai_vehicle_enter(AI ai, Unit unit, /*VehicleSeat*/ string unit_seat_mapping)
         {
         }
 
         /// <summary>tells a group of actors to get into a vehicle... does not interrupt any actors who are already going to vehicles</summary>
-        public static void ai_vehicle_enter(AI ai, VehicleSeat unit)
+        public static void ai_vehicle_enter(AI ai, /*VehicleSeat*/ string unit)
         {
         }
 
-        /// <summary>the given group of actors is snapped into a vehicle</summary>
-        public static void ai_vehicle_enter_immediate(AI ai, VehicleSeat unit)
+        /// <summary>the given group of actors is snapped into a vehicle, in the substring-specified seats (e.g. passenger for pelican)... does not interrupt any actors who are already going to vehicles</summary>
+        public static void ai_vehicle_enter_immediate(AI ai, Unit unit, /*VehicleSeat*/ string seat = null)
         {
         }
 
@@ -331,57 +314,17 @@ namespace OpenH2.Engine.Scripting
         {
         }
 
-        /// <summary>Returns the vehicle that the given actor is in.</summary>
-        public static Entity ai_vehicle_getE(AI ai)
-        {
-            return default(Entity);
-        }
 
         /// <summary>Returns the vehicle that the given actor is in.</summary>
-        public static Vehicle ai_vehicle_getV(AI ai)
+        public static Vehicle ai_vehicle_get(AI ai)
         {
             return default(Vehicle);
         }
 
-        /// <summary>Returns the vehicle that the given actor is in.</summary>
-        public static Unit ai_vehicle_getU(AI ai)
-        {
-            return default(Unit);
-        }
-
-        /// <summary>Returns the vehicle that the given actor is in.</summary>
-        public static ObjectList ai_vehicle_get(AI ai)
-        {
-            return default(ObjectList);
-        }
-
         /// <summary>Returns the vehicle that was spawned at the given starting location.</summary>
-        public static Unit ai_vehicle_get_from_starting_locationU(AI ai)
-        {
-            return default(Unit);
-        }
-
-        /// <summary>Returns the vehicle that was spawned at the given starting location.</summary>
-        public static Entity ai_vehicle_get_from_starting_locationE(AI ai)
-        {
-            return default(Entity);
-        }
-
-        /// <summary>Returns the vehicle that was spawned at the given starting location.</summary>
-        public static ObjectList ai_vehicle_get_from_starting_location(AI ai)
-        {
-            return default(ObjectList);
-        }
-
-        /// <summary>Returns the vehicle that was spawned at the given starting location.</summary>
-        public static Vehicle ai_vehicle_get_from_starting_locationV(AI ai)
+        public static Vehicle ai_vehicle_get_from_starting_location(AI ai)
         {
             return default(Vehicle);
-        }
-
-        /// <summary>Reserves the given vehicle (so that AI may not enter it</summary>
-        public static void ai_vehicle_reserve(bool boolean)
-        {
         }
 
         /// <summary>Reserves the given vehicle (so that AI may not enter it</summary>
@@ -746,7 +689,7 @@ namespace OpenH2.Engine.Scripting
         }
 
         /// <summary>Actor moves toward the point, and considers it hit when it breaks the indicated plane</summary>
-        public static void cs_go_by()
+        public static void cs_go_by(SpatialPoint point, SpatialPoint planeP, float planeD)
         {
         }
 
@@ -927,7 +870,7 @@ namespace OpenH2.Engine.Scripting
         }
 
         /// <summary>starts a custom animation playing on a unit (interpolates into animation if last parameter is TRUE)</summary>
-        public static void custom_animation(string /*id*/ emotion, bool boolean)
+        public static void custom_animation(Unit unit, Animation animation, string /*id*/ stringid, bool interpolate)
         {
         }
 
@@ -1153,9 +1096,9 @@ namespace OpenH2.Engine.Scripting
         }
 
         /// <summary>returns the actual current difficulty setting without lying</summary>
-        public static GameDifficulty game_difficulty_get_real()
+        public static string game_difficulty_get_real()
         {
-            return default(GameDifficulty);
+            return default(string);
         }
 
         /// <summary>returns TRUE if the game is cooperative</summary>
@@ -1327,7 +1270,7 @@ namespace OpenH2.Engine.Scripting
         /// <summary>returns the maximum of all specified expressions.</summary>
         public static short max(params short[] numbers)
         {
-            return default(float);
+            return default(short);
         }
 
         /// <summary>returns the minimum of all specified expressions.</summary>
@@ -1618,7 +1561,7 @@ namespace OpenH2.Engine.Scripting
         }
 
         /// <summary>loads textures necessary to draw an object that's about to come on-screen.</summary>
-        public static void object_type_predict()
+        public static void object_type_predict(Entity entity)
         {
         }
 
@@ -1691,6 +1634,12 @@ namespace OpenH2.Engine.Scripting
         }
 
         /// <summary>returns true if any of the specified units are looking within the specified number of degrees of the object.</summary>
+        public static bool objects_can_see_object(Entity entity, Entity obj, float degrees)
+        {
+            return default(bool);
+        }
+
+        /// <summary>returns true if any of the specified units are looking within the specified number of degrees of the object.</summary>
         public static bool objects_can_see_object(ObjectList list, EntityIdentifier obj, float degrees)
         {
             return default(bool);
@@ -1718,19 +1667,13 @@ namespace OpenH2.Engine.Scripting
         }
 
         /// <summary>returns minimum distance from any of the specified objects to the specified flag. (returns -1 if there are no objects, or no flag, to check)</summary>
-        public static float objects_distance_to_flag(LocationFlag locationFlag)
+        public static float objects_distance_to_flag(ObjectList list, LocationFlag locationFlag)
         {
             return default(float);
         }
 
         /// <summary>returns minimum distance from any of the specified objects to the specified destination object. (returns -1 if there are no objects to check)</summary>
-        public static float objects_distance_to_object()
-        {
-            return default(float);
-        }
-
-        /// <summary>returns minimum distance from any of the specified objects to the specified destination object. (returns -1 if there are no objects to check)</summary>
-        public static float objects_distance_to_object(Entity entity)
+        public static float objects_distance_to_object(ObjectList list, Entity entity)
         {
             return default(float);
         }
@@ -2187,7 +2130,7 @@ namespace OpenH2.Engine.Scripting
         }
 
         /// <summary>returns the number of ticks remaining in a unit's custom animation (or zero, if the animation is over).</summary>
-        public static short unit_get_custom_animation_time()
+        public static short unit_get_custom_animation_time(Unit unit)
         {
             return default(short);
         }
@@ -2326,17 +2269,17 @@ namespace OpenH2.Engine.Scripting
         }
 
         /// <summary>makes a list of units (named or by encounter) magically get into a vehicle, in the substring-specified seats (e.g. CD-passenger... empty string matches all seats)</summary>
-        public static void vehicle_load_magic(Entity object, VehicleSeat vehicleSeat, ObjectList units)
+        public static void vehicle_load_magic(Entity vehicle, /*VehicleSeat*/ string vehicleSeat, ObjectList units)
         {
         }
 
         /// <summary>makes a list of units (named or by encounter) magically get into a vehicle, in the substring-specified seats (e.g. CD-passenger... empty string matches all seats)</summary>
-        public static void vehicle_load_magic(VehicleSeat vehicleSeat, ObjectList list)
+        public static void vehicle_load_magic(/*VehicleSeat*/ string vehicleSeat, ObjectList list)
         {
         }
 
         /// <summary>makes a list of units (named or by encounter) magically get into a vehicle, in the substring-specified seats (e.g. CD-passenger... empty string matches all seats)</summary>
-        public static void vehicle_load_magic(Entity entity, VehicleSeat vehicleSeat)
+        public static void vehicle_load_magic(Entity entity, /*VehicleSeat*/ string vehicleSeat)
         {
         }
 
@@ -2365,7 +2308,7 @@ namespace OpenH2.Engine.Scripting
         }
 
         /// <summary>makes units get out of an object from the substring-specified seats (e.g. CD-passenger... empty string matches all seats)</summary>
-        public static void vehicle_unload(Entity entity, VehicleSeat unit_seat_mapping)
+        public static void vehicle_unload(Entity entity, /*VehicleSeat*/ string unit_seat_mapping)
         {
         }
 
@@ -2410,8 +2353,8 @@ namespace OpenH2.Engine.Scripting
             return default(bool);
         }
 
-        /// <summary>returns true if any of the specified objects are within the specified volume. trigger volume must have been postprocessed</summary>
-        public static bool volume_test_objects_all(Trigger trigger)
+        /// <summary>returns true if any (rb: all?) of the specified objects are within the specified volume. trigger volume must have been postprocessed</summary>
+        public static bool volume_test_objects_all(Trigger trigger, ObjectList object_list)
         {
             return default(bool);
         }
