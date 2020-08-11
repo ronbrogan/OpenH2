@@ -385,6 +385,7 @@ namespace OpenH2.ScriptAnalysis
             return methodName switch
             {
                 "begin" => new BeginCallContext(node, currentScope, rt),
+                "sleep_until" => new SleepUntilContext(node, rt),
                 "-" =>  new BinaryOperatorContext(node, SyntaxKind.SubtractExpression),
                 "+" =>  new BinaryOperatorContext(node, SyntaxKind.AddExpression),
                 "*" =>  new BinaryOperatorContext(node, SyntaxKind.MultiplyExpression),

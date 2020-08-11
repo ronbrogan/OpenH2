@@ -1997,7 +1997,7 @@ namespace OpenH2.Engine.Scripting
         }
 
         /// <summary>pauses execution of this script until the specified condition is true, checking once per second unless a different number of ticks is specified.</summary>
-        public static void sleep_until(bool condition, int ticks = TicksPerSecond)
+        public static void sleep_until(Func<bool> condition, int ticks = TicksPerSecond, int timeout = -1)
         {
         }
 
