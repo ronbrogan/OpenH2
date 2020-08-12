@@ -50,29 +50,6 @@ namespace OpenH2.Engine.EntityFactories
                 // Corpses, for sure...
                 AddAtLocation(96, obj.Position, colors[0], destination);
             }
-
-            foreach (var obj in scenario.VehicleInstances)
-            {
-                // Turrets?
-                AddAtLocation(112, obj.Position, colors[1], destination);
-            }
-
-            foreach (var obj in scenario.TriggerVolumes)
-            {
-                // Script triggers?
-                AddAtLocation(264, obj.Position, colors[3], destination);
-            }
-
-            foreach (var obj in scenario.LocationFlagDefinitions)
-            {
-                // Zone triggers?
-                AddAtLocation(480, obj.Position, colors[4], destination);
-            }
-
-            foreach (var obj in scenario.CameraPathTargets)
-            {
-                AddAtLocation(488, obj.Position, colors[5], destination);
-            }
         }
 
         private static void AddAtLocation(uint id, Vector3 position, Vector4 color, Scene destination)

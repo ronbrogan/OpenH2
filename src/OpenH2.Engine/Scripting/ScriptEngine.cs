@@ -2393,5 +2393,11 @@ namespace OpenH2.Engine.Scripting
         public static void weather_stop()
         {
         }
+
+        public static class NavigationPoints
+        {
+            public static NavigationPoint @default;
+            public static NavigationPoint default_red;
+        }
     }
 }

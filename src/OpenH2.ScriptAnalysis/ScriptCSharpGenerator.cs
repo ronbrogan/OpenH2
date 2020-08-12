@@ -166,6 +166,16 @@ namespace OpenH2.ScriptAnalysis
             AddPublicProperty(varType, externalRef.Description, itemIndex);
         }
 
+        internal void AddPublicProperty(ScenarioTag.StartingProfileDefinition profile, int itemIndex)
+        {
+            AddPublicProperty(ScriptDataType.Equipment, profile.Description, itemIndex);
+        }
+
+        internal void AddPublicProperty(ScenarioTag.DeviceGroupDefinition group, int itemIndex)
+        {
+            AddPublicProperty(ScriptDataType.DeviceGroup, group.Description, itemIndex);
+        }
+
         internal void AddPublicProperty(ScriptDataType type, string name, int itemIndex)
         {
             properties.Add(SyntaxUtil.CreateProperty(type, name, itemIndex));
@@ -336,7 +346,6 @@ namespace OpenH2.ScriptAnalysis
                 case ScriptDataType.Unit:
                 case ScriptDataType.Scenery:
                 case ScriptDataType.Equipment:
-                case ScriptDataType.NavigationPoint:
                 case ScriptDataType.Team:
                 case ScriptDataType.Vehicle:
                 case ScriptDataType.CameraPathTarget:
@@ -344,6 +353,8 @@ namespace OpenH2.ScriptAnalysis
                 case ScriptDataType.AIBehavior:
                 case ScriptDataType.DamageState:
                     return new FieldGetContext(scenario, node);
+                case ScriptDataType.NavigationPoint:
+                    return new NavigationPointContext(scenario, node);
                 case ScriptDataType.Float:
                 case ScriptDataType.Int:
                 case ScriptDataType.String:

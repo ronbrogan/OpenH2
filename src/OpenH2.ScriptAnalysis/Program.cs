@@ -98,6 +98,18 @@ namespace OpenH2.ScriptAnalysis
                     dataGen.AddPublicProperty(tv, i);
                 }
 
+                for (int i = 0; i < scnr.StartingProfileDefinitions.Length; i++)
+                {
+                    var profile = scnr.StartingProfileDefinitions[i];
+                    dataGen.AddPublicProperty(profile, i);
+                }
+
+                for (int i = 0; i < scnr.DeviceGroupDefinitions.Length; i++)
+                {
+                    var group = scnr.DeviceGroupDefinitions[i];
+                    dataGen.AddPublicProperty(group, i);
+                }
+
                 var originAttr = Attribute(ParseName("OriginScenario"), AttributeArgumentList(SeparatedList(new[] {
                     AttributeArgument(LiteralExpression(SyntaxKind.StringLiteralExpression, Literal(scnr.Name)))
                 })));

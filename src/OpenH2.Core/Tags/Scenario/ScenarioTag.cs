@@ -14,30 +14,14 @@ namespace OpenH2.Core.Tags.Scenario
         {
         }
 
-        [ReferenceArray(72)] public WellKnownItem[] WellKnownItems { get; set; }
+        
         [ReferenceArray(96)] public Obj96[] Obj96s { get; set; }
-        [ReferenceArray(160)] public DeviceGroupDefinition[] DeviceGroupDefinitions { get; set; }
-        [ReferenceArray(264)] public TriggerVolume[] TriggerVolumes { get; set; }
         [ReferenceArray(296)] public Obj296[] Obj296s { get; set; }
         [ReferenceArray(304)] public Obj304[] Obj304s { get; set; }
-        [ReferenceArray(344)] public AiSquadGroupDefinition[] AiSquadGroupDefinitions { get; set; }
-        [ReferenceArray(352)] public AiSquadDefinition[] AiSquadDefinitions { get; set; }
         [ReferenceArray(360)] public Obj360_String[] Obj360s_Locations { get; set; }
         [ReferenceArray(368)] public Obj368[] Obj368s { get; set; }
-        [ReferenceArray(440)] public ScriptMethodDefinition[] ScriptMethods { get; set; }
-        [ReferenceArray(448)] public ScriptVariableDefinition[] ScriptVariables { get; set; }
-        [ReferenceArray(472)] public SpatialPointStuff[] SpatialPointStuffs { get; set; }
-        [ReferenceArray(480)] public LocationFlagDefinition[] LocationFlagDefinitions { get; set; }
-        [ReferenceArray(488)] public CameraPathTarget[] CameraPathTargets { get; set; }
-        [ReferenceArray(496)] public CinematicTitleDefinition[] CinematicTitleDefinitions { get; set; }
         [ReferenceArray(536)] public Obj536[] Obj536s { get; set; }
-        [ReferenceArray(552)] public VehicleReference[] VehicleReferences { get; set; }
-        [ReferenceArray(560)] public Obj560[] Obj560s { get; set; }
-
-        [JsonIgnore]
-        [ReferenceArray(568)] public ScriptSyntaxNode[] ScriptSyntaxNodes { get; set; }
-        [ReferenceArray(576)] public AiOrderDefinition[] AiOrderDefinitions { get; set; }
-        [ReferenceArray(584)] public AiNamedTrigger[] AiNamedTriggers { get; set; }
+        [ReferenceArray(560)] public Obj560[] Obj560s { get; set; }        
         [ReferenceArray(592)] public Obj592[] Obj592s { get; set; }
         [ReferenceArray(600)] public Obj600[] Obj600s { get; set; }
         [ReferenceArray(656)] public Obj656[] Obj656s { get; set; }
@@ -51,6 +35,7 @@ namespace OpenH2.Core.Tags.Scenario
 
 
         [ReferenceArray(8)] public SkyboxInstance[] SkyboxInstances { get; set; }
+        [ReferenceArray(72)] public WellKnownItem[] WellKnownItems { get; set; }
         [ReferenceArray(80)] public SceneryInstance[] SceneryInstances { get; set; }
         [ReferenceArray(88)] public SceneryDefinition[] SceneryDefinitions { get; set; }
         [ReferenceArray(104)] public BipedDefinition[] BipedDefinitions { get; set; }
@@ -60,6 +45,7 @@ namespace OpenH2.Core.Tags.Scenario
         [ReferenceArray(136)] public EquipmentDefinition[] EquipmentDefinitions { get; set; }
         [ReferenceArray(144)] public WeaponPlacement[] WeaponPlacements { get; set; }
         [ReferenceArray(152)] public WeaponDefinition[] WeaponDefinitions { get; set; }
+        [ReferenceArray(160)] public DeviceGroupDefinition[] DeviceGroupDefinitions { get; set; }
         [ReferenceArray(168)] public MachineryInstance[] MachineryInstances { get; set; }
         [ReferenceArray(176)] public MachineryDefinition[] MachineryDefinitions { get; set; }
         [ReferenceArray(184)] public ControllerInstance[] ControllerInstances { get; set; }
@@ -70,17 +56,30 @@ namespace OpenH2.Core.Tags.Scenario
         [ReferenceArray(240)] public LightDefinition[] LightDefinitions { get; set; }
         [ReferenceArray(248)] public StartingProfileDefinition[] StartingProfileDefinitions { get; set; }
         [ReferenceArray(256)] public PlayerSpawnMarker[] PlayerSpawnMarkers { get; set; }
+        [ReferenceArray(264)] public TriggerVolume[] TriggerVolumes { get; set; }
         [ReferenceArray(280)] public GameModeMarker[] GameModeMarkers { get; set; }
         [ReferenceArray(288)] public ItemCollectionPlacement[] ItemCollectionPlacements { get; set; }
         [ReferenceArray(312)] public DecalInstance[] DecalInstances { get; set; }
         [ReferenceArray(320)] public DecalDefinition[] DecalDefinitions { get; set; }
         [ReferenceArray(336)] public StyleDefinition[] StyleDefinitions { get; set; }
+        [ReferenceArray(344)] public AiSquadGroupDefinition[] AiSquadGroupDefinitions { get; set; }
+        [ReferenceArray(352)] public AiSquadDefinition[] AiSquadDefinitions { get; set; }
         [ReferenceArray(376)] public CharacterDefinition[] CharacterDefinitions { get; set; }
         
-        [JsonIgnore]
-        [ReferenceArray(432)] public byte[] ScriptStrings { get; set; }
+        [ReferenceArray(432), JsonIgnore] public byte[] ScriptStrings { get; set; }
+        [ReferenceArray(440)] public ScriptMethodDefinition[] ScriptMethods { get; set; }
+        [ReferenceArray(448)] public ScriptVariableDefinition[] ScriptVariables { get; set; }
         [ReferenceArray(456)] public SoundDefinition[] SoundDefinitions { get; set; }
+
+        [ReferenceArray(472)] public SpatialPointStuff[] SpatialPointStuffs { get; set; }
+        [ReferenceArray(480)] public LocationFlagDefinition[] LocationFlagDefinitions { get; set; }
+        [ReferenceArray(488)] public CameraPathTarget[] CameraPathTargets { get; set; }
+        [ReferenceArray(496)] public CinematicTitleDefinition[] CinematicTitleDefinitions { get; set; }
         [ReferenceArray(528)] public Terrain[] Terrains { get; set; }
+        [ReferenceArray(552)] public VehicleReference[] VehicleReferences { get; set; }
+        [ReferenceArray(568), JsonIgnore] public ScriptSyntaxNode[] ScriptSyntaxNodes { get; set; }
+        [ReferenceArray(576)] public AiOrderDefinition[] AiOrderDefinitions { get; set; }
+        [ReferenceArray(584)] public AiNamedTrigger[] AiNamedTriggers { get; set; }
         [ReferenceArray(808)] public BlocInstance[] BlocInstances { get; set; }
         [ReferenceArray(816)] public BlocDefinition[] BlocDefinitions { get; set; }
         [ReferenceArray(840)] public FogDefinition[] FogDefinitions { get; set; }
@@ -248,7 +247,50 @@ namespace OpenH2.Core.Tags.Scenario
             public TagRef StyleReference { get; set; }
         }
 
-        [FixedLength(84)] public class Obj368 { }
+        [FixedLength(84)] 
+        public class Obj368 
+        {
+            [PrimitiveValue(0)]
+            public short Val1 { get; set; }
+
+            [PrimitiveValue(2)]
+            public short Val2 { get; set; }
+
+            //[ReferenceArray(16)]
+            public Obj16[] Obj16s { get; set; }
+
+            [PrimitiveValue(24)]
+            public short Val3 { get; set; }
+
+            [PrimitiveValue(26)]
+            public short Val4 { get; set; }
+
+            //[ReferenceArray(32)]
+            public Obj32[] Obj32s { get; set; }
+
+            //[ReferenceArray(40)]
+            public Obj40[] Obj40s { get; set; }
+
+            // More here
+
+            [FixedLength(24)]
+            public class Obj16
+            {
+                
+            }
+
+            [FixedLength(20)]
+            public class Obj32
+            {
+                
+            }
+
+            [FixedLength(20)]
+            public class Obj40
+            {
+                
+            }
+        }
 
 
         [FixedLength(8)]
