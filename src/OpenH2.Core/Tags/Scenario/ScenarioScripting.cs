@@ -85,7 +85,7 @@ namespace OpenH2.Core.Tags.Scenario
             public string Description { get; set; }
 
             [PrimitiveValue(32)]
-            public ushort Index1 { get; set; }
+            public Lifecycle Lifecycle { get; set; }
 
             [PrimitiveValue(34)]
             public ScriptDataType ReturnType { get; set; }

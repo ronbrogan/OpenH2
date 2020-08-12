@@ -213,7 +213,14 @@ namespace OpenH2.ScriptAnalysis
 
             Debug.Assert(rootScope == retScope, "Last scope wasn't the provided root");
 
-            methods.Add(method.WithBody(Block(block.GetInnerStatements())));
+            methods.Add(method.WithBody(Block(block.GetInnerStatements()))
+                .AddAttributeLists(AttributeList(SeparatedList(new[] {
+                    Attribute(IdentifierName(nameof(ScriptMethodAttribute).Replace("Attribute", "")))
+                        .AddArgumentListArguments(AttributeArgument(MemberAccessExpression(
+                            SyntaxKind.SimpleMemberAccessExpression,
+                            IdentifierName(nameof(Lifecycle)),
+                            IdentifierName(scriptMethod.Lifecycle.ToString()))))
+                }))));
         }
 
         private Scope EvaluateNodes(int rootIndex, Scope rootScope)
