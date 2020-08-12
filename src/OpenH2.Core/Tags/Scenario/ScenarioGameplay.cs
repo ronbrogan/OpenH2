@@ -14,7 +14,7 @@ namespace OpenH2.Core.Tags.Scenario
         }
 
         [FixedLength(68)]
-        public class LoadoutDefinition
+        public class StartingProfileDefinition
         {
             [StringValue(0, 40)]
             public string Description { get; set; }

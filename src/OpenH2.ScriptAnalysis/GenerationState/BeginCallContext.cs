@@ -14,14 +14,16 @@ namespace OpenH2.ScriptAnalysis.GenerationState
         private delegate bool ResultVarGenerator(ExpressionSyntax exp, out StatementSyntax statement);
 
         private readonly ScriptDataType returnType;
+        private readonly bool randomizeExecution;
 
         public override bool CreatesScope => true;
 
         public List<StatementSyntax> Body { get; } = new List<StatementSyntax>();
 
-        public BeginCallContext(ScenarioTag.ScriptSyntaxNode node, Scope context, ScriptDataType returnType) : base(node)
+        public BeginCallContext(ScenarioTag.ScriptSyntaxNode node, Scope context, ScriptDataType returnType, bool randomizeExecution = false) : base(node)
         {
             this.returnType = returnType;
+            this.randomizeExecution = randomizeExecution;
         }
 
         public void GenerateInto(Scope scope)

@@ -295,7 +295,7 @@ namespace OpenH2.Engine.Scripting
         }
 
         /// <summary>tells a group of actors to get into a vehicle, in the substring-specified seats (e.g. passenger for pelican)... does not interrupt any actors who are already going to vehicles</summary>
-        public static void ai_vehicle_enter(AI ai, Unit unit, /*VehicleSeat*/ string unit_seat_mapping)
+        public static void ai_vehicle_enter(AI ai, Unit unit, /*VehicleSeat*/ string unit_seat_mapping = null)
         {
         }
 
@@ -349,13 +349,14 @@ namespace OpenH2.Engine.Scripting
         }
 
         /// <summary>evaluates the sequence of expressions in random order and returns the last value evaluated.</summary>
-        public static void begin_random()
+        public static void begin_random(params System.Action[] expressions)
         {
         }
 
         /// <summary>evaluates the sequence of expressions in random order and returns the last value evaluated.</summary>
-        public static void begin_random(params System.Action[] expressions)
+        public static T begin_random<T>(params System.Func<T>[] expressions)
         {
+            return default(T);
         }
 
         /// <summary>returns true if the movie is done playing</summary>
@@ -689,7 +690,7 @@ namespace OpenH2.Engine.Scripting
         }
 
         /// <summary>Actor moves toward the point, and considers it hit when it breaks the indicated plane</summary>
-        public static void cs_go_by(SpatialPoint point, SpatialPoint planeP, float planeD)
+        public static void cs_go_by(SpatialPoint point, SpatialPoint planeP, float planeD = 0f)
         {
         }
 
@@ -1246,7 +1247,7 @@ namespace OpenH2.Engine.Scripting
         }
 
         /// <summary>returns an item in an object list.</summary>
-        public static Entity list_get(ObjectList object_list, short valueValue)
+        public static Entity list_get(ObjectList object_list, int index)
         {
             return default(Entity);
         }
@@ -1475,7 +1476,7 @@ namespace OpenH2.Engine.Scripting
         }
 
         /// <summary>returns TRUE if the specified model target is destroyed</summary>
-        public static short object_model_targets_destroyed(string /*id*/ emotion)
+        public static short object_model_targets_destroyed(Entity entity, string /*id*/ target)
         {
             return default(short);
         }
@@ -1899,12 +1900,6 @@ namespace OpenH2.Engine.Scripting
         }
 
         /// <summary>returns a random value in the range [lower bound, upper bound)</summary>
-        public static short random_range(short value, short value1)
-        {
-            return default(short);
-        }
-
-        /// <summary>returns a random value in the range [lower bound, upper bound)</summary>
         public static float random_range(float value, float value1)
         {
             return default(float);
@@ -2274,12 +2269,7 @@ namespace OpenH2.Engine.Scripting
         }
 
         /// <summary>makes a list of units (named or by encounter) magically get into a vehicle, in the substring-specified seats (e.g. CD-passenger... empty string matches all seats)</summary>
-        public static void vehicle_load_magic(/*VehicleSeat*/ string vehicleSeat, ObjectList list)
-        {
-        }
-
-        /// <summary>makes a list of units (named or by encounter) magically get into a vehicle, in the substring-specified seats (e.g. CD-passenger... empty string matches all seats)</summary>
-        public static void vehicle_load_magic(Entity entity, /*VehicleSeat*/ string vehicleSeat)
+        public static void vehicle_load_magic(Entity vehicle, /*VehicleSeat*/ string vehicleSeat, Unit unit)
         {
         }
 
@@ -2290,7 +2280,7 @@ namespace OpenH2.Engine.Scripting
         }
 
         /// <summary>tests whether the named seat has an object in the object list (use "" to test all seats for any unit in the list)</summary>
-        public static bool vehicle_test_seat_list(Vehicle vehicle, string /*id*/ emotion)
+        public static bool vehicle_test_seat_list(Vehicle vehicle, string /*id*/ seat, ObjectList subjects)
         {
             return default(bool);
         }

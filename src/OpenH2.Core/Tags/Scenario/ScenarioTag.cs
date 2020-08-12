@@ -68,7 +68,7 @@ namespace OpenH2.Core.Tags.Scenario
         [ReferenceArray(224)] public SoundSceneryDefinition[] SoundSceneryDefinitions { get; set; }
         [ReferenceArray(232)] public LightInstance[] LightInstances { get; set; }
         [ReferenceArray(240)] public LightDefinition[] LightDefinitions { get; set; }
-        [ReferenceArray(248)] public LoadoutDefinition[] LoadoutDefinitions { get; set; }
+        [ReferenceArray(248)] public StartingProfileDefinition[] StartingProfileDefinitions { get; set; }
         [ReferenceArray(256)] public PlayerSpawnMarker[] PlayerSpawnMarkers { get; set; }
         [ReferenceArray(280)] public GameModeMarker[] GameModeMarkers { get; set; }
         [ReferenceArray(288)] public ItemCollectionPlacement[] ItemCollectionPlacements { get; set; }
