@@ -6,6 +6,7 @@ using OpenH2.Core.Scripting;
 using OpenH2.Core.Tags.Scenario;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text.RegularExpressions;
 using static Microsoft.CodeAnalysis.CSharp.SyntaxFactory;
 
@@ -84,32 +85,50 @@ namespace OpenH2.ScriptAnalysis
                     .WithAccessorList(AutoPropertyAccessorList());
         }
 
-        private static HashSet<ScriptDataType> stringLiteralTypes = new HashSet<ScriptDataType>()
+        public static IReadOnlyList<ScriptDataType> StringLiteralTypes = new ScriptDataType[]
         {
-            { ScriptDataType.String },
-            { ScriptDataType.StringId },
-            { ScriptDataType.ReferenceGet },
-            { ScriptDataType.Animation },
-            { ScriptDataType.Weapon },
-            { ScriptDataType.SpatialPoint },
-            { ScriptDataType.WeaponReference },
-            { ScriptDataType.GameDifficulty },
-            { ScriptDataType.VehicleSeat }
+            ScriptDataType.String,
+            ScriptDataType.StringId,
+            ScriptDataType.ReferenceGet,
+            ScriptDataType.Animation,
+            ScriptDataType.Weapon,
+            ScriptDataType.SpatialPoint,
+            ScriptDataType.WeaponReference,
+            ScriptDataType.GameDifficulty,
+            ScriptDataType.VehicleSeat
         };
 
-        public static LiteralExpressionSyntax LiteralExpression(ScenarioTag tag, ScenarioTag.ScriptSyntaxNode node)
+        public static IReadOnlyList<ScriptDataType> NumericLiteralTypes = new ScriptDataType[]
         {
-            if(stringLiteralTypes.Contains(node.DataType))
+            ScriptDataType.Float,
+            ScriptDataType.Int,
+            ScriptDataType.Short
+        };
+
+        public static LiteralExpressionSyntax LiteralExpression(ScenarioTag tag, ScenarioTag.ScriptSyntaxNode node, ScriptDataType destinationType)
+        {
+            if (StringLiteralTypes.Contains(node.DataType))
             {
                 return LiteralExpression(GetScriptString(tag, node));
             }
 
-            return node.DataType switch
+            object nodeValue = node.DataType switch
             {
-                ScriptDataType.Float => LiteralExpression(BitConverter.Int32BitsToSingle((int)node.NodeData_32)),
-                ScriptDataType.Int => LiteralExpression((int)node.NodeData_32),
-                ScriptDataType.Boolean=> LiteralExpression(node.NodeData_B3 == 1),
-                ScriptDataType.Short => LiteralExpression(node.NodeData_H16),
+                ScriptDataType.Float => BitConverter.Int32BitsToSingle((int)node.NodeData_32),
+                ScriptDataType.Int => (int)node.NodeData_32,
+                ScriptDataType.Boolean => node.NodeData_B3 == 1,
+                ScriptDataType.Short => (short)node.NodeData_H16,
+
+                _ => throw new NotImplementedException(),
+            };
+
+
+            return destinationType switch
+            {
+                ScriptDataType.Float => LiteralExpression(Convert.ToSingle(nodeValue)),
+                ScriptDataType.Int => LiteralExpression(Convert.ToInt32(nodeValue)),
+                ScriptDataType.Boolean => LiteralExpression(Convert.ToBoolean(nodeValue)),
+                ScriptDataType.Short => LiteralExpression(Convert.ToInt16(nodeValue)),
 
                 _ => throw new NotImplementedException(),
             };

@@ -370,7 +370,7 @@ namespace OpenH2.ScriptAnalysis
                 case ScriptDataType.StringId:
                 case ScriptDataType.GameDifficulty:
                 case ScriptDataType.VehicleSeat:
-                    return new LiteralContext(scenario, node);
+                    return new LiteralContext(scenario, node, currentScope);
                 default:
                     // TODO: hack until everything is tracked down, populating string as value if exists
                     return new UnknownContext(scenario, node);
@@ -405,18 +405,18 @@ namespace OpenH2.ScriptAnalysis
                 "begin" => new BeginCallContext(node, currentScope, rt),
                 "begin_random" => new BeginRandomContext(node, rt),
                 "sleep_until" => new SleepUntilContext(node, rt),
-                "-" =>  new BinaryOperatorContext(node, SyntaxKind.SubtractExpression),
-                "+" =>  new BinaryOperatorContext(node, SyntaxKind.AddExpression),
-                "*" =>  new BinaryOperatorContext(node, SyntaxKind.MultiplyExpression),
-                "/" =>  new BinaryOperatorContext(node, SyntaxKind.DivideExpression),
-                "%" =>  new BinaryOperatorContext(node, SyntaxKind.ModuloExpression),
-                "=" =>  new BinaryOperatorContext(node, SyntaxKind.EqualsExpression),
-                "<" =>  new BinaryOperatorContext(node, SyntaxKind.LessThanExpression),
-                ">" =>  new BinaryOperatorContext(node, SyntaxKind.GreaterThanExpression),
-                "<=" => new BinaryOperatorContext(node, SyntaxKind.LessThanOrEqualExpression),
-                ">=" => new BinaryOperatorContext(node, SyntaxKind.GreaterThanOrEqualExpression),
-                "or" => new BinaryOperatorContext(node, SyntaxKind.LogicalOrExpression),
-                "and" => new BinaryOperatorContext(node, SyntaxKind.LogicalAndExpression),
+                "-" =>  new BinaryOperatorContext(node, SyntaxKind.SubtractExpression, rt),
+                "+" =>  new BinaryOperatorContext(node, SyntaxKind.AddExpression, rt),
+                "*" =>  new BinaryOperatorContext(node, SyntaxKind.MultiplyExpression, rt),
+                "/" =>  new BinaryOperatorContext(node, SyntaxKind.DivideExpression, rt),
+                "%" =>  new BinaryOperatorContext(node, SyntaxKind.ModuloExpression, rt),
+                "=" =>  new BinaryOperatorContext(node, SyntaxKind.EqualsExpression, rt),
+                "<" =>  new BinaryOperatorContext(node, SyntaxKind.LessThanExpression, rt),
+                ">" =>  new BinaryOperatorContext(node, SyntaxKind.GreaterThanExpression, rt),
+                "<=" => new BinaryOperatorContext(node, SyntaxKind.LessThanOrEqualExpression, rt),
+                ">=" => new BinaryOperatorContext(node, SyntaxKind.GreaterThanOrEqualExpression, rt),
+                "or" => new BinaryOperatorContext(node, SyntaxKind.LogicalOrExpression, rt),
+                "and" => new BinaryOperatorContext(node, SyntaxKind.LogicalAndExpression, rt),
                 "not" => new UnaryOperatorContext(node, SyntaxKind.LogicalNotExpression),
                 "if" => new IfStatementContext(node, currentScope),
                 "set" => new FieldSetContext(node),

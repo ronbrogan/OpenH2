@@ -1,5 +1,6 @@
 ﻿using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
+using OpenH2.Core.Scripting;
 using OpenH2.Core.Tags.Scenario;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -13,10 +14,12 @@ namespace OpenH2.ScriptAnalysis.GenerationState
         private readonly SyntaxKind operatorSyntaxKind;
 
         public override bool CreatesScope => true;
+        public override ScriptDataType? OwnDataType { get; }
 
-        public BinaryOperatorContext(ScenarioTag.ScriptSyntaxNode node, SyntaxKind operatorSyntaxKind) : base(node)
+        public BinaryOperatorContext(ScenarioTag.ScriptSyntaxNode node, SyntaxKind operatorSyntaxKind, ScriptDataType returnType) : base(node)
         {
             this.operatorSyntaxKind = operatorSyntaxKind;
+            this.OwnDataType = returnType;
         }
 
         public void GenerateInto(Scope scope)
