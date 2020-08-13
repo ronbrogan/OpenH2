@@ -273,6 +273,36 @@ namespace OpenH2.ScriptAnalysis
 
                 return base.VisitPropertyDeclaration(node);
             }
+
+            public override SyntaxNode VisitArgumentList(ArgumentListSyntax node)
+            {
+                var newArgs = node.Arguments;
+
+                if(newArgs.Count > 1)
+                {
+                    for (var i = 0; i < node.Arguments.Count - 1; i++)
+                    {
+                        newArgs = newArgs.ReplaceSeparator(newArgs.GetSeparator(i), Token(SyntaxKind.CommaToken).WithTrailingTrivia(Space));
+                    }
+                }
+
+                node = node.WithCloseParenToken(node.CloseParenToken.WithLeadingTrivia())
+                    .WithArguments(newArgs);
+
+                return base.VisitArgumentList(node);
+            }
+
+            public override SyntaxNode VisitParenthesizedLambdaExpression(ParenthesizedLambdaExpressionSyntax node)
+            {
+                var newNode = node;
+
+                if(newNode.Body is BlockSyntax block)
+                {
+                    newNode = newNode.WithBody(block.WithCloseBraceToken(block.CloseBraceToken.WithTrailingTrivia()));
+                }
+
+                return base.VisitParenthesizedLambdaExpression(newNode);
+            }
         }
 
         private static readonly string[] _keywords = new[]
