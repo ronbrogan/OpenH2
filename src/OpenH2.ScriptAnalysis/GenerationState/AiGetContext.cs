@@ -26,37 +26,27 @@ namespace OpenH2.ScriptAnalysis.GenerationState
                 var stringVal = SyntaxUtil.GetScriptString(scenario, node);
 
                 var slashIndex = stringVal.IndexOf('/');
-                if (slashIndex > 0)
+
+                if (nameRepo.TryGetName(stringVal, node.DataType.ToString(), node.NodeData_H16, out var finalSquad))
+                {
+                    // TODO: Need to split on '.' and create MemberAccessExpressions?
+                    accessor = SyntaxFactory.IdentifierName(finalSquad);
+                }
+                else if (slashIndex > 0)
                 {
                     // It's a squad member accessor
                     var squadName = stringVal.Substring(0, slashIndex);
                     var memberName = stringVal.Substring(slashIndex + 1);
 
-                    if(nameRepo.TryGetName(string.Empty, squadName, node.DataType.ToString(), node.NodeData_H16, out var finalSquad)
-                        && nameRepo.TryGetName(squadName, memberName, node.DataType.ToString(), node.NodeData_H16, out var finalName))
-                    {
-                        accessor = SyntaxFactory.MemberAccessExpression(SyntaxKind.SimpleMemberAccessExpression,
-                            SyntaxFactory.IdentifierName(finalSquad),
-                            SyntaxFactory.IdentifierName(finalName));
-                    }
-                    else
-                    {
-                        accessor = SyntaxFactory.MemberAccessExpression(SyntaxKind.SimpleMemberAccessExpression,
-                            SyntaxFactory.IdentifierName(SyntaxUtil.SanitizeIdentifier(squadName)),
-                            SyntaxFactory.IdentifierName(SyntaxUtil.SanitizeIdentifier(memberName)));
-                    }
+                    accessor = SyntaxFactory.MemberAccessExpression(SyntaxKind.SimpleMemberAccessExpression,
+                        SyntaxFactory.IdentifierName(SyntaxUtil.SanitizeIdentifier(squadName)),
+                        SyntaxFactory.IdentifierName(SyntaxUtil.SanitizeIdentifier(memberName)));
+                    
                 }
                 else
                 {
                     // Ambiguous reference to either a squad or squad group...?
-                    if (nameRepo.TryGetName(string.Empty, stringVal, node.DataType.ToString(), node.NodeData_H16, out var finalName))
-                    {
-                        accessor = SyntaxFactory.IdentifierName(finalName);
-                    }
-                    else
-                    {
-                        accessor = SyntaxFactory.IdentifierName(SyntaxUtil.SanitizeIdentifier(stringVal));
-                    }
+                    accessor = SyntaxFactory.IdentifierName(SyntaxUtil.SanitizeIdentifier(stringVal));
                 }
             }
         }

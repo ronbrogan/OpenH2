@@ -88,15 +88,16 @@ namespace OpenH2.ScriptAnalysis
             {
                 var squad = tag.AiSquadDefinitions[i];
 
-                var squadPropName = nameRepo.CreateName(string.Empty, squad.Description, ScriptDataType.AI.ToString(), i);
+                var squadPropName = nameRepo.RegisterName(squad.Description, ScriptDataType.AI.ToString(), i);
 
                 var dataClassProps = new List<PropertyDeclarationSyntax>();
 
                 var m = 0;
                 foreach (var ai in squad.StartingLocations)
                 {
-                    // TODO: index for this?
-                    var propName = nameRepo.CreateName(squadPropName, ai.Description, ScriptDataType.AI.ToString(), m++);
+                    var fullName = nameRepo.RegisterName(squad.Description + "." + ai.Description, ScriptDataType.AI.ToString(), m++);
+
+                    var propName = fullName.Replace(squad.Description, "").TrimStart('.');
 
                     dataClassProps.Add(SyntaxUtil.CreateProperty(ScriptDataType.AI, propName));
                 }
@@ -183,7 +184,7 @@ namespace OpenH2.ScriptAnalysis
 
         internal void AddPublicProperty(ScriptDataType type, string name, int itemIndex)
         {
-            var propName = nameRepo.CreateName(string.Empty, name, type.ToString(), itemIndex);
+            var propName = nameRepo.RegisterName(name, type.ToString(), itemIndex);
 
             properties.Add(SyntaxUtil.CreateProperty(type, propName));
         }

@@ -54,6 +54,22 @@ namespace OpenH2.ScriptAnalysis
 
                 var repo = new MemberNameRepository();
 
+                // Reserve class field and method names
+
+                for (var i = 0; i < scnr.ScriptVariables.Length; i++)
+                {
+                    var variable = scnr.ScriptVariables[i];
+                    var returnedName = repo.RegisterName(variable.Description, variable.DataType.ToString(), i);
+                }
+
+                for (var i = 0; i < scnr.ScriptMethods.Length; i++)
+                {
+                    var method = scnr.ScriptMethods[i];
+                    var returnedName = repo.RegisterName(method.Description, ScriptDataType.ScriptReference.ToString(), i);
+                }
+
+                // Generate data properties
+
                 var dataGen = new ScriptCSharpGenerator(scnr, repo);
 
                 for (int i = 0; i < scnr.WellKnownItems.Length; i++)
@@ -111,6 +127,7 @@ namespace OpenH2.ScriptAnalysis
                     var group = scnr.DeviceGroupDefinitions[i];
                     dataGen.AddPublicProperty(group, i);
                 }
+
 
                 var originAttr = Attribute(ParseName("OriginScenario"), AttributeArgumentList(SeparatedList(new[] {
                     AttributeArgument(LiteralExpression(SyntaxKind.StringLiteralExpression, Literal(scnr.Name)))

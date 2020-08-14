@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Security.Cryptography;
 
 namespace OpenH2.ScriptAnalysis
 {
@@ -10,68 +12,100 @@ namespace OpenH2.ScriptAnalysis
 
         private Dictionary<string, HashSet<string>> scopedNames = new Dictionary<string, HashSet<string>>();
 
-        public string CreateName(string scope, string desiredName, string type, int index)
-        {
-            var key = KeyFromDesired(scope, desiredName, type, index);
 
-            while (mappings.ContainsKey(key))
+        private List<RegisteredName> registeredNames = new List<RegisteredName>();
+        private Dictionary<string, List<RegisteredName>> originalNameLookup = new Dictionary<string, List<RegisteredName>>();
+
+        public string RegisterName(string desiredName, string type, int? index = null)
+        {
+            var key = SimplifiedKey(desiredName);
+            var sanitized = SyntaxUtil.SanitizeMemberAccess(desiredName);
+
+            var name = new RegisteredName()
             {
-                throw new Exception("Name was already added");
+                OriginalName = desiredName,
+                TypeInfo = type,
+                Index = index,
+            };
+
+            if (originalNameLookup.TryGetValue(key, out var nameSlot))
+            {
+                // iteratively unique the name
+                var attempt = 0;
+                var attemptName = sanitized;
+                while (nameSlot.Any(n => n.UniqueName == attemptName))
+                {
+                    attempt++;
+                    attemptName = sanitized + attempt;
+                }
+
+                name.UniqueName = attemptName;
+                nameSlot.Add(name);
+                return name.UniqueName;
+            }
+            else
+            {
+                name.UniqueName = sanitized;
+                originalNameLookup.Add(key, new List<RegisteredName>() { name });
+                return name.UniqueName;
+            }
+        }
+
+        public bool TryGetName(string desiredName, string type, int? index, out string result)
+        {
+            var universalKey = SimplifiedKey(desiredName);
+
+            if (originalNameLookup.TryGetValue(universalKey, out var nameSlot) == false)
+            {
+                result = null;
+                return false;
             }
 
-            string name = SyntaxUtil.SanitizeIdentifier(desiredName);
-
-            var attempt = 0;
-
-            while (true)
+            if(nameSlot.Count == 1)
             {
-                if (scopedNames.TryGetValue(scope, out var scopeNames))
+                result = nameSlot[0].UniqueName;
+                return true;
+            }
+            else
+            {
+                // iteratively find correct name via type and index 
+                var typeNames = nameSlot.Where(n => n.TypeInfo == type);
+
+                if(typeNames.Count() == 0)
                 {
-                    var attemptName = name;
-
-                    if(attempt > 0)
-                    {
-                        attemptName += attempt;
-                    }
-
-                    if(scopeNames.Contains(attemptName))
-                    {
-                        attempt++;
-                        continue;
-                    }
-
-                    scopeNames.Add(attemptName);
-                    mappings.Add(key, attemptName);
-                    return attemptName;
+                    result = string.Empty;
+                    return false;
+                }
+                else if(typeNames.Count() == 1)
+                {
+                    result = typeNames.First().UniqueName;
+                    return true;
                 }
                 else
                 {
-                    scopedNames.Add(scope, new HashSet<string>()
-                    {
-                        { name }
-                    });
-
-                    mappings.Add(key, name);
-                    return name;
+                    throw new Exception("DOes this happen?");
+                    result = null;
+                    return false;
                 }
             }
         }
 
-        public bool TryGetName(string scope, string desiredName, string type, int index, out string result)
+        private string SimplifiedKey(string name)
         {
-            var key = KeyFromDesired(scope, desiredName, type, index);
-            if(mappings.TryGetValue(key, out result))
-            {
-                return true;
-            }
-
-            var fallbackKey = KeyFromDesired(scope, desiredName, type);
-            return mappings.TryGetValue(fallbackKey, out result);
+            return name.Replace('/', '.').ToUpperInvariant();
         }
 
         private string KeyFromDesired(string scope, string desired, string typeInfo, int index = 0)
         {
             return (scope + "@" + desired + "<" + typeInfo + ">#" + index).ToUpperInvariant();
+        }
+
+        private class RegisteredName
+        {
+            public string OriginalName { get; set; }
+            public string UniqueName { get; set; }
+            public string TypeInfo { get; set; }
+            public int? Index { get; set; }
         }
     }
 }

@@ -63,6 +63,23 @@ namespace OpenH2.ScriptAnalysis
             return name;
         }
 
+        public static string SanitizeMemberAccess(string name)
+        {
+            if (string.IsNullOrEmpty(name))
+            {
+                return name;
+            }
+
+            var segments = name.Split('.');
+
+            for (var i = 0; i < segments.Length; i++)
+            {
+                segments[i] = SanitizeIdentifier(segments[i]);
+            }
+
+            return string.Join('.', segments);
+        }
+
         public static FieldDeclarationSyntax CreateField(ScenarioTag.ScriptVariableDefinition variable, ExpressionSyntax rightHandSide)
         {
             return FieldDeclaration(VariableDeclaration(ScriptTypeSyntax(variable.DataType))

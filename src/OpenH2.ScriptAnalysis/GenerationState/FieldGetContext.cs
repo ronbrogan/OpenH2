@@ -30,28 +30,13 @@ namespace OpenH2.ScriptAnalysis.GenerationState
                 }
                 else
                 {
-                    var scope = string.Empty;
-                    var name = stringVal;
-
-                    if(stringVal.Equals("lz_pelican_02", StringComparison.OrdinalIgnoreCase))
-                    {
-                        Console.WriteLine("Whoa");
-                    }
-
-                    if(stringVal.Contains('.'))
-                    {
-                        var sepIndex = stringVal.LastIndexOf('.');
-                        scope = stringVal.Substring(0, sepIndex);
-                        name = stringVal.Substring(sepIndex + 1);
-                    }
-
-                    if(nameRepo.TryGetName(scope, name, node.DataType.ToString(), node.NodeData_H16, out var finalName))
+                    if(nameRepo.TryGetName(stringVal, node.DataType.ToString(), node.NodeData_H16, out var finalName))
                     {
                         accessor = SyntaxFactory.IdentifierName(finalName);
                     }
                     else
                     {
-                        accessor = SyntaxFactory.IdentifierName(SyntaxUtil.SanitizeIdentifier(name));
+                        accessor = SyntaxFactory.IdentifierName(SyntaxUtil.SanitizeIdentifier(stringVal));
                     }
                 }
             }

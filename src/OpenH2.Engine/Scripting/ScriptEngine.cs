@@ -74,7 +74,7 @@ namespace OpenH2.Engine.Scripting
         }
 
         /// <summary>if TRUE, forces all actors to completely disregard the specified units, otherwise lets them acknowledge the units again</summary>
-        public static void ai_disregard(bool boolean)
+        public static void ai_disregard(Unit unit, bool boolean)
         {
         }
 
@@ -615,12 +615,12 @@ namespace OpenH2.Engine.Scripting
         }
 
         /// <summary>starts a custom animation playing on the unit (interpolates into animation if last parameter is TRUE)</summary>
-        public static void cs_custom_animation(string /*id*/ emotion, float floatValue, bool boolean)
+        public static void cs_custom_animation(Animation animation, string /*id*/ emotion, float floatValue, bool interpolate)
         {
         }
 
         /// <summary>Deploy a turret at the given script point</summary>
-        public static void cs_deploy_turret()
+        public static void cs_deploy_turret(SpatialPoint point)
         {
         }
 
@@ -720,7 +720,7 @@ namespace OpenH2.Engine.Scripting
         }
 
         /// <summary>Actor throws a grenade, either by tossing (arg2=0), lobbing (1) or bouncing (2)</summary>
-        public static void cs_grenade(short valueValue)
+        public static void cs_grenade(SpatialPoint point, int action)
         {
         }
 
@@ -876,22 +876,22 @@ namespace OpenH2.Engine.Scripting
         }
 
         /// <summary>starts a custom animation playing on a unit (interpolates into animation if last parameter is TRUE)</summary>
-        public static void custom_animation(Unit unit, string /*id*/ emotion, bool boolean)
+        public static void custom_animation(Unit unit, string /*id*/ emotion, bool interpolate)
         {
         }
 
         /// <summary>starts a custom animation playing on a unit (interpolates into animation if last parameter is TRUE)</summary>
-        public static void custom_animation_loop(Unit unit, string /*id*/ emotion, bool boolean)
+        public static void custom_animation_loop(Unit unit, Animation animation1, string /*id*/ emotion, bool interpolate)
         {
         }
 
         /// <summary>starts a custom animation playing on a unit (interpolates into animation if last parameter is TRUE)</summary>
-        public static void custom_animation_loop(string /*id*/ emotion, bool boolean)
+        public static void custom_animation_loop(string /*id*/ emotion, bool interpolate)
         {
         }
 
         /// <summary>starts a custom animation relative to some other object (interpolates into animation if last parameter is TRUE)</summary>
-        public static void custom_animation_relative(Unit unit, string /*id*/ emotion, bool boolean, Entity entity)
+        public static void custom_animation_relative(Unit unit, string /*id*/ emotion, bool interpolate, Entity entity)
         {
         }
 
@@ -1229,9 +1229,9 @@ namespace OpenH2.Engine.Scripting
         }
 
         /// <summary>returns the number of objects in a list</summary>
-        public static short list_count()
+        public static short list_count(Entity e)
         {
-            return default(short);
+            return e == null ? 0 : 1;
         }
 
         /// <summary>returns the number of objects in a list</summary>
@@ -1313,7 +1313,7 @@ namespace OpenH2.Engine.Scripting
         }
 
         /// <summary>prevents an object from taking damage</summary>
-        public static void object_cannot_take_damage()
+        public static void object_cannot_take_damage(Entity entity) // Unit?
         {
         }
 
@@ -2286,13 +2286,7 @@ namespace OpenH2.Engine.Scripting
         }
 
         /// <summary>tests whether the named seat has an object in the object list (use "" to test all seats for any unit in the list)</summary>
-        public static bool vehicle_test_seat_list(string /*id*/ emotion)
-        {
-            return default(bool);
-        }
-
-        /// <summary>tests whether the named seat has an object in the object list (use "" to test all seats for any unit in the list)</summary>
-        public static bool vehicle_test_seat_list(string /*id*/ emotion, ObjectList list)
+        public static bool vehicle_test_seat_list(Vehicle vehicle, string /*id*/ seat, Entity subject)
         {
             return default(bool);
         }
@@ -2332,7 +2326,7 @@ namespace OpenH2.Engine.Scripting
         }
 
         /// <summary>returns true if any of the specified objects are within the specified volume. trigger volume must have been postprocessed</summary>
-        public static bool volume_test_objects(Trigger trigger)
+        public static bool volume_test_objects(Trigger trigger, Entity entity)
         {
             return default(bool);
         }
