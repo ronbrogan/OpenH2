@@ -35,10 +35,10 @@ namespace OpenH2.ScriptAnalysis
 
             foreach(var map in maps)
             {
-                //if(map.Contains("01a_tutorial") == false)
-                //{
-                //    continue;
-                //}
+                if (map.Contains("05a") == false)
+                {
+                    continue;
+                }
 
                 var factory = new MapFactory(Path.GetDirectoryName(map), NullMaterialFactory.Instance);
                 var scene = factory.FromFile(File.OpenRead(map));
@@ -52,7 +52,9 @@ namespace OpenH2.ScriptAnalysis
                 var outRoot = $@"D:\h2scratch\scripts\{scenarioParts.Last()}";
                 Directory.CreateDirectory(outRoot);
 
-                var dataGen = new ScriptCSharpGenerator(scnr);
+                var repo = new MemberNameRepository();
+
+                var dataGen = new ScriptCSharpGenerator(scnr, repo);
 
                 for (int i = 0; i < scnr.WellKnownItems.Length; i++)
                 {
@@ -114,7 +116,7 @@ namespace OpenH2.ScriptAnalysis
                     AttributeArgument(LiteralExpression(SyntaxKind.StringLiteralExpression, Literal(scnr.Name)))
                 })));
 
-                var classGen = new ScriptCSharpGenerator(scnr, classAttributes: new[] { originAttr });
+                var classGen = new ScriptCSharpGenerator(scnr, repo, classAttributes: new[] { originAttr });
 
                 foreach (var variable in scnr.ScriptVariables)
                 {

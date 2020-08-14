@@ -71,16 +71,9 @@ namespace OpenH2.ScriptAnalysis
                         .WithInitializer(EqualsValueClause(rightHandSide)))));
         }
 
-        public static PropertyDeclarationSyntax CreateProperty(ScriptDataType type, string name, int itemIndex = 0)
+        public static PropertyDeclarationSyntax CreateProperty(ScriptDataType type, string name)
         {
-            var sanitized = SanitizeIdentifier(name);
-
-            if (string.IsNullOrWhiteSpace(sanitized))
-            {
-                sanitized = type.ToString() + "_" + itemIndex;
-            }
-
-            return PropertyDeclaration(ScriptTypeSyntax(type), sanitized)
+            return PropertyDeclaration(ScriptTypeSyntax(type), name)
                     .WithModifiers(TokenList(Token(SyntaxKind.PublicKeyword)))
                     .WithAccessorList(AutoPropertyAccessorList());
         }

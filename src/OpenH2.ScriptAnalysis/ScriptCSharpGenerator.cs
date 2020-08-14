@@ -40,6 +40,8 @@ namespace OpenH2.ScriptAnalysis
         private readonly List<PropertyDeclarationSyntax> properties = new List<PropertyDeclarationSyntax>();
         private readonly List<ClassDeclarationSyntax> nestedDataClasses = new List<ClassDeclarationSyntax>();
 
+        private readonly MemberNameRepository nameRepo;
+
         private Scope currentScope => scopes.Peek();
         private Stack<Scope> scopes;
         private ContinuationStack<int> childIndices;
@@ -49,9 +51,10 @@ namespace OpenH2.ScriptAnalysis
 
         public event GenerationCallback OnNodeEnd;
 
-        public ScriptCSharpGenerator(ScenarioTag scnr, string[] refrences = null, AttributeSyntax[] classAttributes = null)
+        public ScriptCSharpGenerator(ScenarioTag scnr, MemberNameRepository nameRepo, string[] refrences = null, AttributeSyntax[] classAttributes = null)
         {
             this.scenario = scnr;
+            this.nameRepo = nameRepo;
             var scenarioParts = scnr.Name.Split('\\', StringSplitOptions.RemoveEmptyEntries);
 
             var ns = "OpenH2.Engine.Scripts.Generated" + string.Join('.', scenarioParts.Take(2));
@@ -85,21 +88,23 @@ namespace OpenH2.ScriptAnalysis
             {
                 var squad = tag.AiSquadDefinitions[i];
 
+                var squadPropName = nameRepo.CreateName(string.Empty, squad.Description, ScriptDataType.AI.ToString(), i);
+
                 var dataClassProps = new List<PropertyDeclarationSyntax>();
 
                 var m = 0;
                 foreach (var ai in squad.StartingLocations)
                 {
-                    dataClassProps.Add(SyntaxUtil.CreateProperty(
-                        ScriptDataType.AI,
-                        ai.Description,
-                        m++));
+                    // TODO: index for this?
+                    var propName = nameRepo.CreateName(squadPropName, ai.Description, ScriptDataType.AI.ToString(), m++);
+
+                    dataClassProps.Add(SyntaxUtil.CreateProperty(ScriptDataType.AI, propName));
                 }
 
                 // This is so the script can reference the squad itself, need special init handling
-                dataClassProps.Add(SyntaxUtil.CreateProperty(ScriptDataType.AI, "Squad", m++));
+                dataClassProps.Add(SyntaxUtil.CreateProperty(ScriptDataType.AI, "Squad"));
 
-                var squadTypeName = "Squad_" + SyntaxUtil.SanitizeIdentifier(squad.Description);
+                var squadTypeName = "Squad_" + squadPropName;
 
                 var cls = ClassDeclaration(squadTypeName)
                     .AddModifiers(Token(SyntaxKind.PublicKeyword))
@@ -119,7 +124,7 @@ namespace OpenH2.ScriptAnalysis
 
                 nestedDataClasses.Add(cls);
 
-                properties.Add(PropertyDeclaration(ParseTypeName(squadTypeName), SyntaxUtil.SanitizeIdentifier(squad.Description))
+                properties.Add(PropertyDeclaration(ParseTypeName(squadTypeName), squadPropName)
                     .AddModifiers(Token(SyntaxKind.PublicKeyword))
                     .WithAccessorList(SyntaxUtil.AutoPropertyAccessorList()));
             }            
@@ -178,7 +183,9 @@ namespace OpenH2.ScriptAnalysis
 
         internal void AddPublicProperty(ScriptDataType type, string name, int itemIndex)
         {
-            properties.Add(SyntaxUtil.CreateProperty(type, name, itemIndex));
+            var propName = nameRepo.CreateName(string.Empty, name, type.ToString(), itemIndex);
+
+            properties.Add(SyntaxUtil.CreateProperty(type, propName));
         }
 
         public void AddGlobalVariable(ScenarioTag.ScriptVariableDefinition variable)
@@ -339,7 +346,7 @@ namespace OpenH2.ScriptAnalysis
                 case ScriptDataType.Damage:
                     return new ReferenceGetContext(scenario, node);
                 case ScriptDataType.AI:
-                    return new AiGetContext(scenario, node);
+                    return new AiGetContext(scenario, node, nameRepo);
                 case ScriptDataType.AIScript:
                 case ScriptDataType.Device:
                 case ScriptDataType.EntityIdentifier:
@@ -359,7 +366,7 @@ namespace OpenH2.ScriptAnalysis
                 case ScriptDataType.CinematicTitle:
                 case ScriptDataType.AIBehavior:
                 case ScriptDataType.DamageState:
-                    return new FieldGetContext(scenario, node);
+                    return new FieldGetContext(scenario, node, nameRepo);
                 case ScriptDataType.NavigationPoint:
                     return new NavigationPointContext(scenario, node);
                 case ScriptDataType.Float:

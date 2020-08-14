@@ -13,7 +13,7 @@ namespace OpenH2.ScriptAnalysis.GenerationState
 
         public override ScriptDataType? OwnDataType { get; }
 
-        public AiGetContext(ScenarioTag scenario, ScenarioTag.ScriptSyntaxNode node) : base(node)
+        public AiGetContext(ScenarioTag scenario, ScenarioTag.ScriptSyntaxNode node, MemberNameRepository nameRepo) : base(node)
         {
             this.OwnDataType = node.DataType;
 
@@ -32,14 +32,31 @@ namespace OpenH2.ScriptAnalysis.GenerationState
                     var squadName = stringVal.Substring(0, slashIndex);
                     var memberName = stringVal.Substring(slashIndex + 1);
 
-                    accessor = SyntaxFactory.MemberAccessExpression(SyntaxKind.SimpleMemberAccessExpression,
-                        SyntaxFactory.IdentifierName(SyntaxUtil.SanitizeIdentifier(squadName)),
-                        SyntaxFactory.IdentifierName(SyntaxUtil.SanitizeIdentifier(memberName)));
+                    if(nameRepo.TryGetName(string.Empty, squadName, node.DataType.ToString(), node.NodeData_H16, out var finalSquad)
+                        && nameRepo.TryGetName(squadName, memberName, node.DataType.ToString(), node.NodeData_H16, out var finalName))
+                    {
+                        accessor = SyntaxFactory.MemberAccessExpression(SyntaxKind.SimpleMemberAccessExpression,
+                            SyntaxFactory.IdentifierName(finalSquad),
+                            SyntaxFactory.IdentifierName(finalName));
+                    }
+                    else
+                    {
+                        accessor = SyntaxFactory.MemberAccessExpression(SyntaxKind.SimpleMemberAccessExpression,
+                            SyntaxFactory.IdentifierName(SyntaxUtil.SanitizeIdentifier(squadName)),
+                            SyntaxFactory.IdentifierName(SyntaxUtil.SanitizeIdentifier(memberName)));
+                    }
                 }
                 else
                 {
                     // Ambiguous reference to either a squad or squad group...?
-                    accessor = SyntaxFactory.IdentifierName(SyntaxUtil.SanitizeIdentifier(stringVal));
+                    if (nameRepo.TryGetName(string.Empty, stringVal, node.DataType.ToString(), node.NodeData_H16, out var finalName))
+                    {
+                        accessor = SyntaxFactory.IdentifierName(finalName);
+                    }
+                    else
+                    {
+                        accessor = SyntaxFactory.IdentifierName(SyntaxUtil.SanitizeIdentifier(stringVal));
+                    }
                 }
             }
         }
