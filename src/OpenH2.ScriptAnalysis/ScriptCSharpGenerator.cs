@@ -92,12 +92,12 @@ namespace OpenH2.ScriptAnalysis
 
                 var dataClassProps = new List<PropertyDeclarationSyntax>();
 
+                var nestedRepo = new MemberNameRepository();
+
                 var m = 0;
                 foreach (var ai in squad.StartingLocations)
                 {
-                    var fullName = nameRepo.RegisterName(squad.Description + "." + ai.Description, ScriptDataType.AI.ToString(), m++);
-
-                    var propName = fullName.Replace(squad.Description, "").TrimStart('.');
+                    var propName = nestedRepo.RegisterName(ai.Description, ScriptDataType.AI.ToString(), m++);
 
                     dataClassProps.Add(SyntaxUtil.CreateProperty(ScriptDataType.AI, propName));
                 }
@@ -124,6 +124,7 @@ namespace OpenH2.ScriptAnalysis
                             .WithSemicolonToken(Token(SyntaxKind.SemicolonToken)));
 
                 nestedDataClasses.Add(cls);
+                nameRepo.NestedRepos.Add(squadPropName, nestedRepo);
 
                 properties.Add(PropertyDeclaration(ParseTypeName(squadTypeName), squadPropName)
                     .AddModifiers(Token(SyntaxKind.PublicKeyword))

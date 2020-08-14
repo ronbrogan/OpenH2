@@ -7,14 +7,9 @@ namespace OpenH2.ScriptAnalysis
 {
     public class MemberNameRepository
     {
-
-        private Dictionary<string, string> mappings = new Dictionary<string, string>();
-
-        private Dictionary<string, HashSet<string>> scopedNames = new Dictionary<string, HashSet<string>>();
-
-
-        private List<RegisteredName> registeredNames = new List<RegisteredName>();
         private Dictionary<string, List<RegisteredName>> originalNameLookup = new Dictionary<string, List<RegisteredName>>();
+
+        public Dictionary<string, MemberNameRepository> NestedRepos = new Dictionary<string, MemberNameRepository>();
 
         public string RegisterName(string desiredName, string type, int? index = null)
         {
@@ -93,11 +88,6 @@ namespace OpenH2.ScriptAnalysis
         private string SimplifiedKey(string name)
         {
             return name.Replace('/', '.').ToUpperInvariant();
-        }
-
-        private string KeyFromDesired(string scope, string desired, string typeInfo, int index = 0)
-        {
-            return (scope + "@" + desired + "<" + typeInfo + ">#" + index).ToUpperInvariant();
         }
 
         private class RegisteredName
