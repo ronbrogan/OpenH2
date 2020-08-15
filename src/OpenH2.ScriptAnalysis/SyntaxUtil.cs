@@ -39,6 +39,27 @@ namespace OpenH2.ScriptAnalysis
             };
         }
 
+        private static Dictionary<Type, ScriptDataType> toScriptTypeMap = new Dictionary<Type, ScriptDataType>()
+        {
+            { typeof(int), ScriptDataType.Int },
+            { typeof(short), ScriptDataType.Short },
+            { typeof(float), ScriptDataType.Float },
+            { typeof(string), ScriptDataType.String },
+            { typeof(bool), ScriptDataType.Boolean },
+            { typeof(Team), ScriptDataType.Team },
+            { typeof(AI), ScriptDataType.AI },
+        };
+
+        public static ScriptDataType ScriptTypeFromType(Type t)
+        {
+            if(toScriptTypeMap.TryGetValue(t, out var val))
+            {
+                return val;
+            }
+
+            throw new Exception($"No mapping for '{t.Name}'");
+        }
+
         private static Regex IdentifierInvalidChars = new Regex("[^\\dA-Za-z]", RegexOptions.Compiled);
         public static string SanitizeIdentifier(string name)
         {

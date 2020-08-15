@@ -74,8 +74,9 @@ namespace OpenH2.Engine.Scripting
         }
 
         /// <summary>if TRUE, forces all actors to completely disregard the specified units, otherwise lets them acknowledge the units again</summary>
-        public static void ai_disregard(Unit unit, bool boolean)
+        public static void ai_disregard(Entity unit, bool boolean)
         {
+            System.Diagnostics.Debug.Assert(unit is Unit);
         }
 
         /// <summary>if TRUE, forces all actors to completely disregard the specified units, otherwise lets them acknowledge the units again</summary>
@@ -208,7 +209,7 @@ namespace OpenH2.Engine.Scripting
         }
 
         /// <summary>if TRUE, *ALL* enemies will prefer to attack the specified units. if FALSE, removes the preference.</summary>
-        public static void ai_prefer_target(bool boolean)
+        public static void ai_prefer_target(ObjectList units, bool boolean)
         {
         }
 
@@ -901,12 +902,7 @@ namespace OpenH2.Engine.Scripting
         }
 
         /// <summary>starts a custom animation relative to some other object (interpolates into animation if last parameter is TRUE)</summary>
-        public static void custom_animation_relative_loop(Unit unit, string /*id*/ emotion, bool boolean, Entity entity)
-        {
-        }
-
-        /// <summary>starts a custom animation relative to some other object (interpolates into animation if last parameter is TRUE)</summary>
-        public static void custom_animation_relative_loop(string /*id*/ emotion, bool boolean, Entity entity)
+        public static void custom_animation_relative_loop(Unit unit, Animation animation2, string /*id*/ emotion, bool boolean, Entity entity)
         {
         }
 
@@ -1231,7 +1227,7 @@ namespace OpenH2.Engine.Scripting
         /// <summary>returns the number of objects in a list</summary>
         public static short list_count(Entity e)
         {
-            return e == null ? 0 : 1;
+            return (short)(e == null ? 0 : 1);
         }
 
         /// <summary>returns the number of objects in a list</summary>
@@ -1292,8 +1288,13 @@ namespace OpenH2.Engine.Scripting
             return default(Entity);
         }
 
+        public static Entity object_at_marker(Entity entity, string stringId)
+        {
+            return default(Entity);
+        }
+
         /// <summary>allows an object to take damage again</summary>
-        public static void object_can_take_damage()
+        public static void object_can_take_damage(Entity entity)
         {
         }
 
@@ -1420,6 +1421,12 @@ namespace OpenH2.Engine.Scripting
         /// <summary>disabled dynamic simulation for this object (makes it fixed)</summary>
         public static void object_dynamic_simulation_disable(Entity entity, bool boolean)
         {
+        }
+
+        /// <summary>returns the parent of the given object</summary>
+        public static Entity object_get_parent(Entity entity)
+        {
+            return default(Entity);
         }
 
         /// <summary>returns the ai attached to this object, if any</summary>
@@ -1567,7 +1574,7 @@ namespace OpenH2.Engine.Scripting
         }
 
         /// <summary>loads textures necessary to draw an object that's about to come on-screen.</summary>
-        public static void object_type_predict_high()
+        public static void object_type_predict_high(Entity entity)
         {
         }
 
@@ -1938,7 +1945,7 @@ namespace OpenH2.Engine.Scripting
         }
 
         /// <summary>starts a custom looping animation playing on a piece of scenery</summary>
-        public static void scenery_animation_start_loop(Scenery scenery, string /*id*/ emotion)
+        public static void scenery_animation_start_loop(Scenery scenery, Animation animation, string /*id*/ emotion)
         {
         }
 
@@ -2028,7 +2035,12 @@ namespace OpenH2.Engine.Scripting
         }
 
         /// <summary>plays an impulse sound from the specified source object (or "none"), with the specified scale.</summary>
-        public static void sound_impulse_trigger(Entity entity, float floatValue, int intValue)
+        public static void sound_impulse_trigger(Entity sound, float floatValue, int intValue)
+        {
+        }
+
+        /// <summary>plays an impulse sound from the specified source object (or "none"), with the specified scale.</summary>
+        public static void sound_impulse_trigger(Entity sound, Entity source, float floatValue, int intValue)
         {
         }
 
@@ -2155,7 +2167,7 @@ namespace OpenH2.Engine.Scripting
         }
 
         /// <summary>prevents any of the given units from being knocked around or playing ping animations</summary>
-        public static void unit_impervious(bool boolean)
+        public static void unit_impervious(Entity unit, bool boolean)
         {
         }
 
@@ -2228,7 +2240,7 @@ namespace OpenH2.Engine.Scripting
         }
 
         /// <summary>can be used to prevent the player from entering a vehicle</summary>
-        public static void unit_set_enterable_by_player(bool boolean)
+        public static void unit_set_enterable_by_player(Unit unit, bool boolean)
         {
         }
 
@@ -2243,17 +2255,17 @@ namespace OpenH2.Engine.Scripting
         }
 
         /// <summary>stops the custom animation running on the given unit.</summary>
-        public static void unit_stop_custom_animation()
+        public static void unit_stop_custom_animation(Unit unit)
         {
         }
 
         /// <summary>sets a group of units' current body and shield vitality</summary>
-        public static void units_set_current_vitality(float body, float shield)
+        public static void units_set_current_vitality(ObjectList units, float body, float shield)
         {
         }
 
         /// <summary>sets a group of units' maximum body and shield vitality</summary>
-        public static void units_set_maximum_vitality(float body, float shield)
+        public static void units_set_maximum_vitality(ObjectList units, float body, float shield)
         {
         }
 

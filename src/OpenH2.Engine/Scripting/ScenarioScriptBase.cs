@@ -5,6 +5,9 @@ namespace OpenH2.Engine.Scripting
     public class ScenarioScriptBase
     {
         public Team player;
+        public Team human;
+        public Team prophet;
+        public Team covenant;
         public short cinematic_letterbox_style;
         public AI ai_current_actor;
         public AI ai_current_squad;

@@ -8,12 +8,19 @@ namespace OpenH2.ScriptAnalysis
     public class MemberNameRepository
     {
         private Dictionary<string, List<RegisteredName>> originalNameLookup = new Dictionary<string, List<RegisteredName>>();
+        private HashSet<string> finalNames = new HashSet<string>();
 
         public Dictionary<string, MemberNameRepository> NestedRepos = new Dictionary<string, MemberNameRepository>();
 
         public string RegisterName(string desiredName, string type, int? index = null)
         {
             var key = SimplifiedKey(desiredName);
+
+            if(string.IsNullOrWhiteSpace(desiredName))
+            {
+                desiredName = "Unnamed";
+            }
+
             var sanitized = SyntaxUtil.SanitizeMemberAccess(desiredName);
 
             var name = new RegisteredName()
@@ -23,12 +30,12 @@ namespace OpenH2.ScriptAnalysis
                 Index = index,
             };
 
+            var attempt = 0;
+            var attemptName = sanitized;
+
             if (originalNameLookup.TryGetValue(key, out var nameSlot))
             {
-                // iteratively unique the name
-                var attempt = 0;
-                var attemptName = sanitized;
-                while (nameSlot.Any(n => n.UniqueName == attemptName))
+                while (nameSlot.Any(n => n.UniqueName == attemptName) || finalNames.Contains(attemptName))
                 {
                     attempt++;
                     attemptName = sanitized + attempt;
@@ -36,14 +43,21 @@ namespace OpenH2.ScriptAnalysis
 
                 name.UniqueName = attemptName;
                 nameSlot.Add(name);
-                return name.UniqueName;
             }
             else
             {
-                name.UniqueName = sanitized;
+                while (finalNames.Contains(attemptName))
+                {
+                    attempt++;
+                    attemptName = sanitized + attempt;
+                }
+
+                name.UniqueName = attemptName;
                 originalNameLookup.Add(key, new List<RegisteredName>() { name });
-                return name.UniqueName;
             }
+
+            finalNames.Add(name.UniqueName);
+            return name.UniqueName;
         }
 
         public bool TryGetName(string desiredName, string type, int? index, out string result)
@@ -78,9 +92,19 @@ namespace OpenH2.ScriptAnalysis
                 }
                 else
                 {
-                    throw new Exception("DOes this happen?");
-                    result = null;
-                    return false;
+
+                    var indexMatch = typeNames.FirstOrDefault(n => n.Index == index);
+
+                    if(indexMatch != null)
+                    {
+                        result = indexMatch.UniqueName;
+                        return true;
+                    }
+                    else
+                    {
+                        result = null;
+                        return false;
+                    }
                 }
             }
         }

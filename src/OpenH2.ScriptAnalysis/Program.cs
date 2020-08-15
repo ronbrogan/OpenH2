@@ -5,6 +5,7 @@ using OpenH2.Core.Extensions;
 using OpenH2.Core.Factories;
 using OpenH2.Core.Scripting;
 using OpenH2.Core.Tags.Scenario;
+using OpenH2.Engine.Scripting;
 using OpenH2.ScriptAnalysis.GenerationState;
 using System;
 using System.Collections.Generic;
@@ -35,7 +36,7 @@ namespace OpenH2.ScriptAnalysis
 
             foreach(var map in maps)
             {
-                if (map.Contains("05a") == false)
+                if(map.Contains("07b") == false)
                 {
                     continue;
                 }
@@ -66,6 +67,13 @@ namespace OpenH2.ScriptAnalysis
                 {
                     var method = scnr.ScriptMethods[i];
                     var returnedName = repo.RegisterName(method.Description, ScriptDataType.ScriptReference.ToString(), i);
+                }
+
+                var baseFields = typeof(ScenarioScriptBase).GetFields();
+
+                foreach(var field in baseFields)
+                {
+                    repo.RegisterName(field.Name, SyntaxUtil.ScriptTypeFromType(field.FieldType).ToString());
                 }
 
                 // Generate data properties

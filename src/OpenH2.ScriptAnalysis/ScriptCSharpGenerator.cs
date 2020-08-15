@@ -45,11 +45,8 @@ namespace OpenH2.ScriptAnalysis
         private Scope currentScope => scopes.Peek();
         private Stack<Scope> scopes;
         private ContinuationStack<int> childIndices;
-        private List<(ScenarioTag.ScriptSyntaxNode, IGenerationContext)> pendingGenerators = new List<(ScenarioTag.ScriptSyntaxNode, IGenerationContext)>();
 
         public const string EngineImplementationClass = "OpenH2.Engine.Scripting.ScriptEngine";
-
-        public event GenerationCallback OnNodeEnd;
 
         public ScriptCSharpGenerator(ScenarioTag scnr, MemberNameRepository nameRepo, string[] refrences = null, AttributeSyntax[] classAttributes = null)
         {
@@ -435,12 +432,6 @@ namespace OpenH2.ScriptAnalysis
 
         private void HandleNodeEnd(ScenarioTag.ScriptSyntaxNode node)
         {
-            this.OnNodeEnd?.Invoke(new GenerationCallbackArgs()
-            {
-                Node = node,
-                Scope = currentScope
-            });
-
             // Only generate into parent scope when the current scope ends
             if(node == currentScope.Context.OriginalNode)
             {

@@ -16,7 +16,9 @@ namespace OpenH2.Core.Scripting
     {
         Startup = 0,
         Dormant = 1,
+        Continuous = 2,
         Static = 3,
+        Stub = 4,
         CommandScript = 5
     }
 }

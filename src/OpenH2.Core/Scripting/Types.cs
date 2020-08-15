@@ -1,6 +1,6 @@
 ﻿namespace OpenH2.Core.Scripting
 {
-    public class AI { }
+    public class AI : Unit { }
     //public class AIScript { }
     public delegate void AIScript();
     public class Device : Entity { }
@@ -40,7 +40,7 @@
     public class Damage { }
     public class DamageState { }
     public class SpatialPoint { }
-    public class ReferenceGet { }
+    public class ReferenceGet : Entity { }
 
     public class OriginScenarioAttribute : System.Attribute
     {

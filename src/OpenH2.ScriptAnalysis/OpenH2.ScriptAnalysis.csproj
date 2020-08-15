@@ -7,6 +7,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\OpenH2.Core\OpenH2.Core.csproj" />
+    <ProjectReference Include="..\OpenH2.Engine\OpenH2.Engine.csproj" />
     <PackageReference Include="Microsoft.CodeAnalysis.Workspaces.Common" Version="3.6.0" />
     <PackageReference Include="TextCopy" Version="4.2.0" />
     <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="3.6.0" />
