@@ -1237,7 +1237,7 @@ namespace OpenH2.Engine.Scripting
         }
 
         /// <summary>returns the number of objects in a list that aren't dead</summary>
-        public static short list_count_not_dead()
+        public static short list_count_not_dead(ObjectList objects)
         {
             return default(short);
         }
@@ -1642,12 +1642,6 @@ namespace OpenH2.Engine.Scripting
         }
 
         /// <summary>returns true if any of the specified units are looking within the specified number of degrees of the object.</summary>
-        public static bool objects_can_see_object(Entity entity, Entity obj, float degrees)
-        {
-            return default(bool);
-        }
-
-        /// <summary>returns true if any of the specified units are looking within the specified number of degrees of the object.</summary>
         public static bool objects_can_see_object(ObjectList list, EntityIdentifier obj, float degrees)
         {
             return default(bool);
@@ -1680,6 +1674,12 @@ namespace OpenH2.Engine.Scripting
             return default(float);
         }
 
+        /// <summary>returns minimum distance from any of the specified objects to the specified flag. (returns -1 if there are no objects, or no flag, to check)</summary>
+        public static float objects_distance_to_flag(Entity entity, LocationFlag locationFlag)
+        {
+            return default(float);
+        }
+
         /// <summary>returns minimum distance from any of the specified objects to the specified destination object. (returns -1 if there are no objects to check)</summary>
         public static float objects_distance_to_object(ObjectList list, Entity entity)
         {
@@ -1692,12 +1692,12 @@ namespace OpenH2.Engine.Scripting
         }
 
         /// <summary>loads textures/geometry/sounds necessary to present objects that are about to come on-screen</summary>
-        public static void objects_predict()
+        public static void objects_predict(Entity entity)
         {
         }
 
         /// <summary>loads textures/geometry/sounds necessary to present objects that are about to come on-screen</summary>
-        public static void objects_predict_high()
+        public static void objects_predict_high(Entity entity)
         {
         }
 
@@ -2030,7 +2030,7 @@ namespace OpenH2.Engine.Scripting
         }
 
         /// <summary>stops the specified impulse sound.</summary>
-        public static void sound_impulse_stop()
+        public static void sound_impulse_stop(ReferenceGet sound)
         {
         }
 
@@ -2127,7 +2127,7 @@ namespace OpenH2.Engine.Scripting
         }
 
         /// <summary>prevents any of the given units from dropping weapons or grenades when they die</summary>
-        public static void unit_doesnt_drop_items()
+        public static void unit_doesnt_drop_items(ObjectList entities)
         {
         }
 
@@ -2205,12 +2205,12 @@ namespace OpenH2.Engine.Scripting
         }
 
         /// <summary>kills a given unit silently (doesn't make them play their normal death animation or sound)</summary>
-        public static void unit_kill_silent()
+        public static void unit_kill_silent(Unit unit)
         {
         }
 
         /// <summary>used for the tartarus boss fight</summary>
-        public static void unit_only_takes_damage_from_players_team(bool boolean)
+        public static void unit_only_takes_damage_from_players_team(Unit unit, bool boolean)
         {
         }
 
@@ -2281,12 +2281,12 @@ namespace OpenH2.Engine.Scripting
         }
 
         /// <summary>makes a list of units (named or by encounter) magically get into a vehicle, in the substring-specified seats (e.g. CD-passenger... empty string matches all seats)</summary>
-        public static void vehicle_load_magic(Entity vehicle, /*VehicleSeat*/ string vehicleSeat, Unit unit)
+        public static void vehicle_load_magic(Entity vehicle, /*VehicleSeat*/ string vehicleSeat, Entity unit)
         {
         }
 
         /// <summary>tests whether the named seat has a specified unit in it (use "" to test all seats for this unit)</summary>
-        public static bool vehicle_test_seat(string /*id*/ emotion)
+        public static bool vehicle_test_seat(Vehicle vehicle, string  seat, Unit unit)
         {
             return default(bool);
         }
@@ -2351,6 +2351,12 @@ namespace OpenH2.Engine.Scripting
 
         /// <summary>returns true if any (rb: all?) of the specified objects are within the specified volume. trigger volume must have been postprocessed</summary>
         public static bool volume_test_objects_all(Trigger trigger, ObjectList object_list)
+        {
+            return default(bool);
+        }
+
+        /// <summary>returns true if any (rb: all?) of the specified objects are within the specified volume. trigger volume must have been postprocessed</summary>
+        public static bool volume_test_objects_all(Trigger trigger, Entity entity)
         {
             return default(bool);
         }

@@ -5,7 +5,12 @@
     public delegate void AIScript();
     public class Device : Entity { }
     public class EntityIdentifier { }
-    public class Entity { }
+    public class Entity 
+    { 
+        public EntityIdentifier Identifier { get; set; }
+
+        public static implicit operator EntityIdentifier (Entity e) => e.Identifier;
+    }
     public class Trigger { }
     public class Animation { }
     public class LocationFlag { }
