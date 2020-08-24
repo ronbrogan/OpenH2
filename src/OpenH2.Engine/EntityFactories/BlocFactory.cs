@@ -20,17 +20,14 @@ namespace OpenH2.Engine.EntityFactories
             var bloc = scenario.BlocDefinitions[instance.BlocDefinitionIndex].Bloc;
             map.TryGetTag(bloc, out var tag);
 
-            var comp = new RenderModelComponent(scenery)
+            var comp = new RenderModelComponent(scenery, new Model<BitmapTag>
             {
-                RenderModel = new Model<BitmapTag>
-                {
-                    Note = $"[{tag.Id}] {tag.Name}",
-                    //Position = instance.Position,
-                    //Orientation = instance.Orientation.ToQuaternion(),
-                    Flags = ModelFlags.Diffuse | ModelFlags.CastsShadows | ModelFlags.ReceivesShadows,
-                    Meshes = MeshFactory.GetRenderModel(map, tag.PhysicalModel)
-                }
-            };
+                Note = $"[{tag.Id}] {tag.Name}",
+                //Position = instance.Position,
+                //Orientation = instance.Orientation.ToQuaternion(),
+                Flags = ModelFlags.Diffuse | ModelFlags.CastsShadows | ModelFlags.ReceivesShadows,
+                Meshes = MeshFactory.GetRenderModel(map, tag.PhysicalModel)
+            });
 
             var orientation = QuaternionExtensions.FromH2vOrientation(instance.Orientation);
             var xform = new TransformComponent(scenery, instance.Position, orientation);

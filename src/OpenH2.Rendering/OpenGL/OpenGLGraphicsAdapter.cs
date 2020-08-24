@@ -9,11 +9,14 @@ using OpenToolkit.Graphics.OpenGL;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Drawing;
+using System.Linq;
 using System.Numerics;
+using System.Runtime.InteropServices;
 
 namespace OpenH2.Rendering.OpenGL
 {
-    public class OpenGLGraphicsAdapter : IGraphicsAdapter
+    public partial class OpenGLGraphicsAdapter : IGraphicsAdapter
     {
         // Uniform index used in shaders
         private class UniformIndices
@@ -23,13 +26,11 @@ namespace OpenH2.Rendering.OpenGL
             public const int Transform = 2;
         }
 
-        private Dictionary<Mesh<BitmapTag>, uint> meshLookup = new Dictionary<Mesh<BitmapTag>, uint>();
         private Dictionary<IMaterial<BitmapTag>, MaterialBindings> boundMaterials = new Dictionary<IMaterial<BitmapTag>, MaterialBindings>();
         private ITextureBinder textureBinder = new OpenGLTextureBinder();
 
         private Shader activeShader;
         private Dictionary<Shader, int> shaderHandles = new Dictionary<Shader, int>();
-        private Dictionary<Shader, int> uniformHandles = new Dictionary<Shader, int>();
 
         private int GlobalUniformHandle;
         private GlobalUniform GlobalUniform;
@@ -82,27 +83,53 @@ namespace OpenH2.Rendering.OpenGL
             LightingUniform.PointLights = newLights.ToArray();
         }
 
-        public uint UploadMesh(Mesh<BitmapTag> mesh)
+        public int UploadModel(Model<BitmapTag> model, out DrawCommand[] meshCommands)
         {
-            var verticies = mesh.Verticies;
-            var indicies = mesh.Indicies;
-
-            uint vao, vbo, ibo;
+            int vao, vbo, ibo;
 
             GL.GenVertexArrays(1, out vao);
             GL.BindVertexArray(vao);
 
+            var vertCount = model.Meshes.Sum(m => m.Verticies.Length);
+            var indxCount = model.Meshes.Sum(m => m.Indicies.Length);
+
+            meshCommands = new DrawCommand[model.Meshes.Length];
+            var vertices = new VertexFormat[vertCount];
+            var indices = new int[indxCount];
+
+            var currentVert = 0;
+            var currentIndx = 0;
+
+            for(var i = 0; i < model.Meshes.Length; i++)
+            {
+                var mesh = model.Meshes[i];
+
+                var command = new DrawCommand(mesh)
+                {
+                    VaoHandle = vao,
+                    IndexBase = currentIndx,
+                    VertexBase = currentVert
+                };
+
+                Array.Copy(mesh.Verticies, 0, vertices, currentVert, mesh.Verticies.Length);
+                currentVert += mesh.Verticies.Length;
+
+                Array.Copy(mesh.Indicies, 0, indices, currentIndx, mesh.Indicies.Length);
+                currentIndx += mesh.Indicies.Length;
+
+                meshCommands[i] = command;
+            }
+
             GL.GenBuffers(1, out vbo);
             GL.BindBuffer(BufferTarget.ArrayBuffer, vbo);
-            GL.BufferData(BufferTarget.ArrayBuffer, (IntPtr)(verticies.Length * VertexFormat.Size), verticies, BufferUsageHint.StaticDraw);
+            GL.BufferData(BufferTarget.ArrayBuffer, (IntPtr)(vertices.Length * VertexFormat.Size), vertices, BufferUsageHint.StaticDraw);
 
             GL.GenBuffers(1, out ibo);
             GL.BindBuffer(BufferTarget.ElementArrayBuffer, ibo);
-            GL.BufferData(BufferTarget.ElementArrayBuffer, (IntPtr)(indicies.Length * sizeof(uint)), indicies, BufferUsageHint.StaticDraw);
+            GL.BufferData(BufferTarget.ElementArrayBuffer, (IntPtr)(indices.Length * sizeof(int)), indices, BufferUsageHint.StaticDraw);
 
             SetupVertexFormatAttributes();
 
-            meshLookup[mesh] = vao;
             return vao;
         }
 
@@ -168,59 +195,66 @@ namespace OpenH2.Rendering.OpenGL
             SetupTransformUniform(new TransformUniform(transform, inverted));
         }
 
-        // PERF: sort calls by material and vao and deduplicate GL calls 
-        public void DrawMesh(Mesh<BitmapTag> mesh)
+        public void DrawMeshes(DrawCommand[] commands)
         {
-            SetupLighting();
-
-            var bindings = SetupTextures(mesh.Material);
-
-            CreateAndBindShaderUniform(mesh, bindings);
-
-            BindMesh(mesh);
-
-            var type = mesh.ElementType;
-            var indicies = mesh.Indicies;
-
-            switch (type)
+            for(var i = 0; i < commands.Length; i++)
             {
-                case MeshElementType.TriangleList:
-                    GL.DrawElements(PrimitiveType.Triangles, indicies.Length, DrawElementsType.UnsignedInt, 0);
-                    break;
-                case MeshElementType.TriangleStrip:
-                case MeshElementType.TriangleStripDecal:
-                    GL.DrawElements(PrimitiveType.TriangleStrip, indicies.Length, DrawElementsType.UnsignedInt, 0);
-                    break;
-                case MeshElementType.Point:
-                    GL.DrawElements(PrimitiveType.Points, indicies.Length, DrawElementsType.UnsignedInt, 0);
-                    break;
-                default:
-                    GL.DrawElements(PrimitiveType.Triangles, indicies.Length, DrawElementsType.UnsignedInt, 0);
-                    break;
-            }
+                ref DrawCommand command = ref commands[i];
 
-            mesh.Dirty = false;
+                SetupLighting();
+
+                BindOrCreateShaderUniform(ref command);
+                BindVao(ref command);
+
+                var primitiveType = command.ElementType switch
+                {
+                    MeshElementType.TriangleList => PrimitiveType.Triangles,
+                    MeshElementType.TriangleStrip => PrimitiveType.TriangleStrip,
+                    MeshElementType.TriangleStripDecal => PrimitiveType.TriangleStrip,
+                    MeshElementType.Point => PrimitiveType.Points,
+                    _ => PrimitiveType.Triangles
+                };
+
+                GL.DrawElementsBaseVertex(primitiveType,
+                    command.IndiciesCount,
+                    DrawElementsType.UnsignedInt,
+                    (IntPtr)(command.IndexBase * sizeof(int)), 
+                    command.VertexBase);
+            }
         }
 
         private Dictionary<IMaterial<BitmapTag>, int[]> MaterialUniforms = new Dictionary<IMaterial<BitmapTag>, int[]>();
-        private void CreateAndBindShaderUniform(Mesh<BitmapTag> mesh, MaterialBindings bindings)
+
+        private int currentlyBoundShaderUniform = -1;
+        private void BindOrCreateShaderUniform(ref DrawCommand command)
         {
-            if (MaterialUniforms.TryGetValue(mesh.Material, out var uniforms) == false)
-            {
-                uniforms = new int[(int)Shader.MAX_VALUE];
-                MaterialUniforms[mesh.Material] = uniforms;
-            }
-
-            var existingUniformHandle = uniforms[(int)activeShader];
-
             // If the uniform was already buffered, we'll just reuse that buffered uniform
             // Currently these material uniforms never change at runtime - if this changes
             // there will have to be some sort of invalidation to ensure they're updated
-            if(existingUniformHandle != 0)
+            if (command.ShaderUniformHandle != -1)
             {
-                GL.BindBufferBase(BufferRangeTarget.UniformBuffer, UniformIndices.Shader, existingUniformHandle);
-                return;
+                if(command.ShaderUniformHandle != currentlyBoundShaderUniform)
+                {
+                    GL.BindBufferBase(BufferRangeTarget.UniformBuffer, UniformIndices.Shader, command.ShaderUniformHandle);
+                }
             }
+            else
+            {
+                if (MaterialUniforms.TryGetValue(command.Mesh.Material, out var uniforms) == false)
+                {
+                    uniforms = new int[(int)Shader.MAX_VALUE];
+                    MaterialUniforms[command.Mesh.Material] = uniforms;
+                }
+
+                var bindings = SetupTextures(command.Mesh.Material);
+                command.ShaderUniformHandle = GenerateShaderUniform(command.Mesh, bindings);
+                uniforms[(int)activeShader] = command.ShaderUniformHandle;
+            }
+        }
+
+        private int GenerateShaderUniform(Mesh<BitmapTag> mesh, MaterialBindings bindings)
+        {
+            var existingUniformHandle = 0;
 
             switch (activeShader)
             {
@@ -250,21 +284,18 @@ namespace OpenH2.Rendering.OpenGL
                     break;
             }
 
-            uniforms[(int)activeShader] = existingUniformHandle;
+            return existingUniformHandle;
         }
 
-        private long currentVao = -1;
-        private void BindMesh(Mesh<BitmapTag> mesh)
+        private int currentVao = -1;
+        private void BindVao(ref DrawCommand command)
         {
-            if (mesh.Dirty || meshLookup.TryGetValue(mesh, out var vaoId) == false)
-            {
-                vaoId = UploadMesh(mesh);
-            }
+            Debug.Assert(command.VaoHandle != -1);
 
-            if (currentVao != vaoId)
+            if (currentVao != command.VaoHandle)
             {
-                GL.BindVertexArray(vaoId);
-                currentVao = vaoId;
+                GL.BindVertexArray(command.VaoHandle);
+                currentVao = command.VaoHandle;
             }
         }
 

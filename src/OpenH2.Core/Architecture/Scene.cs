@@ -8,8 +8,6 @@ namespace OpenH2.Core.Architecture
     {
         public Dictionary<Guid, Entity> Entities { get; private set; } = new Dictionary<Guid, Entity>();
 
-        public List<Component> Components { get; private set; }
-
         public event EntityEventHandler OnEntityAdd = delegate { };
         public event EntityEventHandler OnEntityRemove = delegate { };
 

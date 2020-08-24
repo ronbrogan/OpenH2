@@ -51,15 +51,12 @@ namespace OpenH2.Engine.EntityFactories
                 });
             }
 
-            var comp = new RenderModelComponent(scenery)
+            var comp = new RenderModelComponent(scenery, new Model<BitmapTag>
             {
-                RenderModel = new Model<BitmapTag>
-                {
-                    Note = $"[{tag.Id}] {tag.Name}",
-                    Meshes = renderModelMeshes.ToArray(),
-                    Flags = ModelFlags.IsSkybox
-                }
-            };
+                Note = $"[{tag.Id}] {tag.Name}",
+                Meshes = renderModelMeshes.ToArray(),
+                Flags = ModelFlags.IsSkybox
+            });
 
             var components = new List<Component>();
             components.Add(comp);

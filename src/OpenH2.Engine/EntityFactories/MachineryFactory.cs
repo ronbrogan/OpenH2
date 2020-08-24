@@ -33,15 +33,12 @@ namespace OpenH2.Engine.EntityFactories
                 return scenery;
             }
 
-            var comp = new RenderModelComponent(scenery)
+            var comp = new RenderModelComponent(scenery, new Model<BitmapTag>
             {
-                RenderModel = new Model<BitmapTag>
-                {
-                    Note = $"[{tag.Id}] {tag.Name}",
-                    Meshes = MeshFactory.GetRenderModel(map, tag.PhysicalModel),
-                    Flags = ModelFlags.Diffuse | ModelFlags.CastsShadows | ModelFlags.ReceivesShadows
-                }
-            };
+                Note = $"[{tag.Id}] {tag.Name}",
+                Meshes = MeshFactory.GetRenderModel(map, tag.PhysicalModel),
+                Flags = ModelFlags.Diffuse | ModelFlags.CastsShadows | ModelFlags.ReceivesShadows
+            });
 
             var orientation = QuaternionExtensions.FromH2vOrientation(instance.Orientation);
             var xform = new TransformComponent(scenery, instance.Position, orientation);

@@ -16,7 +16,9 @@ namespace OpenH2.Rendering.Abstractions
         void SetSunLight(Vector3 sunDirection);
         void AddLight(PointLight light);
         void UseTransform(Matrix4x4 transform);
-        void DrawMesh(Mesh<BitmapTag> mesh);
+        void DrawMeshes(DrawCommand[] commands);
         void EndFrame();
+
+        int UploadModel(Model<BitmapTag> model, out DrawCommand[] meshCommands);
     }
 }

@@ -4,7 +4,7 @@ using System.Text;
 
 namespace OpenH2.Rendering
 {
-    public class MaterialBindings
+    public struct MaterialBindings
     {
         public long DiffuseHandle { get; set; }
         public long AlphaHandle { get; set; }

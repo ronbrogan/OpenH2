@@ -202,10 +202,7 @@ namespace OpenH2.Engine
                 var color = VectorExtensions.RandomColor(200);
 
                 var item = new Light();
-                var model = new RenderModelComponent(item)
-                {
-                    RenderModel = ModelFactory.HalfTriangularThing(color)
-                };
+                var model = new RenderModelComponent(item, ModelFactory.HalfTriangularThing(color));
 
                 var xform = new TransformComponent(item, position);
 

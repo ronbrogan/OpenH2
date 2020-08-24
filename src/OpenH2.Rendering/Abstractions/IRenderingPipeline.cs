@@ -10,7 +10,8 @@ namespace OpenH2.Rendering.Abstractions
     /// </summary>
     public interface IRenderingPipeline<TMaterialMap>
     {
-        void SetModels(IList<(Model<TMaterialMap>, Matrix4x4)> models);
+        //void SetModels(IList<(Model<TMaterialMap>, Matrix4x4)> models);
+        void SetModels(IList<DrawGroup> models);
         void AddPointLight(PointLight light);
 
         //void AddUI();

@@ -1,6 +1,4 @@
-﻿using OpenH2.Core.Tags;
-using OpenH2.Foundation;
-using System.Diagnostics;
+﻿using OpenH2.Foundation;
 using System.Runtime.CompilerServices;
 
 namespace OpenH2.Rendering.Pipelines
@@ -8,51 +6,39 @@ namespace OpenH2.Rendering.Pipelines
     public static class RenderPasses
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool IsSkybox(Model<BitmapTag> model)
+        public static bool IsSkybox(DrawGroup model)
         {
-            Debug.Assert(model != null);
-
             return (model.Flags & ModelFlags.IsSkybox) == ModelFlags.IsSkybox;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool IsShadowInteractable(Model<BitmapTag> model)
+        public static bool IsShadowInteractable(DrawGroup model)
         {
-            Debug.Assert(model != null);
-
             return (model.Flags & ModelFlags.CastsShadows) == ModelFlags.CastsShadows
                 || (model.Flags & ModelFlags.ReceivesShadows) == ModelFlags.ReceivesShadows;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool IsDiffuse(Model<BitmapTag> model)
+        public static bool IsDiffuse(DrawGroup model)
         {
-            Debug.Assert(model != null);
-
             return (model.Flags & ModelFlags.Diffuse) == ModelFlags.Diffuse;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool IsWireframe(Model<BitmapTag> model)
+        public static bool IsWireframe(DrawGroup model)
         {
-            Debug.Assert(model != null);
-
             return (model.Flags & ModelFlags.Wireframe) == ModelFlags.Wireframe;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool IsDebugviz(Model<BitmapTag> model)
+        public static bool IsDebugviz(DrawGroup model)
         {
-            Debug.Assert(model != null);
-
             return (model.Flags & ModelFlags.DebugViz) == ModelFlags.DebugViz;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool IsTransparent(Model<BitmapTag> model)
+        public static bool IsTransparent(DrawGroup model)
         {
-            Debug.Assert(model != null);
-
             return (model.Flags & ModelFlags.IsTransparent) == ModelFlags.IsTransparent;
         }
     }

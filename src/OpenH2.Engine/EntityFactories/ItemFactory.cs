@@ -61,18 +61,15 @@ namespace OpenH2.Engine.EntityFactories
                 var entity = new Item();
                 var components = new List<Component>();
 
-                components.Add(new RenderModelComponent(entity)
+                components.Add(new RenderModelComponent(entity, new Model<BitmapTag>
                 {
-                    RenderModel = new Model<BitmapTag>
-                    {
-                        Note = $"[{itmc.Id}] {itmc.Name}",
-                        //Position = instance.Position,
-                        //Orientation = baseRotation,
-                        //Scale = new Vector3(1.3f),
-                        Flags = ModelFlags.Diffuse | ModelFlags.CastsShadows | ModelFlags.ReceivesShadows,
-                        Meshes = MeshFactory.GetRenderModel(map, itemHlmt)
-                    }
-                });
+                    Note = $"[{itmc.Id}] {itmc.Name}",
+                    //Position = instance.Position,
+                    //Orientation = baseRotation,
+                    //Scale = new Vector3(1.3f),
+                    Flags = ModelFlags.Diffuse | ModelFlags.CastsShadows | ModelFlags.ReceivesShadows,
+                    Meshes = MeshFactory.GetRenderModel(map, itemHlmt)
+                }));
 
                 var xform = new TransformComponent(entity, instance.Position, QuaternionExtensions.FromH2vOrientation(instance.Orientation));
                 components.Add(xform);
@@ -127,18 +124,15 @@ namespace OpenH2.Engine.EntityFactories
 
             components.Add(xform);
 
-            components.Add(new RenderModelComponent(item)
+            components.Add(new RenderModelComponent(item, new Model<BitmapTag>
             {
-                RenderModel = new Model<BitmapTag>
-                {
-                    Note = $"[{vehi.Id}] {vehi.Name}",
-                    //Position = instance.Position,
-                    //Orientation = baseRotation,
-                    //Scale = new Vector3(1.3f),
-                    Flags = ModelFlags.Diffuse | ModelFlags.CastsShadows | ModelFlags.ReceivesShadows,
-                    Meshes = MeshFactory.GetRenderModel(map, vehi.Hlmt)
-                }
-            });
+                Note = $"[{vehi.Id}] {vehi.Name}",
+                //Position = instance.Position,
+                //Orientation = baseRotation,
+                //Scale = new Vector3(1.3f),
+                Flags = ModelFlags.Diffuse | ModelFlags.CastsShadows | ModelFlags.ReceivesShadows,
+                Meshes = MeshFactory.GetRenderModel(map, vehi.Hlmt)
+            }));
 
             components.Add(PhysicsComponentFactory.CreateDynamicRigidBody(item, xform, map, vehi.Hlmt));
 

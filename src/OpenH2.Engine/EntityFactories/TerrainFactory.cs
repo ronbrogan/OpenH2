@@ -44,14 +44,11 @@ namespace OpenH2.Engine.EntityFactories
                 });
             }
 
-            var renderModel = new RenderModelComponent(terrain)
+            var renderModel = new RenderModelComponent(terrain, new Model<BitmapTag>
             {
-                RenderModel = new Model<BitmapTag>
-                {
-                    Meshes = renderModelMeshes.ToArray(),
-                    Flags = ModelFlags.Diffuse | ModelFlags.ReceivesShadows | ModelFlags.IsStatic
-                }
-            };
+                Meshes = renderModelMeshes.ToArray(),
+                Flags = ModelFlags.Diffuse | ModelFlags.ReceivesShadows | ModelFlags.IsStatic
+            });
 
             var collisionTerrain = PhysicsComponentFactory.CreateTerrain(terrain, tag.CollisionInfos, tag.Shaders);
 

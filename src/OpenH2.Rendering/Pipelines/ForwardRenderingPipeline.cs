@@ -1,9 +1,9 @@
 ﻿using OpenH2.Core.Tags;
-using OpenH2.Foundation;
 using OpenH2.Rendering.Abstractions;
 using OpenH2.Rendering.Shaders;
+using System;
 using System.Collections.Generic;
-using System.Numerics;
+using System.Diagnostics;
 using PointLight = OpenH2.Foundation.PointLight;
 
 namespace OpenH2.Rendering.Pipelines
@@ -12,7 +12,7 @@ namespace OpenH2.Rendering.Pipelines
     {
         private readonly IGraphicsAdapter adapter;
 
-        private IList<(Model<BitmapTag>, Matrix4x4)> renderables = new List<(Model<BitmapTag>, Matrix4x4)>();
+        private IList<DrawGroup> renderables = new List<DrawGroup>();
         private List<PointLight> pointLights = new List<PointLight>();
 
         public ForwardRenderingPipeline(IGraphicsAdapter graphicsAdapter)
@@ -20,11 +20,7 @@ namespace OpenH2.Rendering.Pipelines
             this.adapter = graphicsAdapter;
         }
 
-        /// <summary>
-        /// Should be called for each object that to be drawn each frame
-        /// </summary>
-        /// <param name="meshes"></param>
-        public void SetModels(IList<(Model<BitmapTag>, Matrix4x4)> models)
+        public void SetModels(IList<DrawGroup> models)
         {
             renderables = models;
         }
@@ -34,11 +30,15 @@ namespace OpenH2.Rendering.Pipelines
             this.pointLights.Add(light);
         }
 
+        private Stopwatch drawElapsed = new Stopwatch();
+
         /// <summary>
         /// Kicks off the draw calls to the graphics adapter
         /// </summary>
         public void DrawAndFlush()
         {
+            drawElapsed.Restart();
+
             foreach(var light in pointLights)
             {
                 this.adapter.AddLight(light);
@@ -48,30 +48,24 @@ namespace OpenH2.Rendering.Pipelines
             for (var i = 0; i < renderables.Count; i++)
             {
                 var renderable = renderables[i];
-                if(RenderPasses.IsSkybox(renderable.Item1))
+                if (RenderPasses.IsSkybox(renderable))
                 {
-                    this.adapter.UseTransform(renderable.Item2);
+                    this.adapter.UseTransform(renderable.Transform);
 
-                    foreach (var mesh in renderable.Item1.Meshes)
-                    {
-                        this.adapter.DrawMesh(mesh);
-                    }
+                    this.adapter.DrawMeshes(renderable.DrawCommands);
                 }
             }
 
-            // PERF: add in sorted order to prevent enumerating renderables multiple times
+            //// PERF: add in sorted order to prevent enumerating renderables multiple times
             this.adapter.UseShader(Shader.Generic);
             for (var i = 0; i < renderables.Count; i++)
             {
                 var renderable = renderables[i];
-                if (RenderPasses.IsDiffuse(renderable.Item1))
+                if (RenderPasses.IsDiffuse(renderable))
                 {
-                    this.adapter.UseTransform(renderable.Item2);
-
-                    foreach (var mesh in renderable.Item1.Meshes)
-                    {
-                        this.adapter.DrawMesh(mesh);
-                    }
+                    this.adapter.UseTransform(renderable.Transform);
+            
+                    this.adapter.DrawMeshes(renderable.DrawCommands);
                 }
             }
 
@@ -79,18 +73,19 @@ namespace OpenH2.Rendering.Pipelines
             for (var i = 0; i < renderables.Count; i++)
             {
                 var renderable = renderables[i];
-                if (RenderPasses.IsWireframe(renderable.Item1))
+                if (RenderPasses.IsWireframe(renderable))
                 {
-                    this.adapter.UseTransform(renderable.Item2);
+                    this.adapter.UseTransform(renderable.Transform);
 
-                    foreach (var mesh in renderable.Item1.Meshes)
-                    {
-                        this.adapter.DrawMesh(mesh);
-                    }
+                    this.adapter.DrawMeshes(renderable.DrawCommands);
                 }
             }
 
             pointLights.Clear();
+
+            drawElapsed.Stop();
+
+            Console.WriteLine("RenderTime: " + drawElapsed.ElapsedMilliseconds + "ms");
         }
     }
 }

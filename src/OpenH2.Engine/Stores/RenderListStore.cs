@@ -2,6 +2,7 @@
 using OpenH2.Core.Tags;
 using OpenH2.Engine.Components;
 using OpenH2.Foundation;
+using OpenH2.Rendering;
 using System.Collections.Generic;
 using System.Numerics;
 
@@ -9,14 +10,12 @@ namespace OpenH2.Engine.Stores
 {
     /// <summary>
     /// RenderListStore is responsible for storing the objects that need to be passed to the RenderingPipeline
-    /// Currently, this class is responsible for translating from engine models -> rendering models
-    /// TBD if this translation is necessary
     /// </summary>
     public class RenderListStore
     {
-        public List<(Model<BitmapTag>, Matrix4x4)> Models = new List<(Model<BitmapTag>, Matrix4x4)>();
-        public List<VertexFormat> Points = new List<VertexFormat>();
-        public List<PointLight> Lights = new List<PointLight>();
+        public List<DrawGroup> Models { get; } = new List<DrawGroup>();
+        public List<VertexFormat> Points { get; } = new List<VertexFormat>();
+        public List<PointLight> Lights { get; } = new List<PointLight>();
 
         public void Clear()
         {
@@ -25,47 +24,19 @@ namespace OpenH2.Engine.Stores
             Points.Clear();
         }
 
-        public void AddEntity(Entity entity)
+        public void Add(DrawGroup group)
         {
-            Model<BitmapTag> model = default;
-            var xformation = Matrix4x4.Identity;
-
-            if(entity.TryGetChild<RenderModelComponent>(out var renderModel))
-            {
-                model = renderModel.RenderModel;
-
-                xformation = model.CreateTransformationMatrix();
-            }
-
-            if (entity.TryGetChild<TransformComponent>(out var transform))
-            {
-                xformation = Matrix4x4.Multiply(xformation, transform.TransformationMatrix);
-            }
-
-            if(model != default)
-            {
-                Models.Add((model, xformation));
-            }
-
-            foreach(var bounds in entity.GetChildren<BoundsComponent>())
-            {
-                Models.Add((bounds.RenderModel, xformation));
-            }
-
-            if (entity.TryGetChild<PointLightEmitterComponent>(out var pointLight))
-            {
-                Lights.Add(new PointLight()
-                {
-                    Position = pointLight.Light.Position + xformation.Translation,
-                    Color = pointLight.Light.Color,
-                    Radius = pointLight.Light.Radius
-                });
-            }
+            this.Models.Add(group);
         }
 
-        public void AddModel(Model<BitmapTag> model, Matrix4x4 transform)
+        public void Add(VertexFormat point)
         {
-            Models.Add((model, transform));
+            this.Points.Add(point);
+        }
+
+        public void Add(PointLight light)
+        {
+            this.Lights.Add(light);
         }
     }
 }

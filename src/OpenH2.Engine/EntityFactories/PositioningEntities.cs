@@ -55,10 +55,7 @@ namespace OpenH2.Engine.EntityFactories
         private static void AddAtLocation(uint id, Vector3 position, Vector4 color, Scene destination)
         {
             var item = new Scenery();
-            var model = new RenderModelComponent(item)
-            {
-                RenderModel = ModelFactory.UnitPyramid(color)
-            };
+            var model = new RenderModelComponent(item, ModelFactory.UnitPyramid(color));
 
             var xform = new TransformComponent(item, position);
 

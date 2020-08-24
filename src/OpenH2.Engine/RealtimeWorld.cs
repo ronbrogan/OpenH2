@@ -18,8 +18,6 @@ namespace OpenH2.Engine
             Systems.Add(new PhysxPhysicsSystem(this));
             Systems.Add(new MoverSystem(this));
             Systems.Add(new CameraSystem(this));
-            Systems.Add(new RenderCollectorSystem(this));
-            
 
             globalResources.Add(new RenderListStore());
             globalResources.Add(new InputStore());
@@ -27,6 +25,7 @@ namespace OpenH2.Engine
 
         public void UseGraphicsAdapter(IGraphicsAdapter graphics)
         {
+            Systems.Add(new RenderCollectorSystem(this, graphics));
             RenderSystems.Add(new RenderPipelineSystem(this, graphics));
         }
 

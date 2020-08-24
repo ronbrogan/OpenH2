@@ -45,15 +45,12 @@ namespace OpenH2.Engine.EntityFactories
                 });
             }
 
-            var renderModel = new RenderModelComponent(scenery)
+            var renderModel = new RenderModelComponent(scenery, new Model<BitmapTag>
             {
-                RenderModel = new Model<BitmapTag>
-                {
-                    Note = $"[{bsp.Id}] {bsp.Name}//instanced//{instance.Index}",
-                    Meshes = renderModelMeshes.ToArray(),                   
-                    Flags = ModelFlags.Diffuse | ModelFlags.CastsShadows | ModelFlags.ReceivesShadows
-                }
-            };
+                Note = $"[{bsp.Id}] {bsp.Name}//instanced//{instance.Index}",
+                Meshes = renderModelMeshes.ToArray(),
+                Flags = ModelFlags.Diffuse | ModelFlags.CastsShadows | ModelFlags.ReceivesShadows
+            });
 
             var xform = new TransformComponent(scenery, instance.Position, QuaternionExtensions.From3x3Mat(instance.RotationMatrix))
             {
@@ -82,16 +79,13 @@ namespace OpenH2.Engine.EntityFactories
             var id = scenario.SceneryDefinitions[instance.SceneryDefinitionIndex].Scenery;
             map.TryGetTag(id, out var tag);
 
-            var comp = new RenderModelComponent(scenery)
+            var comp = new RenderModelComponent(scenery, new Model<BitmapTag>
             {
-                RenderModel = new Model<BitmapTag>
-                {
-                    Note = $"[{tag.Id}] {tag.Name}",
-                    Meshes = MeshFactory.GetRenderModel(map, tag.Model),
-                    Scale = new Vector3(1),
-                    Flags = ModelFlags.Diffuse | ModelFlags.CastsShadows | ModelFlags.ReceivesShadows
-                }
-            };
+                Note = $"[{tag.Id}] {tag.Name}",
+                Meshes = MeshFactory.GetRenderModel(map, tag.Model),
+                Scale = new Vector3(1),
+                Flags = ModelFlags.Diffuse | ModelFlags.CastsShadows | ModelFlags.ReceivesShadows
+            });
 
             var orientation = QuaternionExtensions.FromH2vOrientation(instance.Orientation);
             var xform = new TransformComponent(scenery, instance.Position, orientation);

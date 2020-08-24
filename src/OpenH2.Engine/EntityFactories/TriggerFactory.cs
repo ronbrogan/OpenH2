@@ -19,15 +19,13 @@ namespace OpenH2.Engine.EntityFactories
             var orient = QuaternionExtensions.FromH2vOrientation(tvDefinition.Orientation);
             var xform = new TransformComponent(ent, tvDefinition.Position, orient);
 
-            var renderModel = new RenderModelComponent(ent);
-
             //var lower = -(tvDefinition.Size / 2);
             //var upper = tvDefinition.Size / 2;
-            renderModel.RenderModel = ModelFactory.Cuboid(new Vector3(), tvDefinition.Size, new Vector4(1f, 1f, 0f, 0.5f));
-            renderModel.RenderModel.Flags |= Foundation.ModelFlags.Wireframe;
+            var renderModel = ModelFactory.Cuboid(new Vector3(), tvDefinition.Size, new Vector4(1f, 1f, 0f, 0.5f));
+            renderModel.Flags = Foundation.ModelFlags.Wireframe | Foundation.ModelFlags.Diffuse;
 
             comps.Add(xform);
-            comps.Add(renderModel);
+            comps.Add(new RenderModelComponent(ent, renderModel));
             
             ent.SetComponents(comps.ToArray());
             return ent;
