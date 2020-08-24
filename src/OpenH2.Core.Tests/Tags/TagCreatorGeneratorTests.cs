@@ -1,4 +1,5 @@
 ﻿using OpenH2.Core.Parsing;
+using OpenH2.Core.Representations;
 using OpenH2.Core.Tags;
 using OpenH2.Core.Tags.Layout;
 using OpenH2.Core.Tags.Serialization;
@@ -13,7 +14,7 @@ namespace OpenH2.Core.Tests.Tags
         [Fact]
         public void TestTag_DeserializesAllProperties()
         {
-            var magic = 100;
+            var map = new TestMap(secondaryMagic: 100);
 
             var gen = new TagCreatorGenerator();
 
@@ -21,7 +22,7 @@ namespace OpenH2.Core.Tests.Tags
 
             var reader = new TrackingReader(new MemoryStream(testTagData));
 
-            var tag = creator(1, "name", reader, magic, 0, testTagData.Length);
+            var tag = creator(1, "name", reader, map, 0, testTagData.Length);
 
             tag.PopulateExternalData(null);
 
@@ -42,6 +43,14 @@ namespace OpenH2.Core.Tests.Tags
             Assert.NotNull(tag.FirstSubValue);
 
             Assert.Equal("mt1", tag.FirstSubValue.SubSubTags[0].StringVal);
+        }
+
+        private class TestMap : H2vBaseMap
+        {
+            public TestMap(int secondaryMagic)
+            {
+                this.SecondaryMagic = secondaryMagic;
+            }
         }
 
         private class TestTag : BaseTag

@@ -99,6 +99,10 @@ namespace OpenH2.Core.Extensions
 
             var bytes = data.Slice(offset, 4);
 
+            // TODO: replace below with BitConverter call with span
+            // This is much faster, but requires netstandard2.1. Block on that upgrade until codegen doesn't depend on framework
+            //return BitConverter.ToInt32(bytes);
+
             var value = 0;
             var shift = 0;
 

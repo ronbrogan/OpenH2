@@ -6,17 +6,17 @@ namespace OpenH2.Core.Representations
     {
         public string Name => this.Header.Name;
 
-        public int PrimaryMagic { get; internal set; }
+        public int PrimaryMagic { get; set; }
 
-        public int SecondaryMagic { get; internal set; }
+        public int SecondaryMagic { get; set; }
 
-        public H2vMapHeader Header { get; internal set; }
+        public H2vMapHeader Header { get; set; }
 
-        public IndexHeader IndexHeader { get; internal set; }
+        public IndexHeader IndexHeader { get; set; }
 
-        public Dictionary<uint, TagIndexEntry> TagIndex { get; internal set; }
+        public Dictionary<uint, TagIndexEntry> TagIndex { get; set; }
 
-        public Dictionary<int, string> InternedStrings { get; internal set; }
+        public Dictionary<int, string> InternedStrings { get; set; }
         public Dictionary<uint, string> TagNames { get; set; }
     }
 }
