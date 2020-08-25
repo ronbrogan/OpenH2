@@ -1,5 +1,7 @@
-﻿using System;
+﻿using OpenH2.Core.Scripting;
+using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Security.Cryptography;
 
@@ -80,12 +82,7 @@ namespace OpenH2.ScriptAnalysis
                 // iteratively find correct name via type and index 
                 var typeNames = nameSlot.Where(n => n.TypeInfo == type);
 
-                if(typeNames.Count() == 0)
-                {
-                    result = string.Empty;
-                    return false;
-                }
-                else if(typeNames.Count() == 1)
+                if(typeNames.Count() == 1)
                 {
                     result = typeNames.First().UniqueName;
                     return true;
@@ -93,17 +90,28 @@ namespace OpenH2.ScriptAnalysis
                 else
                 {
 
-                    var indexMatch = typeNames.FirstOrDefault(n => n.Index == index);
+                    var typeIndexMatch = typeNames.FirstOrDefault(n => n.Index == index);
 
-                    if(indexMatch != null)
+                    if(typeIndexMatch != null)
                     {
-                        result = indexMatch.UniqueName;
+                        result = typeIndexMatch.UniqueName;
                         return true;
                     }
                     else
                     {
-                        result = null;
-                        return false;
+                        // Fallback to just look for same index. This supports using EntityIdentifier -> Typed vars
+                        var indexOnlyMatch = nameSlot.FirstOrDefault(n => n.Index == index);
+
+                        if (indexOnlyMatch != null)
+                        {
+                            result = indexOnlyMatch.UniqueName;
+                            return true;
+                        }
+                        else
+                        {
+                            result = null;
+                            return false;
+                        }
                     }
                 }
             }

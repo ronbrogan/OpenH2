@@ -140,7 +140,7 @@ namespace OpenH2.Core.Factories
 
             foreach (var item in index)
             {
-                if (item == null || item.DataSize == 0 || item.Offset.OriginalValue == 0)
+                if (item.DataSize == 0 || item.Offset.OriginalValue == 0)
                     continue;
 
                 var nameIndexOffset = (short)(item.ID & 0x0000FFFF) * 4;
@@ -165,7 +165,7 @@ namespace OpenH2.Core.Factories
 
             foreach(var item in index)
             {
-                if (item == null || item.DataSize == 0 || item.Offset.OriginalValue == 0)
+                if (item.DataSize == 0 || item.Offset.OriginalValue == 0)
                     continue;
 
                 dict[item.ID] = GetTag(scene, item, reader);
@@ -196,8 +196,8 @@ namespace OpenH2.Core.Factories
             head.OffsetToUnknownSection =          /**/  chunk.ReadInt32At(364);
             head.ScriptReferenceCount =            /**/  chunk.ReadInt32At(368);
             head.SizeOfScriptReference =           /**/  chunk.ReadInt32At(372);
-            head.InternedStringIndexOffset =    /**/  chunk.ReadInt32At(376);
-            head.InternedStringsOffset =  /**/  chunk.ReadInt32At(380);
+            head.InternedStringIndexOffset =       /**/  chunk.ReadInt32At(376);
+            head.InternedStringsOffset =           /**/  chunk.ReadInt32At(380);
             head.Name =                            /**/  chunk.ReadStringFrom(420, 32);
             head.ScenarioPath =                    /**/  chunk.ReadStringFrom(456, 256);
             head.FileCount =                       /**/  chunk.ReadInt32At(716);

@@ -4,7 +4,7 @@ using OpenH2.Core.Tags;
 
 namespace OpenH2.Core.Representations
 {
-    public class TagIndexEntry
+    public struct TagIndexEntry
     {
         public TagName Tag { get; set; }
         public uint ID { get; set; }
