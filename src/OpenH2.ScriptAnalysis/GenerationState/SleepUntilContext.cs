@@ -1,4 +1,5 @@
-﻿using Microsoft.CodeAnalysis.CSharp;
+﻿using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using OpenH2.Core.Scripting;
 using OpenH2.Core.Tags.Scenario;
@@ -57,7 +58,8 @@ namespace OpenH2.ScriptAnalysis.GenerationState
 
             scope.Context.AddExpression(SyntaxFactory.InvocationExpression(
                 SyntaxFactory.IdentifierName("sleep_until"))
-                    .AddArgumentListArguments(finalArgs));
+                    .AddArgumentListArguments(finalArgs)
+                .WithAdditionalAnnotations(ScriptGenAnnotations.TypeAnnotation(this.ReturnType)));
         }
     }
 }

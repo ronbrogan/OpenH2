@@ -6,6 +6,7 @@ using OpenH2.Core.Scripting;
 using OpenH2.Core.Tags.Scenario;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text.RegularExpressions;
 using static Microsoft.CodeAnalysis.CSharp.SyntaxFactory;
@@ -18,6 +19,9 @@ namespace OpenH2.ScriptAnalysis
         public static SyntaxAnnotation FinalScopeStatement { get; } = new SyntaxAnnotation("FinalScopeStatement");
         public static SyntaxAnnotation IfStatement { get; } = new SyntaxAnnotation("IfStatement");
         public static SyntaxAnnotation HoistedResultVar { get; } = new SyntaxAnnotation("HoistedResultVar");
+
+        public const string TypeAnnotationKind = "TypeAnnotation";
+        public static SyntaxAnnotation TypeAnnotation(ScriptDataType t) => new SyntaxAnnotation(TypeAnnotationKind, ((int)t).ToString());
     }
 
     public static class SyntaxUtil
@@ -34,10 +38,29 @@ namespace OpenH2.ScriptAnalysis
                 ScriptDataType.Void => PredefinedType(Token(SyntaxKind.VoidKeyword)),
                 
                 _ => Enum.IsDefined(typeof(ScriptDataType), dataType) 
-                ? ParseTypeName(dataType.ToString())
-                : ParseTypeName(nameof(ScriptDataType) + dataType.ToString()),
+                    ? ParseTypeName(dataType.ToString())
+                    : ParseTypeName(nameof(ScriptDataType) + dataType.ToString()),
             };
         }
+
+        public static TypeSyntax TypeSyntax(Type dataType)
+        {
+            if(typeSyntaxCreators.TryGetValue(dataType, out var func))
+            {
+                return func();
+            }
+
+            return ParseTypeName(dataType.ToString());
+        }
+
+        private static Dictionary<Type, Func<TypeSyntax>> typeSyntaxCreators = new Dictionary<Type, Func<TypeSyntax>>()
+        {
+            { typeof(int), () => PredefinedType(Token(SyntaxKind.IntKeyword)) },
+            { typeof(short),() => PredefinedType(Token(SyntaxKind.ShortKeyword)) },
+            { typeof(float), () => PredefinedType(Token(SyntaxKind.FloatKeyword)) },
+            { typeof(string), () => PredefinedType(Token(SyntaxKind.StringKeyword)) },
+            { typeof(bool), () => PredefinedType(Token(SyntaxKind.BoolKeyword)) },
+        };
 
         private static Dictionary<Type, ScriptDataType> toScriptTypeMap = new Dictionary<Type, ScriptDataType>()
         {
@@ -50,6 +73,8 @@ namespace OpenH2.ScriptAnalysis
             { typeof(AI), ScriptDataType.AI },
         };
 
+        private static Dictionary<ScriptDataType, Type> toTypeMap = toScriptTypeMap.ToDictionary(kv => kv.Value, kv => kv.Key);
+
         public static ScriptDataType ScriptTypeFromType(Type t)
         {
             if(toScriptTypeMap.TryGetValue(t, out var val))
@@ -58,6 +83,11 @@ namespace OpenH2.ScriptAnalysis
             }
 
             throw new Exception($"No mapping for '{t.Name}'");
+        }
+
+        public static bool TryGetTypeFromScriptType(ScriptDataType s, out Type t)
+        {
+            return toTypeMap.TryGetValue(s, out t);
         }
 
         private static Regex IdentifierInvalidChars = new Regex("[^\\dA-Za-z]", RegexOptions.Compiled);
@@ -106,14 +136,16 @@ namespace OpenH2.ScriptAnalysis
             return FieldDeclaration(VariableDeclaration(ScriptTypeSyntax(variable.DataType))
                     .WithVariables(SingletonSeparatedList<VariableDeclaratorSyntax>(
                         VariableDeclarator(SanitizeIdentifier(variable.Description))
-                        .WithInitializer(EqualsValueClause(rightHandSide)))));
+                        .WithInitializer(EqualsValueClause(rightHandSide)))))
+                .WithAdditionalAnnotations(ScriptGenAnnotations.TypeAnnotation(variable.DataType));
         }
 
         public static PropertyDeclarationSyntax CreateProperty(ScriptDataType type, string name)
         {
             return PropertyDeclaration(ScriptTypeSyntax(type), name)
                     .WithModifiers(TokenList(Token(SyntaxKind.PublicKeyword)))
-                    .WithAccessorList(AutoPropertyAccessorList());
+                    .WithAccessorList(AutoPropertyAccessorList())
+                    .WithAdditionalAnnotations(ScriptGenAnnotations.TypeAnnotation(type));
         }
 
         public static IReadOnlyList<ScriptDataType> StringLiteralTypes = new ScriptDataType[]
@@ -140,7 +172,8 @@ namespace OpenH2.ScriptAnalysis
         {
             if (StringLiteralTypes.Contains(node.DataType))
             {
-                return LiteralExpression(GetScriptString(tag, node));
+                return LiteralExpression(GetScriptString(tag, node))
+                    .WithAdditionalAnnotations(ScriptGenAnnotations.TypeAnnotation(destinationType));
             }
 
             object nodeValue = node.DataType switch
@@ -154,7 +187,7 @@ namespace OpenH2.ScriptAnalysis
             };
 
 
-            return destinationType switch
+            var exp = destinationType switch
             {
                 ScriptDataType.Float => LiteralExpression(Convert.ToSingle(nodeValue)),
                 ScriptDataType.Int => LiteralExpression(Convert.ToInt32(nodeValue)),
@@ -163,6 +196,8 @@ namespace OpenH2.ScriptAnalysis
 
                 _ => throw new NotImplementedException(),
             };
+
+            return exp.WithAdditionalAnnotations(ScriptGenAnnotations.TypeAnnotation(destinationType));
         }
 
         public static string GetScriptString(ScenarioTag tag, ScenarioTag.ScriptSyntaxNode node)
@@ -206,6 +241,7 @@ namespace OpenH2.ScriptAnalysis
 
         private static Type[] simpleExpressionTypes = new Type[]
         {
+            typeof(CastExpressionSyntax),
             typeof(IdentifierNameSyntax),
             typeof(LiteralExpressionSyntax),
             typeof(InvocationExpressionSyntax),
@@ -244,6 +280,88 @@ namespace OpenH2.ScriptAnalysis
             }
         }
 
+        public static ExpressionSyntax CreateCast(Type from, Type to, ExpressionSyntax inner)
+        {
+            if(to == typeof(bool) && NumericTypes.Contains(from))
+            {
+                // Generate comparison conditional result
+                return ConditionalExpression(
+                    BinaryExpression(SyntaxKind.EqualsExpression,
+                        inner,
+                        Token(SyntaxKind.EqualsEqualsToken),
+                        LiteralExpression(1)),
+                    LiteralExpression(true),
+                    LiteralExpression(false));
+            }
+            else if (NumericTypes.Contains(to) && from == typeof(bool))
+            {
+                return ConditionalExpression(inner, LiteralExpression(1), LiteralExpression(0));
+            }
+            else
+            {
+                return CastExpression(TypeSyntax(to), inner);
+            }
+        }
+
+        public static ExpressionSyntax CreateCast(ScriptDataType from, ScriptDataType to, ExpressionSyntax inner)
+        {
+            if(toTypeMap.TryGetValue(from, out var fromT) &&
+                toTypeMap.TryGetValue(to, out var toT))
+            {
+                return CreateCast(fromT, toT, inner);
+            }
+            else
+            {
+                return inner.WithTrailingTrivia(Comment($"// Couldn't generate cast from '{from}' to '{to}'"));
+            }
+        }
+
+        private static readonly HashSet<Type> NumericTypes = new HashSet<Type>
+        {
+            typeof(int),  typeof(double),  typeof(decimal),
+            typeof(long), typeof(short),   typeof(sbyte),
+            typeof(byte), typeof(ulong),   typeof(ushort),
+            typeof(uint), typeof(float)
+        };
+
+        public static ScriptDataType BinaryNumericPromotion(ScriptDataType a, ScriptDataType b)
+        {
+            Debug.Assert(NumericLiteralTypes.Contains(a) && NumericLiteralTypes.Contains(b));
+
+            if (a == ScriptDataType.Float || b == ScriptDataType.Float)
+                return ScriptDataType.Float;
+            else
+                return ScriptDataType.Int;
+        }
+
+        public static bool TryGetTypeOfExpression(ExpressionSyntax exp, out ScriptDataType type)
+        {
+            var ext = new TypeExtractor();
+            ext.Visit(exp);
+
+            type = ext.Type ?? default;
+            return ext.Type != default;
+        }
+
+        private class TypeExtractor : CSharpSyntaxWalker
+        {
+            public ScriptDataType? Type { get; private set; } = null;
+
+
+            public override void Visit(SyntaxNode node)
+            {
+                if(node.HasAnnotations(ScriptGenAnnotations.TypeAnnotationKind))
+                {
+                    var types = node.GetAnnotations(ScriptGenAnnotations.TypeAnnotationKind);
+
+                    this.Type = (ScriptDataType)int.Parse(types.First().Data);
+                    return;
+                }
+
+                base.Visit(node);
+            }
+        }
+
         public static ExpressionSyntax CreateImmediatelyInvokedFunction(ScriptDataType returnType, IEnumerable<StatementSyntax> body)
         {
             ObjectCreationExpressionSyntax funcObj;
@@ -265,7 +383,8 @@ namespace OpenH2.ScriptAnalysis
                     Argument(
                         ParenthesizedLambdaExpression(
                             Block(
-                                List(body))))));
+                                List(body))))))
+                .WithAdditionalAnnotations(ScriptGenAnnotations.TypeAnnotation(returnType));
         }
 
         public static AccessorListSyntax AutoPropertyAccessorList()

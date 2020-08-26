@@ -4,6 +4,7 @@ using static Microsoft.CodeAnalysis.CSharp.SyntaxFactory;
 using OpenH2.Core.Scripting;
 using OpenH2.Core.Tags.Scenario;
 using System;
+using Microsoft.CodeAnalysis;
 
 namespace OpenH2.ScriptAnalysis.GenerationState
 {
@@ -23,7 +24,8 @@ namespace OpenH2.ScriptAnalysis.GenerationState
                     SingletonSeparatedList(
                         Argument(
                             SyntaxUtil.LiteralExpression(
-                                SyntaxUtil.GetScriptString(scenario, node))))));
+                                SyntaxUtil.GetScriptString(scenario, node))))))
+                .WithAdditionalAnnotations(ScriptGenAnnotations.TypeAnnotation(node.DataType));
         }
 
         public IGenerationContext AddExpression(ExpressionSyntax expression)

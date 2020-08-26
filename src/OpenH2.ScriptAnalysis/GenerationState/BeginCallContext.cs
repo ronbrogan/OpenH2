@@ -79,9 +79,8 @@ namespace OpenH2.ScriptAnalysis.GenerationState
 
                 if(resultGen(defaultExp, out var defaultStatement))
                 {
-                    Body.Add(defaultStatement
-                    .WithAdditionalAnnotations(ScriptGenAnnotations.FinalScopeStatement)
-                    .WithTrailingTrivia(SyntaxFactory.Comment("// Unhandled 'begin' return")));
+                    Body.Add(defaultStatement.WithAdditionalAnnotations(ScriptGenAnnotations.FinalScopeStatement)
+                        .WithTrailingTrivia(SyntaxFactory.Comment("// Unhandled 'begin' return")));
                 }
             }
         }

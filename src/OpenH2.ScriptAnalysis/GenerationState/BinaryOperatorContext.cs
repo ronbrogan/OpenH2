@@ -1,4 +1,5 @@
-﻿using Microsoft.CodeAnalysis.CSharp;
+﻿using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using OpenH2.Core.Scripting;
 using OpenH2.Core.Tags.Scenario;
@@ -15,6 +16,11 @@ namespace OpenH2.ScriptAnalysis.GenerationState
 
         public override bool CreatesScope => true;
         public override ScriptDataType? OwnDataType { get; }
+
+        private HashSet<SyntaxKind> numericPromotionOperators = new HashSet<SyntaxKind>()
+        {
+            SyntaxKind.AddExpression, SyntaxKind.SubtractExpression, SyntaxKind.MultiplyExpression, SyntaxKind.DivideExpression, SyntaxKind.ModuloExpression
+        };
 
         public BinaryOperatorContext(ScenarioTag.ScriptSyntaxNode node, SyntaxKind operatorSyntaxKind, ScriptDataType returnType) : base(node)
         {
@@ -34,11 +40,30 @@ namespace OpenH2.ScriptAnalysis.GenerationState
             }
 
             var left = ops.Dequeue();
+            ScriptDataType? topType = this.OwnDataType;
 
             while(ops.Any())
             {
-                left = SyntaxFactory.BinaryExpression(operatorSyntaxKind,
-                    left, ops.Dequeue());
+                var right = ops.Dequeue();
+
+                var binExp = SyntaxFactory.BinaryExpression(operatorSyntaxKind,
+                    left, right);
+
+                if (numericPromotionOperators.Contains(this.operatorSyntaxKind) &&
+                    SyntaxUtil.TryGetTypeOfExpression(left, out var leftType) &&
+                    SyntaxUtil.TryGetTypeOfExpression(right, out var rightType))
+                {
+                    var promoted = SyntaxUtil.BinaryNumericPromotion(leftType, rightType);
+                    binExp = binExp.WithAdditionalAnnotations(ScriptGenAnnotations.TypeAnnotation(promoted));
+                    topType = promoted;
+                }
+
+                left = binExp;
+            }
+            
+            if(topType.HasValue && topType.Value != scope.Type)
+            {
+                left = SyntaxUtil.CreateCast(topType.Value, scope.Type, SyntaxFactory.ParenthesizedExpression(left));
             }
 
             scope.Context.AddExpression(left);

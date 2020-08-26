@@ -1,4 +1,5 @@
-﻿using Microsoft.CodeAnalysis.CSharp;
+﻿using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using OpenH2.Core.Scripting;
 using OpenH2.Core.Tags.Scenario;
@@ -20,7 +21,8 @@ namespace OpenH2.ScriptAnalysis.GenerationState
                 SyntaxFactory.ThisExpression(),
                 SyntaxFactory.IdentifierName(
                     SyntaxUtil.SanitizeIdentifier(
-                        SyntaxUtil.GetScriptString(tag, node))));
+                        SyntaxUtil.GetScriptString(tag, node))))
+                .WithAdditionalAnnotations(ScriptGenAnnotations.TypeAnnotation(node.DataType));
         }
 
         public IGenerationContext AddExpression(ExpressionSyntax expression)

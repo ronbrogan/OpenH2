@@ -1259,25 +1259,25 @@ namespace OpenH2.Engine.Scripting
         }
 
         /// <summary>returns the maximum of all specified expressions.</summary>
-        public static float max(params float[] numbers)
+        public static float max(float a, float b)
         {
             return default(float);
         }
 
         /// <summary>returns the maximum of all specified expressions.</summary>
-        public static short max(params short[] numbers)
+        public static short max(short a, short b)
         {
             return default(short);
         }
 
         /// <summary>returns the minimum of all specified expressions.</summary>
-        public static float min(params float[] numbers)
+        public static float min(float a, float b)
         {
             return default(float);
         }
 
         /// <summary>returns the minimum of all specified expressions.</summary>
-        public static short min(params short[] numbers)
+        public static short min(short a, short b)
         {
             return default(short);
         }

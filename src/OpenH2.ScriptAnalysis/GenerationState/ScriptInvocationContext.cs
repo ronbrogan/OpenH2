@@ -1,4 +1,5 @@
-﻿using Microsoft.CodeAnalysis.CSharp;
+﻿using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using OpenH2.Core.Tags.Scenario;
 using System;
@@ -11,13 +12,15 @@ namespace OpenH2.ScriptAnalysis.GenerationState
 
         public ScriptInvocationContext(ScenarioTag scenario, ScenarioTag.ScriptSyntaxNode node) : base(node)
         {
+            var method = scenario.ScriptMethods[node.ScriptIndex];
+
             invocation = SyntaxFactory.InvocationExpression(
                 SyntaxFactory.MemberAccessExpression(
                     SyntaxKind.SimpleMemberAccessExpression,
                     SyntaxFactory.ThisExpression(),
                     SyntaxFactory.IdentifierName(
-                        SyntaxUtil.SanitizeIdentifier(
-                            scenario.ScriptMethods[node.ScriptIndex].Description))));
+                        SyntaxUtil.SanitizeIdentifier(method.Description))))
+                .WithAdditionalAnnotations(ScriptGenAnnotations.TypeAnnotation(method.ReturnType));
         }
 
         public IGenerationContext AddExpression(ExpressionSyntax expression)
