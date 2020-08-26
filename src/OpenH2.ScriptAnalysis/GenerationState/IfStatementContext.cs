@@ -110,13 +110,14 @@ namespace OpenH2.ScriptAnalysis.GenerationState
 
             if (this.shouldHoistAndStoreResult)
             {
-                generatedStatements.Add(LocalDeclarationStatement(VariableDeclaration(PredefinedType(Token(SyntaxKind.BoolKeyword)))
+                var resultType = SyntaxUtil.ScriptTypeSyntax(this.containingScope.Type);
+                var initialization = DefaultExpression(resultType);
+
+                generatedStatements.Add(LocalDeclarationStatement(VariableDeclaration(resultType)
                     .WithVariables(SingletonSeparatedList(
                         VariableDeclarator(resultVariable.Identifier)
                             .WithInitializer(
-                                EqualsValueClause(
-                                    LiteralExpression(
-                                        SyntaxKind.FalseLiteralExpression))))))
+                                EqualsValueClause(initialization)))))
                     .WithAdditionalAnnotations(ScriptGenAnnotations.HoistedResultVar));
 
                 if (HasResultVarAssignment(whenTrueStatements) == false)
