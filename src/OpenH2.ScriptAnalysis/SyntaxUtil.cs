@@ -71,6 +71,8 @@ namespace OpenH2.ScriptAnalysis
             { typeof(bool), ScriptDataType.Boolean },
             { typeof(Team), ScriptDataType.Team },
             { typeof(AI), ScriptDataType.AI },
+            { typeof(AIBehavior), ScriptDataType.AIBehavior },
+            { typeof(DamageState), ScriptDataType.DamageState },
         };
 
         private static Dictionary<ScriptDataType, Type> toTypeMap = toScriptTypeMap.ToDictionary(kv => kv.Value, kv => kv.Key);
@@ -131,12 +133,11 @@ namespace OpenH2.ScriptAnalysis
             return string.Join('.', segments);
         }
 
-        public static FieldDeclarationSyntax CreateField(ScenarioTag.ScriptVariableDefinition variable, ExpressionSyntax rightHandSide)
+        public static FieldDeclarationSyntax CreateField(ScenarioTag.ScriptVariableDefinition variable)
         {
             return FieldDeclaration(VariableDeclaration(ScriptTypeSyntax(variable.DataType))
                     .WithVariables(SingletonSeparatedList<VariableDeclaratorSyntax>(
-                        VariableDeclarator(SanitizeIdentifier(variable.Description))
-                        .WithInitializer(EqualsValueClause(rightHandSide)))))
+                        VariableDeclarator(SanitizeIdentifier(variable.Description)))))
                 .WithAdditionalAnnotations(ScriptGenAnnotations.TypeAnnotation(variable.DataType));
         }
 

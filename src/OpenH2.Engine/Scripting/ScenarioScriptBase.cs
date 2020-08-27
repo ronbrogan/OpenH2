@@ -13,6 +13,7 @@ namespace OpenH2.Engine.Scripting
         public short cinematic_letterbox_style;
         public AI ai_current_actor;
         public AI ai_current_squad;
+        public AIBehavior guard;
         public short ai_combat_status_active;
         public short ai_combat_status_alert;
         public short ai_combat_status_idle;
@@ -25,6 +26,6 @@ namespace OpenH2.Engine.Scripting
         public short ai_movement_combat;
         public short ai_movement_patrol;
         public short ai_movement_flee;
-        
+        public DamageState destroyed;
     }
 }

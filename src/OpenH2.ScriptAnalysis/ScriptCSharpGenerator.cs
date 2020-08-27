@@ -35,6 +35,7 @@ namespace OpenH2.ScriptAnalysis
         private readonly ScenarioTag scenario;
         private readonly ClassDeclarationSyntax classDecl;
         private readonly NamespaceDeclarationSyntax nsDecl;
+        private readonly List<StatementSyntax> constructorStatements = new List<StatementSyntax>();
         private readonly List<MethodDeclarationSyntax> methods = new List<MethodDeclarationSyntax>();
         private readonly List<FieldDeclarationSyntax> fields = new List<FieldDeclarationSyntax>();
         private readonly List<PropertyDeclarationSyntax> properties = new List<PropertyDeclarationSyntax>();
@@ -200,7 +201,18 @@ namespace OpenH2.ScriptAnalysis
 
             Debug.Assert(retScope == defScope, "Returned scope was not the provided root");
 
-            fields.Add(SyntaxUtil.CreateField(variable, expressionContext.GetInnerExpression()));
+            var field = SyntaxUtil.CreateField(variable);
+            fields.Add(field);
+
+            var assignment = AssignmentExpression(
+                SyntaxKind.SimpleAssignmentExpression,
+                MemberAccessExpression(
+                    SyntaxKind.SimpleMemberAccessExpression,
+                    ThisExpression(),
+                    IdentifierName(field.Declaration.Variables.First().Identifier.ToString())), 
+                expressionContext.GetInnerExpression());
+
+            constructorStatements.Add(ExpressionStatement(assignment));
         }
 
         public void AddMethod(ScenarioTag.ScriptMethodDefinition scriptMethod)
@@ -470,7 +482,14 @@ namespace OpenH2.ScriptAnalysis
             {
                 cls = cls.AddMembers(prop);
             }
-            
+
+            if (constructorStatements.Any())
+            {
+                cls = cls.AddMembers(ConstructorDeclaration(cls.Identifier)
+                    .WithModifiers(TokenList(Token(SyntaxKind.PublicKeyword)))
+                    .WithBody(Block(constructorStatements)));
+            }
+
             foreach (var method in methods)
             {
                 var m = method;

@@ -7,8 +7,6 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using System.Linq.Expressions;
-using System.Runtime.CompilerServices;
 using static Microsoft.CodeAnalysis.CSharp.SyntaxFactory;
 
 namespace OpenH2.ScriptAnalysis.GenerationState
@@ -33,7 +31,8 @@ namespace OpenH2.ScriptAnalysis.GenerationState
         {
             var resultVarName = "ifResult_" + this.GetHashCode();
 
-            resultVariable = IdentifierName(resultVarName);
+            resultVariable = IdentifierName(resultVarName)
+                .WithAdditionalAnnotations(ScriptGenAnnotations.TypeAnnotation(containingScope.Type));
             this.containingScope = containingScope;
             this.shouldHoistAndStoreResult = containingScope.Type != ScriptDataType.Void;
         }
@@ -133,7 +132,9 @@ namespace OpenH2.ScriptAnalysis.GenerationState
 
             var trueBlock = Block(whenTrueStatements);
 
-            if (whenFalseStatements.Any())
+            var unreachable = this.condition.IsEquivalentTo(SyntaxUtil.LiteralExpression(true));
+
+            if (unreachable == false && whenFalseStatements.Any())
             {
                 StatementSyntax falseBlock = Block(whenFalseStatements);
 
