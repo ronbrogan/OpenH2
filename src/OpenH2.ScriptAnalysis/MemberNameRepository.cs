@@ -1,9 +1,5 @@
-﻿using OpenH2.Core.Scripting;
-using System;
-using System.Collections.Generic;
-using System.Diagnostics;
+﻿using System.Collections.Generic;
 using System.Linq;
-using System.Security.Cryptography;
 
 namespace OpenH2.ScriptAnalysis
 {

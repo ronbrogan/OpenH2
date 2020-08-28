@@ -36,7 +36,7 @@ namespace OpenH2.ScriptAnalysis
 
             foreach(var map in maps)
             {
-                //if (map.Contains("01b") == false)
+                //if (map.Contains("03a") == false)
                 //{
                 //    continue;
                 //}

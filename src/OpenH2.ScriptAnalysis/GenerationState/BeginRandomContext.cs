@@ -6,11 +6,10 @@ using OpenH2.Core.Tags.Scenario;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 
 namespace OpenH2.ScriptAnalysis.GenerationState
 {
-    public class BeginRandomContext : BaseGenerationContext, IGenerationContext
+    public class BeginRandomContext : BaseGenerationContext, IGenerationContext, IStatementContext
     {
         public override ScriptDataType? OwnDataType { get; }
         public override bool CreatesScope => true;
@@ -67,31 +66,40 @@ namespace OpenH2.ScriptAnalysis.GenerationState
                     .AddArgumentListArguments(lambdas.Select(SyntaxFactory.Argument).ToArray()));
         }
 
-        //public IStatementContext AddStatement(StatementSyntax statement)
-        //{
-        //    if(statement is ExpressionStatementSyntax exp)
-        //    {
-        //        subexpressions.Add(exp.Expression);
-        //    }
-        //    else
-        //    {
-        //        throw new Exception("Non-ExpressionStatements are not allowed here");
-        //    }
-        //    
-        //    return this;
-        //}
+        public IStatementContext AddStatement(StatementSyntax statement)
+        {
+            if (statement is ExpressionStatementSyntax exp)
+            {
+                subexpressions.Add(exp.Expression);
+            }
+            else
+            {
+                var returnType = ScriptDataType.Void;
 
-        //public bool TryCreateResultStatement(ExpressionSyntax resultValue, out StatementSyntax statement)
-        //{
-        //    if (this.OwnDataType == ScriptDataType.Void)
-        //    {
-        //        statement = default;
-        //        return false;
-        //    }
-        //
-        //    statement = SyntaxFactory.ReturnStatement(resultValue)
-        //        .WithAdditionalAnnotations(ScriptGenAnnotations.ResultStatement);
-        //    return true;
-        //}
+                var annotations = statement.GetAnnotations(ScriptGenAnnotations.TypeAnnotationKind);
+
+                if (annotations.Any())
+                {
+                    returnType = (ScriptDataType)int.Parse(annotations.First().Data);
+                }
+
+                subexpressions.Add(SyntaxUtil.CreateImmediatelyInvokedFunction(returnType, new[] { statement }));
+            }
+
+            return this;
+        }
+
+        public bool TryCreateResultStatement(ExpressionSyntax resultValue, out StatementSyntax statement)
+        {
+            if (this.OwnDataType == ScriptDataType.Void)
+            {
+                statement = default;
+                return false;
+            }
+
+            statement = SyntaxFactory.ReturnStatement(resultValue)
+                .WithAdditionalAnnotations(ScriptGenAnnotations.ResultStatement);
+            return true;
+        }
     }
 }

@@ -456,6 +456,22 @@ namespace OpenH2.ScriptAnalysis
                     }
                 }
 
+                var newLineAndIndent = TriviaList(CarriageReturnLineFeed)
+                    .AddRange(node.Parent.GetLeadingTrivia())
+                    .Add(SyntaxFactory.Space)
+                    .Add(SyntaxFactory.Space)
+                    .Add(SyntaxFactory.Space)
+                    .Add(SyntaxFactory.Space);
+
+                for(var i = 1; i < newArgs.Count; i++)
+                {
+                    var arg = newArgs[i];
+                    if(arg.Expression is ParenthesizedLambdaExpressionSyntax lambda)
+                    {
+                        newArgs = newArgs.Replace(arg, arg.WithExpression(lambda.WithLeadingTrivia(newLineAndIndent)));
+                    }
+                }
+
                 node = node.WithCloseParenToken(node.CloseParenToken.WithLeadingTrivia())
                     .WithArguments(newArgs);
 
