@@ -1,8 +1,10 @@
 ﻿namespace OpenH2.Core.Scripting
 {
+    using System.Threading.Tasks;
+
     public class AI : Unit { }
     //public class AIScript { }
-    public delegate void AIScript();
+    public delegate Task AIScript();
     public class Device : Entity { }
     public class EntityIdentifier { }
     public class Entity 
@@ -22,7 +24,7 @@
     }
     public class StringId { }
     //public class ScriptReference { }
-    public delegate void ScriptReference();
+    public delegate Task ScriptReference();
     public class DeviceGroup { }
     public class AIOrders { }
     public class Bsp { }

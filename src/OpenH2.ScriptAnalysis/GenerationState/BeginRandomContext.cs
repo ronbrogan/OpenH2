@@ -58,7 +58,8 @@ namespace OpenH2.ScriptAnalysis.GenerationState
                     }
                 }
                 
-                lambdas.Add(SyntaxFactory.ParenthesizedLambdaExpression(exp));
+                lambdas.Add(SyntaxFactory.ParenthesizedLambdaExpression(exp)
+                    .WithAsyncKeyword(SyntaxFactory.Token(SyntaxKind.AsyncKeyword)));
             }
 
             scope.Context.AddExpression(SyntaxFactory.InvocationExpression(

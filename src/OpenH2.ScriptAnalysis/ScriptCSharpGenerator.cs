@@ -217,10 +217,18 @@ namespace OpenH2.ScriptAnalysis
 
         public void AddMethod(ScenarioTag.ScriptMethodDefinition scriptMethod)
         {
-            var modifiers = SyntaxTokenList.Create(Token(SyntaxKind.PublicKeyword));
+            var modifiers = SyntaxTokenList.Create(Token(SyntaxKind.PublicKeyword))
+                .Add(Token(SyntaxKind.AsyncKeyword));
+
+            TypeSyntax returnType = ParseTypeName("Task");
+
+            if(scriptMethod.ReturnType != ScriptDataType.Void)
+            {
+                returnType = GenericName("Task").AddTypeArgumentListArguments(SyntaxUtil.ScriptTypeSyntax(scriptMethod.ReturnType));
+            }
 
             var method = MethodDeclaration(
-                    SyntaxUtil.ScriptTypeSyntax(scriptMethod.ReturnType),
+                    returnType,
                     SyntaxUtil.SanitizeIdentifier(scriptMethod.Description))
                 .WithModifiers(modifiers);
 
@@ -517,6 +525,7 @@ namespace OpenH2.ScriptAnalysis
                 .AddMembers(cls)
                 .AddUsings(
                     UsingDirective(ParseName("System")),
+                    UsingDirective(ParseName("System.Threading.Tasks")),
                     UsingDirective(ParseName("OpenH2.Core.Scripting")),
                     UsingDirective(ParseName("OpenH2.Engine.Scripting")),
                     UsingDirective(Token(SyntaxKind.StaticKeyword), null, ParseName(EngineImplementationClass))

@@ -1,11 +1,9 @@
 ﻿using OpenH2.Core.Architecture;
-using OpenH2.Core.Extensions;
 using OpenH2.Engine.Components;
 using OpenH2.Engine.Stores;
 using OpenH2.Foundation;
 using OpenH2.Rendering;
 using OpenH2.Rendering.Abstractions;
-using System;
 using System.Numerics;
 
 namespace OpenH2.Engine.Systems

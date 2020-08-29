@@ -2,6 +2,7 @@ namespace OpenH2.Engine.Scripting
 {
     using OpenH2.Core.Scripting;
     using System;
+    using System.Threading.Tasks;
 
     public class ScriptEngine
     {
@@ -350,14 +351,13 @@ namespace OpenH2.Engine.Scripting
         }
 
         /// <summary>evaluates the sequence of expressions in random order and returns the last value evaluated.</summary>
-        public static void begin_random(params System.Action[] expressions)
+        public static void begin_random(params Action[] expressions)
         {
         }
 
         /// <summary>evaluates the sequence of expressions in random order and returns the last value evaluated.</summary>
-        public static T begin_random<T>(params System.Func<T>[] expressions)
+        public static void begin_random(params Func<Task>[] expressions)
         {
-            return default(T);
         }
 
         /// <summary>returns true if the movie is done playing</summary>
@@ -372,8 +372,9 @@ namespace OpenH2.Engine.Scripting
         }
 
         /// <summary>call this to force texture and geometry cache to block until satiated</summary>
-        public static void cache_block_for_one_frame()
+        public static Task cache_block_for_one_frame()
         {
+            return Task.CompletedTask;
         }
 
         /// <summary>toggles script control of the camera.</summary>
@@ -1971,21 +1972,15 @@ namespace OpenH2.Engine.Scripting
         }
 
         /// <summary>pauses execution of this script (or, optionally, another script) for the specified number of ticks.</summary>
-        public static void sleep(int ticks)
+        public static async Task sleep(int ticks)
         {
+            await Task.Delay(TimeSpan.FromSeconds(ticks / (double)TicksPerSecond));
         }
 
         /// <summary>pauses execution of this script (or, optionally, another script) for the specified number of ticks.</summary>
-        public static void sleep(short ticks)
+        public static async Task sleep(short ticks)
         {
-        }
-
-        /// <summary>
-        /// pauses execution of this script (or, optionally, another script) for the specified number of ticks.
-        /// This overload shouldn't exist, only to support lack of cast detection in code gen
-        /// </summary>
-        public static void sleep(float ticks)
-        {
+            await Task.Delay(TimeSpan.FromSeconds(ticks / (double)TicksPerSecond));
         }
 
         /// <summary>pauses execution of this script (or, optionally, another script) forever.</summary>
@@ -1999,8 +1994,20 @@ namespace OpenH2.Engine.Scripting
         }
 
         /// <summary>pauses execution of this script until the specified condition is true, checking once per second unless a different number of ticks is specified.</summary>
-        public static void sleep_until(Func<bool> condition, int ticks = TicksPerSecond, int timeout = -1)
+        public static async Task sleep_until(Func<Task<bool>> condition, int ticks = TicksPerSecond, int timeout = -1)
         {
+            var start = DateTimeOffset.Now;
+            var timeoutOffset = DateTimeOffset.MaxValue;
+
+            if(timeout >= 0)
+            {
+                timeoutOffset = start.AddSeconds(timeout / (double)TicksPerSecond);
+            }
+
+            while (await condition() == false && timeoutOffset > DateTimeOffset.Now)
+            {
+                await Task.Delay(TimeSpan.FromSeconds(ticks / (double)TicksPerSecond));
+            }
         }
 
         /// <summary>changes the gain on the specified sound class(es) to the specified gain over the specified number of ticks.</summary>

@@ -30,7 +30,7 @@ namespace OpenH2.ScriptAnalysis.GenerationState
 
         public void GenerateInto(Scope scope)
         {
-            scope.Context.AddExpression(this.invocation);
+            scope.Context.AddExpression(SyntaxFactory.AwaitExpression(this.invocation));
         }
     }
 }

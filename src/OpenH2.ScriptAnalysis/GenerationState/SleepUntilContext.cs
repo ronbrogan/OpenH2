@@ -50,16 +50,17 @@ namespace OpenH2.ScriptAnalysis.GenerationState
             }
             else
             {
-                checkExpression = SyntaxFactory.ParenthesizedLambdaExpression(checkArg.Expression);
+                checkExpression = SyntaxFactory.ParenthesizedLambdaExpression(checkArg.Expression)
+                    .WithAsyncKeyword(SyntaxFactory.Token(SyntaxKind.AsyncKeyword));
             }
 
             var finalArgs = this.arguments.ToArray();
             finalArgs[0] = SyntaxFactory.Argument(checkExpression);
 
-            scope.Context.AddExpression(SyntaxFactory.InvocationExpression(
+            scope.Context.AddExpression(SyntaxFactory.AwaitExpression(SyntaxFactory.InvocationExpression(
                 SyntaxFactory.IdentifierName("sleep_until"))
                     .AddArgumentListArguments(finalArgs)
-                .WithAdditionalAnnotations(ScriptGenAnnotations.TypeAnnotation(this.ReturnType)));
+                ).WithAdditionalAnnotations(ScriptGenAnnotations.TypeAnnotation(this.ReturnType)));
         }
     }
 }

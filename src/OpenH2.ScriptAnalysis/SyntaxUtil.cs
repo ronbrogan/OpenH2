@@ -8,7 +8,9 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Reflection;
 using System.Text.RegularExpressions;
+using System.Threading.Tasks;
 using static Microsoft.CodeAnalysis.CSharp.SyntaxFactory;
 
 namespace OpenH2.ScriptAnalysis
@@ -369,28 +371,24 @@ namespace OpenH2.ScriptAnalysis
 
             if (returnType == ScriptDataType.Void)
             {
-                funcObj = SyntaxFactory.ObjectCreationExpression(
-                    SyntaxFactory.IdentifierName("Action"));
+                funcObj = ObjectCreationExpression(IdentifierName("Action"));
             }
             else
             {
-                funcObj = SyntaxFactory.ObjectCreationExpression(
-                    SyntaxFactory.GenericName("Func")
-                        .AddTypeArgumentListArguments(SyntaxUtil.ScriptTypeSyntax(returnType)));
+                funcObj = ObjectCreationExpression(GenericName("Func")
+                        .AddTypeArgumentListArguments(ScriptTypeSyntax(returnType)));
             }
 
             return InvocationExpression(
                 funcObj.AddArgumentListArguments(
-                    Argument(
-                        ParenthesizedLambdaExpression(
-                            Block(
-                                List(body))))))
+                    Argument(ParenthesizedLambdaExpression(Block(List(body)))
+                        .WithAsyncKeyword(Token(SyntaxKind.AsyncKeyword)))))
                 .WithAdditionalAnnotations(ScriptGenAnnotations.TypeAnnotation(returnType));
         }
 
         public static AccessorListSyntax AutoPropertyAccessorList()
         {
-            return AccessorList(List<AccessorDeclarationSyntax>(new[] {
+            return AccessorList(List(new[] {
                 AccessorDeclaration(SyntaxKind.GetAccessorDeclaration)
                     .WithSemicolonToken(Token(TriviaList(), SyntaxKind.SemicolonToken, TriviaList(Space))),
                 AccessorDeclaration(SyntaxKind.SetAccessorDeclaration)
@@ -407,6 +405,30 @@ namespace OpenH2.ScriptAnalysis
 
 
             return newNode as CSharpSyntaxNode;
+        }
+
+        public static bool AwaitIfNeeded(MethodInfo method, ref ExpressionSyntax invocation, out Type innerType)
+        {
+            innerType = method.ReturnType;
+
+            if (method.ReturnType == typeof(Task) ||
+                (method.ReturnType.IsGenericType && method.ReturnType.GetGenericTypeDefinition() == typeof(Task<>)))
+            {
+                invocation = SyntaxFactory.AwaitExpression(invocation);
+
+                if (method.ReturnType == typeof(Task))
+                {
+                    innerType = typeof(void);
+                }
+                else
+                {
+                    innerType = method.ReturnType.GetGenericArguments()[0];
+                }
+
+                return true;
+            }
+
+            return false;
         }
 
         public class DeNormalizer : CSharpSyntaxRewriter

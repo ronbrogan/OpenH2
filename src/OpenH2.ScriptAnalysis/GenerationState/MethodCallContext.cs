@@ -4,10 +4,12 @@ using Microsoft.CodeAnalysis.CSharp.Syntax;
 using OpenH2.Core.Scripting;
 using OpenH2.Core.Tags.Scenario;
 using OpenH2.Engine.Scripting;
+using OpenH2.Foundation;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using System.Threading.Tasks;
 
 namespace OpenH2.ScriptAnalysis.GenerationState
 {
@@ -76,11 +78,16 @@ namespace OpenH2.ScriptAnalysis.GenerationState
                     tempArgs.ToArray(), 
                     null);
 
-                if(method != null && SyntaxUtil.TryGetTypeFromScriptType(this.ReturnType, out var destinationType))
+                if(method != null)
                 {
-                    // Insert cast to destination
-                    invocation = SyntaxUtil.CreateCast(method.ReturnType, destinationType, invocation)
-                        .WithAdditionalAnnotations(ScriptGenAnnotations.TypeAnnotation(this.ReturnType));
+                    SyntaxUtil.AwaitIfNeeded(method, ref invocation, out var materializedReturnType);
+
+                    if(SyntaxUtil.TryGetTypeFromScriptType(this.ReturnType, out var destinationType))
+                    {
+                        // Insert cast to destination
+                        invocation = SyntaxUtil.CreateCast(materializedReturnType, destinationType, invocation)
+                            .WithAdditionalAnnotations(ScriptGenAnnotations.TypeAnnotation(this.ReturnType));
+                    }
                 }
             }
             else
@@ -88,15 +95,22 @@ namespace OpenH2.ScriptAnalysis.GenerationState
                 // Fallback to name only lookup
                 var scriptEngineMethods = typeof(ScriptEngine).GetMethods().Where(m => m.Name == this.MethodName);
 
-                if (scriptEngineMethods.Any() && SyntaxUtil.TryGetTypeFromScriptType(this.ReturnType, out var destinationType))
+                if (scriptEngineMethods.Any())
                 {
-                    var hasOverload = scriptEngineMethods.Any(m => m.ReturnType == destinationType);
+                    //var hasOverload = scriptEngineMethods.Any(m => m.ReturnType == destinationType);
 
-                    if (hasOverload == false)
+                    //if (hasOverload == false)
                     {
-                        // Insert cast to destination
-                        invocation = SyntaxUtil.CreateCast(scriptEngineMethods.First().ReturnType, destinationType, invocation)
-                            .WithAdditionalAnnotations(ScriptGenAnnotations.TypeAnnotation(this.ReturnType));
+                        var method = scriptEngineMethods.First();
+
+                        SyntaxUtil.AwaitIfNeeded(method, ref invocation, out var materializedReturnType);
+
+                        if (SyntaxUtil.TryGetTypeFromScriptType(this.ReturnType, out var destinationType))
+                        {
+                            // Insert cast to destination
+                            invocation = SyntaxUtil.CreateCast(materializedReturnType, destinationType, invocation)
+                                .WithAdditionalAnnotations(ScriptGenAnnotations.TypeAnnotation(this.ReturnType));
+                        }
                     }
                 }
             }            
