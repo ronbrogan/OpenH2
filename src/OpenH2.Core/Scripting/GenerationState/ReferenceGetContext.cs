@@ -1,4 +1,5 @@
 ﻿using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using OpenH2.Core.Scripting.Generation;
 using OpenH2.Core.Tags.Scenario;
@@ -16,9 +17,11 @@ namespace OpenH2.Core.Scripting.GenerationState
         {
             this.OwnDataType = node.DataType;
 
-            invocation = InvocationExpression(GenericName(Identifier("GetReference"))
+            invocation = InvocationExpression(MemberAccessExpression(SyntaxKind.SimpleMemberAccessExpression,
+                    IdentifierName("Engine"),
+                    GenericName(Identifier("GetReference"))
                 .WithTypeArgumentList(TypeArgumentList(SingletonSeparatedList(
-                    SyntaxUtil.ScriptTypeSyntax(this.OwnDataType.Value)))),
+                    SyntaxUtil.ScriptTypeSyntax(this.OwnDataType.Value))))),
                 ArgumentList(
                     SingletonSeparatedList(
                         Argument(

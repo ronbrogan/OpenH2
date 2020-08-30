@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace OpenH2.Core.Scripting.Generation
+namespace OpenH2.Core.Scripting
 {
     public class ScriptMethodAttribute : Attribute
     {

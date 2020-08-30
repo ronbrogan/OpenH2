@@ -50,7 +50,7 @@ namespace OpenH2.Core.Scripting.Generation
         {
             this.scenario = scnr;
             this.nameRepo = nameRepo;
-            // TODO: netstandard2.1 or net5 upgrade: repalce split overload usage
+            // TODO: netstandard2.1 or net5 upgrade: replace split overload usage
             var scenarioParts = scnr.Name.Split(new[] { '\\' }, StringSplitOptions.RemoveEmptyEntries);
 
             var ns = "OpenH2.Scripts.Generated" + string.Join(".", scenarioParts.Take(2));
@@ -72,13 +72,13 @@ namespace OpenH2.Core.Scripting.Generation
             }
         }
 
-        internal void AddPublicProperty(ScenarioTag.AiOrderDefinition order, int itemIndex)
+        public void AddPublicProperty(ScenarioTag.AiOrderDefinition order, int itemIndex)
         {
             AddPublicProperty(ScriptDataType.AIOrders, order.Description, itemIndex);
         }
 
         // Make squads into nested static classes
-        internal void AddSquadData(ScenarioTag tag)
+        public void AddSquadData(ScenarioTag tag)
         {
             for (var i = 0; i < tag.AiSquadDefinitions.Length; i++)
             {
@@ -128,32 +128,32 @@ namespace OpenH2.Core.Scripting.Generation
             }            
         }
 
-        internal void AddPublicProperty(ScenarioTag.AiSquadGroupDefinition ai, int itemIndex)
+        public void AddPublicProperty(ScenarioTag.AiSquadGroupDefinition ai, int itemIndex)
         {
             AddPublicProperty(ScriptDataType.AI, ai.Description, itemIndex);
         }
 
-        internal void AddPublicProperty(ScenarioTag.CameraPathTarget cam, int itemIndex)
+        public void AddPublicProperty(ScenarioTag.CameraPathTarget cam, int itemIndex)
         {
             AddPublicProperty(ScriptDataType.CameraPathTarget, cam.Description, itemIndex);
         }
 
-        internal void AddPublicProperty(ScenarioTag.LocationFlagDefinition flag, int itemIndex)
+        public void AddPublicProperty(ScenarioTag.LocationFlagDefinition flag, int itemIndex)
         {
             AddPublicProperty(ScriptDataType.LocationFlag, flag.Description, itemIndex);
         }
 
-        internal void AddPublicProperty(ScenarioTag.CinematicTitleDefinition title, int itemIndex)
+        public void AddPublicProperty(ScenarioTag.CinematicTitleDefinition title, int itemIndex)
         {
             AddPublicProperty(ScriptDataType.CinematicTitle, title.Title, itemIndex);
         }
 
-        internal void AddPublicProperty(ScenarioTag.TriggerVolume tv, int itemIndex)
+        public void AddPublicProperty(ScenarioTag.TriggerVolume tv, int itemIndex)
         {
             AddPublicProperty(ScriptDataType.Trigger, tv.Description, itemIndex);
         }
 
-        internal void AddPublicProperty(ScenarioTag.WellKnownItem externalRef, int itemIndex)
+        public void AddPublicProperty(ScenarioTag.WellKnownItem externalRef, int itemIndex)
         {
             var varType = externalRef.ItemType switch
             {
@@ -169,17 +169,17 @@ namespace OpenH2.Core.Scripting.Generation
             AddPublicProperty(varType, externalRef.Description, itemIndex);
         }
 
-        internal void AddPublicProperty(ScenarioTag.StartingProfileDefinition profile, int itemIndex)
+        public void AddPublicProperty(ScenarioTag.StartingProfileDefinition profile, int itemIndex)
         {
             AddPublicProperty(ScriptDataType.Equipment, profile.Description, itemIndex);
         }
 
-        internal void AddPublicProperty(ScenarioTag.DeviceGroupDefinition group, int itemIndex)
+        public void AddPublicProperty(ScenarioTag.DeviceGroupDefinition group, int itemIndex)
         {
             AddPublicProperty(ScriptDataType.DeviceGroup, group.Description, itemIndex);
         }
 
-        internal void AddPublicProperty(ScriptDataType type, string name, int itemIndex)
+        public void AddPublicProperty(ScriptDataType type, string name, int itemIndex)
         {
             var propName = nameRepo.RegisterName(name, type.ToString(), itemIndex);
 
@@ -383,9 +383,8 @@ namespace OpenH2.Core.Scripting.Generation
                 case ScriptDataType.CinematicTitle:
                 case ScriptDataType.AIBehavior:
                 case ScriptDataType.DamageState:
-                    return new FieldGetContext(scenario, node, nameRepo);
                 case ScriptDataType.NavigationPoint:
-                    return new NavigationPointContext(scenario, node);
+                    return new FieldGetContext(scenario, node, nameRepo);
                 case ScriptDataType.Float:
                 case ScriptDataType.Int:
                 case ScriptDataType.String:
@@ -489,13 +488,23 @@ namespace OpenH2.Core.Scripting.Generation
                 cls = cls.AddMembers(prop);
             }
 
-            if (constructorStatements.Any())
+            if(constructorStatements.Any())
             {
+                constructorStatements.Insert(0, ExpressionStatement(AssignmentExpression(
+                   SyntaxKind.SimpleAssignmentExpression,
+                   MemberAccessExpression(SyntaxKind.SimpleMemberAccessExpression,
+                       ThisExpression(),
+                       IdentifierName("Engine")),
+                   IdentifierName("scriptEngine")
+               )));
+
+
                 cls = cls.AddMembers(ConstructorDeclaration(cls.Identifier)
                     .WithModifiers(TokenList(Token(SyntaxKind.PublicKeyword)))
+                    .AddParameterListParameters(Parameter(Identifier("scriptEngine")).WithType(ParseName("IScriptEngine")))
                     .WithBody(Block(constructorStatements)));
             }
-
+            
             foreach (var method in methods)
             {
                 var m = method;
@@ -524,9 +533,7 @@ namespace OpenH2.Core.Scripting.Generation
                 .AddUsings(
                     UsingDirective(ParseName("System")),
                     UsingDirective(ParseName("System.Threading.Tasks")),
-                    UsingDirective(ParseName("OpenH2.Core.Scripting")),
-                    UsingDirective(ParseName("OpenH2.Engine.Scripting")),
-                    UsingDirective(Token(SyntaxKind.StaticKeyword), null, ParseName(EngineImplementationClass))
+                    UsingDirective(ParseName("OpenH2.Core.Scripting"))
                 );
 
             var csharpTree = CSharpSyntaxTree.Create(SyntaxUtil.Normalize(ns));

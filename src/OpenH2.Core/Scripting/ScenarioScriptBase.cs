@@ -1,9 +1,8 @@
-﻿using OpenH2.Core.Scripting;
-
-namespace OpenH2.Core.Scripting
+﻿namespace OpenH2.Core.Scripting
 {
     public class ScenarioScriptBase
     {
+        protected IScriptEngine Engine;
         public Team player;
         public Team human;
         public Team prophet;

@@ -63,6 +63,7 @@ namespace OpenH2.Core.Scripting.Generation
             { typeof(AI), ScriptDataType.AI },
             { typeof(AIBehavior), ScriptDataType.AIBehavior },
             { typeof(DamageState), ScriptDataType.DamageState },
+            { typeof(NavigationPoint), ScriptDataType.NavigationPoint }
         };
 
         private static Dictionary<ScriptDataType, Type> toTypeMap = toScriptTypeMap.ToDictionary(kv => kv.Value, kv => kv.Key);

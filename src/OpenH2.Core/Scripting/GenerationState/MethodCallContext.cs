@@ -46,8 +46,11 @@ namespace OpenH2.Core.Scripting.GenerationState
 
         public void GenerateInto(Scope scope)
         {
-            ExpressionSyntax invocation = SyntaxFactory.InvocationExpression(
-                SyntaxFactory.IdentifierName(this.MethodName))
+            var invocationExpression = SyntaxFactory.MemberAccessExpression(SyntaxKind.SimpleMemberAccessExpression,
+                SyntaxFactory.IdentifierName("Engine"),
+                SyntaxFactory.IdentifierName(this.MethodName));
+
+            ExpressionSyntax invocation = SyntaxFactory.InvocationExpression(invocationExpression)
                     .WithArgumentList(SyntaxFactory.ArgumentList(
                         SyntaxFactory.SeparatedList(this.arguments)))
                     .WithAdditionalAnnotations(ScriptGenAnnotations.TypeAnnotation(this.ReturnType));
@@ -70,7 +73,7 @@ namespace OpenH2.Core.Scripting.GenerationState
             {
                 // Do full overload match
                 var method = typeof(IScriptEngine).GetMethod(this.MethodName, 
-                    BindingFlags.Public | BindingFlags.Static,
+                    BindingFlags.Public | BindingFlags.Instance,
                     null,
                     tempArgs.ToArray(), 
                     null);
