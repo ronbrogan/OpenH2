@@ -2,20 +2,18 @@
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using OpenH2.Core.Extensions;
-using OpenH2.Core.Scripting;
+using OpenH2.Core.Scripting.GenerationState;
 using OpenH2.Core.Tags.Scenario;
-using OpenH2.ScriptAnalysis.GenerationState;
+using OpenH2.Foundation.Collections;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using System.Linq.Expressions;
-using System.Reactive.Concurrency;
 using static Microsoft.CodeAnalysis.CSharp.SyntaxFactory;
 
-namespace OpenH2.ScriptAnalysis
+namespace OpenH2.Core.Scripting.Generation
 {
-    
+
 
     public delegate void GenerationCallback(GenerationCallbackArgs args);
     public class GenerationCallbackArgs
@@ -27,8 +25,7 @@ namespace OpenH2.ScriptAnalysis
 
     /*
      * TODO:
-     * - Create project with generated .cs files and/or compile and make warnings/errors available
-     * - Sanitize/normalize property names, there are invalid identifiers, duplicates, and empties
+     * - Compile and load assembly into current process. Separate class?
      */
     public class ScriptCSharpGenerator
     { 
@@ -53,9 +50,10 @@ namespace OpenH2.ScriptAnalysis
         {
             this.scenario = scnr;
             this.nameRepo = nameRepo;
-            var scenarioParts = scnr.Name.Split('\\', StringSplitOptions.RemoveEmptyEntries);
+            // TODO: netstandard2.1 or net5 upgrade: repalce split overload usage
+            var scenarioParts = scnr.Name.Split(new[] { '\\' }, StringSplitOptions.RemoveEmptyEntries);
 
-            var ns = "OpenH2.Engine.Scripts.Generated" + string.Join('.', scenarioParts.Take(2));
+            var ns = "OpenH2.Scripts.Generated" + string.Join(".", scenarioParts.Take(2));
 
             this.nsDecl = NamespaceDeclaration(ParseName(ns));
 

@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 
-namespace OpenH2.ScriptAnalysis
+namespace OpenH2.Core.Scripting.Generation
 {
     public class MemberNameRepository
     {

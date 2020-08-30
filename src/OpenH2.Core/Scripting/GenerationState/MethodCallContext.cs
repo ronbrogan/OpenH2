@@ -1,17 +1,14 @@
 ﻿using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
-using OpenH2.Core.Scripting;
+using OpenH2.Core.Scripting.Generation;
 using OpenH2.Core.Tags.Scenario;
-using OpenH2.Engine.Scripting;
-using OpenH2.Foundation;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using System.Threading.Tasks;
 
-namespace OpenH2.ScriptAnalysis.GenerationState
+namespace OpenH2.Core.Scripting.GenerationState
 {
     public class MethodCallContext : BaseGenerationContext, IGenerationContext
     {
@@ -72,7 +69,7 @@ namespace OpenH2.ScriptAnalysis.GenerationState
             if(tempArgs.Count == argumentTypes.Count)
             {
                 // Do full overload match
-                var method = typeof(ScriptEngine).GetMethod(this.MethodName, 
+                var method = typeof(IScriptEngine).GetMethod(this.MethodName, 
                     BindingFlags.Public | BindingFlags.Static,
                     null,
                     tempArgs.ToArray(), 
@@ -93,7 +90,7 @@ namespace OpenH2.ScriptAnalysis.GenerationState
             else
             {
                 // Fallback to name only lookup
-                var scriptEngineMethods = typeof(ScriptEngine).GetMethods().Where(m => m.Name == this.MethodName);
+                var scriptEngineMethods = typeof(IScriptEngine).GetMethods().Where(m => m.Name == this.MethodName);
 
                 if (scriptEngineMethods.Any())
                 {

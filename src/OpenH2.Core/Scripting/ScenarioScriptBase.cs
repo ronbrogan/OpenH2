@@ -1,6 +1,6 @@
 ﻿using OpenH2.Core.Scripting;
 
-namespace OpenH2.Engine.Scripting
+namespace OpenH2.Core.Scripting
 {
     public class ScenarioScriptBase
     {

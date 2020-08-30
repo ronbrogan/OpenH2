@@ -1,8 +1,7 @@
 ﻿using Microsoft.CodeAnalysis.CSharp.Syntax;
-using OpenH2.Core.Scripting;
 using OpenH2.Core.Tags.Scenario;
 
-namespace OpenH2.ScriptAnalysis.GenerationState
+namespace OpenH2.Core.Scripting.GenerationState
 {
     public class ScopeGenerationContext : BaseGenerationContext, IGenerationContext
     {
@@ -21,41 +20,12 @@ namespace OpenH2.ScriptAnalysis.GenerationState
 
         public IGenerationContext AddExpression(ExpressionSyntax expression)
         {
-            //this.Body.Add(SyntaxFactory.ExpressionStatement(expression));
             this.containingScope.Context.AddExpression(expression);
             return this;
         }
 
         public void GenerateInto(Scope scope)
         {
-            //scope.Context.AddExpression(SyntaxFactory.BaseExpression().WithLeadingTrivia(SyntaxFactory.Comment($"// Scope<{this.OwnDataType}>")));
-            return;
-
-            //if (scope.IsInStatementContext)
-            //{
-            //    foreach (var b in Body)
-            //    {
-            //        scope.StatementContext.AddStatement(b);
-            //    }
-            //}
-            //else if(Body.Count == 1)
-            //{
-            //    var statement = Body[0];
-            //
-            //    if(statement is ExpressionStatementSyntax expStatement)
-            //    {
-            //        scope.Context.AddExpression(expStatement.Expression);
-            //    }
-            //    else
-            //    {
-            //        throw new Exception("Generation failed because a singular expression could not be extracted from the body statement");
-            //    }
-            //}
-            //else
-            //{
-            //    scope.Context.AddExpression(
-            //        SyntaxUtil.CreateImmediatelyInvokedFunction(OwnDataType.Value, Body));
-            //}
         }
 
         public class StatementContext : ScopeGenerationContext, IStatementContext

@@ -4,7 +4,7 @@ using OpenH2.Core.Tags.Scenario;
 using System;
 using System.Diagnostics;
 
-namespace OpenH2.ScriptAnalysis.GenerationState
+namespace OpenH2.Core.Scripting.GenerationState
 {
     public class FieldSetContext : BaseGenerationContext, IGenerationContext
     {
@@ -34,18 +34,6 @@ namespace OpenH2.ScriptAnalysis.GenerationState
 
             return this;
         }
-
-        //public StatementSyntax[] GenerateHoistedStatements(out ExpressionSyntax hoistedAccessor)
-        //{
-        //    hoistedAccessor = field;
-
-        //    return new StatementSyntax[] { GenerateSetStatement() };
-        //}
-
-        //public StatementSyntax[] GenerateNonHoistedStatements()
-        //{
-        //    return new StatementSyntax[] { GenerateSetStatement() };
-        //}
 
         public void GenerateInto(Scope scope)
         {

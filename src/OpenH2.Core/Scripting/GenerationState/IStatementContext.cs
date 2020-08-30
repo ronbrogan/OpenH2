@@ -1,9 +1,6 @@
 ﻿using Microsoft.CodeAnalysis.CSharp.Syntax;
-using System;
-using System.Collections.Generic;
-using System.Text;
 
-namespace OpenH2.ScriptAnalysis.GenerationState
+namespace OpenH2.Core.Scripting.GenerationState
 {
     public interface IStatementContext : IGenerationContext
     {

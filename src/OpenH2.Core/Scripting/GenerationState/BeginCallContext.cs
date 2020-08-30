@@ -1,13 +1,11 @@
 ﻿using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
-using OpenH2.Core.Scripting;
+using OpenH2.Core.Scripting.Generation;
 using OpenH2.Core.Tags.Scenario;
-using System;
 using System.Collections.Generic;
-using System.Linq;
 
-namespace OpenH2.ScriptAnalysis.GenerationState
+namespace OpenH2.Core.Scripting.GenerationState
 {
     public class BeginCallContext : BaseGenerationContext, IGenerationContext, IStatementContext
     {

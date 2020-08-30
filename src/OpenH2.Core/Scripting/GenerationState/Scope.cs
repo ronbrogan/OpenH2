@@ -1,16 +1,9 @@
-﻿using OpenH2.Core.Scripting;
-using System.Collections;
-using System.Collections.Generic;
-using System.Diagnostics;
-
-namespace OpenH2.ScriptAnalysis.GenerationState
+﻿namespace OpenH2.Core.Scripting.GenerationState
 {
     public class Scope
     {
         public ScriptDataType Type { get; }
         public IGenerationContext Context { get; private set; }
-
-        //private Stack<Scope> childContexts = new Stack<Scope>();
         public IStatementContext StatementContext { get; private set; } = null;
 
         public Scope(ScriptDataType type, IGenerationContext context, IStatementContext nearestStatements)

@@ -1,12 +1,7 @@
-﻿using Microsoft.CodeAnalysis.CSharp.Syntax;
-using OpenH2.Core.Scripting;
-using OpenH2.Core.Tags.Scenario;
-using System;
+﻿using OpenH2.Core.Tags.Scenario;
 using System.Collections.Generic;
-using System.Net.Mime;
-using System.Text;
 
-namespace OpenH2.ScriptAnalysis.GenerationState
+namespace OpenH2.Core.Scripting.GenerationState
 {
     public abstract class BaseGenerationContext 
     {

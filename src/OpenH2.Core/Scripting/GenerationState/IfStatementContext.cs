@@ -1,7 +1,7 @@
 ﻿using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
-using OpenH2.Core.Scripting;
+using OpenH2.Core.Scripting.Generation;
 using OpenH2.Core.Tags.Scenario;
 using System;
 using System.Collections.Generic;
@@ -9,7 +9,7 @@ using System.Diagnostics;
 using System.Linq;
 using static Microsoft.CodeAnalysis.CSharp.SyntaxFactory;
 
-namespace OpenH2.ScriptAnalysis.GenerationState
+namespace OpenH2.Core.Scripting.GenerationState
 {
     internal class IfStatementContext : BaseGenerationContext, IGenerationContext, IStatementContext
     {
@@ -279,32 +279,6 @@ namespace OpenH2.ScriptAnalysis.GenerationState
                     HasResultVarAssignment = true;
 
                 base.VisitAssignmentExpression(node);
-            }
-        }
-
-        private class ResultVarRemover  : CSharpSyntaxRewriter
-        {
-            public override SyntaxNode VisitExpressionStatement(ExpressionStatementSyntax node)
-            {
-                if(node.HasAnnotation(ScriptGenAnnotations.ResultStatement))
-                {
-                    var assignment = node.Expression as AssignmentExpressionSyntax;
-
-                    var rhs = assignment.Right;
-
-                    if(SyntaxUtil.IsSimpleExpression(rhs))
-                    {
-                        return ExpressionStatement(rhs);
-                    }
-                    else
-                    {
-
-                    }
-
-                    
-                }
-
-                return base.VisitExpressionStatement(node);
             }
         }
     }

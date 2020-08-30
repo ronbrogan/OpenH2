@@ -1,12 +1,11 @@
-﻿using Microsoft.CodeAnalysis.CSharp;
+﻿using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
-using static Microsoft.CodeAnalysis.CSharp.SyntaxFactory;
-using OpenH2.Core.Scripting;
+using OpenH2.Core.Scripting.Generation;
 using OpenH2.Core.Tags.Scenario;
 using System;
-using Microsoft.CodeAnalysis;
+using static Microsoft.CodeAnalysis.CSharp.SyntaxFactory;
 
-namespace OpenH2.ScriptAnalysis.GenerationState
+namespace OpenH2.Core.Scripting.GenerationState
 {
     public class ReferenceGetContext : BaseGenerationContext, IGenerationContext
     {

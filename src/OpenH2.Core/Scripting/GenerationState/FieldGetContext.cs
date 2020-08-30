@@ -1,20 +1,19 @@
 ﻿using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
-using OpenH2.Core.Scripting;
+using OpenH2.Core.Scripting.Generation;
 using OpenH2.Core.Tags.Scenario;
-using OpenH2.ScriptAnalysis.GenerationState;
 using System;
 
-namespace OpenH2.ScriptAnalysis
+namespace OpenH2.Core.Scripting.GenerationState
 {
-    internal class NavigationPointContext : BaseGenerationContext, IGenerationContext
+    public class FieldGetContext : BaseGenerationContext, IGenerationContext
     {
         private readonly ExpressionSyntax accessor;
 
         public override ScriptDataType? OwnDataType { get; }
 
-        public NavigationPointContext(ScenarioTag scenario, ScenarioTag.ScriptSyntaxNode node) : base(node)
+        public FieldGetContext(ScenarioTag scenario, ScenarioTag.ScriptSyntaxNode node, MemberNameRepository nameRepo) : base(node)
         {
             this.OwnDataType = node.DataType;
 
@@ -26,11 +25,21 @@ namespace OpenH2.ScriptAnalysis
             {
                 var stringVal = SyntaxUtil.GetScriptString(scenario, node);
 
-                accessor = SyntaxFactory.MemberAccessExpression(SyntaxKind.SimpleMemberAccessExpression,
-                    SyntaxFactory.MemberAccessExpression(SyntaxKind.SimpleMemberAccessExpression,
-                    SyntaxFactory.IdentifierName("ScriptEngine"),
-                    SyntaxFactory.IdentifierName("NavigationPoints")),
-                    SyntaxFactory.IdentifierName(SyntaxUtil.SanitizeIdentifier(stringVal)));
+                if(stringVal == "none")
+                {
+                    accessor = SyntaxFactory.DefaultExpression(SyntaxUtil.ScriptTypeSyntax(node.DataType));
+                }
+                else
+                {
+                    if(nameRepo.TryGetName(stringVal, node.DataType.ToString(), node.NodeData_H16, out var finalName))
+                    {
+                        accessor = SyntaxFactory.IdentifierName(finalName);
+                    }
+                    else
+                    {
+                        accessor = SyntaxFactory.IdentifierName(SyntaxUtil.SanitizeIdentifier(stringVal));
+                    }
+                }
             }
 
             accessor = accessor.WithAdditionalAnnotations(ScriptGenAnnotations.TypeAnnotation(node.DataType));

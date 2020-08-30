@@ -11,11 +11,11 @@
         String = 9,
         ScriptReference = 10,
         StringId = 11,
-        VehicleSeat = 12, // unsure
+        VehicleSeat = 12,
         Trigger = 13,
         LocationFlag = 14,
         CameraPathTarget = 15,
-        CinematicTitle = 16, // unsure
+        CinematicTitle = 16,
         DeviceGroup = 18,
         AI = 19,
         AIScript = 21,
@@ -27,7 +27,7 @@
         SpatialPoint = 28,
         List = 31,
         ReferenceGet = 32,
-        Effect = 33, // unsure
+        Effect = 33,
         Damage = 34,
         LoopingSound = 35,
         Weapon = 38,

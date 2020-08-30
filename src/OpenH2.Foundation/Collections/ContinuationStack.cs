@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 
-namespace OpenH2.ScriptAnalysis
+namespace OpenH2.Foundation.Collections
 {
     public class ContinuationStack<T> 
     {
@@ -19,8 +20,9 @@ namespace OpenH2.ScriptAnalysis
 
         public bool TryPop(out T value, out bool isContinuation)
         {
-            if(store.TryPop(out var values))
+            if(store.Any())
             {
+                var values = store.Pop();
                 value = values.Item1;
                 isContinuation = values.Item2;
                 return true;

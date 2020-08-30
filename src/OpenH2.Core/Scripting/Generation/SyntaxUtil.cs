@@ -2,7 +2,6 @@
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using OpenH2.Core.Extensions;
-using OpenH2.Core.Scripting;
 using OpenH2.Core.Tags.Scenario;
 using System;
 using System.Collections.Generic;
@@ -13,19 +12,8 @@ using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using static Microsoft.CodeAnalysis.CSharp.SyntaxFactory;
 
-namespace OpenH2.ScriptAnalysis
+namespace OpenH2.Core.Scripting.Generation
 {
-    public static class ScriptGenAnnotations
-    {
-        public static SyntaxAnnotation ResultStatement { get; } = new SyntaxAnnotation("ResultStatement");
-        public static SyntaxAnnotation FinalScopeStatement { get; } = new SyntaxAnnotation("FinalScopeStatement");
-        public static SyntaxAnnotation IfStatement { get; } = new SyntaxAnnotation("IfStatement");
-        public static SyntaxAnnotation HoistedResultVar { get; } = new SyntaxAnnotation("HoistedResultVar");
-
-        public const string TypeAnnotationKind = "TypeAnnotation";
-        public static SyntaxAnnotation TypeAnnotation(ScriptDataType t) => new SyntaxAnnotation(TypeAnnotationKind, ((int)t).ToString());
-    }
-
     public static class SyntaxUtil
     {
         public static TypeSyntax ScriptTypeSyntax(ScriptDataType dataType)
@@ -127,7 +115,7 @@ namespace OpenH2.ScriptAnalysis
                 segments[i] = SanitizeIdentifier(segments[i]);
             }
 
-            return string.Join('.', segments);
+            return string.Join(".", segments);
         }
 
         public static FieldDeclarationSyntax CreateField(ScenarioTag.ScriptVariableDefinition variable)
@@ -176,7 +164,8 @@ namespace OpenH2.ScriptAnalysis
 
             object nodeValue = node.DataType switch
             {
-                ScriptDataType.Float => BitConverter.Int32BitsToSingle((int)node.NodeData_32),
+                // TODO: netstandard2.1 or net5 upgrade, replace with BitConverter.Int32BitsToSingle
+                ScriptDataType.Float => BitConverter.ToSingle(BitConverter.GetBytes((int)node.NodeData_32), 0),
                 ScriptDataType.Int => (int)node.NodeData_32,
                 ScriptDataType.Boolean => node.NodeData_B3 == 1,
                 ScriptDataType.Short => (short)node.NodeData_H16,

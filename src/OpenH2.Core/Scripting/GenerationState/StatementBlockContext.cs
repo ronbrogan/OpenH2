@@ -1,10 +1,11 @@
 ﻿using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
+using OpenH2.Core.Scripting.Generation;
 using System;
 using System.Collections.Generic;
 
-namespace OpenH2.ScriptAnalysis.GenerationState
+namespace OpenH2.Core.Scripting.GenerationState
 {
     public class StatementBlockContext : BaseGenerationContext, IGenerationContext, IStatementContext
     {
