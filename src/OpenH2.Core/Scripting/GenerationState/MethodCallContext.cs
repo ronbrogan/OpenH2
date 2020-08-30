@@ -105,7 +105,7 @@ namespace OpenH2.Core.Scripting.GenerationState
 
                         SyntaxUtil.AwaitIfNeeded(method, ref invocation, out var materializedReturnType);
 
-                        if(SyntaxUtil.TryGetScriptTypeFromType(materializedReturnType, out var fromType))
+                        if(SyntaxUtil.TryGetScriptTypeFromType(materializedReturnType, out var fromType) && fromType != this.ReturnType)
                         {
                             // Insert cast to destination
                             invocation = SyntaxUtil.CreateCast(fromType, this.ReturnType, invocation)

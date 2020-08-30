@@ -551,10 +551,7 @@ namespace OpenH2.Core.Scripting
         void device_animate_overlay(Device device, float real, float real1, float real12, float real123);
 
         /// <summary>animate the position over time</summary>
-        void device_animate_position(Device device, float floatValue, float floatValue0, float floatValue1, bool boolean);
-
-        /// <summary>animate the position over time</summary>
-        void device_animate_position(Device device, float real, float real1, float real12, float real123, bool boolean);
+        void device_animate_position(Device device, float desiredPosition, float seconds, float real12, float real123, bool boolean);
 
         /// <summary>TRUE makes the given device close automatically after it has opened, FALSE makes it not</summary>
         void device_closes_automatically_set(Device device, bool boolean);
