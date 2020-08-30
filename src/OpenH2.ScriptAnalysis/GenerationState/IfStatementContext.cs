@@ -14,7 +14,8 @@ namespace OpenH2.ScriptAnalysis.GenerationState
     internal class IfStatementContext : BaseGenerationContext, IGenerationContext, IStatementContext
     {
         private readonly Scope containingScope;
-        private readonly bool shouldHoistAndStoreResult;
+        private readonly bool producesValue;
+        private readonly bool shouldHoist;
 
         public override bool CreatesScope => true;
 
@@ -34,7 +35,8 @@ namespace OpenH2.ScriptAnalysis.GenerationState
             resultVariable = IdentifierName(resultVarName)
                 .WithAdditionalAnnotations(ScriptGenAnnotations.TypeAnnotation(containingScope.Type));
             this.containingScope = containingScope;
-            this.shouldHoistAndStoreResult = containingScope.Type != ScriptDataType.Void;
+            this.producesValue = containingScope.Type != ScriptDataType.Void;
+            this.shouldHoist = containingScope.IsInStatementContext == false && containingScope.SuppressHoisting == false;
         }
 
         public IGenerationContext AddExpression(ExpressionSyntax expression)
@@ -83,7 +85,7 @@ namespace OpenH2.ScriptAnalysis.GenerationState
 
         public bool TryCreateResultStatement(ExpressionSyntax resultValue, out StatementSyntax statement)
         {
-            if (shouldHoistAndStoreResult)
+            if (shouldHoist)
             {
                 statement = ExpressionStatement(AssignmentExpression(
                     SyntaxKind.SimpleAssignmentExpression,
@@ -94,8 +96,9 @@ namespace OpenH2.ScriptAnalysis.GenerationState
             }
             else
             {
-                statement = default;
-                return false;
+                statement = SyntaxFactory.ReturnStatement(resultValue)
+                        .WithAdditionalAnnotations(ScriptGenAnnotations.ResultStatement);
+                return true;
             }
         }
 
@@ -107,26 +110,56 @@ namespace OpenH2.ScriptAnalysis.GenerationState
 
             var generatedStatements = new List<StatementSyntax>();
 
-            if (this.shouldHoistAndStoreResult)
+            if (this.producesValue)
             {
                 var resultType = SyntaxUtil.ScriptTypeSyntax(this.containingScope.Type);
-                var initialization = DefaultExpression(resultType);
 
-                generatedStatements.Add(LocalDeclarationStatement(VariableDeclaration(resultType)
-                    .WithVariables(SingletonSeparatedList(
-                        VariableDeclarator(resultVariable.Identifier)
-                            .WithInitializer(
-                                EqualsValueClause(initialization)))))
-                    .WithAdditionalAnnotations(ScriptGenAnnotations.HoistedResultVar));
-
-                if (HasResultVarAssignment(whenTrueStatements) == false)
+                // Ensure that if a value must be produced, we have an else with default value
+                if(whenFalseStatements.Any() == false)
                 {
-                    InsertResultVarAssignment(whenTrueStatements);
+                    whenFalseStatements.Add(ExpressionStatement(DefaultExpression(resultType)));
                 }
 
-                if(whenFalseStatements.Any() && HasResultVarAssignment(whenFalseStatements) == false)
+                if (this.shouldHoist)
                 {
-                    InsertResultVarAssignment(whenFalseStatements);
+                    var initialization = DefaultExpression(resultType);
+
+                    generatedStatements.Add(LocalDeclarationStatement(VariableDeclaration(resultType)
+                        .WithVariables(SingletonSeparatedList(
+                            VariableDeclarator(resultVariable.Identifier)
+                                .WithInitializer(
+                                    EqualsValueClause(initialization)))))
+                        .WithAdditionalAnnotations(ScriptGenAnnotations.HoistedResultVar));
+
+                    if (HasResultVarAssignment(whenTrueStatements) == false)
+                    {
+                        InsertResultVarAssignment(whenTrueStatements);
+                    }
+
+                    if (whenFalseStatements.Any() && HasResultVarAssignment(whenFalseStatements) == false)
+                    {
+                        InsertResultVarAssignment(whenFalseStatements);
+                    }
+                }
+                else
+                {
+                    if(SyntaxUtil.HasReturnStatement(whenTrueStatements) == false)
+                    {
+                        SyntaxUtil.CreateReturnStatement(this.containingScope.Type, whenTrueStatements, (ExpressionSyntax e, out StatementSyntax s) =>
+                        {
+                            s = ReturnStatement(e).WithAdditionalAnnotations(ScriptGenAnnotations.ResultStatement);
+                            return true;
+                        });
+                    }
+
+                    if(SyntaxUtil.HasReturnStatement(whenFalseStatements) == false)
+                    {
+                        SyntaxUtil.CreateReturnStatement(this.containingScope.Type, whenFalseStatements, (ExpressionSyntax e, out StatementSyntax s) =>
+                        {
+                            s = ReturnStatement(e).WithAdditionalAnnotations(ScriptGenAnnotations.ResultStatement);
+                            return true;
+                        });
+                    }
                 }
             }
 
@@ -157,23 +190,37 @@ namespace OpenH2.ScriptAnalysis.GenerationState
                         .WithAdditionalAnnotations(ScriptGenAnnotations.IfStatement));
             }
 
-            foreach(var statement in generatedStatements)
+            if(this.shouldHoist == false && this.producesValue)
             {
-                scope.StatementContext.AddStatement(statement);
+                var last = generatedStatements.Last();
+
+                generatedStatements.Remove(last);
+                generatedStatements.Add(last.WithAdditionalAnnotations(ScriptGenAnnotations.ResultStatement));
             }
 
-            
-            if (this.shouldHoistAndStoreResult)
+            if(scope.IsInStatementContext || this.shouldHoist)
             {
-                scope.Context.AddExpression(this.resultVariable);
+                // Insert statements into appropriate statement context
+                foreach (var statement in generatedStatements)
+                {
+                    scope.StatementContext.AddStatement(statement);
+                }
+
+                if(this.shouldHoist)
+                {
+                    // Insert result var into place
+                    scope.Context.AddExpression(this.resultVariable);
+                }
             }
             else
             {
-                //var result = scope.StatementContext.CreateResultStatement(this.resultVariable);
-                //scope.StatementContext.AddStatement(result);
+                // Insert IIFE into place
+                scope.Context.AddExpression(SyntaxUtil.CreateImmediatelyInvokedFunction(scope.Type, generatedStatements));
             }
             
         }
+
+        
 
         private bool HasResultVarAssignment(IEnumerable<SyntaxNode> roots)
         {

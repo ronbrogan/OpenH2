@@ -79,14 +79,9 @@ namespace OpenH2.ScriptAnalysis
 
         private static Dictionary<ScriptDataType, Type> toTypeMap = toScriptTypeMap.ToDictionary(kv => kv.Value, kv => kv.Key);
 
-        public static ScriptDataType ScriptTypeFromType(Type t)
+        public static bool TryGetScriptTypeFromType(Type t, out ScriptDataType scriptType)
         {
-            if(toScriptTypeMap.TryGetValue(t, out var val))
-            {
-                return val;
-            }
-
-            throw new Exception($"No mapping for '{t.Name}'");
+            return toScriptTypeMap.TryGetValue(t, out scriptType);
         }
 
         public static bool TryGetTypeFromScriptType(ScriptDataType s, out Type t)
@@ -244,6 +239,7 @@ namespace OpenH2.ScriptAnalysis
 
         private static Type[] simpleExpressionTypes = new Type[]
         {
+            typeof(AwaitExpressionSyntax),
             typeof(CastExpressionSyntax),
             typeof(IdentifierNameSyntax),
             typeof(LiteralExpressionSyntax),
@@ -253,6 +249,7 @@ namespace OpenH2.ScriptAnalysis
             typeof(BinaryExpressionSyntax),
             typeof(PrefixUnaryExpressionSyntax),
             typeof(PostfixUnaryExpressionSyntax),
+            typeof(DefaultExpressionSyntax)
         };
 
         public static bool IsSimpleExpression(this ExpressionSyntax exp)
@@ -311,7 +308,7 @@ namespace OpenH2.ScriptAnalysis
             if(toTypeMap.TryGetValue(from, out var fromT) &&
                 toTypeMap.TryGetValue(to, out var toT))
             {
-                return CreateCast(fromT, toT, inner);
+                return CreateCast(fromT, toT, inner).WithAdditionalAnnotations(ScriptGenAnnotations.TypeAnnotation(to));
             }
             else
             {
@@ -429,6 +426,77 @@ namespace OpenH2.ScriptAnalysis
             }
 
             return false;
+        }
+
+        public delegate bool ResultVarGenerator(ExpressionSyntax exp, out StatementSyntax statement);
+        public static void CreateReturnStatement(ScriptDataType returnType, List<StatementSyntax> statements, ResultVarGenerator resultGen)
+        {
+            if(statements.Any() == false)
+            {
+                return;
+            }
+
+            var last = statements.Last();
+
+            if (returnType == ScriptDataType.Void)
+            {
+                statements.Remove(last);
+                statements.Add(last.WithAdditionalAnnotations(ScriptGenAnnotations.FinalScopeStatement));
+                return;
+            }
+
+            if (last.TryGetContainingSimpleExpression(out var lastExp) && resultGen(lastExp, out var lastStatement))
+            {
+                statements.Remove(last);
+                statements.Add(lastStatement.WithAdditionalAnnotations(ScriptGenAnnotations.FinalScopeStatement));
+            }
+            else if (last.TryGetLeftHandExpression(out var lhsExp) && resultGen(lhsExp, out var lhsStatement))
+            {
+                statements.Add(lhsStatement.WithAdditionalAnnotations(ScriptGenAnnotations.FinalScopeStatement));
+            }
+            else
+            {
+                var defaultExp = SyntaxFactory.LiteralExpression(
+                        SyntaxKind.DefaultLiteralExpression,
+                        SyntaxFactory.Token(SyntaxKind.DefaultKeyword));
+
+                if (resultGen(defaultExp, out var defaultStatement))
+                {
+                    statements.Add(defaultStatement.WithAdditionalAnnotations(ScriptGenAnnotations.FinalScopeStatement)
+                        .WithTrailingTrivia(SyntaxFactory.Comment("// Unhandled 'begin' return")));
+                }
+            }
+        }
+
+        public static bool HasReturnStatement(IEnumerable<SyntaxNode> roots)
+        {
+            foreach (var root in roots)
+            {
+                var checker = new ReturnChecker();
+
+                checker.Visit(root);
+
+                if (checker.HasReturn)
+                    return true;
+            }
+
+            return false;
+        }
+
+        private class ReturnChecker : CSharpSyntaxWalker
+        {
+            public bool HasReturn { get; private set; } = false;
+
+            public override void VisitReturnStatement(ReturnStatementSyntax node)
+            {
+                HasReturn = true;
+
+                base.VisitReturnStatement(node);
+            }
+
+            public override void VisitParenthesizedLambdaExpression(ParenthesizedLambdaExpressionSyntax node)
+            {
+            }
         }
 
         public class DeNormalizer : CSharpSyntaxRewriter

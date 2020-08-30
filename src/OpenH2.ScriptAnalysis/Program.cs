@@ -73,7 +73,11 @@ namespace OpenH2.ScriptAnalysis
 
                 foreach(var field in baseFields)
                 {
-                    repo.RegisterName(field.Name, SyntaxUtil.ScriptTypeFromType(field.FieldType).ToString());
+                    var found = SyntaxUtil.TryGetScriptTypeFromType(field.FieldType, out var t);
+
+                    Debug.Assert(found);
+
+                    repo.RegisterName(field.Name, t.ToString());
                 }
 
                 // Generate data properties

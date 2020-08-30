@@ -21,6 +21,7 @@ namespace OpenH2.ScriptAnalysis.GenerationState
         private List<ArgumentSyntax> arguments = new List<ArgumentSyntax>();
 
         public override bool CreatesScope => true;
+        public override bool SuppressHoisting => true;
 
         public SleepUntilContext(ScenarioTag.ScriptSyntaxNode node, ScriptDataType returnType) : base(node)
         {

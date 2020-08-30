@@ -10,6 +10,7 @@ namespace OpenH2.ScriptAnalysis.GenerationState
         private readonly Scope containingScope;
 
         public override bool CreatesScope => true;
+        public override bool SuppressHoisting => containingScope.SuppressHoisting;
         public override ScriptDataType? OwnDataType { get; }
 
         public ScopeGenerationContext(ScenarioTag.ScriptSyntaxNode node, Scope containingScope) : base(node)

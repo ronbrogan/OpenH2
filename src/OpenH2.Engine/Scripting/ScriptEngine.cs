@@ -24,6 +24,7 @@ namespace OpenH2.Engine.Scripting
 
         /// <summary>converts an ai reference to an object list.</summary>
         public static ObjectList ai_actors(AI ai)
+
         {
             return default(ObjectList);
         }
@@ -1895,6 +1896,7 @@ namespace OpenH2.Engine.Scripting
         /// <summary>prints a string to the console.</summary>
         public static void print(string value)
         {
+            Console.WriteLine(value);
         }
 
         /// <summary>removes the special place that activates everything it sees.</summary>

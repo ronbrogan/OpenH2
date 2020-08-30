@@ -82,10 +82,10 @@ namespace OpenH2.ScriptAnalysis.GenerationState
                 {
                     SyntaxUtil.AwaitIfNeeded(method, ref invocation, out var materializedReturnType);
 
-                    if(SyntaxUtil.TryGetTypeFromScriptType(this.ReturnType, out var destinationType))
+                    if (SyntaxUtil.TryGetScriptTypeFromType(materializedReturnType, out var fromType))
                     {
                         // Insert cast to destination
-                        invocation = SyntaxUtil.CreateCast(materializedReturnType, destinationType, invocation)
+                        invocation = SyntaxUtil.CreateCast(fromType, this.ReturnType, invocation)
                             .WithAdditionalAnnotations(ScriptGenAnnotations.TypeAnnotation(this.ReturnType));
                     }
                 }
@@ -105,10 +105,10 @@ namespace OpenH2.ScriptAnalysis.GenerationState
 
                         SyntaxUtil.AwaitIfNeeded(method, ref invocation, out var materializedReturnType);
 
-                        if (SyntaxUtil.TryGetTypeFromScriptType(this.ReturnType, out var destinationType))
+                        if(SyntaxUtil.TryGetScriptTypeFromType(materializedReturnType, out var fromType))
                         {
                             // Insert cast to destination
-                            invocation = SyntaxUtil.CreateCast(materializedReturnType, destinationType, invocation)
+                            invocation = SyntaxUtil.CreateCast(fromType, this.ReturnType, invocation)
                                 .WithAdditionalAnnotations(ScriptGenAnnotations.TypeAnnotation(this.ReturnType));
                         }
                     }

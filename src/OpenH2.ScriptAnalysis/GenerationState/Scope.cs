@@ -30,25 +30,12 @@ namespace OpenH2.ScriptAnalysis.GenerationState
             return child;
         }
 
-        //public void SetContext(IGenerationContext context)
-        //{
-        //    if(this.Context == null)
-        //    {
-        //        this.Context = context;
-
-        //        if (context is IStatementContext statementContext)
-        //        {
-        //            this.StatementContext = statementContext;
-        //        }
-        //    }
-            
-        //}
-
         public void GenerateInto(Scope destination)
         {
             this.Context.GenerateInto(destination);
         }
 
         public bool IsInStatementContext => this.StatementContext == this.Context;
+        public bool SuppressHoisting => this.Context.SuppressHoisting;
     }
 }

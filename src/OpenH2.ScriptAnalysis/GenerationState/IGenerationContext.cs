@@ -11,6 +11,7 @@ namespace OpenH2.ScriptAnalysis.GenerationState
     {
         IReadOnlyList<object> Metadata { get; }
         bool CreatesScope { get; }
+        bool SuppressHoisting { get; }
         ScriptDataType? OwnDataType { get; }
         ScenarioTag.ScriptSyntaxNode OriginalNode { get; }
         IGenerationContext AddExpression(ExpressionSyntax expression);
@@ -25,6 +26,9 @@ namespace OpenH2.ScriptAnalysis.GenerationState
         private NullGenerationContext() { }
 
         public bool CreatesScope => false;
+
+        public bool SuppressHoisting => false;
+
         public ScriptDataType? OwnDataType => null;
 
         public IReadOnlyList<object> Metadata => Array.Empty<object>();
