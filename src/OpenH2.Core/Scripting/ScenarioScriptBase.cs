@@ -27,5 +27,7 @@ namespace OpenH2.Core.Scripting
         public short ai_movement_patrol;
         public short ai_movement_flee;
         public DamageState destroyed;
+        public NavigationPoint @default;
+        public NavigationPoint default_red;
     }
 }
