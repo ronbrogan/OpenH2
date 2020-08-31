@@ -30,14 +30,14 @@ namespace OpenH2.ScriptAnalysis
 
         static void Main(string[] args)
         {
-            var maps = Directory.GetFiles(@"D:\H2vMaps", "*.map");
+            var maps = Directory.GetFiles(@"C:\Program Files\ModifiableWindowsApps\HaloMCC\halo2\h2_maps_win64_dx11", "*.map");
 
             foreach(var map in maps)
             {
-                //if (map.Contains("03a") == false)
-                //{
-                //    continue;
-                //}
+                if (map.Contains("08b") == false)
+                {
+                    continue;
+                }
 
                 var factory = new MapFactory(Path.GetDirectoryName(map), NullMaterialFactory.Instance);
                 var scene = factory.FromFile(File.OpenRead(map));
@@ -48,7 +48,7 @@ namespace OpenH2.ScriptAnalysis
                         .Select(p => p.Trim())
                         .ToArray();
 
-                var outRoot = $@"D:\h2scratch\scripts\{scenarioParts.Last()}";
+                var outRoot = $@"D:\h2pcscratch\scripts\{scenarioParts.Last()}";
                 Directory.CreateDirectory(outRoot);
 
                 var repo = new MemberNameRepository();

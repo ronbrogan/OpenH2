@@ -1,4 +1,5 @@
 ﻿using OpenH2.Core.Tags.Layout;
+using OpenH2.Serialization.Layout;
 using System;
 using System.Reflection;
 
@@ -6,7 +7,7 @@ namespace OpenH2.Core.Tags.Serialization
 {
     public class TagProperty
     {
-        public TagValueAttribute LayoutAttribute { get; set; }
+        public SerializableMemberAttribute LayoutAttribute { get; set; }
 
         public Type Type { get; set; }
 

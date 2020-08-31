@@ -1,9 +1,11 @@
 ﻿using OpenH2.Core.Enums;
 using OpenH2.Core.Parsing;
 using OpenH2.Core.Representations;
+using OpenH2.Serialization.Layout;
 
 namespace OpenH2.Core.Tags
 {
+    [ArbitraryLength]
     public abstract class BaseTag
     {
         public virtual string Name { get; set; }

@@ -1,7 +1,7 @@
-﻿namespace OpenH2.Core.Tags.Layout
+﻿namespace OpenH2.Serialization.Layout
 {
 
-    public sealed class StringValueAttribute : TagValueAttribute
+    public sealed class StringValueAttribute : SerializableMemberAttribute
     {
         public StringValueAttribute(int offset, int maxLength) : base(offset)
         {

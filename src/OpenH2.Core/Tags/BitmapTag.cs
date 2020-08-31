@@ -2,6 +2,7 @@
 using OpenH2.Core.Offsets;
 using OpenH2.Core.Parsing;
 using OpenH2.Core.Tags.Layout;
+using OpenH2.Serialization.Layout;
 using System;
 using System.Collections.Generic;
 using System.IO;

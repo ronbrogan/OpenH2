@@ -2,9 +2,9 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace OpenH2.Core.Tags.Layout
+namespace OpenH2.Serialization.Layout
 {
-    public class InternedStringAttribute : TagValueAttribute
+    public class InternedStringAttribute : SerializableMemberAttribute
     {
         public InternedStringAttribute(int offset) : base(offset)
         {

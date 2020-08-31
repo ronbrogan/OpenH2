@@ -1,4 +1,5 @@
 ﻿using OpenH2.Core.Tags.Layout;
+using OpenH2.Serialization.Layout;
 using System;
 using System.Collections.Generic;
 using System.Reflection;
@@ -24,7 +25,7 @@ namespace OpenH2.Core.Tags.Serialization
 
             foreach (var prop in properties)
             {
-                var attr = prop.GetCustomAttribute<TagValueAttribute>();
+                var attr = prop.GetCustomAttribute<SerializableMemberAttribute>();
 
                 if (attr != null)
                 {

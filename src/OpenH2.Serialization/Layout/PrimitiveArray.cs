@@ -1,6 +1,6 @@
-﻿namespace OpenH2.Core.Tags.Layout
+﻿namespace OpenH2.Serialization.Layout
 {
-    public sealed class PrimitiveArrayAttribute : TagValueAttribute
+    public sealed class PrimitiveArrayAttribute : SerializableMemberAttribute
     {
         public PrimitiveArrayAttribute(int offset, int count) : base(offset)
         {

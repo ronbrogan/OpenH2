@@ -1,6 +1,7 @@
 ﻿using OpenH2.Core.Representations;
 using OpenH2.Core.Scripting;
 using OpenH2.Core.Tags.Layout;
+using OpenH2.Serialization.Layout;
 using System.Numerics;
 using System.Text.Json.Serialization;
 

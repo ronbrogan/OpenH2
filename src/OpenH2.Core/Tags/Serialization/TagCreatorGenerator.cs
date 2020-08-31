@@ -1,6 +1,7 @@
 ﻿using OpenH2.Core.Parsing;
 using OpenH2.Core.Representations;
 using OpenH2.Core.Tags.Serialization.SerializerEmit;
+using OpenH2.Serialization;
 using System;
 using System.Collections.Generic;
 using System.Reflection;
@@ -111,6 +112,8 @@ namespace OpenH2.Core.Tags.Serialization
             cachedTagCreatorDelegates.Add(tagType, creator);
 
             return creator;
+
+            
         }
     }
 }
