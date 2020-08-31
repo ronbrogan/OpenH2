@@ -1,4 +1,6 @@
 ﻿using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 using OpenH2.Serialization.Layout;
 using System;
 using System.Collections.Generic;
@@ -8,14 +10,27 @@ using System.Runtime.CompilerServices;
 
 namespace OpenH2.Serialization.Materialization
 {
+    internal delegate InvocationExpressionSyntax PrimitiveReader(ExpressionSyntax data, params ArgumentSyntax[] otherArgs);
     internal class WellKnown
     {
-        public Dictionary<ITypeSymbol, string> PrimitiveReaders { get; }
+        public Dictionary<ITypeSymbol, PrimitiveReader> PrimitiveReaders { get; }
         public Dictionary<ITypeSymbol, int> SizeOf { get; }
 
         public WellKnown(Compilation compilation, TypeDiscoverer typeDiscoverer)
         {
-            PrimitiveReaders = TransformDictionary(compilation, ReflectionPrimitiveReaders);
+            var reflectionPrimitiveFactory = ReflectionPrimitiveReaders.ToDictionary(kv => kv.Key, kv =>
+            {
+                return new PrimitiveReader((data, args) =>
+                {
+                    return SyntaxFactory.InvocationExpression(
+                            SyntaxFactory.MemberAccessExpression(SyntaxKind.SimpleMemberAccessExpression,
+                                data,
+                                SyntaxFactory.IdentifierName(kv.Value)))
+                            .AddArgumentListArguments(args);
+                });
+            });
+
+            PrimitiveReaders = TransformDictionary(compilation, reflectionPrimitiveFactory);
             SizeOf = TransformDictionary(compilation, ReflectionSizeOf);
 
             var fixedLengthAttr = compilation.GetTypeSymbol<FixedLengthAttribute>();
@@ -40,13 +55,25 @@ namespace OpenH2.Serialization.Materialization
 
                 foreach(var m in methods)
                 {
-                    var mattrs = m.GetAttributes();
-
-                    if(mattrs.Any(a => SymbolEqualityComparer.Default.Equals(a.AttributeClass, materializerAttr)))
+                    if(m.IsStatic && 
+                        m.GetAttributes().Any(a => SymbolEqualityComparer.Default.Equals(a.AttributeClass, materializerAttr)))
                     {
                         // TODO: check parameter(s)?
 
-                        PrimitiveReaders[m.ReturnType] = m.Name;
+                        var lookupType = m.ReturnType;
+
+                        if(m.ReturnType is INamedTypeSymbol named && named.IsGenericType)
+                        {
+                            lookupType = named.ConstructUnboundGenericType();
+                        }
+
+
+                        PrimitiveReaders[lookupType] = (data, args) => SyntaxFactory.InvocationExpression(
+                            SyntaxFactory.MemberAccessExpression(SyntaxKind.SimpleMemberAccessExpression,
+                                SyntaxFactory.IdentifierName(s.ToDisplayString()),
+                                SyntaxFactory.IdentifierName(m.Name)))
+                            .AddArgumentListArguments(SyntaxFactory.Argument(data))
+                            .AddArgumentListArguments(args);
                     }
                 }
             }
@@ -83,10 +110,6 @@ namespace OpenH2.Serialization.Materialization
             { typeof(Vector4), nameof(SpanByteExtensions.ReadVec4At) },
             { typeof(Quaternion), nameof(SpanByteExtensions.ReadQuaternionAt) },
             { typeof(Matrix4x4), nameof(SpanByteExtensions.ReadMatrix4x4At) },
-
-            //{ typeof(TagRef), nameof(SpanByteExtensions.ReadTagRefAt)) },
-            //{ typeof(TagRef<>), nameof(SpanByteExtensions.ReadTagRefAt)) },
-            //{ typeof(InternedString), nameof(SpanByteExtensions.ReadInternedStringAt)) },
         };
 
         private Dictionary<Type, int> ReflectionSizeOf = new Dictionary<Type, int>

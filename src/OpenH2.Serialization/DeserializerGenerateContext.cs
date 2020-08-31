@@ -6,6 +6,7 @@ using OpenH2.Serialization.Materialization;
 using OpenH2.Serialization.Metadata;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Runtime.Serialization;
 using static Microsoft.CodeAnalysis.CSharp.SyntaxFactory;
@@ -22,13 +23,14 @@ namespace OpenH2.Serialization
     /// This allows relocating/rebasing the data
     /// </param>
     /// <returns></returns>
-    public delegate object Deserializer(Span<byte> data, int instanceStart = 0, int staticOffset = 0);
+    public delegate object Deserializer(Span<byte> data, int instanceStart = 0, int staticOffset = 0, IInternedStringProvider stringProvider = null);
 
     internal class DeserializerGenerateContext
     {
         private static SyntaxToken dataParam = ParseToken("data");
         private static SyntaxToken startParam = ParseToken("instanceStart");
         private static SyntaxToken offsetParam = ParseToken("staticOffset");
+        private static SyntaxToken stringsParam = ParseToken("stringProvider");
         private static SyntaxToken itemLocal = ParseToken("item");
 
         private readonly SemanticModel model;
@@ -48,21 +50,24 @@ namespace OpenH2.Serialization
 
             statements.Add(GenerateLocalCreation(serializableType));
 
-            foreach (var member in layoutInfo.MemberInfos.OrderBy(a => a.LayoutAttribute.Offset))
+            var sortedMembers = layoutInfo.MemberInfos.OrderBy(a => a.LayoutAttribute.Offset);
+
+            foreach (var member in sortedMembers)
             {
                 var memberStatements = member.LayoutAttribute switch
                 {
                     PrimitiveValueAttribute prim => GeneratePrimitiveValueRead(member, prim),
                     PrimitiveArrayAttribute arr => GeneratePrimitiveArrayRead(member, arr),
                     ReferenceArrayAttribute reference => GenerateReferenceArrayRead(member, reference),
-                    //StringValueAttribute str => Generate_Read(),
-                    //InternedStringAttribute interned => Generate_Read(),
+                    StringValueAttribute str => GenerateStringValueRead(member, str),
 
                     _ => Array.Empty<StatementSyntax>(),
                 };
 
                 statements.AddRange(memberStatements);
             }
+
+            statements.AddRange(GenerateInternedStringMembers(sortedMembers));
 
             statements.Add(GenerateReturn());
 
@@ -72,7 +77,9 @@ namespace OpenH2.Serialization
                     Parameter(startParam).WithType(PredefinedType(Token(SyntaxKind.IntKeyword)))
                         .WithDefault(EqualsValueClause(LiteralExpression(SyntaxKind.NumericLiteralExpression, Literal(0)))),
                     Parameter(offsetParam).WithType(PredefinedType(Token(SyntaxKind.IntKeyword)))
-                        .WithDefault(EqualsValueClause(LiteralExpression(SyntaxKind.NumericLiteralExpression, Literal(0))))
+                        .WithDefault(EqualsValueClause(LiteralExpression(SyntaxKind.NumericLiteralExpression, Literal(0)))),
+                    Parameter(stringsParam).WithType(ParseTypeName(nameof(IInternedStringProvider)))
+                        .WithDefault(EqualsValueClause(LiteralExpression(SyntaxKind.NullLiteralExpression)))
                 )
                 .AddModifiers(Token(SyntaxKind.PublicKeyword), Token(SyntaxKind.StaticKeyword))
                 .WithBody(Block(statements));
@@ -111,16 +118,17 @@ namespace OpenH2.Serialization
                 castToFinal = true;
             }
 
+            if(type is INamedTypeSymbol named && named.IsGenericType)
+            {
+                type = named.ConstructUnboundGenericType();
+            }
+
             if (this.wellKnown.PrimitiveReaders.TryGetValue(type, out var mi))
             {
-                ExpressionSyntax getExp = InvocationExpression(
-                    MemberAccessExpression(SyntaxKind.SimpleMemberAccessExpression,
-                        IdentifierName(dataParam),
-                        IdentifierName(mi)))
-                    .AddArgumentListArguments(
-                        Argument(BinaryExpression(SyntaxKind.AddExpression,
-                            IdentifierName(startParam),
-                            LiteralExpression(SyntaxKind.NumericLiteralExpression, Literal(prim.Offset)))));
+                ExpressionSyntax getExp = mi(IdentifierName(dataParam), 
+                    Argument(BinaryExpression(SyntaxKind.AddExpression,
+                        IdentifierName(startParam),
+                        LiteralExpression(SyntaxKind.NumericLiteralExpression, Literal(prim.Offset)))));
 
                 if(castToFinal)
                 {
@@ -165,6 +173,11 @@ namespace OpenH2.Serialization
                 castElem = true;
             }
 
+            if (elemType is INamedTypeSymbol named && named.IsGenericType)
+            {
+                elemType = named.ConstructUnboundGenericType();
+            }
+
             if (this.wellKnown.PrimitiveReaders.TryGetValue(elemType, out var mi))
             {
                 var propAccessor = MemberAccessExpression(SyntaxKind.SimpleMemberAccessExpression,
@@ -195,12 +208,7 @@ namespace OpenH2.Serialization
                         IdentifierName(startParam),
                         LiteralExpression(SyntaxKind.NumericLiteralExpression, Literal(arr.Offset))));
 
-                ExpressionSyntax getExp = InvocationExpression(
-                    MemberAccessExpression(SyntaxKind.SimpleMemberAccessExpression,
-                        IdentifierName(dataParam),
-                        IdentifierName(mi)))
-                    .AddArgumentListArguments(
-                        Argument(index));
+                ExpressionSyntax getExp = mi(IdentifierName(dataParam), Argument(index));
 
                 if (castElem)
                 {
@@ -278,12 +286,12 @@ namespace OpenH2.Serialization
 
             if (this.wellKnown.PrimitiveReaders.TryGetValue(elemType, out var mi))
             {
-                getExp = InvocationExpression(
-                    MemberAccessExpression(SyntaxKind.SimpleMemberAccessExpression,
-                        IdentifierName(dataParam),
-                        IdentifierName(mi)))
-                    .AddArgumentListArguments(
-                        Argument(itemStartOffset));
+                getExp = mi(IdentifierName(dataParam), Argument(itemStartOffset));
+            }
+            else if(elemType is INamedTypeSymbol named && named.IsGenericType
+                && this.wellKnown.PrimitiveReaders.TryGetValue(named.ConstructUnboundGenericType(), out var genericMi))
+            {
+                getExp = genericMi(IdentifierName(dataParam), Argument(itemStartOffset));
             }
             else
             {
@@ -295,7 +303,8 @@ namespace OpenH2.Serialization
                     .AddArgumentListArguments(
                         Argument(IdentifierName(dataParam)),
                         Argument(IdentifierName(startParam)),
-                        Argument(itemStartOffset));
+                        Argument(itemStartOffset),
+                        Argument(IdentifierName(stringsParam)));
             }
 
             // set array index to getExp
@@ -306,6 +315,108 @@ namespace OpenH2.Serialization
 
             yield return SyntaxUtils.ForLoop(Block(loopBody), 0, IdentifierName(count), loopVar)
                 .WithTrailingTrivia(CarriageReturnLineFeed);
+        }
+
+
+        private IEnumerable<StatementSyntax> GenerateStringValueRead(LayoutInfo.MemberInfo member, StringValueAttribute str)
+        {
+            var type = member.Type;
+
+            Debug.Assert(type.ToDisplayString().Equals(typeof(string).Name, StringComparison.OrdinalIgnoreCase));
+
+            if (this.wellKnown.PrimitiveReaders.TryGetValue(type, out var mi))
+            {
+                ExpressionSyntax getExp = mi(IdentifierName(dataParam), 
+                        Argument(BinaryExpression(SyntaxKind.AddExpression,
+                            IdentifierName(startParam),
+                            LiteralExpression(SyntaxKind.NumericLiteralExpression, Literal(str.Offset)))),
+                        Argument(LiteralExpression(SyntaxKind.NumericLiteralExpression, Literal(str.MaxLength))));
+
+                yield return ExpressionStatement(AssignmentExpression(SyntaxKind.SimpleAssignmentExpression,
+                    MemberAccessExpression(SyntaxKind.SimpleMemberAccessExpression,
+                        IdentifierName(itemLocal),
+                        IdentifierName(member.PropertySymbol.Name)),
+                    getExp))
+                    .WithTrailingTrivia(CarriageReturnLineFeed);
+            }
+            else
+            {
+                yield return EmptyStatement().WithTrailingTrivia(Comment($"// Unable to find reader for '{type.ToDisplayString()}'"));
+            }
+        }
+
+
+        private IEnumerable<StatementSyntax> GenerateInternedStringMembers(IOrderedEnumerable<LayoutInfo.MemberInfo> sortedMembers)
+        {
+            var internedStatements = new List<StatementSyntax>();
+
+            foreach (var member in sortedMembers)
+            {
+                if (member.LayoutAttribute is InternedStringAttribute interned)
+                {
+                    internedStatements.AddRange(GenerateInternedStringRead(member, interned));
+                }
+            }
+
+            if (internedStatements.Count == 0)
+                yield break;
+
+            yield return IfStatement(BinaryExpression(SyntaxKind.NotEqualsExpression,
+                IdentifierName(stringsParam),
+                LiteralExpression(SyntaxKind.NullLiteralExpression)),
+                Block(internedStatements));
+        }
+
+        private IEnumerable<StatementSyntax> GenerateInternedStringRead(LayoutInfo.MemberInfo member, InternedStringAttribute interned)
+        {
+            var type = member.Type;
+
+            Debug.Assert(type.ToDisplayString().Equals(typeof(string).Name, StringComparison.OrdinalIgnoreCase));
+
+            if (this.wellKnown.PrimitiveReaders.TryGetValue(type, out var mi))
+            {
+                var internedDataLocal = "interned" + interned.Offset;
+                var internedData = SyntaxUtils.ReadSpanInt32(dataParam, startParam, interned.Offset);
+                yield return SyntaxUtils.LocalVar(Identifier(internedDataLocal), internedData);
+
+                var stringIndex = BinaryExpression(SyntaxKind.MultiplyExpression,
+                    ParenthesizedExpression(BinaryExpression(SyntaxKind.BitwiseAndExpression,
+                        IdentifierName(internedDataLocal),
+                        LiteralExpression(SyntaxKind.NumericLiteralExpression, ParseToken("0xFFFFFF")))),
+                    LiteralExpression(SyntaxKind.NumericLiteralExpression, Literal(4)));
+
+                var stringLength = BinaryExpression(SyntaxKind.RightShiftExpression,
+                    IdentifierName(internedDataLocal),
+                    LiteralExpression(SyntaxKind.NumericLiteralExpression, Literal(24)));
+
+                var dataOffset = SyntaxUtils.ReadSpanInt32(dataParam, BinaryExpression(SyntaxKind.AddExpression,
+                    MemberAccessExpression(SyntaxKind.SimpleMemberAccessExpression,
+                        IdentifierName(stringsParam),
+                        IdentifierName(nameof(IInternedStringProvider.IndexOffset))),
+                    stringIndex));
+
+                ExpressionSyntax getExp = mi(IdentifierName(dataParam),
+                        Argument(BinaryExpression(SyntaxKind.AddExpression,
+                            MemberAccessExpression(SyntaxKind.SimpleMemberAccessExpression,
+                                IdentifierName(stringsParam),
+                                IdentifierName(nameof(IInternedStringProvider.DataOffset))),
+                            dataOffset)),
+                        Argument(stringLength));
+
+                yield return ExpressionStatement(AssignmentExpression(SyntaxKind.SimpleAssignmentExpression,
+                    MemberAccessExpression(SyntaxKind.SimpleMemberAccessExpression,
+                        IdentifierName(itemLocal),
+                        IdentifierName(member.PropertySymbol.Name)),
+                    getExp))
+                    .WithTrailingTrivia(CarriageReturnLineFeed);
+            }
+            else
+            {
+                yield return EmptyStatement().WithTrailingTrivia(Comment($"// Unable to find reader for '{type.ToDisplayString()}'"));
+            }
+
+
+
         }
     }
 }

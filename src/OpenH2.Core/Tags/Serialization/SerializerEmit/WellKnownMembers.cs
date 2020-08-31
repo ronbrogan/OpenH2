@@ -60,7 +60,6 @@ namespace OpenH2.Core.Tags.Serialization.SerializerEmit
 
             { typeof(TagRef), typeof(Parsing.TrackingReader).GetMethod(nameof(Parsing.TrackingReader.ReadTagRefAt)) },
             { typeof(TagRef<>), typeof(Parsing.TrackingReader).GetMethod(nameof(Parsing.TrackingReader.ReadTagRefAt)) },
-            { typeof(InternedString), typeof(Parsing.TrackingReader).GetMethod(nameof(Parsing.TrackingReader.ReadInternedStringAt)) },
         };
 
         public static Dictionary<Type, int> PrimitiveSizes = new Dictionary<Type, int>

@@ -36,14 +36,19 @@ namespace OpenH2.Serialization
 
         public static ExpressionSyntax ReadSpanInt32(SyntaxToken spanIdentifier, SyntaxToken startIdentifier, int offset)
         {
+            return ReadSpanInt32(spanIdentifier, BinaryExpression(SyntaxKind.AddExpression,
+                            IdentifierName(startIdentifier),
+                            LiteralExpression(SyntaxKind.NumericLiteralExpression, Literal(offset))));
+        }
+
+        public static ExpressionSyntax ReadSpanInt32(SyntaxToken spanIdentifier, ExpressionSyntax start)
+        {
             return InvocationExpression(
                     MemberAccessExpression(SyntaxKind.SimpleMemberAccessExpression,
                         IdentifierName(spanIdentifier),
                         IdentifierName(nameof(SpanByteExtensions.ReadInt32At))))
                     .AddArgumentListArguments(
-                        Argument(BinaryExpression(SyntaxKind.AddExpression,
-                            IdentifierName(startIdentifier),
-                            LiteralExpression(SyntaxKind.NumericLiteralExpression, Literal(offset)))));
+                        Argument(start));
         }
     }
 }
