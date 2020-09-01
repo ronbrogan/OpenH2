@@ -23,6 +23,7 @@ namespace OpenH2.Serialization
     /// This allows relocating/rebasing the data
     /// </param>
     /// <returns></returns>
+    public delegate T Deserializer<T>(Span<byte> data, int instanceStart = 0, int staticOffset = 0, IInternedStringProvider stringProvider = null);
     public delegate object Deserializer(Span<byte> data, int instanceStart = 0, int staticOffset = 0, IInternedStringProvider stringProvider = null);
 
     internal class DeserializerGenerateContext
@@ -302,8 +303,8 @@ namespace OpenH2.Serialization
                             .AddTypeArgumentListArguments(ParseTypeName(elemType.ToDisplayString()))))
                     .AddArgumentListArguments(
                         Argument(IdentifierName(dataParam)),
-                        Argument(IdentifierName(startParam)),
                         Argument(itemStartOffset),
+                        Argument(IdentifierName(offsetParam)),
                         Argument(IdentifierName(stringsParam)));
             }
 

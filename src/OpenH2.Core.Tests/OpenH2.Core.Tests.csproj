@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <TargetFramework>netcoreapp3.1</TargetFramework>
-
+    <LangVersion>preview</LangVersion>
     <IsPackable>false</IsPackable>
   </PropertyGroup>
 
@@ -23,6 +23,7 @@
   <ItemGroup>
     <ProjectReference Include="..\OpenH2.Core\OpenH2.Core.csproj" />
     <ProjectReference Include="..\OpenH2.TextureDumper\OpenH2.TextureDumper.csproj" />
+    <ProjectReference Include="..\OpenH2.Serialization\OpenH2.Serialization.csproj" OutputItemType="Analyzer" />
   </ItemGroup>
 
 </Project>

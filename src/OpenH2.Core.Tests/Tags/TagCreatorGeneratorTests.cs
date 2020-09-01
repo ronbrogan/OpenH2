@@ -3,6 +3,8 @@ using OpenH2.Core.Representations;
 using OpenH2.Core.Tags;
 using OpenH2.Core.Tags.Layout;
 using OpenH2.Core.Tags.Serialization;
+using OpenH2.Serialization;
+using OpenH2.Serialization.Layout;
 using System.IO;
 using System.Reflection.Emit;
 using Xunit;
@@ -45,6 +47,28 @@ namespace OpenH2.Core.Tests.Tags
             Assert.Equal("mt1", tag.FirstSubValue.SubSubTags[0].StringVal);
         }
 
+        [Fact]
+        public void TestTag_BlamDeserializePropertiesOnly()
+        {
+            var tag = BlamSerializer.Deserialize<TestTag>(testTagData, 0, 100, null);
+            tag.PopulateExternalData(null);
+
+            Assert.NotNull(tag);
+
+            Assert.Equal(119, tag.Value1);
+            Assert.Equal(151.251f, tag.Value2, 3);
+
+            Assert.Equal(2, tag.SubValues.Length);
+
+            Assert.Equal(0.001f, tag.SubValues[1].SubSubTags[1].Value, 3);
+
+            Assert.Equal(0xefbeadde, tag.SubValues[0].ArrayItem[0]);
+
+            Assert.NotNull(tag.FirstSubValue);
+
+            Assert.Equal("mt1", tag.FirstSubValue.SubSubTags[0].StringVal);
+        }
+
         private class TestMap : H2vBaseMap
         {
             public TestMap(int secondaryMagic)
@@ -53,7 +77,8 @@ namespace OpenH2.Core.Tests.Tags
             }
         }
 
-        private class TestTag : BaseTag
+        [ArbitraryLength]
+        public class TestTag : BaseTag
         {
             public override string Name { get; set; }
 
