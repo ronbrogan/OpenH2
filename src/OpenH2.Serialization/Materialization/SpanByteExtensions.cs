@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Numerics;
 using System.Runtime.CompilerServices;
-using System.Runtime.InteropServices;
 using System.Text;
 
 namespace OpenH2.Serialization.Materialization
@@ -70,21 +69,8 @@ namespace OpenH2.Serialization.Materialization
                 return 0;
             }
 
-            var bytes = data.Slice(offset, 2);
+            return BitConverter.ToInt16(data.Slice(offset, 2));
 
-            short value = 0;
-            var shift = 0;
-
-            foreach (short b in bytes)
-            {
-                // Shift bits into correct position and add into value
-                value = (short)(value | (b << (shift * 8)));
-
-                shift++;
-            }
-
-            return value;
-            
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -95,24 +81,7 @@ namespace OpenH2.Serialization.Materialization
                 return 0;
             }
 
-            var bytes = data.Slice(offset, 4);
-
-            // TODO: replace below with BitConverter call with span
-            // This is much faster, but requires netstandard2.1. Block on that upgrade until codegen doesn't depend on framework
-            //return BitConverter.ToInt32(bytes);
-
-            var value = 0;
-            var shift = 0;
-
-            foreach (int b in bytes)
-            {
-                // Shift bits into correct position and add into value
-                value = value | (b << (shift * 8));
-
-                shift++;
-            }
-
-            return value;
+            return BitConverter.ToInt32(data.Slice(offset, 4));
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -123,10 +92,7 @@ namespace OpenH2.Serialization.Materialization
                 return 0;
             }
 
-            ushort value = data[offset];
-            value = (ushort)(value | (data[offset + 1] << 8));
-
-            return value;
+            return BitConverter.ToUInt16(data.Slice(offset, 2));
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -137,88 +103,48 @@ namespace OpenH2.Serialization.Materialization
                 return 0;
             }
 
-            var bytes = data.Slice(offset, 4);
-
-            uint value = 0;
-            var shift = 0;
-
-            foreach (uint b in bytes)
-            {
-                // Shift bits into correct position and add into value
-                value = value | (b << (shift * 8));
-
-                shift++;
-            }
-
-            return value;
+            return BitConverter.ToUInt32(data.Slice(offset, 4));
         }
-
-        //[MethodImpl(MethodImplOptions.AggressiveInlining)]
-        //public static TagRef ReadTagRefAt(this Span<byte> data, int offset)
-        //{
-        //    return new TagRef(data.ReadUInt32At(offset));
-        //}
-
-        //[MethodImpl(MethodImplOptions.AggressiveInlining)]
-        //public static InternedString ReadInternedStringAt(this Span<byte> data, int offset)
-        //{
-        //    var val = data.ReadUInt32At(offset);
-
-        //    // top byte is length
-        //    var i = new InternedString(val & 0xFFFFFF, val >> 24);
-
-        //    //if(map.InternedStrings.TryGetValue((int)i.Id, out var s))
-        //    //{
-        //    //    i.Value = s;
-        //    //}
-
-        //    return i;
-        //}
-
-        //public static CountAndOffset ReadMetaCaoAt(this Span<byte> data, int offset, TagIndexEntry index)
-        //{
-        //    return ReadMetaCaoAt(data, offset, index.Offset.Value);
-        //}
-
-        //public static CountAndOffset ReadMetaCaoAt(this Span<byte> data, int offset, int magic)
-        //{
-        //    return new CountAndOffset(data.ReadInt32At(offset), new SecondaryOffset(magic, data.ReadInt32At(offset + 4)));
-        //}
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Vector2 ReadVec2At(this Span<byte> data, int offset)
         {
-            data.Slice(offset, 8).CopyTo(vectorConverterBytes);
-            vectorConverter.Guid = new Guid(vectorConverterBytes);
-
-            return vectorConverter.Vec2;
+            return new Vector2(
+                BitConverter.ToSingle(data.Slice(offset + 0, 4)),
+                BitConverter.ToSingle(data.Slice(offset + 4, 4))
+            );
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Vector3 ReadVec3At(this Span<byte> data, int offset)
         {
-            data.Slice(offset, 12).CopyTo(vectorConverterBytes);
-            vectorConverter.Guid = new Guid(vectorConverterBytes);
-
-            return vectorConverter.Vec3;
+            return new Vector3(
+                BitConverter.ToSingle(data.Slice(offset + 0, 4)),
+                BitConverter.ToSingle(data.Slice(offset + 4, 4)),
+                BitConverter.ToSingle(data.Slice(offset + 8, 4))
+            );
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Vector4 ReadVec4At(this Span<byte> data, int offset)
         {
-            data.Slice(offset, 16).CopyTo(vectorConverterBytes);
-            vectorConverter.Guid = new Guid(vectorConverterBytes);
-
-            return vectorConverter.Vec4;
+            return new Vector4(
+                BitConverter.ToSingle(data.Slice(offset + 0, 4)),
+                BitConverter.ToSingle(data.Slice(offset + 4, 4)),
+                BitConverter.ToSingle(data.Slice(offset + 8, 4)),
+                BitConverter.ToSingle(data.Slice(offset + 12, 4))
+            );
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Quaternion ReadQuaternionAt(this Span<byte> data, int offset)
         {
-            data.Slice(offset, 16).CopyTo(vectorConverterBytes);
-            vectorConverter.Guid = new Guid(vectorConverterBytes);
-
-            return vectorConverter.Quaternion;
+            return new Quaternion(
+                BitConverter.ToSingle(data.Slice(offset + 0, 4)),
+                BitConverter.ToSingle(data.Slice(offset + 4, 4)),
+                BitConverter.ToSingle(data.Slice(offset + 8, 4)),
+                BitConverter.ToSingle(data.Slice(offset + 12, 4))
+            );
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -254,43 +180,7 @@ namespace OpenH2.Serialization.Materialization
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static float ReadFloatAt(this Span<byte> data, int offset)
         {
-            floatConverter.UInt32 = data.ReadUInt32At(offset);
-
-            return floatConverter.Single;
-        }
-
-        private static UInt32ToSingle floatConverter = new UInt32ToSingle();
-        private static VecConverter vectorConverter = new VecConverter();
-        private static byte[] vectorConverterBytes = new byte[16];
-
-
-        [StructLayout(LayoutKind.Explicit)]
-        private struct VecConverter
-        {
-            [FieldOffset(0)]
-            public Guid Guid;
-
-            [FieldOffset(0)]
-            public Vector2 Vec2;
-
-            [FieldOffset(0)]
-            public Vector3 Vec3;
-
-            [FieldOffset(0)]
-            public Vector4 Vec4;
-
-            [FieldOffset(0)]
-            public Quaternion Quaternion;
-        }
-
-        [StructLayout(LayoutKind.Explicit)]
-        private struct UInt32ToSingle
-        {
-            [FieldOffset(0)]
-            public uint UInt32;
-
-            [FieldOffset(0)]
-            public float Single;
+            return BitConverter.ToSingle(data.Slice(offset, 4));
         }
     }
 }

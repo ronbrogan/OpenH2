@@ -3,17 +3,17 @@ using OpenH2.Core.Representations;
 using OpenH2.Core.Tags;
 using OpenH2.Core.Tags.Layout;
 using OpenH2.Core.Tags.Serialization;
+using OpenH2.Serialization;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.Serialization;
 
 namespace OpenH2.Core.Factories
 {
     public static class TagFactory
     {
-        private static TagCreatorGenerator generator = new TagCreatorGenerator();
-
         public static BaseTag CreateTag(uint id, string name, TagIndexEntry index, H2vBaseMap map, H2vReader reader)
         {
             var tagType = GetTypeForTag(index.Tag);
@@ -32,16 +32,32 @@ namespace OpenH2.Core.Factories
             }
             else
             {
-                var tagCreator = generator.GetTagCreator(tagType);
-
                 var mapData = reader.MapReader;
 
                 // Preload tag data for faster reads
                 mapData.Preload(index.Offset.Value, index.DataSize);
 
-                tag = tagCreator(id, name, mapData, map, index.Offset.Value, index.DataSize) as BaseTag;
+                BaseTag instance;
+
+                // PERF: check ctor existence ahead of time
+                try
+                {
+                    instance = Activator.CreateInstance(tagType, new[] { id }) as BaseTag;
+                }
+                catch
+                {
+                    instance = (BaseTag)FormatterServices.GetUninitializedObject(tagType);
+                }
+
+                tag = (BaseTag)BlamSerializer.DeserializeInto(instance,
+                    tagType,
+                    reader.MapReader.Data,
+                    index.Offset.Value,
+                    map.SecondaryMagic,
+                    null);
             }
 
+            tag.Name = name;
             tag.TagIndexEntry = index;
             tag.DataFile = reader.GetPrimaryDataFile();
             tag.PopulateExternalData(reader);

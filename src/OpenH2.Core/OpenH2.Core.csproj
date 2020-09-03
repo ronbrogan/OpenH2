@@ -1,9 +1,9 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>netstandard2.0</TargetFramework>
+    <TargetFramework>netstandard2.1</TargetFramework>
     <LangVersion>preview</LangVersion>
-    <!--<DebugSerializerGeneration>True</DebugSerializerGeneration>-->
+    <DebugSerializerGeneration>True</DebugSerializerGeneration>
     <GenerateSerializersInto>$(MSBuildProjectDirectory)\$(BaseIntermediateOutputPath)\GeneratedSerializers</GenerateSerializersInto>
   </PropertyGroup>
 
@@ -25,7 +25,9 @@
 
   <ItemGroup>
     <ProjectReference Include="..\OpenH2.Foundation\OpenH2.Foundation.csproj" />
-    <ProjectReference Include="..\OpenH2.Serialization\OpenH2.Serialization.csproj" OutputItemType="Analyzer" />
+    <ProjectReference Include="..\OpenH2.Serialization\OpenH2.Serialization.csproj" OutputItemType="Analyzer" >
+      <PrivateAssets>none</PrivateAssets>
+    </ProjectReference>
   </ItemGroup>
 
   <ItemGroup>

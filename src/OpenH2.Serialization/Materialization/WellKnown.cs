@@ -4,6 +4,7 @@ using Microsoft.CodeAnalysis.CSharp.Syntax;
 using OpenH2.Serialization.Layout;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Numerics;
 using System.Runtime.CompilerServices;
@@ -13,7 +14,7 @@ namespace OpenH2.Serialization.Materialization
     internal delegate InvocationExpressionSyntax PrimitiveReader(ExpressionSyntax data, params ArgumentSyntax[] otherArgs);
     internal class WellKnown
     {
-        public Dictionary<ITypeSymbol, PrimitiveReader> PrimitiveReaders { get; }
+        public Dictionary<(ITypeSymbol ret, ITypeSymbol arg0), PrimitiveReader> PrimitiveReaders { get; }
         public Dictionary<ITypeSymbol, int> SizeOf { get; }
 
         public WellKnown(Compilation compilation, TypeDiscoverer typeDiscoverer)
@@ -30,8 +31,25 @@ namespace OpenH2.Serialization.Materialization
                 });
             });
 
-            PrimitiveReaders = TransformDictionary(compilation, reflectionPrimitiveFactory);
-            SizeOf = TransformDictionary(compilation, ReflectionSizeOf);
+            PrimitiveReaders = TransformDictionary(reflectionPrimitiveFactory, k => {
+                ITypeSymbol t = compilation.GetTypeSymbol(k.Key);
+                ITypeSymbol data = compilation.GetTypeSymbol(typeof(Span<byte>));
+                return (t, data);
+            });
+
+            var streamReaders = TransformDictionary(reflectionPrimitiveFactory, k =>
+            {
+                ITypeSymbol t = compilation.GetTypeSymbol(k.Key);
+                ITypeSymbol data = compilation.GetTypeSymbol(typeof(Stream));
+                return (t, data);
+            });
+
+            foreach(var sr in streamReaders)
+            {
+                PrimitiveReaders.Add(sr.Key, sr.Value);
+            }
+
+            SizeOf = TransformDictionary<ITypeSymbol, int>(ReflectionSizeOf, k => compilation.GetTypeSymbol(k.Key));
 
             var fixedLengthAttr = compilation.GetTypeSymbol<FixedLengthAttribute>();
 
@@ -67,8 +85,7 @@ namespace OpenH2.Serialization.Materialization
                             lookupType = named.ConstructUnboundGenericType();
                         }
 
-
-                        PrimitiveReaders[lookupType] = (data, args) => SyntaxFactory.InvocationExpression(
+                        PrimitiveReaders[(lookupType, m.Parameters.FirstOrDefault()?.Type)] = (data, args) => SyntaxFactory.InvocationExpression(
                             SyntaxFactory.MemberAccessExpression(SyntaxKind.SimpleMemberAccessExpression,
                                 SyntaxFactory.IdentifierName(s.ToDisplayString()),
                                 SyntaxFactory.IdentifierName(m.Name)))
@@ -79,17 +96,17 @@ namespace OpenH2.Serialization.Materialization
             }
         }
 
-        private Dictionary<ITypeSymbol, T> TransformDictionary<T>(Compilation compilation, Dictionary<Type, T> inDict)
+        private Dictionary<TKey, T> TransformDictionary<TKey, T>(Dictionary<Type, T> inDict, Func<KeyValuePair<Type, T>, TKey> keyFunc)
         {
-            var dict = new Dictionary<ITypeSymbol, T>();
+            var dict = new Dictionary<TKey, T>();
 
             foreach (var kv in inDict)
             {
-                var symbol = compilation.GetTypeSymbol(kv.Key);
+                var key = keyFunc(kv);
 
-                if (symbol != null)
+                if (key.Equals(default(TKey)) == false)
                 {
-                    dict.Add(symbol, kv.Value);
+                    dict.Add(key, kv.Value);
                 }
             }
 

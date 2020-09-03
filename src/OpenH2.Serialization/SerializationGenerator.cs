@@ -73,6 +73,7 @@ namespace OpenH2.Serialization
                         var ns = NamespaceDeclaration(ParseName(context.Compilation.AssemblyName + ".__GeneratedSerializers"))
                             .AddUsings(
                                 UsingDirective(ParseName("System")),
+                                UsingDirective(ParseName("System.IO")),
                                 UsingDirective(ParseName(typeof(BlamSerializer).Namespace)),
                                 UsingDirective(ParseName(typeof(SerializationClassAttribute).Namespace)),
                                 UsingDirective(ParseName(typeof(SpanByteExtensions).Namespace)),

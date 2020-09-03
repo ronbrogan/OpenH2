@@ -11,7 +11,7 @@
 	<PackageReference Include="XunitLogger" Version="4.0.0" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\OpenH2.Core\OpenH2.Core.csproj" />
+    <!--<ProjectReference Include="..\OpenH2.Core\OpenH2.Core.csproj" />-->
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Properties\" />

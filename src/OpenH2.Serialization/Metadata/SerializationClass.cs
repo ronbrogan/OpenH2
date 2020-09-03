@@ -8,5 +8,6 @@ namespace OpenH2.Serialization.Metadata
     {
         public const string SerializeMethod = "Serialize";
         public const string DeserializeMethod = "Deserialize";
+        public const string DeserializeIntoMethod = "DeserializeInto";
     }
 }

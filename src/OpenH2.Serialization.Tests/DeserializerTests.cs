@@ -19,6 +19,23 @@ namespace OpenH2.Serialization.Tests
 
             tagRef = BlamSerializer.Deserialize<ClassTestTag>(testTagData, 0, 100, null);
             AssertData(tagRef);
+
+
+            var tagStructInstance = new StructTestTag();
+            tagStructInstance = (StructTestTag)BlamSerializer.DeserializeInto(tagStructInstance, typeof(StructTestTag), testTagData, 0, 100, null);
+            AssertData(tagStructInstance);
+
+            tagStructInstance = new StructTestTag();
+            tagStructInstance = BlamSerializer.DeserializeInto<StructTestTag>(tagStructInstance, testTagData, 0, 100, null);
+            AssertData(tagStructInstance);
+
+            var tagRefInstance = new ClassTestTag();
+            tagRefInstance = (ClassTestTag)BlamSerializer.DeserializeInto(tagRefInstance, typeof(ClassTestTag), testTagData, 0, 100, null);
+            AssertData(tagRefInstance);
+
+            tagRefInstance = new ClassTestTag();
+            tagRefInstance = BlamSerializer.DeserializeInto<ClassTestTag>(tagRefInstance, testTagData, 0, 100, null);
+            AssertData(tagRefInstance);
         }
 
         private void AssertData(StructTestTag tag)
