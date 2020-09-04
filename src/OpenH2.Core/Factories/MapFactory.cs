@@ -120,7 +120,7 @@ namespace OpenH2.Core.Factories
 
             var start = scene.Header.InternedStringIndexOffset;
 
-            for(var i = 0; i < scene.Header.ScriptReferenceCount; i++)
+            for(var i = 0; i < scene.Header.InternedStringCount; i++)
             {
                 var offset = reader.MapReader.ReadInt32At(start + i * 4);
                 var value = reader.MapReader.ReadStringStarting(scene.Header.InternedStringsOffset + offset);
@@ -194,7 +194,7 @@ namespace OpenH2.Core.Factories
             head.MapOrigin =                       /**/  chunk.ReadStringFrom(32, 32);
             head.Build =                           /**/  chunk.ReadStringFrom(300, 32);
             head.OffsetToUnknownSection =          /**/  chunk.ReadInt32At(364);
-            head.ScriptReferenceCount =            /**/  chunk.ReadInt32At(368);
+            head.InternedStringCount =            /**/  chunk.ReadInt32At(368);
             head.SizeOfScriptReference =           /**/  chunk.ReadInt32At(372);
             head.InternedStringIndexOffset =       /**/  chunk.ReadInt32At(376);
             head.InternedStringsOffset =           /**/  chunk.ReadInt32At(380);

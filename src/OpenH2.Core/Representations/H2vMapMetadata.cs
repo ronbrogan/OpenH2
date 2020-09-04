@@ -1,8 +1,9 @@
-﻿using System.Collections.Generic;
+﻿using OpenH2.Serialization.Materialization;
+using System.Collections.Generic;
 
 namespace OpenH2.Core.Representations
 {
-    public abstract class H2vBaseMap
+    public abstract class H2vBaseMap : IInternedStringProvider
     {
         public string Name => this.Header.Name;
 
@@ -18,5 +19,9 @@ namespace OpenH2.Core.Representations
 
         public Dictionary<int, string> InternedStrings { get; set; }
         public Dictionary<uint, string> TagNames { get; set; }
+
+        public int IndexOffset => Header.InternedStringIndexOffset;
+
+        public int DataOffset => Header.InternedStringsOffset;
     }
 }

@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Runtime.InteropServices;
 using System.Text;
@@ -10,7 +9,7 @@ namespace OpenH2.Serialization.Materialization
     {
         public static int ToInt32(this Span<byte> data) => GetConverter(data, 4).Int32;
         public static uint ToUInt32(this Span<byte> data) => GetConverter(data, 4).UInt32;
-        public static short ToInt16(this Span<byte> data) => GetConverter(data, 4).Int16;
+        public static short ToInt16(this Span<byte> data) => GetConverter(data, 2).Int16;
         public static ushort ToUInt16(this Span<byte> data) => GetConverter(data, 2).UInt16;
         public static float ToSingle(this Span<byte> data) => GetConverter(data, 4).Single;
 

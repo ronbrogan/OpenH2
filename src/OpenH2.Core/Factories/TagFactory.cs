@@ -42,7 +42,9 @@ namespace OpenH2.Core.Factories
                 // PERF: check ctor existence ahead of time
                 try
                 {
-                    instance = Activator.CreateInstance(tagType, new[] { id }) as BaseTag;
+                    //var ctor = tagType.GetConstructor(new[] { typeof(uint) });
+                    //instance = (BaseTag)ctor.Invoke(new object[] { id });
+                    instance = Activator.CreateInstance(tagType, new object[] { id }) as BaseTag;
                 }
                 catch
                 {
@@ -54,7 +56,7 @@ namespace OpenH2.Core.Factories
                     reader.MapReader.Data,
                     index.Offset.Value,
                     map.SecondaryMagic,
-                    null);
+                    map);
             }
 
             tag.Name = name;

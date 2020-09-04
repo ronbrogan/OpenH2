@@ -1,5 +1,6 @@
 ﻿using OpenH2.Core.Offsets;
 using OpenH2.Core.Representations;
+using OpenH2.Core.Tags;
 using OpenH2.Serialization.Materialization;
 using System;
 using System.IO;
@@ -202,6 +203,14 @@ namespace OpenH2.Core.Extensions
         public static TagRef ReadTagRefAt(this Stream data, int offset)
         {
             return new TagRef(data.ReadUInt32At(offset));
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        [PrimitiveValueMaterializer]
+        public static TagRef<T> ReadTagRefAt<T>(this Stream data, int offset)
+            where T : BaseTag
+        {
+            return ReadTagRefAt(data, offset);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
