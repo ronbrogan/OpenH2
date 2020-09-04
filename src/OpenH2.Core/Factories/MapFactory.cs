@@ -4,7 +4,6 @@ using OpenH2.Core.Parsing;
 using OpenH2.Core.Representations;
 using OpenH2.Core.Tags;
 using OpenH2.Serialization;
-using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -16,7 +15,6 @@ namespace OpenH2.Core.Factories
         private const string MainMenuName = "mainmenu.map";
         private const string MultiPlayerSharedName = "shared.map";
         private const string SinglePlayerSharedName = "single_player_shared.map";
-        private readonly string configRoot;
         private readonly IMaterialFactory materialFactory;
         private H2vReader baseReader;
         private H2vLazyLoadingMap mainMenu;

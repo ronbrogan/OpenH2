@@ -74,16 +74,6 @@ namespace OpenH2.Core.Parsing
             return parser.ReadTagRefAt(this.start + offset);
         }
 
-        public CountAndOffset ReadMetaCaoAt(int offset, TagIndexEntry index)
-        {
-            return parser.ReadMetaCaoAt(this.start + offset, index);
-        }
-
-        public CountAndOffset ReadMetaCaoAt(int offset, int magic)
-        {
-            return parser.ReadMetaCaoAt(this.start + offset, magic);
-        }
-
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public Vector2 ReadVec2At(int offset)
         {

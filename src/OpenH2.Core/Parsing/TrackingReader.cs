@@ -181,31 +181,6 @@ namespace OpenH2.Core.Parsing
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public InternedString ReadInternedStringAt(int offset)
-        {
-            if (offset >= preloadStart && offset + 4 < preloadStart + preloadLength)
-                return preloadData.AsSpan().ReadInternedStringAt(offset - preloadStart);
-
-            return Data.ReadInternedStringAt(offset);
-        }
-
-        public CountAndOffset ReadMetaCaoAt(int offset, TagIndexEntry index)
-        {
-            if (offset >= preloadStart && offset + 8 < preloadStart + preloadLength)
-                return preloadData.AsSpan().ReadMetaCaoAt(offset - preloadStart, index);
-
-            return Data.ReadMetaCaoAt(offset, index);
-        }
-
-        public CountAndOffset ReadMetaCaoAt(int offset, int magic)
-        {
-            if (offset >= preloadStart && offset + 8 < preloadStart + preloadLength)
-                return preloadData.AsSpan().ReadMetaCaoAt(offset - preloadStart, magic);
-
-            return Data.ReadMetaCaoAt(offset, magic);
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public Vector2 ReadVec2At(int offset)
         {
             if (offset >= preloadStart && offset + 8 < preloadStart + preloadLength)

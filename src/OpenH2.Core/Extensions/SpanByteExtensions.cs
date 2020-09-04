@@ -173,32 +173,6 @@ namespace OpenH2.Core.Extensions
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static InternedString ReadInternedStringAt(this Span<byte> data, int offset)
-        {
-            var val = data.ReadUInt32At(offset);
-
-            // top byte is length
-            var i = new InternedString(val & 0xFFFFFF, val >> 24);
-
-            //if(map.InternedStrings.TryGetValue((int)i.Id, out var s))
-            //{
-            //    i.Value = s;
-            //}
-
-            return i;
-        }
-
-        public static CountAndOffset ReadMetaCaoAt(this Span<byte> data, int offset, TagIndexEntry index)
-        {
-            return ReadMetaCaoAt(data, offset, index.Offset.Value);
-        }
-
-        public static CountAndOffset ReadMetaCaoAt(this Span<byte> data, int offset, int magic)
-        {
-            return new CountAndOffset(data.ReadInt32At(offset), new SecondaryOffset(magic, data.ReadInt32At(offset + 4)));
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Vector2 ReadVec2At(this Span<byte> data, int offset)
         {
             data.Slice(offset, 8).CopyTo(vectorConverterBytes);
