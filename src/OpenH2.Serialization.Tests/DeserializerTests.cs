@@ -1,4 +1,5 @@
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using System.IO;
 
 namespace OpenH2.Serialization.Tests
 {
@@ -6,7 +7,7 @@ namespace OpenH2.Serialization.Tests
     public partial class DeserializerTests
     {
         [TestMethod]
-        public void DeserializeNestedTypes()
+        public void DeserializeNestedTypes_FromSpan()
         {
             var tagStruct = (StructTestTag)BlamSerializer.Deserialize(typeof(StructTestTag), testTagData, 0, 100, null);
             AssertData(tagStruct);
@@ -35,6 +36,39 @@ namespace OpenH2.Serialization.Tests
 
             tagRefInstance = new ClassTestTag();
             tagRefInstance = BlamSerializer.DeserializeInto<ClassTestTag>(tagRefInstance, testTagData, 0, 100, null);
+            AssertData(tagRefInstance);
+        }
+
+        [TestMethod]
+        public void DeserializeNestedTypes_FromStream()
+        {
+            var tagStruct = (StructTestTag)BlamSerializer.Deserialize(typeof(StructTestTag), new MemoryStream(testTagData), 0, 100, null);
+            AssertData(tagStruct);
+
+            tagStruct = BlamSerializer.Deserialize<StructTestTag>(new MemoryStream(testTagData), 0, 100, null);
+            AssertData(tagStruct);
+
+            var tagRef = (ClassTestTag)BlamSerializer.Deserialize(typeof(ClassTestTag), new MemoryStream(testTagData), 0, 100, null);
+            AssertData(tagRef);
+
+            tagRef = BlamSerializer.Deserialize<ClassTestTag>(new MemoryStream(testTagData), 0, 100, null);
+            AssertData(tagRef);
+
+
+            var tagStructInstance = new StructTestTag();
+            tagStructInstance = (StructTestTag)BlamSerializer.DeserializeInto(tagStructInstance, typeof(StructTestTag), new MemoryStream(testTagData), 0, 100, null);
+            AssertData(tagStructInstance);
+
+            tagStructInstance = new StructTestTag();
+            tagStructInstance = BlamSerializer.DeserializeInto<StructTestTag>(tagStructInstance, new MemoryStream(testTagData), 0, 100, null);
+            AssertData(tagStructInstance);
+
+            var tagRefInstance = new ClassTestTag();
+            tagRefInstance = (ClassTestTag)BlamSerializer.DeserializeInto(tagRefInstance, typeof(ClassTestTag), new MemoryStream(testTagData), 0, 100, null);
+            AssertData(tagRefInstance);
+
+            tagRefInstance = new ClassTestTag();
+            tagRefInstance = BlamSerializer.DeserializeInto<ClassTestTag>(tagRefInstance, new MemoryStream(testTagData), 0, 100, null);
             AssertData(tagRefInstance);
         }
 

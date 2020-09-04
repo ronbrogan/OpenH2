@@ -38,12 +38,19 @@ namespace OpenH2.Serialization.Materialization
                 stringChars = new char[actualRead];
             }
 
-            for(var i = 0; i < actualRead; i++)
+            var i = 0;
+            for(; i < actualRead; i++)
             {
+                if(stringBytes[i] == 0b0)
+                {
+                    break;
+                }
+
                 stringChars[i] = (char)stringBytes[i];
             }
 
-            return new string(stringChars);
+            // TODO: remove .ToArray() once we're on netstandard2.1+
+            return new string(stringChars.Slice(0, i).ToArray());
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -107,7 +114,7 @@ namespace OpenH2.Serialization.Materialization
             data.Position = offset;
             data.Read(bytes);
 
-            return BitConverter.ToInt16(bytes);
+            return PBitConverter.ToInt16(bytes);
             
         }
 
@@ -123,7 +130,7 @@ namespace OpenH2.Serialization.Materialization
             data.Position = offset;
             data.Read(bytes);
 
-            return BitConverter.ToInt32(bytes);
+            return PBitConverter.ToInt32(bytes);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -138,7 +145,7 @@ namespace OpenH2.Serialization.Materialization
             data.Position = offset;
             data.Read(bytes);
 
-            return BitConverter.ToUInt16(bytes);
+            return PBitConverter.ToUInt16(bytes);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -153,7 +160,7 @@ namespace OpenH2.Serialization.Materialization
             data.Position = offset;
             data.Read(bytes);
 
-            return BitConverter.ToUInt32(bytes);
+            return PBitConverter.ToUInt32(bytes);
         }
 
         //[MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -196,8 +203,8 @@ namespace OpenH2.Serialization.Materialization
             data.Read(bytes);
 
             return new Vector2(
-                BitConverter.ToSingle(bytes.Slice(0, 4)),
-                BitConverter.ToSingle(bytes.Slice(4, 4))
+                PBitConverter.ToSingle(bytes.Slice(0, 4)),
+                PBitConverter.ToSingle(bytes.Slice(4, 4))
             );
         }
 
@@ -209,9 +216,9 @@ namespace OpenH2.Serialization.Materialization
             data.Read(bytes);
 
             return new Vector3(
-                BitConverter.ToSingle(bytes.Slice(0, 4)),
-                BitConverter.ToSingle(bytes.Slice(4, 4)),
-                BitConverter.ToSingle(bytes.Slice(8, 4))
+                PBitConverter.ToSingle(bytes.Slice(0, 4)),
+                PBitConverter.ToSingle(bytes.Slice(4, 4)),
+                PBitConverter.ToSingle(bytes.Slice(8, 4))
             );
         }
 
@@ -223,10 +230,10 @@ namespace OpenH2.Serialization.Materialization
             data.Read(bytes);
 
             return new Vector4(
-                BitConverter.ToSingle(bytes.Slice(0, 4)),
-                BitConverter.ToSingle(bytes.Slice(4, 4)),
-                BitConverter.ToSingle(bytes.Slice(8, 4)),
-                BitConverter.ToSingle(bytes.Slice(12, 4))
+                PBitConverter.ToSingle(bytes.Slice(0, 4)),
+                PBitConverter.ToSingle(bytes.Slice(4, 4)),
+                PBitConverter.ToSingle(bytes.Slice(8, 4)),
+                PBitConverter.ToSingle(bytes.Slice(12, 4))
             );
         }
 
@@ -238,10 +245,10 @@ namespace OpenH2.Serialization.Materialization
             data.Read(bytes);
 
             return new Quaternion(
-                BitConverter.ToSingle(bytes.Slice(0, 4)),
-                BitConverter.ToSingle(bytes.Slice(4, 4)),
-                BitConverter.ToSingle(bytes.Slice(8, 4)),
-                BitConverter.ToSingle(bytes.Slice(12, 4))
+                PBitConverter.ToSingle(bytes.Slice(0, 4)),
+                PBitConverter.ToSingle(bytes.Slice(4, 4)),
+                PBitConverter.ToSingle(bytes.Slice(8, 4)),
+                PBitConverter.ToSingle(bytes.Slice(12, 4))
             );
         }
 
@@ -294,7 +301,7 @@ namespace OpenH2.Serialization.Materialization
             data.Position = offset;
             data.Read(bytes);
 
-            return BitConverter.ToSingle(bytes);
+            return PBitConverter.ToSingle(bytes);
         }
 
         private static VecConverter vectorConverter = new VecConverter();

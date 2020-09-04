@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Numerics;
 using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 using System.Text;
 
 namespace OpenH2.Serialization.Materialization
@@ -69,7 +70,7 @@ namespace OpenH2.Serialization.Materialization
                 return 0;
             }
 
-            return BitConverter.ToInt16(data.Slice(offset, 2));
+            return PBitConverter.ToInt16(data.Slice(offset, 2));
 
         }
 
@@ -81,7 +82,7 @@ namespace OpenH2.Serialization.Materialization
                 return 0;
             }
 
-            return BitConverter.ToInt32(data.Slice(offset, 4));
+            return PBitConverter.ToInt32(data.Slice(offset, 4));
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -92,7 +93,7 @@ namespace OpenH2.Serialization.Materialization
                 return 0;
             }
 
-            return BitConverter.ToUInt16(data.Slice(offset, 2));
+            return PBitConverter.ToUInt16(data.Slice(offset, 2));
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -103,15 +104,15 @@ namespace OpenH2.Serialization.Materialization
                 return 0;
             }
 
-            return BitConverter.ToUInt32(data.Slice(offset, 4));
+            return PBitConverter.ToUInt32(data.Slice(offset, 4));
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Vector2 ReadVec2At(this Span<byte> data, int offset)
         {
             return new Vector2(
-                BitConverter.ToSingle(data.Slice(offset + 0, 4)),
-                BitConverter.ToSingle(data.Slice(offset + 4, 4))
+                PBitConverter.ToSingle(data.Slice(offset + 0, 4)),
+                PBitConverter.ToSingle(data.Slice(offset + 4, 4))
             );
         }
 
@@ -119,9 +120,9 @@ namespace OpenH2.Serialization.Materialization
         public static Vector3 ReadVec3At(this Span<byte> data, int offset)
         {
             return new Vector3(
-                BitConverter.ToSingle(data.Slice(offset + 0, 4)),
-                BitConverter.ToSingle(data.Slice(offset + 4, 4)),
-                BitConverter.ToSingle(data.Slice(offset + 8, 4))
+                PBitConverter.ToSingle(data.Slice(offset + 0, 4)),
+                PBitConverter.ToSingle(data.Slice(offset + 4, 4)),
+                PBitConverter.ToSingle(data.Slice(offset + 8, 4))
             );
         }
 
@@ -129,10 +130,10 @@ namespace OpenH2.Serialization.Materialization
         public static Vector4 ReadVec4At(this Span<byte> data, int offset)
         {
             return new Vector4(
-                BitConverter.ToSingle(data.Slice(offset + 0, 4)),
-                BitConverter.ToSingle(data.Slice(offset + 4, 4)),
-                BitConverter.ToSingle(data.Slice(offset + 8, 4)),
-                BitConverter.ToSingle(data.Slice(offset + 12, 4))
+                PBitConverter.ToSingle(data.Slice(offset + 0, 4)),
+                PBitConverter.ToSingle(data.Slice(offset + 4, 4)),
+                PBitConverter.ToSingle(data.Slice(offset + 8, 4)),
+                PBitConverter.ToSingle(data.Slice(offset + 12, 4))
             );
         }
 
@@ -140,10 +141,10 @@ namespace OpenH2.Serialization.Materialization
         public static Quaternion ReadQuaternionAt(this Span<byte> data, int offset)
         {
             return new Quaternion(
-                BitConverter.ToSingle(data.Slice(offset + 0, 4)),
-                BitConverter.ToSingle(data.Slice(offset + 4, 4)),
-                BitConverter.ToSingle(data.Slice(offset + 8, 4)),
-                BitConverter.ToSingle(data.Slice(offset + 12, 4))
+                PBitConverter.ToSingle(data.Slice(offset + 0, 4)),
+                PBitConverter.ToSingle(data.Slice(offset + 4, 4)),
+                PBitConverter.ToSingle(data.Slice(offset + 8, 4)),
+                PBitConverter.ToSingle(data.Slice(offset + 12, 4))
             );
         }
 
@@ -180,7 +181,7 @@ namespace OpenH2.Serialization.Materialization
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static float ReadFloatAt(this Span<byte> data, int offset)
         {
-            return BitConverter.ToSingle(data.Slice(offset, 4));
+            return PBitConverter.ToSingle(data.Slice(offset, 4));
         }
     }
 }
