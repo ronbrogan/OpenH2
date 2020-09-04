@@ -3,6 +3,7 @@ using OpenH2.Core.Offsets;
 using OpenH2.Core.Parsing;
 using OpenH2.Core.Representations;
 using OpenH2.Core.Tags;
+using OpenH2.Serialization;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -183,29 +184,10 @@ namespace OpenH2.Core.Factories
 
         private H2vMapHeader GetSceneHeader(H2vBaseMap scene, TrackingReader reader)
         {
-            var head = new H2vMapHeader();
-            var chunk = reader.Chunk(H2vMapHeader.Layout.Offset, H2vMapHeader.Layout.Length, "Header");
+            var head = BlamSerializer.Deserialize<H2vMapHeader>(reader.Data, instanceStart: 0);
 
-            head.FileHead =                        /**/  chunk.ReadStringFrom(0, 4);
-            head.Version =                         /**/  chunk.ReadInt32At(4);
-            head.TotalBytes =                      /**/  chunk.ReadInt32At(8);
-            head.IndexOffset =                     /**/  new NormalOffset(chunk.ReadInt32At(16));
-            head.MetaOffset =                      /**/  scene.PrimaryOffset(chunk.ReadInt32At(20));
-            head.MapOrigin =                       /**/  chunk.ReadStringFrom(32, 32);
-            head.Build =                           /**/  chunk.ReadStringFrom(300, 32);
-            head.OffsetToUnknownSection =          /**/  chunk.ReadInt32At(364);
-            head.InternedStringCount =            /**/  chunk.ReadInt32At(368);
-            head.SizeOfScriptReference =           /**/  chunk.ReadInt32At(372);
-            head.InternedStringIndexOffset =       /**/  chunk.ReadInt32At(376);
-            head.InternedStringsOffset =           /**/  chunk.ReadInt32At(380);
-            head.Name =                            /**/  chunk.ReadStringFrom(420, 32);
-            head.ScenarioPath =                    /**/  chunk.ReadStringFrom(456, 256);
-            head.FileCount =                       /**/  chunk.ReadInt32At(716);
-            head.FileTableOffset =                 /**/  chunk.ReadInt32At(720);
-            head.FileTableSize =                   /**/  chunk.ReadInt32At(724);
-            head.FilesIndex =                      /**/  chunk.ReadInt32At(728);
-            head.StoredSignature =                 /**/  chunk.ReadInt32At(752);
-            head.Footer =                          /**/  chunk.ReadStringFrom(2044, 4);
+            head.IndexOffset = new NormalOffset(head.RawIndexOffset);
+            head.SecondaryOffset = scene.PrimaryOffset(head.RawSecondaryOffset);
 
             return head;
         }
@@ -213,20 +195,10 @@ namespace OpenH2.Core.Factories
         public IndexHeader GetIndexHeader(H2vBaseMap scene, TrackingReader reader)
         {
             var header = scene.Header;
-            var span = reader.Chunk(header.IndexOffset.Value, IndexHeader.Length, "IndexHeader");
 
-            var index = new IndexHeader();
-            
-            index.FileRawOffset =         /**/  header.IndexOffset;
-            index.PrimaryMagicConstant =  /**/  span.ReadInt32At(0);
-            index.TagListCount =          /**/  span.ReadInt32At(4);
-            index.TagIndexOffset =        /**/  scene.PrimaryOffset(span.ReadInt32At(8));
-            index.Scenario =              /**/  span.ReadTagRefAt(12);
-            index.Globals =               /**/  span.ReadTagRefAt(16);
-            index.Unknown1 =              /**/  span.ReadInt32At(20);
-            index.TagIndexCount =         /**/  span.ReadInt32At(24);
-            index.TagsLabel =             /**/  span.ReadStringFrom(28, 4);
-            
+            var index = BlamSerializer.Deserialize<IndexHeader>(reader.Data, header.IndexOffset.Value);
+            index.FileRawOffset = header.IndexOffset;
+            index.TagIndexOffset = scene.PrimaryOffset(index.RawTagIndexOffset);
 
             return index;
         }
@@ -275,7 +247,7 @@ namespace OpenH2.Core.Factories
 
         public int CalculateSecondaryMagic(H2vMapHeader header, int firstObjOffset)
         {
-            return firstObjOffset - header.MetaOffset.Value;
+            return firstObjOffset - header.SecondaryOffset.Value;
         }
     }
 }

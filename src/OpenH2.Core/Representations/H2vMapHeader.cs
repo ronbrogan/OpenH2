@@ -1,68 +1,73 @@
 ﻿using OpenH2.Core.Offsets;
+using OpenH2.Serialization.Layout;
 
 namespace OpenH2.Core.Representations
 {
+    [FixedLength(2048)]
     public class H2vMapHeader
     {
+        [StringValue(0, 4)]
         public string FileHead { get; set; }
+
+        [PrimitiveValue(4)]
         public int Version { get; set; }
+
+        [PrimitiveValue(8)]
         public int TotalBytes { get; set; }
 
-        // This property is apparently always zero
-        public int Zero => 0;
+        [PrimitiveValue(16)]
+        public int RawIndexOffset { get; set; }
+
+        [PrimitiveValue(20)]
+        public int RawSecondaryOffset { get; set; }
 
         public NormalOffset IndexOffset { get; set; }
-        public PrimaryOffset MetaOffset { get; set; }
+        public PrimaryOffset SecondaryOffset { get; set; }
 
-        // 2 dwords of unknown
 
+        [StringValue(32, 32)]
         public string MapOrigin { get; set; }
 
-        // 224 bytes of unknown
-
+        [StringValue(300, 32)]
         public string Build { get; set; }
 
-        // 20 bytes of unknown
-        // int of unknown
-
-        public int OffsetToStrangeFileStrings { get; set; }
-
-        // int of unknown
-
+        [PrimitiveValue(364)]
         public int OffsetToUnknownSection { get; set; }
+
+        [PrimitiveValue(368)]
         public int InternedStringCount { get; set; }
+
+        [PrimitiveValue(372)]
         public int SizeOfScriptReference { get; set; }
+
+        [PrimitiveValue(376)]
         public int InternedStringIndexOffset { get; set; }
+
+        [PrimitiveValue(380)]
         public int InternedStringsOffset { get; set; }
 
-        // 36 bytes of unknown
-
+        [StringValue(420, 32)]
         public string Name { get; set; }
-        public int Zero2 => 0;
 
-        // int of unknown
-
+        [StringValue(456, 256)]
         public string ScenarioPath { get; set; }
 
-        // 224 bytes of zero
-
+        [PrimitiveValue(716)]
         public int FileCount { get; set; }
+
+        [PrimitiveValue(720)]
         public int FileTableOffset { get; set; }
+
+        [PrimitiveValue(724)]
         public int FileTableSize { get; set; }
+
+        [PrimitiveValue(728)]
         public int FilesIndex { get; set; }
 
-        //public int CalculatedSignature { get; set; }
-
+        [PrimitiveValue(752)]
         public int StoredSignature { get; set; }
 
-        // 1320 bytes of zero
-
+        [StringValue(2044, 4)]
         public string Footer { get; set; }
-
-        public static class Layout
-        {
-            public static int Offset => 0;
-            public static int Length => 2048;
-        }
     }
 }
