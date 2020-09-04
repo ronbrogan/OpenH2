@@ -26,7 +26,8 @@ namespace OpenH2.Core.Tests
         {
             var mapStream = new FileStream(ascensionPath, FileMode.Open, FileAccess.Read, FileShare.Read);
 
-            var factory = new MapFactory(Path.GetDirectoryName(ascensionPath), new MaterialFactory(Environment.CurrentDirectory));
+            var materialFactory = new MaterialFactory(Path.Combine(Environment.CurrentDirectory, "Configs"));
+            var factory = new MapFactory(Path.GetDirectoryName(ascensionPath), materialFactory);
 
             var sw = new Stopwatch();
             sw.Restart();
@@ -60,7 +61,9 @@ namespace OpenH2.Core.Tests
             var raw = mapStream.ToMemory();
             mapStream.Seek(0, SeekOrigin.Begin);
 
-            var factory = new MapFactory(Path.GetDirectoryName(ascensionPath), new MaterialFactory(Environment.CurrentDirectory));
+
+            var materialFactory = new MaterialFactory(Path.Combine(Environment.CurrentDirectory, "Configs"));
+            var factory = new MapFactory(Path.GetDirectoryName(ascensionPath), materialFactory);
 
             var scene = factory.FromFile(mapStream);
 
@@ -70,7 +73,5 @@ namespace OpenH2.Core.Tests
 
             Assert.Equal(scene.Header.StoredSignature, sig);
         }
-
-        
     }
 }
