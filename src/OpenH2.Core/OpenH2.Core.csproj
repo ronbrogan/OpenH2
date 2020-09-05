@@ -6,12 +6,6 @@
     <!--<DebugSerializerGeneration>True</DebugSerializerGeneration>-->
     <GenerateSerializersInto>$(MSBuildProjectDirectory)\$(BaseIntermediateOutputPath)\GeneratedSerializers</GenerateSerializersInto>
   </PropertyGroup>
-
-  <!-- TODO: Move into Serializer package props/targets -->
-  <ItemGroup>
-    <CompilerVisibleProperty Include="DebugSerializerGeneration" />
-    <CompilerVisibleProperty Include="GenerateSerializersInto" />
-  </ItemGroup>
   
   <ItemGroup>
     <PackageReference Include="System.Text.Json" Version="4.7.0" />

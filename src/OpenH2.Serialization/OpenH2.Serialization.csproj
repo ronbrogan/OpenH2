@@ -13,4 +13,10 @@
     <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Workspaces" Version="3.8.0-2.final" />
   </ItemGroup>
 
+  <!-- TODO: Put this in a .targets file or something -->
+  <ItemGroup>
+    <CompilerVisibleProperty Include="DebugSerializerGeneration" />
+    <CompilerVisibleProperty Include="GenerateSerializersInto" />
+  </ItemGroup>
+
 </Project>
