@@ -18,7 +18,7 @@ namespace OpenH2.Engine.Factories
         {
             if (map.TryGetTag(hlmt.ColliderId, out var coll) == false)
             {
-                Console.WriteLine($"Couldn't find COLL[{hlmt.ColliderId.Id}]");
+                // TODO: determine why collider can be invalid, if it's expected
                 return DefaultCollider;
             }
 

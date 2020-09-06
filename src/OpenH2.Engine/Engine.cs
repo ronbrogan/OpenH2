@@ -3,10 +3,12 @@ using OpenH2.Core.Configuration;
 using OpenH2.Core.Extensions;
 using OpenH2.Core.Factories;
 using OpenH2.Core.Representations;
+using OpenH2.Core.Tags.Scenario;
 using OpenH2.Engine.Components;
 using OpenH2.Engine.Components.Globals;
 using OpenH2.Engine.Entities;
 using OpenH2.Engine.EntityFactories;
+using OpenH2.Engine.Systems;
 using OpenH2.Foundation;
 using OpenH2.Foundation.Engine;
 using OpenH2.Physics.Core;
@@ -69,13 +71,14 @@ namespace OpenH2.Engine
 
             world = rtWorld;
 
-            LoadScene(factory, mapPath);
+            var scenario = LoadScene(factory, mapPath);
+            rtWorld.UseSystem(new ScriptSystem(scenario, rtWorld));
 
             gameLoop.RegisterCallbacks(world.Update, world.Render);
             gameLoop.Start(60, 60);
         }
 
-        private void LoadScene(MapFactory factory, string mapPath)
+        private ScenarioTag LoadScene(MapFactory factory, string mapPath)
         {
             SpectatorCamera camera = new SpectatorCamera();
 
@@ -91,27 +94,31 @@ namespace OpenH2.Engine
 
             var watch = new Stopwatch();
             watch.Start();
-            LoadMap(scene, factory, mapPath);
+            var scenario = LoadMap(scene, factory, mapPath);
             watch.Stop();
             Console.WriteLine($"Loading map took {watch.ElapsedMilliseconds / 1000f} seconds");
 
             world.LoadScene(scene);
+
+            return scenario;
         }
 
-        public void LoadMap(Scene destination, MapFactory factory, string mapPath)
+        public ScenarioTag LoadMap(Scene destination, MapFactory factory, string mapPath)
         {
             var fs = new FileStream(mapPath, FileMode.Open, FileAccess.Read, FileShare.Read, 8096);
             var map = factory.FromFile(fs);
 
             LoadGlobals(destination, map);
-            LoadScenario(destination, map);
+            var scenario = LoadScenario(destination, map);
 
             //PositioningEntities.AddLocators(map, destination);
 
             //PlaceLights(destination);
+
+            return scenario;
         }
 
-        private static void LoadScenario(Scene destination, H2vMap map)
+        private static ScenarioTag LoadScenario(Scene destination, H2vMap map)
         {
             map.TryGetTag(map.IndexHeader.Scenario, out var scenario);
             var terrains = scenario.Terrains;
@@ -172,6 +179,8 @@ namespace OpenH2.Engine
             {
                 destination.AddEntity(TriggerFactory.FromScenarioTriggerVolume(scenario, item));
             }
+
+            return scenario;
         }
 
         private static void LoadGlobals(Scene destination, H2vMap map)

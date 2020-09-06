@@ -30,7 +30,7 @@ namespace OpenH2.ScriptAnalysis
 
         static void Main(string[] args)
         {
-            var maps = Directory.GetFiles(@"C:\Program Files\ModifiableWindowsApps\HaloMCC\halo2\h2_maps_win64_dx11", "*.map");
+            var maps = Directory.GetFiles(@"D:\H2vMaps", "*.map");
 
             foreach(var map in maps)
             {
@@ -48,7 +48,7 @@ namespace OpenH2.ScriptAnalysis
                         .Select(p => p.Trim())
                         .ToArray();
 
-                var outRoot = $@"D:\h2pcscratch\scripts\{scenarioParts.Last()}";
+                var outRoot = $@"D:\h2scratch\scripts\{scenarioParts.Last()}";
                 Directory.CreateDirectory(outRoot);
 
                 var repo = new MemberNameRepository();
@@ -160,10 +160,10 @@ namespace OpenH2.ScriptAnalysis
                 }
 
                 var csharp = classGen.Generate();
-                File.WriteAllText(outRoot + $"\\{scenarioParts.Last()}.cs", csharp);
+                File.WriteAllText(outRoot + $"\\{scenarioParts.Last()}.cs", csharp.ToString());
 
                 var dataCsharp = dataGen.Generate();
-                File.WriteAllText(outRoot + $"\\{scenarioParts.Last()}.Data.cs", dataCsharp);
+                File.WriteAllText(outRoot + $"\\{scenarioParts.Last()}.Data.cs", dataCsharp.ToString());
             }
         }
 

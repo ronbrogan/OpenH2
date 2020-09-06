@@ -96,7 +96,7 @@ namespace OpenH2.Core.Scripting.Generation
 
             if(Array.IndexOf(_keywords, name) >= 0)
             {
-                name = "@" + name;
+                //name = "@" + name;
             }
 
             return name;

@@ -56,7 +56,7 @@ namespace OpenH2.Engine.Systems
 
 #if DEBUG
             pvd = new Pvd(this.physxFoundation);
-            pvd.Connect("localhost", 5425, TimeSpan.FromSeconds(10), InstrumentationFlag.Debug);
+            pvd.Connect("localhost", 5425, TimeSpan.FromSeconds(2), InstrumentationFlag.Debug);
             this.physxPhysics = new PxPhysics(this.physxFoundation, false, pvd);
 #else
             this.physxPhysics = new PxPhysics(this.physxFoundation);

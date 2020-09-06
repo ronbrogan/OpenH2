@@ -85,7 +85,7 @@ namespace OpenH2.Rendering.Pipelines
 
             drawElapsed.Stop();
 
-            Console.WriteLine("RenderTime: " + drawElapsed.ElapsedMilliseconds + "ms");
+            //Console.WriteLine("RenderTime: " + drawElapsed.ElapsedMilliseconds + "ms");
         }
     }
 }

@@ -136,7 +136,8 @@ namespace OpenH2.Core.Tags
             {
                 if (part.DataBlockRawOffset == uint.MaxValue)
                 {
-                    Console.WriteLine("Bsp part with max DataBlock offset");
+                    // TODO: determine why this happens, and if it's expected?
+                    //Console.WriteLine("Bsp part with max DataBlock offset");
                     part.Model = new MeshCollection(new ModelMesh[0]);
                     continue;
                 }

@@ -13,20 +13,6 @@ using static Microsoft.CodeAnalysis.CSharp.SyntaxFactory;
 
 namespace OpenH2.Core.Scripting.Generation
 {
-
-
-    public delegate void GenerationCallback(GenerationCallbackArgs args);
-    public class GenerationCallbackArgs
-    {
-        public ScenarioTag.ScriptSyntaxNode Node { get; set; }
-        public Scope Scope { get; set; }
-    }
-
-
-    /*
-     * TODO:
-     * - Compile and load assembly into current process. Separate class?
-     */
     public class ScriptCSharpGenerator
     { 
         private readonly ScenarioTag scenario;
@@ -44,14 +30,12 @@ namespace OpenH2.Core.Scripting.Generation
         private Stack<Scope> scopes;
         private ContinuationStack<int> childIndices;
 
-        public const string EngineImplementationClass = "OpenH2.Engine.Scripting.ScriptEngine";
-
         public ScriptCSharpGenerator(ScenarioTag scnr, MemberNameRepository nameRepo, string[] refrences = null, AttributeSyntax[] classAttributes = null)
         {
             this.scenario = scnr;
             this.nameRepo = nameRepo;
-            // TODO: netstandard2.1 or net5 upgrade: replace split overload usage
-            var scenarioParts = scnr.Name.Split(new[] { '\\' }, StringSplitOptions.RemoveEmptyEntries);
+            
+            var scenarioParts = scnr.Name.Split('\\', StringSplitOptions.RemoveEmptyEntries);
 
             var ns = "OpenH2.Scripts.Generated" + string.Join(".", scenarioParts.Take(2));
 
@@ -458,7 +442,7 @@ namespace OpenH2.Core.Scripting.Generation
             }
         }
 
-        public string Generate()
+        public NamespaceDeclarationSyntax Generate()
         {
             var cls = classDecl;
 
@@ -536,12 +520,7 @@ namespace OpenH2.Core.Scripting.Generation
                     UsingDirective(ParseName("OpenH2.Core.Scripting"))
                 );
 
-            var csharpTree = CSharpSyntaxTree.Create(SyntaxUtil.Normalize(ns));
-
-            //var compilation = CSharpCompilation.Create("OpenH2ScriptGen", new[] { csharpTree });
-            //compilation.Emit()
-
-            return csharpTree.ToString();
+            return (NamespaceDeclarationSyntax)SyntaxUtil.Normalize(ns);
         }
 
         private string GetScriptString(ScenarioTag.ScriptSyntaxNode node)

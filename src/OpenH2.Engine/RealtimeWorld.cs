@@ -23,6 +23,11 @@ namespace OpenH2.Engine
             globalResources.Add(new InputStore());
         }
 
+        public void UseSystem(WorldSystem system)
+        {
+            Systems.Add(system);
+        }
+
         public void UseGraphicsAdapter(IGraphicsAdapter graphics)
         {
             Systems.Add(new RenderCollectorSystem(this, graphics));

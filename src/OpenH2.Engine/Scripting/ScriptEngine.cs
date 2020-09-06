@@ -1,12 +1,21 @@
 namespace OpenH2.Engine.Scripting
 {
     using OpenH2.Core.Scripting;
+    using OpenH2.Core.Scripting.Execution;
+    using OpenH2.Foundation.Logging;
     using System;
     using System.Threading.Tasks;
 
     public class ScriptEngine : IScriptEngine
     {
         public const short TicksPerSecond = 60;
+        private readonly IScriptExecutor executionOrchestrator;
+
+        public ScriptEngine(IScriptExecutor executionOrchestrator)
+        {
+            this.executionOrchestrator = executionOrchestrator;
+        }
+
         public T GetReference<T>(string reference)
         {
             return default(T);
@@ -1235,7 +1244,7 @@ namespace OpenH2.Engine.Scripting
         /// <summary>returns the number of objects in a list</summary>
         public short list_count(ObjectList object_list)
         {
-            return default(short);
+            return (short)object_list.Objects.Length;
         }
 
         /// <summary>returns the number of objects in a list that aren't dead</summary>
@@ -1880,7 +1889,7 @@ namespace OpenH2.Engine.Scripting
         /// <summary>returns a list of the players</summary>
         public ObjectList players()
         {
-            return default(ObjectList);
+            return new ObjectList() { Objects = new[] { new Entity() } };
         }
 
         /// <summary>predict a geometry block.</summary>
@@ -1896,7 +1905,7 @@ namespace OpenH2.Engine.Scripting
         /// <summary>prints a string to the console.</summary>
         public void print(string value)
         {
-            Console.WriteLine(value);
+            Logger.Log(value, Logger.Color.Magenta);
         }
 
         /// <summary>removes the special place that activates everything it sees.</summary>
@@ -1976,23 +1985,29 @@ namespace OpenH2.Engine.Scripting
         /// <summary>pauses execution of this script (or, optionally, another script) for the specified number of ticks.</summary>
         public async Task sleep(int ticks)
         {
-            await Task.Delay(TimeSpan.FromSeconds(ticks / (double)TicksPerSecond));
+            if (ticks <= 0) ticks = 1;
+            var sleepTime = TimeSpan.FromSeconds(ticks / (double)TicksPerSecond);
+            await Task.Delay(sleepTime);
         }
 
         /// <summary>pauses execution of this script (or, optionally, another script) for the specified number of ticks.</summary>
         public async Task sleep(short ticks)
         {
-            await Task.Delay(TimeSpan.FromSeconds(ticks / (double)TicksPerSecond));
+            if (ticks <= 0) ticks = 1;
+            var sleepTime = TimeSpan.FromSeconds(ticks / (double)TicksPerSecond);
+            await Task.Delay(sleepTime);
         }
 
         /// <summary>pauses execution of this script (or, optionally, another script) forever.</summary>
         public void sleep_forever()
         {
+            throw new Exception("Aborting, this doesn't work if we expect to be able to resume here...");
         }
 
         /// <summary>pauses execution of this script (or, optionally, another script) forever.</summary>
-        public void sleep_forever(ScriptReference script = null)
+        public void sleep_forever(ScriptReference script)
         {
+            this.executionOrchestrator.SetLifecycle(script.Method.Name, Lifecycle.Dormant);
         }
 
         /// <summary>pauses execution of this script until the specified condition is true, checking once per second unless a different number of ticks is specified.</summary>
@@ -2020,7 +2035,7 @@ namespace OpenH2.Engine.Scripting
         /// <summary>returns the time remaining for the specified impulse sound. DO NOT CALL IN CUTSCENES.</summary>
         public int sound_impulse_language_time(ReferenceGet soundRef)
         {
-            return default;
+            return TicksPerSecond;
         }
 
         /// <summary>your mom part 2.</summary>
@@ -2373,6 +2388,7 @@ namespace OpenH2.Engine.Scripting
         /// <summary>wakes a sleeping script in the next update.</summary>
         public void wake(ScriptReference script_name)
         {
+            this.executionOrchestrator.SetLifecycle(script_name.Method.Name, Lifecycle.Continuous);
         }
 
         /// <summary>turns the trigger for a weapon  on/off</summary>

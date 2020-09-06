@@ -4,11 +4,11 @@ namespace OpenH2.Core.Scripting
 {
     public class ScriptMethodAttribute : Attribute
     {
-        public Lifecycle Type { get; }
+        public Lifecycle Lifecycle { get; }
 
-        public ScriptMethodAttribute(Lifecycle type)
+        public ScriptMethodAttribute(Lifecycle lifecycle)
         {
-            this.Type = type;
+            this.Lifecycle = lifecycle;
         }
     }
 

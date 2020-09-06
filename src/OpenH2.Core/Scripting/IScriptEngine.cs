@@ -1136,11 +1136,11 @@ namespace OpenH2.Core.Scripting
         /// <summary>pauses execution of this script (or, optionally, another script) for the specified number of ticks.</summary>
         Task sleep(short ticks);
 
-        /// <summary>pauses execution of this script (or, optionally, another script) forever.</summary>
+        /// <summary>pauses execution of this script forever.</summary>
         void sleep_forever();
 
-        /// <summary>pauses execution of this script (or, optionally, another script) forever.</summary>
-        void sleep_forever(ScriptReference script = null);
+        /// <summary>pauses execution of another script forever.</summary>
+        void sleep_forever(ScriptReference script);
 
         /// <summary>pauses execution of this script until the specified condition is true, checking once per second unless a different number of ticks is specified.</summary>
         Task sleep_until(Func<Task<bool>> condition, int ticks = 60, int timeout = -1);
