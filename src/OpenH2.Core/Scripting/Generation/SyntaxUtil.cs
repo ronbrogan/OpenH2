@@ -26,8 +26,20 @@ namespace OpenH2.Core.Scripting.Generation
                 ScriptDataType.Short => PredefinedType(Token(SyntaxKind.IntKeyword)),
                 ScriptDataType.String => PredefinedType(Token(SyntaxKind.StringKeyword)),
                 ScriptDataType.Void => PredefinedType(Token(SyntaxKind.VoidKeyword)),
-                
-                _ => Enum.IsDefined(typeof(ScriptDataType), dataType) 
+
+                ScriptDataType.Trigger => ParseTypeName(nameof(ScenarioTag) + "." + nameof(ScenarioTag.TriggerVolume)),
+                ScriptDataType.LocationFlag => ParseTypeName(nameof(ScenarioTag) + "." + nameof(ScenarioTag.LocationFlagDefinition)),
+                ScriptDataType.CameraPathTarget => ParseTypeName(nameof(ScenarioTag) + "." + nameof(ScenarioTag.CameraPathTarget)),
+                ScriptDataType.CinematicTitle => ParseTypeName(nameof(ScenarioTag) + "." + nameof(ScenarioTag.CinematicTitleDefinition)),
+                ScriptDataType.DeviceGroup => ParseTypeName(nameof(ScenarioTag) + "." + nameof(ScenarioTag.DeviceGroupDefinition)),
+                ScriptDataType.AIScript => ParseTypeName(nameof(ScenarioTag) + "." + nameof(ScenarioTag.AiNamedTrigger)),
+                ScriptDataType.AIOrders => ParseTypeName(nameof(ScenarioTag) + "." + nameof(ScenarioTag.AiOrderDefinition)),
+                ScriptDataType.Equipment => ParseTypeName(nameof(ScenarioTag) + "." + nameof(ScenarioTag.StartingProfileDefinition)),
+                ScriptDataType.Weapon => ParseTypeName(nameof(ScenarioTag) + "." + nameof(ScenarioTag.WeaponDefinition)),
+                ScriptDataType.Vehicle => ParseTypeName(nameof(ScenarioTag) + "." + nameof(ScenarioTag.VehicleDefinition)),
+                ScriptDataType.Scenery => ParseTypeName(nameof(ScenarioTag) + "." + nameof(ScenarioTag.SceneryDefinition)),
+
+                _ => Enum.IsDefined(typeof(ScriptDataType), dataType)
                     ? ParseTypeName(dataType.ToString())
                     : ParseTypeName(nameof(ScriptDataType) + dataType.ToString()),
             };
