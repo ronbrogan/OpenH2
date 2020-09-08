@@ -1,4 +1,5 @@
 using OpenH2.Core.Scripting;
+using OpenH2.Core.Tags.Scenario;
 using System;
 using System.Threading.Tasks;
 
@@ -8,7 +9,7 @@ namespace OpenH2.Core.Scripting
     {
 
         /// <summary>activates a nav point type <string> attached to a team anchored to a flag with a vertical offset <real>. If the player is not local to the machine, this will fail</summary>
-        void activate_team_nav_point_flag(NavigationPoint navpoint, Team team, LocationFlag cutscene_flag, float real);
+        void activate_team_nav_point_flag(NavigationPoint navpoint, Team team, ScenarioTag.LocationFlagDefinition cutscene_flag, float real);
 
         /// <summary>activates a nav point type <string> attached to a team anchored to an object with a vertical offset <real>. If the player is not local to the machine, this will fail</summary>
         void activate_team_nav_point_object(NavigationPoint navpoint, Team team, Entity entity, float real);
@@ -143,7 +144,7 @@ namespace OpenH2.Core.Scripting
         void ai_set_deaf(AI ai, bool boolean);
 
         /// <summary>Takes the squad or squad group (arg1) and gives it the order (arg3) in zone (arg2). Use the zone_name/order_name format</summary>
-        void ai_set_orders(AI ai, AIOrders ai_orders);
+        void ai_set_orders(AI ai, ScenarioTag.AiOrderDefinition ai_orders);
 
         /// <summary>returns the number of actors spawned in the given squad or squad group</summary>
         short ai_spawn_count(AI ai);
@@ -180,19 +181,19 @@ namespace OpenH2.Core.Scripting
 
 
         /// <summary>Returns the vehicle that the given actor is in.</summary>
-        Vehicle ai_vehicle_get(AI ai);
+        ScenarioTag.VehicleInstance ai_vehicle_get(AI ai);
 
         /// <summary>Returns the vehicle that was spawned at the given starting location.</summary>
-        Vehicle ai_vehicle_get_from_starting_location(AI ai);
+        ScenarioTag.VehicleInstance ai_vehicle_get_from_starting_location(AI ai);
 
         /// <summary>Reserves the given vehicle (so that AI may not enter it</summary>
-        void ai_vehicle_reserve(Vehicle vehicle, bool boolean);
+        void ai_vehicle_reserve(ScenarioTag.VehicleInstance vehicle, bool boolean);
 
         /// <summary>Reserves the given seat on the given vehicle (so that AI may not enter it</summary>
         void ai_vehicle_reserve_seat(string emotion, bool boolean);
 
         /// <summary>Reserves the given seat on the given vehicle (so that AI may not enter it</summary>
-        void ai_vehicle_reserve_seat(Vehicle vehicle, string string_id, bool boolean);
+        void ai_vehicle_reserve_seat(ScenarioTag.VehicleInstance vehicle, string string_id, bool boolean);
 
         /// <summary>Returns true if the ai's units are ALL vitality pinned (see object_vitality_pinned)</summary>
         bool ai_vitality_pinned(AI ai);
@@ -216,16 +217,16 @@ namespace OpenH2.Core.Scripting
         void camera_control(bool boolean);
 
         /// <summary>predict resources at a frame in camera animation.</summary>
-        void camera_predict_resources_at_frame(Animation animation, string emotion, Unit unit, LocationFlag locationFlag, int intValue);
+        void camera_predict_resources_at_frame(Animation animation, string emotion, Unit unit, ScenarioTag.LocationFlagDefinition locationFlag, int intValue);
 
         /// <summary>predict resources given a camera point</summary>
-        void camera_predict_resources_at_point(CameraPathTarget cutscene_camera_point);
+        void camera_predict_resources_at_point(ScenarioTag.CameraPathTarget cutscene_camera_point);
 
         /// <summary>moves the camera to the specified camera point over the specified number of ticks.</summary>
-        void camera_set(CameraPathTarget cutscene_camera_point, short value);
+        void camera_set(ScenarioTag.CameraPathTarget cutscene_camera_point, short value);
 
         /// <summary>begins a prerecorded camera animation synchronized to unit relative to cutscene flag.</summary>
-        void camera_set_animation_relative(Animation animation, string id, Unit unit, LocationFlag locationFlag);
+        void camera_set_animation_relative(Animation animation, string id, Unit unit, ScenarioTag.LocationFlagDefinition locationFlag);
 
         /// <summary>sets the field of view</summary>
         void camera_set_field_of_view(float real, short value);
@@ -279,7 +280,7 @@ namespace OpenH2.Core.Scripting
         void cinematic_set_near_clip_distance(float real);
 
         /// <summary>activates the chapter title</summary>
-        void cinematic_set_title(CinematicTitle cutscene_title);
+        void cinematic_set_title(ScenarioTag.CinematicTitleDefinition cutscene_title);
 
         /// <summary>sets or removes the letterbox bars</summary>
         void cinematic_show_letterbox(bool boolean);
@@ -414,7 +415,7 @@ namespace OpenH2.Core.Scripting
         void cs_go_to_vehicle();
 
         /// <summary>Actor gets in the appropriate vehicle</summary>
-        void cs_go_to_vehicle(Vehicle vehicle);
+        void cs_go_to_vehicle(ScenarioTag.VehicleInstance vehicle);
 
         /// <summary>Actor throws a grenade, either by tossing (arg2=0), lobbing (1) or bouncing (2)</summary>
         void cs_grenade(SpatialPoint point, int action);
@@ -527,7 +528,7 @@ namespace OpenH2.Core.Scripting
         void custom_animation_relative_loop(Unit unit, Animation animation2, string emotion, bool boolean, Entity entity);
 
         /// <summary>causes the specified damage at the specified flag.</summary>
-        void damage_new(Damage damage, LocationFlag cutscene_flag);
+        void damage_new(Damage damage, ScenarioTag.LocationFlagDefinition cutscene_flag);
 
         /// <summary>causes the specified damage at the specified object.</summary>
         void damage_object(Damage damage, Entity entity);
@@ -539,7 +540,7 @@ namespace OpenH2.Core.Scripting
         void data_mine_set_mission_segment(string value);
 
         /// <summary>deactivates a nav point type attached to a team anchored to a flag</summary>
-        void deactivate_team_nav_point_flag(Team team, LocationFlag cutscene_flag);
+        void deactivate_team_nav_point_flag(Team team, ScenarioTag.LocationFlagDefinition cutscene_flag);
 
         /// <summary>deactivates a nav point type attached to a team anchored to an object</summary>
         void deactivate_team_nav_point_object(Team team);
@@ -560,16 +561,16 @@ namespace OpenH2.Core.Scripting
         float device_get_position(Device device);
 
         /// <summary>TRUE allows a device to change states only once</summary>
-        void device_group_change_only_once_more_set(DeviceGroup device_group, bool boolean);
+        void device_group_change_only_once_more_set(ScenarioTag.DeviceGroupDefinition device_group, bool boolean);
 
         /// <summary>returns the desired value of the specified device group.</summary>
-        float device_group_get(DeviceGroup device_group);
+        float device_group_get(ScenarioTag.DeviceGroupDefinition device_group);
 
         /// <summary>changes the desired value of the specified device group.</summary>
-        void device_group_set(Device device, DeviceGroup device_group, float real);
+        void device_group_set(Device device, ScenarioTag.DeviceGroupDefinition device_group, float real);
 
         /// <summary>instantaneously changes the value of the specified device group.</summary>
-        void device_group_set_immediate(DeviceGroup device_group, float real);
+        void device_group_set_immediate(ScenarioTag.DeviceGroupDefinition device_group, float real);
 
         /// <summary>TRUE makes the given device one-sided (only able to be opened from one direction), FALSE makes it two-sided</summary>
         void device_one_sided_set(Device device, bool boolean);
@@ -601,7 +602,7 @@ namespace OpenH2.Core.Scripting
         void drop(string value);
 
         /// <summary>starts the specified effect at the specified flag.</summary>
-        void effect_new(Effect effect, LocationFlag cutscene_flag);
+        void effect_new(Effect effect, ScenarioTag.LocationFlagDefinition cutscene_flag);
 
         /// <summary>starts the specified effect on the specified object at the specified marker.</summary>
         void effect_new_on_object_marker(Effect effect, Entity entity, string string_id);
@@ -714,10 +715,10 @@ namespace OpenH2.Core.Scripting
         void interpolator_start(string string_id, float real, float real1);
 
         /// <summary>disables a kill volume</summary>
-        void kill_volume_disable(Trigger trigger_volume);
+        void kill_volume_disable(ScenarioTag.TriggerVolume trigger_volume);
 
         /// <summary>enables a kill volume</summary>
-        void kill_volume_enable(Trigger trigger_volume);
+        void kill_volume_enable(ScenarioTag.TriggerVolume trigger_volume);
 
         /// <summary>returns the number of objects in a list</summary>
         short list_count(Entity e);
@@ -771,10 +772,10 @@ namespace OpenH2.Core.Scripting
         void objects_attach(string emotion0, string emotion1);
 
         /// <summary>returns true if any of the specified units are looking within the specified number of degrees of the flag.</summary>
-        bool objects_can_see_flag(Entity entity, LocationFlag locationFlag, float floatValue);
+        bool objects_can_see_flag(Entity entity, ScenarioTag.LocationFlagDefinition locationFlag, float floatValue);
 
         /// <summary>returns true if any of the specified units are looking within the specified number of degrees of the flag.</summary>
-        bool objects_can_see_flag(ObjectList list, LocationFlag locationFlag, float floatValue);
+        bool objects_can_see_flag(ObjectList list, ScenarioTag.LocationFlagDefinition locationFlag, float floatValue);
 
         /// <summary>returns true if any of the specified units are looking within the specified number of degrees of the object.</summary>
         bool objects_can_see_object(Entity entity, EntityIdentifier obj, float degrees);
@@ -795,10 +796,10 @@ namespace OpenH2.Core.Scripting
         void objects_detach(Entity entity, Entity entity1);
 
         /// <summary>returns minimum distance from any of the specified objects to the specified flag. (returns -1 if there are no objects, or no flag, to check)</summary>
-        float objects_distance_to_flag(Entity entity, LocationFlag locationFlag);
+        float objects_distance_to_flag(Entity entity, ScenarioTag.LocationFlagDefinition locationFlag);
 
         /// <summary>returns minimum distance from any of the specified objects to the specified flag. (returns -1 if there are no objects, or no flag, to check)</summary>
-        float objects_distance_to_flag(ObjectList list, LocationFlag locationFlag);
+        float objects_distance_to_flag(ObjectList list, ScenarioTag.LocationFlagDefinition locationFlag);
 
         /// <summary>returns minimum distance from any of the specified objects to the specified destination object. (returns -1 if there are no objects to check)</summary>
         float objects_distance_to_object(ObjectList list, Entity entity);
@@ -965,7 +966,7 @@ namespace OpenH2.Core.Scripting
         void object_set_velocity(Entity entity, float real, float real1, float real12);
 
         /// <summary>moves the specified object to the specified flag.</summary>
-        void object_teleport(Entity entity, LocationFlag cutscene_flag);
+        void object_teleport(Entity entity, ScenarioTag.LocationFlagDefinition cutscene_flag);
 
         /// <summary>loads textures necessary to draw an object that's about to come on-screen.</summary>
         void object_type_predict(Entity entity);
@@ -1116,16 +1117,16 @@ namespace OpenH2.Core.Scripting
         void render_lights_enable_cinematic_shadow(bool boolean, Entity entity, string string_id, float real);
 
         /// <summary>starts a custom looping animation playing on a piece of scenery</summary>
-        void scenery_animation_start_loop(Scenery scenery, Animation animation, string emotion);
+        void scenery_animation_start_loop(ScenarioTag.SceneryInstance scenery, Animation animation, string emotion);
 
         /// <summary>starts a custom animation playing on a piece of scenery relative to a parent object</summary>
-        void scenery_animation_start_relative(Scenery scenery, Animation animation, string emotion, Entity entity);
+        void scenery_animation_start_relative(ScenarioTag.SceneryInstance scenery, Animation animation, string emotion, Entity entity);
 
         /// <summary>starts a custom animation playing on a piece of scenery relative to a parent object</summary>
-        void scenery_animation_start_relative(Scenery scenery, string emotion, Entity entity);
+        void scenery_animation_start_relative(ScenarioTag.SceneryInstance scenery, string emotion, Entity entity);
 
         /// <summary>returns the number of ticks remaining in a custom animation (or zero, if the animation is over).</summary>
-        short scenery_get_animation_time(Scenery scenery);
+        short scenery_get_animation_time(ScenarioTag.SceneryInstance scenery);
 
         /// <summary>this is your brain on drugs</summary>
         void set_global_sound_environment(float real, float real1, float real12, float real123, int value, float real1234);
@@ -1221,7 +1222,7 @@ namespace OpenH2.Core.Scripting
         void units_set_maximum_vitality(ObjectList units, float body, float shield);
 
         /// <summary>adds/resets the unit's health, shield, and inventory (weapons and grenades) to the named profile. resets if third parameter is true, adds if false. weapons will be marked as garbage if fourth parameter is true (for respawning equipment).</summary>
-        void unit_add_equipment(Unit unit, Equipment starting_profile, bool reset, bool isGarbage);
+        void unit_add_equipment(Unit unit, ScenarioTag.StartingProfileDefinition starting_profile, bool reset, bool isGarbage);
 
         /// <summary>prevents any of the given units from dropping weapons or grenades when they die</summary>
         void unit_doesnt_drop_items(ObjectList entities);
@@ -1242,7 +1243,7 @@ namespace OpenH2.Core.Scripting
         float unit_get_shield(Unit unit);
 
         /// <summary>returns TRUE if the <unit> has <object> as a weapon, FALSE otherwise</summary>
-        bool unit_has_weapon(Unit unit, Weapon weapon);
+        bool unit_has_weapon(Unit unit, ScenarioTag.WeaponDefinition weapon);
 
         /// <summary>prevents any of the given units from being knocked around or playing ping animations</summary>
         void unit_impervious(Entity unit, bool boolean);
@@ -1308,43 +1309,43 @@ namespace OpenH2.Core.Scripting
         void vehicle_load_magic(Entity vehicle, string vehicleSeat, ObjectList units);
 
         /// <summary>tests whether the named seat has a specified unit in it (use "" to test all seats for this unit)</summary>
-        bool vehicle_test_seat(Vehicle vehicle, string seat, Unit unit);
+        bool vehicle_test_seat(ScenarioTag.VehicleInstance vehicle, string seat, Unit unit);
 
         /// <summary>tests whether the named seat has an object in the object list (use "" to test all seats for any unit in the list)</summary>
-        bool vehicle_test_seat_list(Vehicle vehicle, string seat, Entity subject);
+        bool vehicle_test_seat_list(ScenarioTag.VehicleInstance vehicle, string seat, Entity subject);
 
         /// <summary>tests whether the named seat has an object in the object list (use "" to test all seats for any unit in the list)</summary>
-        bool vehicle_test_seat_list(Vehicle vehicle, string seat, ObjectList subjects);
+        bool vehicle_test_seat_list(ScenarioTag.VehicleInstance vehicle, string seat, ObjectList subjects);
 
         /// <summary>makes units get out of an object from the substring-specified seats (e.g. CD-passenger... empty string matches all seats)</summary>
         void vehicle_unload(Entity entity, string unit_seat_mapping);
 
         /// <summary>returns list of objects in volume or (max 128).</summary>
-        ObjectList volume_return_objects(Trigger trigger_volume);
+        ObjectList volume_return_objects(ScenarioTag.TriggerVolume trigger_volume);
 
         /// <summary>returns list of objects in volume or (max 128).</summary>
-        ObjectList volume_return_objects_by_type(Trigger trigger_volume, int value);
+        ObjectList volume_return_objects_by_type(ScenarioTag.TriggerVolume trigger_volume, int value);
 
         /// <summary>moves all players outside a specified trigger volume to a specified flag.</summary>
-        void volume_teleport_players_not_inside(Trigger trigger_volume, LocationFlag cutscene_flag);
+        void volume_teleport_players_not_inside(ScenarioTag.TriggerVolume trigger_volume, ScenarioTag.LocationFlagDefinition cutscene_flag);
 
         /// <summary>returns true if the specified object is within the specified volume.</summary>
-        bool volume_test_object(Trigger trigger);
+        bool volume_test_object(ScenarioTag.TriggerVolume trigger);
 
         /// <summary>returns true if the specified object is within the specified volume.</summary>
-        bool volume_test_object(Trigger trigger_volume, Entity entity);
+        bool volume_test_object(ScenarioTag.TriggerVolume trigger_volume, Entity entity);
 
         /// <summary>returns true if any of the specified objects are within the specified volume. trigger volume must have been postprocessed</summary>
-        bool volume_test_objects(Trigger trigger, Entity entity);
+        bool volume_test_objects(ScenarioTag.TriggerVolume trigger, Entity entity);
 
         /// <summary>returns true if any of the specified objects are within the specified volume. trigger volume must have been postprocessed</summary>
-        bool volume_test_objects(Trigger trigger_volume, ObjectList object_list);
+        bool volume_test_objects(ScenarioTag.TriggerVolume trigger_volume, ObjectList object_list);
 
         /// <summary>returns true if any (rb: all?) of the specified objects are within the specified volume. trigger volume must have been postprocessed</summary>
-        bool volume_test_objects_all(Trigger trigger, Entity entity);
+        bool volume_test_objects_all(ScenarioTag.TriggerVolume trigger, Entity entity);
 
         /// <summary>returns true if any (rb: all?) of the specified objects are within the specified volume. trigger volume must have been postprocessed</summary>
-        bool volume_test_objects_all(Trigger trigger, ObjectList object_list);
+        bool volume_test_objects_all(ScenarioTag.TriggerVolume trigger, ObjectList object_list);
 
         /// <summary>wakes a sleeping script in the next update.</summary>
         void wake(ScriptReference script_name);

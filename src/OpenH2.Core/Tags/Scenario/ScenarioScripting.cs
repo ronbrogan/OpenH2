@@ -12,7 +12,7 @@ namespace OpenH2.Core.Tags.Scenario
     public partial class ScenarioTag
     {
         [FixedLength(36)]
-        public class AiSquadGroupDefinition
+        public class AiSquadGroupDefinition : AI
         {
             [StringValue(0, 32)]
             public string Description { get; set; }
@@ -25,7 +25,7 @@ namespace OpenH2.Core.Tags.Scenario
         }
 
         [FixedLength(116)]
-        public class AiSquadDefinition
+        public class AiSquadDefinition : AI
         {
             [StringValue(0, 32)]
             public string Description { get; set; }

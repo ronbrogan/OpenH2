@@ -115,7 +115,7 @@ namespace OpenH2.Core.Tags.Scenario
 
         // TODO: placement test
         [FixedLength(84)]
-        public class VehicleInstance
+        public class VehicleInstance : Unit
         {
             [PrimitiveValue(0)]
             public ushort Index { get; set; }

@@ -180,69 +180,67 @@ namespace OpenH2.Core.Scripting.Generation
             for (int i = 0; i < scnr.WellKnownItems.Length; i++)
             {
                 var externalRef = scnr.WellKnownItems[i];
-                AddPublicProperty(externalRef, i);
-                if(nameRepo.TryGetName(externalRef.Description, externalRef.ItemType.ToString(), i, out var name))
-                {
-                    var two = ElementAccessExpression(MemberAccessExpression(SyntaxKind.SimpleMemberAccessExpression,
-                            IdentifierName(scenarioParam),
-                            IdentifierName(nameof(scnr.WellKnownItems))))
-                        .AddArgumentListArguments(Argument(SyntaxUtil.LiteralExpression(i)));
-
-                    var exp = AssignmentExpression(SyntaxKind.SimpleAssignmentExpression, 
-                        IdentifierName(name),
-                        two);
-                }
+                // TODO: add well known items
             }
 
-            for (int i = 0; i < scnr.CameraPathTargets.Length; i++)
-            {
-                var cam = scnr.CameraPathTargets[i];
-                CreateAssignment(nameof(scnr.CameraPathTargets), ScriptDataType.CameraPathTarget, cam.Description, i);
-            }
-
-            AddSquadData(scnr);
+            // TODO squad data
+            //AddSquadData(scnr);
 
             for (int i = 0; i < scnr.AiSquadGroupDefinitions.Length; i++)
             {
                 var ai = scnr.AiSquadGroupDefinitions[i];
-                CreateAssignment(nameof(scnr.CameraPathTargets), ScriptDataType.CameraPathTarget, cam.Description, i);
+                statements.Add(CreateAssignment(nameof(scnr.AiSquadGroupDefinitions), ScriptDataType.AI, ai.Description, i));
             }
 
             for (int i = 0; i < scnr.AiOrderDefinitions.Length; i++)
             {
                 var order = scnr.AiOrderDefinitions[i];
-                CreateAssignment(nameof(scnr.CameraPathTargets), ScriptDataType.CameraPathTarget, cam.Description, i);
+                statements.Add(CreateAssignment(nameof(scnr.AiOrderDefinitions), ScriptDataType.AIOrders, order.Description, i));
+            }
+
+            for (int i = 0; i < scnr.CameraPathTargets.Length; i++)
+            {
+                var cam = scnr.CameraPathTargets[i];
+                statements.Add(CreateAssignment(nameof(scnr.CameraPathTargets), ScriptDataType.CameraPathTarget, cam.Description, i));
             }
 
             for (int i = 0; i < scnr.LocationFlagDefinitions.Length; i++)
             {
                 var flag = scnr.LocationFlagDefinitions[i];
-                CreateAssignment(nameof(scnr.LocationFlagDefinitions), ScriptDataType.LocationFlag, flag.Description, i);
+                statements.Add(CreateAssignment(nameof(scnr.LocationFlagDefinitions), ScriptDataType.LocationFlag, flag.Description, i));
             }
 
             for (int i = 0; i < scnr.CinematicTitleDefinitions.Length; i++)
             {
                 var title = scnr.CinematicTitleDefinitions[i];
-                CreateAssignment(nameof(scnr.CinematicTitleDefinitions), ScriptDataType.CinematicTitle, title.Title, i);
+                statements.Add(CreateAssignment(nameof(scnr.CinematicTitleDefinitions), ScriptDataType.CinematicTitle, title.Title, i));
             }
 
             for (int i = 0; i < scnr.TriggerVolumes.Length; i++)
             {
                 var tv = scnr.TriggerVolumes[i];
-                CreateAssignment(nameof(scnr.TriggerVolumes), ScriptDataType.Trigger, tv.Description, i);
+                statements.Add(CreateAssignment(nameof(scnr.TriggerVolumes), ScriptDataType.Trigger, tv.Description, i));
             }
 
             for (int i = 0; i < scnr.StartingProfileDefinitions.Length; i++)
             {
                 var profile = scnr.StartingProfileDefinitions[i];
-                CreateAssignment(nameof(scnr.StartingProfileDefinitions), ScriptDataType.Equipment, profile.Description, i);
+                statements.Add(CreateAssignment(nameof(scnr.StartingProfileDefinitions), ScriptDataType.Equipment, profile.Description, i));
             }
 
             for (int i = 0; i < scnr.DeviceGroupDefinitions.Length; i++)
             {
                 var group = scnr.DeviceGroupDefinitions[i];
-                CreateAssignment(nameof(scnr.DeviceGroupDefinitions), ScriptDataType.DeviceGroup, group.Description, i);
+                statements.Add(CreateAssignment(nameof(scnr.DeviceGroupDefinitions), ScriptDataType.DeviceGroup, group.Description, i));
             }
+
+            this.methods.Add(
+                MethodDeclaration(
+                    PredefinedType(Token(SyntaxKind.VoidKeyword)),
+                    nameof(ScenarioScriptBase.InitializeData))
+                .AddParameterListParameters(Parameter(scenarioParam).WithType(ParseTypeName(nameof(ScenarioTag))))
+                .AddModifiers(Token(SyntaxKind.PublicKeyword), Token(SyntaxKind.OverrideKeyword))
+                .WithBody(Block(statements)));
         }
 
         public void AddPublicProperty(ScenarioTag.AiSquadGroupDefinition ai, int itemIndex)
@@ -675,6 +673,7 @@ namespace OpenH2.Core.Scripting.Generation
                 .AddUsings(
                     UsingDirective(ParseName("System")),
                     UsingDirective(ParseName("System.Threading.Tasks")),
+                    UsingDirective(ParseName("OpenH2.Core.Tags.Scenario")),
                     UsingDirective(ParseName("OpenH2.Core.Scripting"))
                 );
 

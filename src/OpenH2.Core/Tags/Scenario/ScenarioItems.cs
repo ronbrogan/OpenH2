@@ -1,4 +1,5 @@
 ﻿using OpenH2.Core.Representations;
+using OpenH2.Core.Scripting;
 using OpenH2.Core.Tags.Layout;
 using OpenH2.Serialization.Layout;
 using System.Numerics;
@@ -36,7 +37,7 @@ namespace OpenH2.Core.Tags.Scenario
         }
 
         [FixedLength(40)]
-        public class WeaponDefinition
+        public class WeaponDefinition : Entity
         {
             [PrimitiveValue(4)]
             public TagRef<WeaponTag> WeaponId { get; set; }

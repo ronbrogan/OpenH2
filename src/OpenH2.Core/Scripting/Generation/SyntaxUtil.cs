@@ -36,8 +36,8 @@ namespace OpenH2.Core.Scripting.Generation
                 ScriptDataType.AIOrders => ParseTypeName(nameof(ScenarioTag) + "." + nameof(ScenarioTag.AiOrderDefinition)),
                 ScriptDataType.Equipment => ParseTypeName(nameof(ScenarioTag) + "." + nameof(ScenarioTag.StartingProfileDefinition)),
                 ScriptDataType.Weapon => ParseTypeName(nameof(ScenarioTag) + "." + nameof(ScenarioTag.WeaponDefinition)),
-                ScriptDataType.Vehicle => ParseTypeName(nameof(ScenarioTag) + "." + nameof(ScenarioTag.VehicleDefinition)),
-                ScriptDataType.Scenery => ParseTypeName(nameof(ScenarioTag) + "." + nameof(ScenarioTag.SceneryDefinition)),
+                ScriptDataType.Vehicle => ParseTypeName(nameof(ScenarioTag) + "." + nameof(ScenarioTag.VehicleInstance)),
+                ScriptDataType.Scenery => ParseTypeName(nameof(ScenarioTag) + "." + nameof(ScenarioTag.SceneryInstance)),
 
                 _ => Enum.IsDefined(typeof(ScriptDataType), dataType)
                     ? ParseTypeName(dataType.ToString())
@@ -101,14 +101,9 @@ namespace OpenH2.Core.Scripting.Generation
             // BUGBUG: identifiers that only differ on separator characters would collide after this
             name = IdentifierInvalidChars.Replace(name, "_");
 
-            if (char.IsDigit(name[0]))
+            if (char.IsDigit(name[0]) || Array.IndexOf(_keywords, name) >= 0)
             {
                 name = "_" + name;
-            }
-
-            if(Array.IndexOf(_keywords, name) >= 0)
-            {
-                //name = "@" + name;
             }
 
             return name;

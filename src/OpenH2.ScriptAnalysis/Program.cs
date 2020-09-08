@@ -1,6 +1,4 @@
 ﻿using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CSharp;
-using Microsoft.CodeAnalysis.CSharp.Syntax;
 using OpenH2.Core.Extensions;
 using OpenH2.Core.Factories;
 using OpenH2.Core.Scripting;
@@ -13,28 +11,22 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
-using static Microsoft.CodeAnalysis.CSharp.SyntaxFactory;
 
 namespace OpenH2.ScriptAnalysis
 {
-    public class EngineMethodInfo
+    class Program
     {
-        public string Name { get; set; }
-        public ScriptDataType ReturnType { get; set; }
-        public List<ScriptDataType> ArgumentTypes { get; } = new List<ScriptDataType>();
-    }
-
-    partial class Program
-    {
-        public static List<EngineMethodInfo> engineMethodInfos = new List<EngineMethodInfo>();
-
         static void Main(string[] args)
         {
+            var outRoot = $@"D:\h2scratch\scripts";
+            Directory.CreateDirectory(outRoot);
+
+            var loader = new ScriptLoader(outRoot);
             var maps = Directory.GetFiles(@"D:\H2vMaps", "*.map");
 
             foreach(var map in maps)
             {
-                if (map.Contains("08b") == false)
+                if (map.Contains("0") == false)
                 {
                     continue;
                 }
@@ -43,127 +35,21 @@ namespace OpenH2.ScriptAnalysis
                 var scene = factory.FromFile(File.OpenRead(map));
 
                 var scnr = scene.GetLocalTagsOfType<ScenarioTag>().First();
+                loader.Load(scnr);
 
                 var scenarioParts = scnr.Name.Split('\\', StringSplitOptions.RemoveEmptyEntries)
                         .Select(p => p.Trim())
                         .ToArray();
 
-                var outRoot = $@"D:\h2scratch\scripts\{scenarioParts.Last()}";
-                Directory.CreateDirectory(outRoot);
-
-                var repo = new MemberNameRepository();
-
-                // Reserve class field and method names
-
-                for (var i = 0; i < scnr.ScriptVariables.Length; i++)
-                {
-                    var variable = scnr.ScriptVariables[i];
-                    var returnedName = repo.RegisterName(variable.Description, variable.DataType.ToString(), i);
-                }
-
-                for (var i = 0; i < scnr.ScriptMethods.Length; i++)
-                {
-                    var method = scnr.ScriptMethods[i];
-                    var returnedName = repo.RegisterName(method.Description, ScriptDataType.ScriptReference.ToString(), i);
-                }
-
-                var baseFields = typeof(ScenarioScriptBase).GetFields();
-
-                foreach(var field in baseFields)
-                {
-                    var found = SyntaxUtil.TryGetScriptTypeFromType(field.FieldType, out var t);
-
-                    Debug.Assert(found);
-
-                    repo.RegisterName(field.Name, t.ToString());
-                }
-
-                // Generate data properties
-
-                var dataGen = new ScriptCSharpGenerator(scnr, repo);
-
-                for (int i = 0; i < scnr.WellKnownItems.Length; i++)
-                {
-                    var externalRef = scnr.WellKnownItems[i];
-                    dataGen.AddPublicProperty(externalRef, i);
-                }
-
-                for (int i = 0; i < scnr.CameraPathTargets.Length; i++)
-                {
-                    var cam = scnr.CameraPathTargets[i];
-                    dataGen.AddPublicProperty(cam, i);
-                }
-
-                dataGen.AddSquadData(scnr);
-
-                for (int i = 0; i < scnr.AiSquadGroupDefinitions.Length; i++)
-                {
-                    var ai = scnr.AiSquadGroupDefinitions[i];
-                    dataGen.AddPublicProperty(ai, i);
-                }
-
-                for (int i = 0; i < scnr.AiOrderDefinitions.Length; i++)
-                {
-                    var order = scnr.AiOrderDefinitions[i];
-                    dataGen.AddPublicProperty(order, i);
-                }
-
-                for (int i = 0; i < scnr.LocationFlagDefinitions.Length; i++)
-                {
-                    var flag = scnr.LocationFlagDefinitions[i];
-                    dataGen.AddPublicProperty(flag, i);
-                }
-
-                for (int i = 0; i < scnr.CinematicTitleDefinitions.Length; i++)
-                {
-                    var title = scnr.CinematicTitleDefinitions[i];
-                    dataGen.AddPublicProperty(title, i);
-                }
-
-                for (int i = 0; i < scnr.TriggerVolumes.Length; i++)
-                {
-                    var tv = scnr.TriggerVolumes[i];
-                    dataGen.AddPublicProperty(tv, i);
-                }
-
-                for (int i = 0; i < scnr.StartingProfileDefinitions.Length; i++)
-                {
-                    var profile = scnr.StartingProfileDefinitions[i];
-                    dataGen.AddPublicProperty(profile, i);
-                }
-
-                for (int i = 0; i < scnr.DeviceGroupDefinitions.Length; i++)
-                {
-                    var group = scnr.DeviceGroupDefinitions[i];
-                    dataGen.AddPublicProperty(group, i);
-                }
-
-
-                var originAttr = Attribute(ParseName("OriginScenario"), AttributeArgumentList(SeparatedList(new[] {
-                    AttributeArgument(LiteralExpression(SyntaxKind.StringLiteralExpression, Literal(scnr.Name)))
-                })));
-
-                var classGen = new ScriptCSharpGenerator(scnr, repo, classAttributes: new[] { originAttr });
-
-                foreach (var variable in scnr.ScriptVariables)
-                {
-                    classGen.AddGlobalVariable(variable);
-                }
+                var debugRoot = $@"{outRoot}\{scenarioParts.Last()}";
+                Directory.CreateDirectory(debugRoot);
 
                 foreach (var script in scnr.ScriptMethods)
                 {
                     var text = GetScriptTree(scnr, script);
                     var debugTree = ScriptTreeNode.ToString(text);
-                    File.WriteAllText(Path.Combine(outRoot, script.Description + ".tree"), debugTree);
-
-                    classGen.AddMethod(script);
+                    File.WriteAllText(Path.Combine(debugRoot, script.Description + ".tree"), debugTree);
                 }
-
-                var csharp = classGen.Generate();
-                File.WriteAllText(outRoot + $"\\{scenarioParts.Last()}.cs", csharp.ToString());
-
-                var dataCsharp = dataGen.Generate();
-                File.WriteAllText(outRoot + $"\\{scenarioParts.Last()}.Data.cs", dataCsharp.ToString());
             }
         }
 
@@ -171,7 +57,6 @@ namespace OpenH2.ScriptAnalysis
         private static ScriptTreeNode GetScriptTree(ScenarioTag tag, ScenarioTag.ScriptMethodDefinition method)
         {
             var strings = (Span<byte>)tag.ScriptStrings;
-            
 
             var root = new ScriptTreeNode()
             {
@@ -279,80 +164,6 @@ namespace OpenH2.ScriptAnalysis
             x = Regex.Replace(x, "([A-Z])([A-Z]+)($|[A-Z])",
                 m => m.Groups[1].Value + m.Groups[2].Value.ToLower() + m.Groups[3].Value);
             return char.ToLower(x[0]) + x.Substring(1);
-        }
-
-        private static SyntaxTree GenerateScriptEngineClass()
-        {
-            var classMethods = new List<MemberDeclarationSyntax>();
-
-            var camelCase = new Regex("^([A-Z])", RegexOptions.Compiled);
-
-            foreach (var method in engineMethodInfos.OrderBy(i => i.Name))
-            {
-                var paramList = method.ArgumentTypes.Select((a, i) => Parameter(Identifier(CamelCase(a.ToString())))
-                    .WithType(SyntaxUtil.ScriptTypeSyntax(a)));
-
-                classMethods.Add(MethodDeclaration(SyntaxUtil.ScriptTypeSyntax(method.ReturnType), method.Name)
-                    .WithModifiers(new SyntaxTokenList(Token(SyntaxKind.PublicKeyword), Token(SyntaxKind.StaticKeyword)))
-                    .WithParameterList(ParameterList(SeparatedList<ParameterSyntax>(paramList)))
-                    .WithBody(Block()));
-            }
-
-            var classDecl = ClassDeclaration("ScriptEngine")
-                .WithModifiers(SyntaxTokenList.Create(Token(SyntaxKind.PublicKeyword)))
-                .WithMembers(new SyntaxList<MemberDeclarationSyntax>(classMethods));
-
-            var ns = NamespaceDeclaration(ParseName("OpenH2.Engine.Scripting"))
-                .WithMembers(List<MemberDeclarationSyntax>().Add(classDecl))
-                .AddUsings(UsingDirective(ParseName("OpenH2.Core.Scripting")));
-
-            return CSharpSyntaxTree.Create(ns.NormalizeWhitespace());
-        }
-
-        private static void DedupeMethodInfos()
-        {
-            var allInfos = new Queue<EngineMethodInfo>(engineMethodInfos);
-            var prunedMethodInfos = new List<EngineMethodInfo>();
-            // Prune method definitions
-            while (allInfos.TryDequeue(out var candidate))
-            {
-                var hasDuplicate = false;
-
-                foreach (var existing in prunedMethodInfos)
-                {
-                    var isExactMatch = true;
-
-                    if (existing.Name != candidate.Name) isExactMatch = false;
-                    if (existing.ReturnType != candidate.ReturnType) isExactMatch = false;
-
-                    if (existing.ArgumentTypes.Count == candidate.ArgumentTypes.Count)
-                    {
-                        for (var i = 0; i < existing.ArgumentTypes.Count; i++)
-                        {
-                            var l = existing.ArgumentTypes[i];
-                            var r = candidate.ArgumentTypes[i];
-
-                            if (l != r) isExactMatch = false;
-                        }
-                    }
-                    else
-                    {
-                        isExactMatch = false;
-                    }
-
-                    if (isExactMatch)
-                    {
-                        hasDuplicate = true;
-                    }
-                }
-
-                if(hasDuplicate == false)
-                {
-                    prunedMethodInfos.Add(candidate);
-                }
-            }
-
-            engineMethodInfos = prunedMethodInfos;
         }
     }
 

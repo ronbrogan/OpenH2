@@ -91,62 +91,9 @@ namespace OpenH2.Core.Scripting.Generation
 
             var dataGen = new ScriptCSharpGenerator(scnr, repo);
 
-            for (int i = 0; i < scnr.WellKnownItems.Length; i++)
-            {
-                var externalRef = scnr.WellKnownItems[i];
-                dataGen.AddPublicProperty(externalRef, i);
-            }
+            dataGen.AddProperties(scnr);
 
-            for (int i = 0; i < scnr.CameraPathTargets.Length; i++)
-            {
-                var cam = scnr.CameraPathTargets[i];
-                dataGen.AddPublicProperty(cam, i);
-            }
-
-            dataGen.AddSquadData(scnr);
-
-            for (int i = 0; i < scnr.AiSquadGroupDefinitions.Length; i++)
-            {
-                var ai = scnr.AiSquadGroupDefinitions[i];
-                dataGen.AddPublicProperty(ai, i);
-            }
-
-            for (int i = 0; i < scnr.AiOrderDefinitions.Length; i++)
-            {
-                var order = scnr.AiOrderDefinitions[i];
-                dataGen.AddPublicProperty(order, i);
-            }
-
-            for (int i = 0; i < scnr.LocationFlagDefinitions.Length; i++)
-            {
-                var flag = scnr.LocationFlagDefinitions[i];
-                dataGen.AddPublicProperty(flag, i);
-            }
-
-            for (int i = 0; i < scnr.CinematicTitleDefinitions.Length; i++)
-            {
-                var title = scnr.CinematicTitleDefinitions[i];
-                dataGen.AddPublicProperty(title, i);
-            }
-
-            for (int i = 0; i < scnr.TriggerVolumes.Length; i++)
-            {
-                var tv = scnr.TriggerVolumes[i];
-                dataGen.AddPublicProperty(tv, i);
-            }
-
-            for (int i = 0; i < scnr.StartingProfileDefinitions.Length; i++)
-            {
-                var profile = scnr.StartingProfileDefinitions[i];
-                dataGen.AddPublicProperty(profile, i);
-            }
-
-            for (int i = 0; i < scnr.DeviceGroupDefinitions.Length; i++)
-            {
-                var group = scnr.DeviceGroupDefinitions[i];
-                dataGen.AddPublicProperty(group, i);
-            }
-
+            dataGen.CreateDataInitializer(scnr);
 
             var originAttr = SyntaxFactory.Attribute(
                 SyntaxFactory.ParseName("OriginScenario"), 

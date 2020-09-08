@@ -1,6 +1,8 @@
-﻿namespace OpenH2.Core.Scripting
+﻿using OpenH2.Core.Tags.Scenario;
+
+namespace OpenH2.Core.Scripting
 {
-    public class ScenarioScriptBase
+    public abstract class ScenarioScriptBase
     {
         protected IScriptEngine Engine;
         public Team player;
@@ -26,7 +28,9 @@
         public short ai_movement_patrol;
         public short ai_movement_flee;
         public DamageState destroyed;
-        public NavigationPoint @default;
+        public NavigationPoint _default;
         public NavigationPoint default_red;
+
+        public abstract void InitializeData(ScenarioTag scenario);
     }
 }

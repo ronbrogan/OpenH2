@@ -1,4 +1,5 @@
 ﻿using OpenH2.Core.Representations;
+using OpenH2.Core.Scripting;
 using OpenH2.Core.Tags.Layout;
 using OpenH2.Serialization.Layout;
 using System.Numerics;
@@ -26,7 +27,7 @@ namespace OpenH2.Core.Tags.Scenario
         }
 
         [FixedLength(92)]
-        public class SceneryInstance
+        public class SceneryInstance : Entity
         {
             [PrimitiveValue(0)]
             public ushort SceneryDefinitionIndex { get; set; }

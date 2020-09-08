@@ -8,7 +8,6 @@
   <ItemGroup>
     <ProjectReference Include="..\OpenH2.Core\OpenH2.Core.csproj" />
     <ProjectReference Include="..\OpenH2.Engine\OpenH2.Engine.csproj" />
-    <PackageReference Include="TextCopy" Version="4.2.0" />
   </ItemGroup>
 
 </Project>

@@ -2,6 +2,7 @@ namespace OpenH2.Engine.Scripting
 {
     using OpenH2.Core.Scripting;
     using OpenH2.Core.Scripting.Execution;
+    using OpenH2.Core.Tags.Scenario;
     using OpenH2.Foundation.Logging;
     using System;
     using System.Threading.Tasks;
@@ -22,7 +23,7 @@ namespace OpenH2.Engine.Scripting
         }
 
         /// <summary>activates a nav point type <string> attached to a team anchored to a flag with a vertical offset <real>. If the player is not local to the machine, this will fail</summary>
-        public void activate_team_nav_point_flag(NavigationPoint navpoint, Team team, LocationFlag cutscene_flag, float real)
+        public void activate_team_nav_point_flag(NavigationPoint navpoint, Team team, ScenarioTag.LocationFlagDefinition cutscene_flag, float real)
         {
         }
 
@@ -263,7 +264,7 @@ namespace OpenH2.Engine.Scripting
         }
 
         /// <summary>Takes the squad or squad group (arg1) and gives it the order (arg3) in zone (arg2). Use the zone_name/order_name format</summary>
-        public void ai_set_orders(AI ai, AIOrders ai_orders)
+        public void ai_set_orders(AI ai, ScenarioTag.AiOrderDefinition ai_orders)
         {
         }
 
@@ -328,24 +329,24 @@ namespace OpenH2.Engine.Scripting
 
 
         /// <summary>Returns the vehicle that the given actor is in.</summary>
-        public Vehicle ai_vehicle_get(AI ai)
+        public ScenarioTag.VehicleInstance ai_vehicle_get(AI ai)
         {
-            return default(Vehicle);
+            return default(ScenarioTag.VehicleInstance);
         }
 
         /// <summary>Returns the vehicle that was spawned at the given starting location.</summary>
-        public Vehicle ai_vehicle_get_from_starting_location(AI ai)
+        public ScenarioTag.VehicleInstance ai_vehicle_get_from_starting_location(AI ai)
         {
-            return default(Vehicle);
+            return default(ScenarioTag.VehicleInstance);
         }
 
         /// <summary>Reserves the given vehicle (so that AI may not enter it</summary>
-        public void ai_vehicle_reserve(Vehicle vehicle, bool boolean)
+        public void ai_vehicle_reserve(ScenarioTag.VehicleInstance vehicle, bool boolean)
         {
         }
 
         /// <summary>Reserves the given seat on the given vehicle (so that AI may not enter it</summary>
-        public void ai_vehicle_reserve_seat(Vehicle vehicle, string /*id*/ string_id, bool boolean)
+        public void ai_vehicle_reserve_seat(ScenarioTag.VehicleInstance vehicle, string /*id*/ string_id, bool boolean)
         {
         }
 
@@ -393,22 +394,22 @@ namespace OpenH2.Engine.Scripting
         }
 
         /// <summary>predict resources at a frame in camera animation.</summary>
-        public void camera_predict_resources_at_frame(Animation animation, string /*id*/ emotion, Unit unit, LocationFlag locationFlag, int intValue)
+        public void camera_predict_resources_at_frame(Animation animation, string /*id*/ emotion, Unit unit, ScenarioTag.LocationFlagDefinition locationFlag, int intValue)
         {
         }
 
         /// <summary>predict resources given a camera point</summary>
-        public void camera_predict_resources_at_point(CameraPathTarget cutscene_camera_point)
+        public void camera_predict_resources_at_point(ScenarioTag.CameraPathTarget cutscene_camera_point)
         {
         }
 
         /// <summary>moves the camera to the specified camera point over the specified number of ticks.</summary>
-        public void camera_set(CameraPathTarget cutscene_camera_point, short value)
+        public void camera_set(ScenarioTag.CameraPathTarget cutscene_camera_point, short value)
         {
         }
 
         /// <summary>begins a prerecorded camera animation synchronized to unit relative to cutscene flag.</summary>
-        public void camera_set_animation_relative(Animation animation, string /*id*/ id, Unit unit, LocationFlag locationFlag)
+        public void camera_set_animation_relative(Animation animation, string /*id*/ id, Unit unit, ScenarioTag.LocationFlagDefinition locationFlag)
         {
         }
 
@@ -499,7 +500,7 @@ namespace OpenH2.Engine.Scripting
         }
 
         /// <summary>activates the chapter title</summary>
-        public void cinematic_set_title(CinematicTitle cutscene_title)
+        public void cinematic_set_title(ScenarioTag.CinematicTitleDefinition cutscene_title)
         {
         }
 
@@ -727,7 +728,7 @@ namespace OpenH2.Engine.Scripting
         }
 
         /// <summary>Actor gets in the appropriate vehicle</summary>
-        public void cs_go_to_vehicle(Vehicle vehicle)
+        public void cs_go_to_vehicle(ScenarioTag.VehicleInstance vehicle)
         {
         }
 
@@ -918,7 +919,7 @@ namespace OpenH2.Engine.Scripting
         }
 
         /// <summary>causes the specified damage at the specified flag.</summary>
-        public void damage_new(Damage damage, LocationFlag cutscene_flag)
+        public void damage_new(Damage damage, ScenarioTag.LocationFlagDefinition cutscene_flag)
         {
         }
 
@@ -938,7 +939,7 @@ namespace OpenH2.Engine.Scripting
         }
 
         /// <summary>deactivates a nav point type attached to a team anchored to a flag</summary>
-        public void deactivate_team_nav_point_flag(Team team, LocationFlag cutscene_flag)
+        public void deactivate_team_nav_point_flag(Team team, ScenarioTag.LocationFlagDefinition cutscene_flag)
         {
         }
 
@@ -979,23 +980,23 @@ namespace OpenH2.Engine.Scripting
         }
 
         /// <summary>TRUE allows a device to change states only once</summary>
-        public void device_group_change_only_once_more_set(DeviceGroup device_group, bool boolean)
+        public void device_group_change_only_once_more_set(ScenarioTag.DeviceGroupDefinition device_group, bool boolean)
         {
         }
 
         /// <summary>returns the desired value of the specified device group.</summary>
-        public float device_group_get(DeviceGroup device_group)
+        public float device_group_get(ScenarioTag.DeviceGroupDefinition device_group)
         {
             return default(float);
         }
 
         /// <summary>changes the desired value of the specified device group.</summary>
-        public void device_group_set(Device device, DeviceGroup device_group, float real)
+        public void device_group_set(Device device, ScenarioTag.DeviceGroupDefinition device_group, float real)
         {
         }
 
         /// <summary>instantaneously changes the value of the specified device group.</summary>
-        public void device_group_set_immediate(DeviceGroup device_group, float real)
+        public void device_group_set_immediate(ScenarioTag.DeviceGroupDefinition device_group, float real)
         {
         }
 
@@ -1049,7 +1050,7 @@ namespace OpenH2.Engine.Scripting
         }
 
         /// <summary>starts the specified effect at the specified flag.</summary>
-        public void effect_new(Effect effect, LocationFlag cutscene_flag)
+        public void effect_new(Effect effect, ScenarioTag.LocationFlagDefinition cutscene_flag)
         {
         }
 
@@ -1226,12 +1227,12 @@ namespace OpenH2.Engine.Scripting
         }
 
         /// <summary>disables a kill volume</summary>
-        public void kill_volume_disable(Trigger trigger_volume)
+        public void kill_volume_disable(ScenarioTag.TriggerVolume trigger_volume)
         {
         }
 
         /// <summary>enables a kill volume</summary>
-        public void kill_volume_enable(Trigger trigger_volume)
+        public void kill_volume_enable(ScenarioTag.TriggerVolume trigger_volume)
         {
         }
 
@@ -1575,7 +1576,7 @@ namespace OpenH2.Engine.Scripting
         }
 
         /// <summary>moves the specified object to the specified flag.</summary>
-        public void object_teleport(Entity entity, LocationFlag cutscene_flag)
+        public void object_teleport(Entity entity, ScenarioTag.LocationFlagDefinition cutscene_flag)
         {
         }
 
@@ -1635,13 +1636,13 @@ namespace OpenH2.Engine.Scripting
         }
 
         /// <summary>returns true if any of the specified units are looking within the specified number of degrees of the flag.</summary>
-        public bool objects_can_see_flag(Entity entity, LocationFlag locationFlag, float floatValue)
+        public bool objects_can_see_flag(Entity entity, ScenarioTag.LocationFlagDefinition locationFlag, float floatValue)
         {
             return default(bool);
         }
 
         /// <summary>returns true if any of the specified units are looking within the specified number of degrees of the flag.</summary>
-        public bool objects_can_see_flag(ObjectList list, LocationFlag locationFlag, float floatValue)
+        public bool objects_can_see_flag(ObjectList list, ScenarioTag.LocationFlagDefinition locationFlag, float floatValue)
         {
             return default(bool);
         }
@@ -1680,13 +1681,13 @@ namespace OpenH2.Engine.Scripting
         }
 
         /// <summary>returns minimum distance from any of the specified objects to the specified flag. (returns -1 if there are no objects, or no flag, to check)</summary>
-        public float objects_distance_to_flag(ObjectList list, LocationFlag locationFlag)
+        public float objects_distance_to_flag(ObjectList list, ScenarioTag.LocationFlagDefinition locationFlag)
         {
             return default(float);
         }
 
         /// <summary>returns minimum distance from any of the specified objects to the specified flag. (returns -1 if there are no objects, or no flag, to check)</summary>
-        public float objects_distance_to_flag(Entity entity, LocationFlag locationFlag)
+        public float objects_distance_to_flag(Entity entity, ScenarioTag.LocationFlagDefinition locationFlag)
         {
             return default(float);
         }
@@ -1889,7 +1890,7 @@ namespace OpenH2.Engine.Scripting
         /// <summary>returns a list of the players</summary>
         public ObjectList players()
         {
-            return new ObjectList() { Objects = new[] { new Entity() } };
+            return new ObjectList() { Objects = new Entity[] { null } };
         }
 
         /// <summary>predict a geometry block.</summary>
@@ -1957,22 +1958,22 @@ namespace OpenH2.Engine.Scripting
         }
 
         /// <summary>starts a custom looping animation playing on a piece of scenery</summary>
-        public void scenery_animation_start_loop(Scenery scenery, Animation animation, string /*id*/ emotion)
+        public void scenery_animation_start_loop(ScenarioTag.SceneryInstance scenery, Animation animation, string /*id*/ emotion)
         {
         }
 
         /// <summary>starts a custom animation playing on a piece of scenery relative to a parent object</summary>
-        public void scenery_animation_start_relative(Scenery scenery, string /*id*/ emotion, Entity entity)
+        public void scenery_animation_start_relative(ScenarioTag.SceneryInstance scenery, string /*id*/ emotion, Entity entity)
         {
         }
 
         /// <summary>starts a custom animation playing on a piece of scenery relative to a parent object</summary>
-        public void scenery_animation_start_relative(Scenery scenery, Animation animation, string /*id*/ emotion, Entity entity)
+        public void scenery_animation_start_relative(ScenarioTag.SceneryInstance scenery, Animation animation, string /*id*/ emotion, Entity entity)
         {
         }
 
         /// <summary>returns the number of ticks remaining in a custom animation (or zero, if the animation is over).</summary>
-        public short scenery_get_animation_time(Scenery scenery)
+        public short scenery_get_animation_time(ScenarioTag.SceneryInstance scenery)
         {
             return default(short);
         }
@@ -2146,7 +2147,7 @@ namespace OpenH2.Engine.Scripting
         }
 
         /// <summary>adds/resets the unit's health, shield, and inventory (weapons and grenades) to the named profile. resets if third parameter is true, adds if false. weapons will be marked as garbage if fourth parameter is true (for respawning equipment).</summary>
-        public void unit_add_equipment(Unit unit, Equipment starting_profile, bool reset, bool isGarbage)
+        public void unit_add_equipment(Unit unit, ScenarioTag.StartingProfileDefinition starting_profile, bool reset, bool isGarbage)
         {
         }
 
@@ -2185,7 +2186,7 @@ namespace OpenH2.Engine.Scripting
         }
 
         /// <summary>returns TRUE if the <unit> has <object> as a weapon, FALSE otherwise</summary>
-        public bool unit_has_weapon(Unit unit, Weapon weapon)
+        public bool unit_has_weapon(Unit unit, ScenarioTag.WeaponDefinition weapon)
         {
             return default(bool);
         }
@@ -2310,19 +2311,19 @@ namespace OpenH2.Engine.Scripting
         }
 
         /// <summary>tests whether the named seat has a specified unit in it (use "" to test all seats for this unit)</summary>
-        public bool vehicle_test_seat(Vehicle vehicle, string seat, Unit unit)
+        public bool vehicle_test_seat(ScenarioTag.VehicleInstance vehicle, string seat, Unit unit)
         {
             return default(bool);
         }
 
         /// <summary>tests whether the named seat has an object in the object list (use "" to test all seats for any unit in the list)</summary>
-        public bool vehicle_test_seat_list(Vehicle vehicle, string /*id*/ seat, ObjectList subjects)
+        public bool vehicle_test_seat_list(ScenarioTag.VehicleInstance vehicle, string /*id*/ seat, ObjectList subjects)
         {
             return default(bool);
         }
 
         /// <summary>tests whether the named seat has an object in the object list (use "" to test all seats for any unit in the list)</summary>
-        public bool vehicle_test_seat_list(Vehicle vehicle, string /*id*/ seat, Entity subject)
+        public bool vehicle_test_seat_list(ScenarioTag.VehicleInstance vehicle, string /*id*/ seat, Entity subject)
         {
             return default(bool);
         }
@@ -2333,54 +2334,54 @@ namespace OpenH2.Engine.Scripting
         }
 
         /// <summary>returns list of objects in volume or (max 128).</summary>
-        public ObjectList volume_return_objects(Trigger trigger_volume)
+        public ObjectList volume_return_objects(ScenarioTag.TriggerVolume trigger_volume)
         {
             return default(ObjectList);
         }
 
         /// <summary>returns list of objects in volume or (max 128).</summary>
-        public ObjectList volume_return_objects_by_type(Trigger trigger_volume, int value)
+        public ObjectList volume_return_objects_by_type(ScenarioTag.TriggerVolume trigger_volume, int value)
         {
             return default(ObjectList);
         }
 
         /// <summary>moves all players outside a specified trigger volume to a specified flag.</summary>
-        public void volume_teleport_players_not_inside(Trigger trigger_volume, LocationFlag cutscene_flag)
+        public void volume_teleport_players_not_inside(ScenarioTag.TriggerVolume trigger_volume, ScenarioTag.LocationFlagDefinition cutscene_flag)
         {
         }
 
         /// <summary>returns true if the specified object is within the specified volume.</summary>
-        public bool volume_test_object(Trigger trigger)
+        public bool volume_test_object(ScenarioTag.TriggerVolume trigger)
         {
             return default(bool);
         }
 
         /// <summary>returns true if the specified object is within the specified volume.</summary>
-        public bool volume_test_object(Trigger trigger_volume, Entity entity)
+        public bool volume_test_object(ScenarioTag.TriggerVolume trigger_volume, Entity entity)
         {
             return default(bool);
         }
 
         /// <summary>returns true if any of the specified objects are within the specified volume. trigger volume must have been postprocessed</summary>
-        public bool volume_test_objects(Trigger trigger, Entity entity)
+        public bool volume_test_objects(ScenarioTag.TriggerVolume trigger, Entity entity)
         {
             return default(bool);
         }
 
         /// <summary>returns true if any of the specified objects are within the specified volume. trigger volume must have been postprocessed</summary>
-        public bool volume_test_objects(Trigger trigger_volume, ObjectList object_list)
+        public bool volume_test_objects(ScenarioTag.TriggerVolume trigger_volume, ObjectList object_list)
         {
             return default(bool);
         }
 
         /// <summary>returns true if any (rb: all?) of the specified objects are within the specified volume. trigger volume must have been postprocessed</summary>
-        public bool volume_test_objects_all(Trigger trigger, ObjectList object_list)
+        public bool volume_test_objects_all(ScenarioTag.TriggerVolume trigger, ObjectList object_list)
         {
             return default(bool);
         }
 
         /// <summary>returns true if any (rb: all?) of the specified objects are within the specified volume. trigger volume must have been postprocessed</summary>
-        public bool volume_test_objects_all(Trigger trigger, Entity entity)
+        public bool volume_test_objects_all(ScenarioTag.TriggerVolume trigger, Entity entity)
         {
             return default(bool);
         }
