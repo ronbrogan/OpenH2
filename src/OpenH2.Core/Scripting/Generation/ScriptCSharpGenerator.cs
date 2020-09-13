@@ -183,21 +183,6 @@ namespace OpenH2.Core.Scripting.Generation
                 // TODO: add well known items
             }
 
-            // TODO squad data
-            //AddSquadData(scnr);
-
-            for (int i = 0; i < scnr.AiSquadGroupDefinitions.Length; i++)
-            {
-                var ai = scnr.AiSquadGroupDefinitions[i];
-                statements.Add(CreateAssignment(nameof(scnr.AiSquadGroupDefinitions), ScriptDataType.AI, ai.Description, i));
-            }
-
-            for (int i = 0; i < scnr.AiOrderDefinitions.Length; i++)
-            {
-                var order = scnr.AiOrderDefinitions[i];
-                statements.Add(CreateAssignment(nameof(scnr.AiOrderDefinitions), ScriptDataType.AIOrders, order.Description, i));
-            }
-
             for (int i = 0; i < scnr.CameraPathTargets.Length; i++)
             {
                 var cam = scnr.CameraPathTargets[i];
@@ -234,6 +219,20 @@ namespace OpenH2.Core.Scripting.Generation
                 statements.Add(CreateAssignment(nameof(scnr.DeviceGroupDefinitions), ScriptDataType.DeviceGroup, group.Description, i));
             }
 
+            for (int i = 0; i < scnr.AiSquadGroupDefinitions.Length; i++)
+            {
+                var ai = scnr.AiSquadGroupDefinitions[i];
+                statements.Add(CreateAssignment(nameof(scnr.AiSquadGroupDefinitions), ScriptDataType.AI, ai.Description, i));
+            }
+
+            for (int i = 0; i < scnr.AiOrderDefinitions.Length; i++)
+            {
+                var order = scnr.AiOrderDefinitions[i];
+                statements.Add(CreateAssignment(nameof(scnr.AiOrderDefinitions), ScriptDataType.AIOrders, order.Description, i));
+            }
+
+            AddSquadInitialization(statements, scnr);
+
             this.methods.Add(
                 MethodDeclaration(
                     PredefinedType(Token(SyntaxKind.VoidKeyword)),
@@ -241,6 +240,72 @@ namespace OpenH2.Core.Scripting.Generation
                 .AddParameterListParameters(Parameter(scenarioParam).WithType(ParseTypeName(nameof(ScenarioTag))))
                 .AddModifiers(Token(SyntaxKind.PublicKeyword), Token(SyntaxKind.OverrideKeyword))
                 .WithBody(Block(statements)));
+        }
+
+        public void AddSquadInitialization(List<StatementSyntax> statements, ScenarioTag tag)
+        {
+            for (var i = 0; i < tag.AiSquadDefinitions.Length; i++)
+            {
+                var squad = tag.AiSquadDefinitions[i];
+
+                if(nameRepo.TryGetName(squad.Description, ScriptDataType.AI.ToString(), i, out var squadPropName) == false)
+                {
+                    return;
+                }
+
+                var initializerExpressions = new List<ExpressionSyntax>();
+
+                var nestedRepo = nameRepo.NestedRepos[squadPropName];
+
+                var m = 0;
+                foreach (var ai in squad.StartingLocations)
+                {
+                    if(nestedRepo.TryGetName(ai.Description, ScriptDataType.AI.ToString(), m, out var propName) == false)
+                    {
+                        continue;
+                    }
+
+                    var access = ElementAccessExpression(
+                        MemberAccessExpression(SyntaxKind.SimpleMemberAccessExpression,
+                            ElementAccessExpression(
+                                MemberAccessExpression(SyntaxKind.SimpleMemberAccessExpression,
+                                    IdentifierName("scenarioTag"),
+                                    IdentifierName(nameof(tag.AiSquadDefinitions))))
+                            .AddArgumentListArguments(Argument(SyntaxUtil.LiteralExpression(i))),
+                            IdentifierName(nameof(squad.StartingLocations))))
+                        .AddArgumentListArguments(Argument(SyntaxUtil.LiteralExpression(m)));
+
+                    var exp = AssignmentExpression(SyntaxKind.SimpleAssignmentExpression,
+                        IdentifierName(propName),
+                        access);
+
+                    initializerExpressions.Add(exp);
+                    m++;
+                }
+
+                var squadAccess = ElementAccessExpression(
+                                MemberAccessExpression(SyntaxKind.SimpleMemberAccessExpression,
+                                    IdentifierName("scenarioTag"),
+                                    IdentifierName(nameof(tag.AiSquadDefinitions))))
+                            .AddArgumentListArguments(Argument(SyntaxUtil.LiteralExpression(i)));
+
+                var squadExp = AssignmentExpression(SyntaxKind.SimpleAssignmentExpression,
+                    IdentifierName("Squad"),
+                    squadAccess);
+
+                initializerExpressions.Add(squadExp);
+
+                var squadTypeName = "Squad_" + squadPropName;
+
+                var squadItem = ObjectCreationExpression(ParseTypeName(squadTypeName),
+                    ArgumentList(),
+                    InitializerExpression(SyntaxKind.ObjectInitializerExpression,
+                    SeparatedList(initializerExpressions)));
+                var squadItemAssignment = AssignmentExpression(SyntaxKind.SimpleAssignmentExpression,
+                    IdentifierName(squadPropName),
+                    squadItem);
+                statements.Add(ExpressionStatement(squadItemAssignment));
+            }
         }
 
         public void AddPublicProperty(ScenarioTag.AiSquadGroupDefinition ai, int itemIndex)

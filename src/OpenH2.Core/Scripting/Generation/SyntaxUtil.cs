@@ -576,6 +576,33 @@ namespace OpenH2.Core.Scripting.Generation
 
                 return base.VisitParenthesizedLambdaExpression(newNode);
             }
+
+            public override SyntaxNode VisitInitializerExpression(InitializerExpressionSyntax node)
+            {
+                var newlined = new List<ExpressionSyntax>();
+
+                var leading = TriviaList(CarriageReturnLineFeed)
+                    .AddRange(node.GetLeadingTrivia())
+                    .Add(SyntaxFactory.Space)
+                    .Add(SyntaxFactory.Space)
+                    .Add(SyntaxFactory.Space)
+                    .Add(SyntaxFactory.Space);
+
+                ExpressionSyntax last = null;
+                foreach(var exp in node.Expressions)
+                {
+                    last = exp.WithLeadingTrivia(leading);
+                    newlined.Add(last);
+                }
+
+                if(last != null)
+                {
+                    newlined[^1] = last.WithTrailingTrivia(TriviaList(CarriageReturnLineFeed)
+                    .AddRange(node.GetLeadingTrivia()));
+                }
+
+                return base.VisitInitializerExpression(node.WithExpressions(SeparatedList(newlined)));
+            }
         }
 
         private static readonly string[] _keywords = new[]

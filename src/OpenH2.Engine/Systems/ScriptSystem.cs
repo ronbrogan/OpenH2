@@ -39,7 +39,7 @@ namespace OpenH2.Engine.Systems
             this.engine = new ScriptEngine(this.executor);
 
             this.scripts = (ScenarioScriptBase)Activator.CreateInstance(scriptType, new object[] { this.engine });
-
+            scripts.InitializeData(scenario);
             this.executor.Setup(scripts);
             this.stopwatch = new Stopwatch();
         }

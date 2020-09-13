@@ -34,7 +34,7 @@ namespace OpenH2.Core.Tags.Scenario
             public StartingLocation[] StartingLocations { get; set; }
 
             [FixedLength(100)]
-            public class StartingLocation
+            public class StartingLocation : AI
             {
                 [InternedString(0)]
                 public string Description { get; set; }
