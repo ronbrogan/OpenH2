@@ -185,7 +185,7 @@ namespace OpenH2.Core.Scripting.Generation
                 {
                     ScenarioTag.WellKnownVarType.Biped => nameof(scnr.BipedInstances),
                     ScenarioTag.WellKnownVarType.Vehicle => nameof(scnr.VehicleInstances),
-                    ScenarioTag.WellKnownVarType.Weapon => nameof(scnr.WeaponDefinitions),
+                    ScenarioTag.WellKnownVarType.Weapon => nameof(scnr.WeaponPlacements),
                     ScenarioTag.WellKnownVarType.Equipment => nameof(scnr.EquipmentPlacements),
                     ScenarioTag.WellKnownVarType.Scenery => nameof(scnr.SceneryInstances),
                     ScenarioTag.WellKnownVarType.Machinery => nameof(scnr.MachineryInstances),

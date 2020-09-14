@@ -50,7 +50,7 @@ namespace OpenH2.Core.Scripting.Generation
             {
                 ScenarioTag.WellKnownVarType.Biped => $"{nameof(ScenarioTag)}.{nameof(ScenarioTag.BipedInstance)}",
                 ScenarioTag.WellKnownVarType.Vehicle => ScriptDataType.Vehicle.ToString(),
-                ScenarioTag.WellKnownVarType.Weapon => $"{nameof(ScenarioTag)}.{nameof(ScenarioTag.WeaponDefinition)}",
+                ScenarioTag.WellKnownVarType.Weapon => $"{nameof(ScenarioTag)}.{nameof(ScenarioTag.WeaponPlacement)}",
                 ScenarioTag.WellKnownVarType.Equipment => $"{nameof(ScenarioTag)}.{nameof(ScenarioTag.EquipmentPlacement)}",
                 ScenarioTag.WellKnownVarType.Scenery => $"{nameof(ScenarioTag)}.{nameof(ScenarioTag.SceneryInstance)}",
                 ScenarioTag.WellKnownVarType.Machinery => $"{nameof(ScenarioTag)}.{nameof(ScenarioTag.MachineryInstance)}",

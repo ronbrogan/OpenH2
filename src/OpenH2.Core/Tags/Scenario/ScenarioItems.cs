@@ -22,9 +22,8 @@ namespace OpenH2.Core.Tags.Scenario
             public TagRef<EquipmentTag> Equipment { get; set; }
         }
 
-        // TODO: placement test
         [FixedLength(84)]
-        public class WeaponPlacement
+        public class WeaponPlacement : Entity
         {
             [PrimitiveValue(0)]
             public ushort Index { get; set; }
@@ -37,7 +36,7 @@ namespace OpenH2.Core.Tags.Scenario
         }
 
         [FixedLength(40)]
-        public class WeaponDefinition : Entity
+        public class WeaponDefinition
         {
             [PrimitiveValue(4)]
             public TagRef<WeaponTag> WeaponId { get; set; }
