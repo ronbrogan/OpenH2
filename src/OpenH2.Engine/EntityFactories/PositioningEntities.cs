@@ -45,11 +45,10 @@ namespace OpenH2.Engine.EntityFactories
         {
             var scenario = map.GetLocalTagsOfType<ScenarioTag>().First();
 
-            foreach (var obj in scenario.Obj96s)
-            {
-                // Corpses, for sure...
-                AddAtLocation(96, obj.Position, colors[0], destination);
-            }
+            //foreach (var obj in scenario.Obj96s)
+            //{
+            //    AddAtLocation(96, obj.Position, colors[0], destination);
+            //}
         }
 
         private static void AddAtLocation(uint id, Vector3 position, Vector4 color, Scene destination)

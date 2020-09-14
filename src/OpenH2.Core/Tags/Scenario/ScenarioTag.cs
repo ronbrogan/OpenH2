@@ -16,7 +16,7 @@ namespace OpenH2.Core.Tags.Scenario
         }
 
         
-        [ReferenceArray(96)] public Obj96[] Obj96s { get; set; }
+        
         [ReferenceArray(296)] public Obj296[] Obj296s { get; set; }
         [ReferenceArray(304)] public Obj304[] Obj304s { get; set; }
         [ReferenceArray(360)] public Obj360_String[] Obj360s_Locations { get; set; }
@@ -39,6 +39,7 @@ namespace OpenH2.Core.Tags.Scenario
         [ReferenceArray(72)] public WellKnownItem[] WellKnownItems { get; set; }
         [ReferenceArray(80)] public SceneryInstance[] SceneryInstances { get; set; }
         [ReferenceArray(88)] public SceneryDefinition[] SceneryDefinitions { get; set; }
+        [ReferenceArray(96)] public BipedInstance[] BipedInstances { get; set; }
         [ReferenceArray(104)] public BipedDefinition[] BipedDefinitions { get; set; }
         [ReferenceArray(112)] public VehicleInstance[] VehicleInstances { get; set; }
         [ReferenceArray(120)] public VehicleDefinition[] VehicleDefinitions { get; set; }
@@ -104,18 +105,24 @@ namespace OpenH2.Core.Tags.Scenario
 
         public enum WellKnownVarType : ushort
         {
-            Unit = 0,
+            Biped = 0,
             Vehicle = 1,
             Weapon = 2,
+            Equipment = 3, // Unsure
 
             Scenery = 6,
-            Machinery = 7, // As Device
-            Controller = 8 // As Device
+            Machinery = 7,
+            Controller = 8,
+
+            Sound = 10, // Unsure
+            Bloc = 11,
+
+            Undef = ushort.MaxValue
         }
 
         // TODO: placement test
         [FixedLength(84)]
-        public class VehicleInstance : Unit
+        public class VehicleInstance : Vehicle
         {
             [PrimitiveValue(0)]
             public ushort Index { get; set; }
@@ -127,9 +134,8 @@ namespace OpenH2.Core.Tags.Scenario
             public Vector3 Orientation { get; set; }
         }
 
-        // TODO: placement test
         [FixedLength(56)]
-        public class EquipmentPlacement
+        public class EquipmentPlacement : Entity
         {
             [PrimitiveValue(0)]
             public ushort Index { get; set; }
@@ -141,51 +147,27 @@ namespace OpenH2.Core.Tags.Scenario
             public Vector3 Orientation { get; set; }
         }
 
-        // TODO: placement test
         [FixedLength(84)]
-        public class Obj96
+        public class BipedInstance : Unit
         {
             [PrimitiveValue(0)]
             public ushort Index { get; set; }
 
-            [PrimitiveValue(8)]
-            public Vector3 Position { get; set; }
+            [PrimitiveValue(2)]
+            public ushort IndexB { get; set; }
 
-            [PrimitiveValue(20)]
-            public Vector3 Orientation { get; set; }
-        }
-
-        [FixedLength(40)]
-        public class DeviceGroupDefinition
-        {
-            [StringValue(0, 32)]
-            public string Description { get; set; }
-
-            [PrimitiveValue(32)]
-            public float Value { get; set; }
-        }
-
-        [FixedLength(68)]
-        public class ControllerInstance
-        {
-            [PrimitiveValue(0)]
-            public ushort Index { get; set; }
-
-            [PrimitiveValue(8)]
-            public Vector3 Position { get; set; }
-
-            [PrimitiveValue(20)]
-            public Vector3 Orientation { get; set; }
-        }
-
-        [FixedLength(40)]
-        public class ControllerDefinition
-        {
             [PrimitiveValue(4)]
-            public uint ControllerId { get; set; }
-        }
+            public ushort Value { get; set; }
 
-        
+            [PrimitiveValue(8)]
+            public Vector3 Position { get; set; }
+
+            [PrimitiveValue(20)]
+            public Vector3 Orientation { get; set; }
+
+            [InternedString(52)]
+            public string Description { get; set; }
+        }
 
         [FixedLength(68)]
         public class TriggerVolume

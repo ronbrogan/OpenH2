@@ -329,24 +329,24 @@ namespace OpenH2.Engine.Scripting
 
 
         /// <summary>Returns the vehicle that the given actor is in.</summary>
-        public ScenarioTag.VehicleInstance ai_vehicle_get(AI ai)
+        public Vehicle ai_vehicle_get(AI ai)
         {
-            return default(ScenarioTag.VehicleInstance);
+            return default(Vehicle);
         }
 
         /// <summary>Returns the vehicle that was spawned at the given starting location.</summary>
-        public ScenarioTag.VehicleInstance ai_vehicle_get_from_starting_location(AI ai)
+        public Vehicle ai_vehicle_get_from_starting_location(AI ai)
         {
-            return default(ScenarioTag.VehicleInstance);
+            return default(Vehicle);
         }
 
         /// <summary>Reserves the given vehicle (so that AI may not enter it</summary>
-        public void ai_vehicle_reserve(ScenarioTag.VehicleInstance vehicle, bool boolean)
+        public void ai_vehicle_reserve(Vehicle vehicle, bool boolean)
         {
         }
 
         /// <summary>Reserves the given seat on the given vehicle (so that AI may not enter it</summary>
-        public void ai_vehicle_reserve_seat(ScenarioTag.VehicleInstance vehicle, string /*id*/ string_id, bool boolean)
+        public void ai_vehicle_reserve_seat(Vehicle vehicle, string /*id*/ string_id, bool boolean)
         {
         }
 
@@ -728,7 +728,7 @@ namespace OpenH2.Engine.Scripting
         }
 
         /// <summary>Actor gets in the appropriate vehicle</summary>
-        public void cs_go_to_vehicle(ScenarioTag.VehicleInstance vehicle)
+        public void cs_go_to_vehicle(Vehicle vehicle)
         {
         }
 
@@ -2311,19 +2311,19 @@ namespace OpenH2.Engine.Scripting
         }
 
         /// <summary>tests whether the named seat has a specified unit in it (use "" to test all seats for this unit)</summary>
-        public bool vehicle_test_seat(ScenarioTag.VehicleInstance vehicle, string seat, Unit unit)
+        public bool vehicle_test_seat(Vehicle vehicle, string seat, Unit unit)
         {
             return default(bool);
         }
 
         /// <summary>tests whether the named seat has an object in the object list (use "" to test all seats for any unit in the list)</summary>
-        public bool vehicle_test_seat_list(ScenarioTag.VehicleInstance vehicle, string /*id*/ seat, ObjectList subjects)
+        public bool vehicle_test_seat_list(Vehicle vehicle, string /*id*/ seat, ObjectList subjects)
         {
             return default(bool);
         }
 
         /// <summary>tests whether the named seat has an object in the object list (use "" to test all seats for any unit in the list)</summary>
-        public bool vehicle_test_seat_list(ScenarioTag.VehicleInstance vehicle, string /*id*/ seat, Entity subject)
+        public bool vehicle_test_seat_list(Vehicle vehicle, string /*id*/ seat, Entity subject)
         {
             return default(bool);
         }

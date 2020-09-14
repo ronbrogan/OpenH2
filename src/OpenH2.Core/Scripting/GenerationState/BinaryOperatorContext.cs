@@ -60,7 +60,7 @@ namespace OpenH2.Core.Scripting.GenerationState
 
                 left = binExp;
             }
-            
+
             if(topType.HasValue && topType.Value != scope.Type)
             {
                 left = SyntaxUtil.CreateCast(topType.Value, scope.Type, SyntaxFactory.ParenthesizedExpression(left));

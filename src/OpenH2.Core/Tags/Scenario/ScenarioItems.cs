@@ -57,7 +57,7 @@ namespace OpenH2.Core.Tags.Scenario
         }
 
         [FixedLength(76)]
-        public class BlocInstance
+        public class BlocInstance : Entity
         {
             [PrimitiveValue(0)]
             public ushort BlocDefinitionIndex { get; set; }

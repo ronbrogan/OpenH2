@@ -180,7 +180,27 @@ namespace OpenH2.Core.Scripting.Generation
             for (int i = 0; i < scnr.WellKnownItems.Length; i++)
             {
                 var externalRef = scnr.WellKnownItems[i];
-                // TODO: add well known items
+
+                var scnrPropName = externalRef.ItemType switch
+                {
+                    ScenarioTag.WellKnownVarType.Biped => nameof(scnr.BipedInstances),
+                    ScenarioTag.WellKnownVarType.Vehicle => nameof(scnr.VehicleInstances),
+                    ScenarioTag.WellKnownVarType.Weapon => nameof(scnr.WeaponDefinitions),
+                    ScenarioTag.WellKnownVarType.Equipment => nameof(scnr.EquipmentPlacements),
+                    ScenarioTag.WellKnownVarType.Scenery => nameof(scnr.SceneryInstances),
+                    ScenarioTag.WellKnownVarType.Machinery => nameof(scnr.MachineryInstances),
+                    ScenarioTag.WellKnownVarType.Controller => nameof(scnr.ControllerInstances),
+                    ScenarioTag.WellKnownVarType.Sound => nameof(scnr.SoundSceneryInstances),
+                    ScenarioTag.WellKnownVarType.Bloc => nameof(scnr.BlocInstances),
+                    ScenarioTag.WellKnownVarType.Undef=> null,
+                    _ => "unknown"
+                };
+
+                if(scnrPropName != null)
+                {
+                    var varType = SyntaxUtil.WellKnownTypeString(externalRef.ItemType);
+                    statements.Add(CreateAssignment(scnrPropName, varType, externalRef.Description, externalRef.Index));
+                }
             }
 
             for (int i = 0; i < scnr.CameraPathTargets.Length; i++)
@@ -335,16 +355,7 @@ namespace OpenH2.Core.Scripting.Generation
 
         public void AddPublicProperty(ScenarioTag.WellKnownItem externalRef, int itemIndex)
         {
-            var varType = externalRef.ItemType switch
-            {
-                ScenarioTag.WellKnownVarType.Unit => ScriptDataType.Unit,
-                ScenarioTag.WellKnownVarType.Vehicle => ScriptDataType.Vehicle,
-                ScenarioTag.WellKnownVarType.Weapon => ScriptDataType.Weapon,
-                ScenarioTag.WellKnownVarType.Scenery => ScriptDataType.Scenery,
-                ScenarioTag.WellKnownVarType.Machinery => ScriptDataType.Device,
-                ScenarioTag.WellKnownVarType.Controller => ScriptDataType.Device,
-                _ => ScriptDataType.Entity
-            };
+            var varType = SyntaxUtil.WellKnownTypeString(externalRef.ItemType);
 
             AddPublicProperty(varType, externalRef.Description, itemIndex);
         }
@@ -366,12 +377,27 @@ namespace OpenH2.Core.Scripting.Generation
             properties.Add(SyntaxUtil.CreateProperty(type, propName));
         }
 
+        public void AddPublicProperty(string type, string name, int itemIndex)
+        {
+            var propName = nameRepo.RegisterName(name, type, itemIndex);
+
+            properties.Add(SyntaxUtil.CreateProperty(type, propName));
+        }
+
+        public StatementSyntax CreateAssignment(string originCollectionname,
+            ScriptDataType type,
+            string desiredName,
+            int itemIndex)
+        {
+            return CreateAssignment(originCollectionname, type.ToString(), desiredName, itemIndex);
+        }
+
         public StatementSyntax CreateAssignment(string originCollectionname, 
-            ScriptDataType type, 
+            string type, 
             string desiredName, 
             int itemIndex)
         {
-            if (nameRepo.TryGetName(desiredName, type.ToString(), itemIndex, out var name))
+            if (nameRepo.TryGetName(desiredName, type, itemIndex, out var name))
             {
                 var access = ElementAccessExpression(MemberAccessExpression(SyntaxKind.SimpleMemberAccessExpression,
                             IdentifierName("scenarioTag"),

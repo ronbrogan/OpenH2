@@ -51,7 +51,7 @@ namespace OpenH2.Engine.Systems
                 this.stopwatch.Restart();
                 this.executor.Execute();
                 this.stopwatch.Stop();
-                Logger.LogInfo($"[SCRIPT-SYS] ExecutionTime: {this.stopwatch.ElapsedTicks}ticks");
+                //Logger.LogInfo($"[SCRIPT-SYS] ExecutionTime: {this.stopwatch.ElapsedTicks}ticks");
             }
             else
             {

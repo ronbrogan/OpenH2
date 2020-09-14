@@ -63,8 +63,39 @@ namespace OpenH2.Core.Tags.Scenario
             public TagRef DecalReference { get; set; }
         }
 
+        [FixedLength(40)]
+        public class DeviceGroupDefinition
+        {
+            [StringValue(0, 32)]
+            public string Description { get; set; }
+
+            [PrimitiveValue(32)]
+            public float Value { get; set; }
+        }
+
+        [FixedLength(68)]
+        public class ControllerInstance : Device
+        {
+            [PrimitiveValue(0)]
+            public ushort Index { get; set; }
+
+            [PrimitiveValue(8)]
+            public Vector3 Position { get; set; }
+
+            [PrimitiveValue(20)]
+            public Vector3 Orientation { get; set; }
+        }
+
+        [FixedLength(40)]
+        public class ControllerDefinition
+        {
+            [PrimitiveValue(4)]
+            public uint ControllerId { get; set; }
+        }
+
+
         [FixedLength(72)]
-        public class MachineryInstance
+        public class MachineryInstance : Device
         {
             [PrimitiveValue(0)]
             public ushort MachineryDefinitionIndex { get; set; }
@@ -84,7 +115,7 @@ namespace OpenH2.Core.Tags.Scenario
         }
 
         [FixedLength(80)]
-        public class SoundSceneryInstance
+        public class SoundSceneryInstance : Entity
         {
             [PrimitiveValue(0)]
             public ushort SoundSceneryDefinitionIndex { get; set; }

@@ -36,12 +36,28 @@ namespace OpenH2.Core.Scripting.Generation
                 ScriptDataType.AIOrders => ParseTypeName(nameof(ScenarioTag) + "." + nameof(ScenarioTag.AiOrderDefinition)),
                 ScriptDataType.Equipment => ParseTypeName(nameof(ScenarioTag) + "." + nameof(ScenarioTag.StartingProfileDefinition)),
                 ScriptDataType.Weapon => ParseTypeName(nameof(ScenarioTag) + "." + nameof(ScenarioTag.WeaponDefinition)),
-                ScriptDataType.Vehicle => ParseTypeName(nameof(ScenarioTag) + "." + nameof(ScenarioTag.VehicleInstance)),
                 ScriptDataType.Scenery => ParseTypeName(nameof(ScenarioTag) + "." + nameof(ScenarioTag.SceneryInstance)),
 
                 _ => Enum.IsDefined(typeof(ScriptDataType), dataType)
                     ? ParseTypeName(dataType.ToString())
                     : ParseTypeName(nameof(ScriptDataType) + dataType.ToString()),
+            };
+        }
+
+        public static string WellKnownTypeString(ScenarioTag.WellKnownVarType type)
+        {
+            return type switch
+            {
+                ScenarioTag.WellKnownVarType.Biped => $"{nameof(ScenarioTag)}.{nameof(ScenarioTag.BipedInstance)}",
+                ScenarioTag.WellKnownVarType.Vehicle => ScriptDataType.Vehicle.ToString(),
+                ScenarioTag.WellKnownVarType.Weapon => $"{nameof(ScenarioTag)}.{nameof(ScenarioTag.WeaponDefinition)}",
+                ScenarioTag.WellKnownVarType.Equipment => $"{nameof(ScenarioTag)}.{nameof(ScenarioTag.EquipmentPlacement)}",
+                ScenarioTag.WellKnownVarType.Scenery => $"{nameof(ScenarioTag)}.{nameof(ScenarioTag.SceneryInstance)}",
+                ScenarioTag.WellKnownVarType.Machinery => $"{nameof(ScenarioTag)}.{nameof(ScenarioTag.MachineryInstance)}",
+                ScenarioTag.WellKnownVarType.Controller => $"{nameof(ScenarioTag)}.{nameof(ScenarioTag.ControllerInstance)}",
+                ScenarioTag.WellKnownVarType.Sound => $"{nameof(ScenarioTag)}.{nameof(ScenarioTag.SoundSceneryInstance)}",
+                ScenarioTag.WellKnownVarType.Bloc => $"{nameof(ScenarioTag)}.{nameof(ScenarioTag.BlocInstance)}",
+                _ => typeof(Entity).Name
             };
         }
 
@@ -140,6 +156,13 @@ namespace OpenH2.Core.Scripting.Generation
                     .WithModifiers(TokenList(Token(SyntaxKind.PublicKeyword)))
                     .WithAccessorList(AutoPropertyAccessorList())
                     .WithAdditionalAnnotations(ScriptGenAnnotations.TypeAnnotation(type));
+        }
+
+        public static PropertyDeclarationSyntax CreateProperty(string type, string name)
+        {
+            return PropertyDeclaration(ParseTypeName(type), name)
+                    .WithModifiers(TokenList(Token(SyntaxKind.PublicKeyword)))
+                    .WithAccessorList(AutoPropertyAccessorList());
         }
 
         public static IReadOnlyList<ScriptDataType> StringLiteralTypes = new ScriptDataType[]

@@ -181,19 +181,19 @@ namespace OpenH2.Core.Scripting
 
 
         /// <summary>Returns the vehicle that the given actor is in.</summary>
-        ScenarioTag.VehicleInstance ai_vehicle_get(AI ai);
+        Vehicle ai_vehicle_get(AI ai);
 
         /// <summary>Returns the vehicle that was spawned at the given starting location.</summary>
-        ScenarioTag.VehicleInstance ai_vehicle_get_from_starting_location(AI ai);
+        Vehicle ai_vehicle_get_from_starting_location(AI ai);
 
         /// <summary>Reserves the given vehicle (so that AI may not enter it</summary>
-        void ai_vehicle_reserve(ScenarioTag.VehicleInstance vehicle, bool boolean);
+        void ai_vehicle_reserve(Vehicle vehicle, bool boolean);
 
         /// <summary>Reserves the given seat on the given vehicle (so that AI may not enter it</summary>
         void ai_vehicle_reserve_seat(string emotion, bool boolean);
 
         /// <summary>Reserves the given seat on the given vehicle (so that AI may not enter it</summary>
-        void ai_vehicle_reserve_seat(ScenarioTag.VehicleInstance vehicle, string string_id, bool boolean);
+        void ai_vehicle_reserve_seat(Vehicle vehicle, string string_id, bool boolean);
 
         /// <summary>Returns true if the ai's units are ALL vitality pinned (see object_vitality_pinned)</summary>
         bool ai_vitality_pinned(AI ai);
@@ -415,7 +415,7 @@ namespace OpenH2.Core.Scripting
         void cs_go_to_vehicle();
 
         /// <summary>Actor gets in the appropriate vehicle</summary>
-        void cs_go_to_vehicle(ScenarioTag.VehicleInstance vehicle);
+        void cs_go_to_vehicle(Vehicle vehicle);
 
         /// <summary>Actor throws a grenade, either by tossing (arg2=0), lobbing (1) or bouncing (2)</summary>
         void cs_grenade(SpatialPoint point, int action);
@@ -1309,13 +1309,13 @@ namespace OpenH2.Core.Scripting
         void vehicle_load_magic(Entity vehicle, string vehicleSeat, ObjectList units);
 
         /// <summary>tests whether the named seat has a specified unit in it (use "" to test all seats for this unit)</summary>
-        bool vehicle_test_seat(ScenarioTag.VehicleInstance vehicle, string seat, Unit unit);
+        bool vehicle_test_seat(Vehicle vehicle, string seat, Unit unit);
 
         /// <summary>tests whether the named seat has an object in the object list (use "" to test all seats for any unit in the list)</summary>
-        bool vehicle_test_seat_list(ScenarioTag.VehicleInstance vehicle, string seat, Entity subject);
+        bool vehicle_test_seat_list(Vehicle vehicle, string seat, Entity subject);
 
         /// <summary>tests whether the named seat has an object in the object list (use "" to test all seats for any unit in the list)</summary>
-        bool vehicle_test_seat_list(ScenarioTag.VehicleInstance vehicle, string seat, ObjectList subjects);
+        bool vehicle_test_seat_list(Vehicle vehicle, string seat, ObjectList subjects);
 
         /// <summary>makes units get out of an object from the substring-specified seats (e.g. CD-passenger... empty string matches all seats)</summary>
         void vehicle_unload(Entity entity, string unit_seat_mapping);
