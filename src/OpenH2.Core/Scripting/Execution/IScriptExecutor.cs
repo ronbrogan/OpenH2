@@ -5,10 +5,9 @@ namespace OpenH2.Core.Scripting.Execution
 {
     public interface IScriptExecutor
     {
-        void Startup();
         void Execute();
 
-        void SetLifecycle(string methodName, Lifecycle desiredLifecycle);
+        void SetStatus(string methodName, ScriptStatus desiredStatus);
         void SleepUntil(string methodName, DateTimeOffset offset);
     }
 }

@@ -14,7 +14,6 @@ namespace OpenH2.Engine.Systems
 {
     public class ScriptSystem : WorldSystem
     {
-        private bool hasStarted = false;
         private ScriptTaskExecutor executor;
         private ScriptEngine engine;
         private ScenarioScriptBase scripts;
@@ -46,18 +45,10 @@ namespace OpenH2.Engine.Systems
 
         public override void Update(double timestep)
         {
-            if(this.hasStarted)
-            {
-                this.stopwatch.Restart();
-                this.executor.Execute();
-                this.stopwatch.Stop();
-                //Logger.LogInfo($"[SCRIPT-SYS] ExecutionTime: {this.stopwatch.ElapsedTicks}ticks");
-            }
-            else
-            {
-                this.executor.Startup();
-                this.hasStarted = true;
-            }
+            this.stopwatch.Restart();
+            this.executor.Execute();
+            this.stopwatch.Stop();
+            //Logger.LogInfo($"[SCRIPT-SYS] ExecutionTime: {this.stopwatch.ElapsedTicks}ticks");
         }
     }
 }

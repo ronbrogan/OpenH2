@@ -35,7 +35,7 @@ namespace OpenH2.Core.Scripting.Generation
                 ScriptDataType.AIScript => ParseTypeName(nameof(ScenarioTag) + "." + nameof(ScenarioTag.AiNamedTrigger)),
                 ScriptDataType.AIOrders => ParseTypeName(nameof(ScenarioTag) + "." + nameof(ScenarioTag.AiOrderDefinition)),
                 ScriptDataType.Equipment => ParseTypeName(nameof(ScenarioTag) + "." + nameof(ScenarioTag.StartingProfileDefinition)),
-                ScriptDataType.Weapon => ParseTypeName(nameof(ScenarioTag) + "." + nameof(ScenarioTag.WeaponDefinition)),
+                ScriptDataType.Weapon => ParseTypeName(nameof(ScenarioTag) + "." + nameof(ScenarioTag.WeaponPlacement)),
                 ScriptDataType.Scenery => ParseTypeName(nameof(ScenarioTag) + "." + nameof(ScenarioTag.SceneryInstance)),
 
                 _ => Enum.IsDefined(typeof(ScriptDataType), dataType)

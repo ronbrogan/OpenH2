@@ -12,7 +12,7 @@ namespace OpenH2.Core.Scripting.Execution
     {
         private delegate Task OrchestratedScript();
 
-        private List<ExecutionState> executionStates;
+        private ExecutionState[] executionStates = Array.Empty<ExecutionState>();
 
         public void Setup(ScenarioScriptBase scripts)
         {
@@ -21,17 +21,30 @@ namespace OpenH2.Core.Scripting.Execution
                 .Where(m => m.GetCustomAttribute<ScriptMethodAttribute>() != null)
                 .ToArray();
 
-            executionStates = new List<ExecutionState>(scriptMethods.Length);
+            var execStates = new List<ExecutionState>(scriptMethods.Length);
 
             foreach (var script in scriptMethods)
             {
                 var attr = script.GetCustomAttribute<ScriptMethodAttribute>();
+
+                var initialStatus = attr.Lifecycle switch
+                {
+                    Lifecycle.Startup => ScriptStatus.RunOnce,
+                    Lifecycle.Dormant => ScriptStatus.Sleeping,
+                    Lifecycle.Continuous => ScriptStatus.RunContinuous,
+                    Lifecycle.Static => ScriptStatus.Terminated,
+                    Lifecycle.Stub => ScriptStatus.Terminated,
+                    Lifecycle.CommandScript => ScriptStatus.Terminated,
+                    _ => throw new NotImplementedException()
+                };
+
+
                 var execState = new ExecutionState()
                 {
                     Description = script.Name,
-                    Lifecycle = attr.Lifecycle,
-                    Task = Task.CompletedTask,
-                    DormantUntil = DateTimeOffset.MaxValue
+                    Status = initialStatus,
+                    Task = null,
+                    SleepUntil = DateTimeOffset.MaxValue
                 };
 
                 OrchestratedScript func;
@@ -52,42 +65,37 @@ namespace OpenH2.Core.Scripting.Execution
 
                 execState.Func = func;
 
-                executionStates.Add(execState);
-            }
-        }
-
-        public void Startup()
-        {
-            for (var i = 0; i < executionStates.Count; i++)
-            {
-                var state = executionStates[i];
-
-                if (state.Lifecycle == Lifecycle.Startup && state.Task.IsCompleted)
-                {
-                    Logger.LogInfo($"[SCRIPT] ({state.Description}) - startup");
-                    state.Task = state.Func();
-                }
-
-                executionStates[i] = state;
+                execStates.Add(execState);
             }
 
-            this.Execute();
+            this.executionStates = execStates.ToArray();
         }
 
         public void Execute()
         {
-            for(var i = 0; i < executionStates.Count; i++)
+            for(var i = 0; i < executionStates.Length; i++)
             {
                 var state = executionStates[i];
 
-                if(state.Lifecycle == Lifecycle.Continuous && state.Task.IsCompleted)
+                if(state.Status == ScriptStatus.RunContinuous && (state.Task?.IsCompleted ?? true))
                 {
                     state.Task = state.Func();
                 }
-                if (state.Lifecycle == Lifecycle.Dormant && state.DormantUntil < DateTimeOffset.UtcNow)
+                if (state.Status == ScriptStatus.RunOnce)
+                {
+                    if(state.Task == null)
+                    {
+                        state.Task = state.Func();
+                    }
+                    else if(state.Task.IsCompleted)
+                    {
+                        state.Status = ScriptStatus.Terminated;
+                    }
+                }
+                if (state.Status == ScriptStatus.Sleeping && state.SleepUntil < DateTimeOffset.UtcNow)
                 {
                     Logger.LogInfo($"[SCRIPT] ({state.Description}) - waking up");
-                    state.Lifecycle = Lifecycle.Continuous;
+                    state.Status = ScriptStatus.RunOnce;
                     state.Task = state.Func();
                 }
 
@@ -95,16 +103,22 @@ namespace OpenH2.Core.Scripting.Execution
             }
         }
 
-        public void SetLifecycle(string methodName, Lifecycle desiredLifecycle)
+        public void SetStatus(string methodName, ScriptStatus desiredStatus)
         {
-            for (var i = 0; i < executionStates.Count; i++)
+            for (var i = 0; i < executionStates.Length; i++)
             {
                 var state = executionStates[i];
 
                 if (state.Description == methodName)
                 {
-                    state.Lifecycle = desiredLifecycle;
-                    Logger.LogInfo($"[SCRIPT] ({methodName}) -> {desiredLifecycle}");
+                    if(state.Status == ScriptStatus.Terminated)
+                    {
+                        Logger.Log("[SCRIPT] Trying to set terminated lifecycle", Logger.Color.Red);
+                        return;
+                    }
+
+                    state.Status = desiredStatus;
+                    Logger.LogInfo($"[SCRIPT] ({methodName}) -> {desiredStatus}");
                 }
 
                 executionStates[i] = state;
@@ -113,15 +127,15 @@ namespace OpenH2.Core.Scripting.Execution
 
         public void SleepUntil(string methodName, DateTimeOffset offset)
         {
-            for (var i = 0; i < executionStates.Count; i++)
+            for (var i = 0; i < executionStates.Length; i++)
             {
                 var state = executionStates[i];
 
                 if (state.Description == methodName)
                 {
                     Logger.LogInfo($"[SCRIPT] ({methodName}) @ {(offset - DateTimeOffset.UtcNow).TotalMilliseconds}");
-                    state.Lifecycle = Lifecycle.Dormant;
-                    state.DormantUntil = offset;
+                    state.Status = ScriptStatus.Sleeping;
+                    state.SleepUntil = offset;
                 }
 
                 executionStates[i] = state;
@@ -132,9 +146,9 @@ namespace OpenH2.Core.Scripting.Execution
         {
             public string Description;
             public OrchestratedScript Func;
-            public Lifecycle Lifecycle;
-            public DateTimeOffset DormantUntil;
-            public Task Task;
+            public ScriptStatus Status;
+            public DateTimeOffset SleepUntil;
+            public Task? Task;
         }
     }
 }

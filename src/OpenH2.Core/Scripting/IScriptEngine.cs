@@ -229,7 +229,7 @@ namespace OpenH2.Core.Scripting
         void camera_set_animation_relative(Animation animation, string id, Unit unit, ScenarioTag.LocationFlagDefinition locationFlag);
 
         /// <summary>sets the field of view</summary>
-        void camera_set_field_of_view(float real, short value);
+        void camera_set_field_of_view(float degrees, short ticks);
 
         /// <summary>returns the number of ticks remaining in the current camera interpolation.</summary>
         short camera_time();
@@ -1243,7 +1243,7 @@ namespace OpenH2.Core.Scripting
         float unit_get_shield(Unit unit);
 
         /// <summary>returns TRUE if the <unit> has <object> as a weapon, FALSE otherwise</summary>
-        bool unit_has_weapon(Unit unit, ScenarioTag.WeaponDefinition weapon);
+        bool unit_has_weapon(Unit unit, ScenarioTag.WeaponPlacement weapon);
 
         /// <summary>prevents any of the given units from being knocked around or playing ping animations</summary>
         void unit_impervious(Entity unit, bool boolean);
@@ -1276,22 +1276,13 @@ namespace OpenH2.Core.Scripting
         void unit_set_active_camo(Unit unit, bool boolean, float real);
 
         /// <summary>sets a unit's current body and shield vitality</summary>
-        void unit_set_current_vitality(float body, float shield);
-
-        /// <summary>sets a unit's current body and shield vitality</summary>
-        void unit_set_current_vitality(Unit unit, float real, float real1);
+        void unit_set_current_vitality(Unit unit, float body, float shield);
 
         /// <summary>sets a unit's facial expression by name with weight and transition time</summary>
-        void unit_set_emotional_state(string emotion, float floatValue, short valueValue);
-
-        /// <summary>sets a unit's facial expression by name with weight and transition time</summary>
-        void unit_set_emotional_state(Unit unit, string string_id, float real, short value);
+        void unit_set_emotional_state(Unit unit, string string_id, float weight, short transitionTime);
 
         /// <summary>can be used to prevent the player from entering a vehicle</summary>
         void unit_set_enterable_by_player(Unit unit, bool boolean);
-
-        /// <summary>sets a unit's maximum body and shield vitality</summary>
-        void unit_set_maximum_vitality(float body, float shield);
 
         /// <summary>sets a unit's maximum body and shield vitality</summary>
         void unit_set_maximum_vitality(Unit unit, float real, float real1);
@@ -1357,21 +1348,12 @@ namespace OpenH2.Core.Scripting
         void weapon_hold_trigger(WeaponReference weapon, int triggerIndex, bool boolean);
 
         /// <summary><time> <intensity></summary>
-        void weather_change_intensity(float floatValue);
-
-        /// <summary><time> <intensity></summary>
-        void weather_change_intensity(float real, float real1);
+        void weather_change_intensity(float time, float intensity);
 
         /// <summary><time></summary>
-        void weather_start();
+        void weather_start(float time);
 
         /// <summary><time></summary>
-        void weather_start(float real);
-
-        /// <summary><time></summary>
-        void weather_stop();
-
-        /// <summary><time></summary>
-        void weather_stop(float real);
+        void weather_stop(float time);
     }
 }

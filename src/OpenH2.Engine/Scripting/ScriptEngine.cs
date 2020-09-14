@@ -2008,7 +2008,7 @@ namespace OpenH2.Engine.Scripting
         /// <summary>pauses execution of this script (or, optionally, another script) forever.</summary>
         public void sleep_forever(ScriptReference script)
         {
-            this.executionOrchestrator.SetLifecycle(script.Method.Name, Lifecycle.Dormant);
+            this.executionOrchestrator.SetStatus(script.Method.Name, ScriptStatus.Sleeping);
         }
 
         /// <summary>pauses execution of this script until the specified condition is true, checking once per second unless a different number of ticks is specified.</summary>
@@ -2186,7 +2186,7 @@ namespace OpenH2.Engine.Scripting
         }
 
         /// <summary>returns TRUE if the <unit> has <object> as a weapon, FALSE otherwise</summary>
-        public bool unit_has_weapon(Unit unit, ScenarioTag.WeaponDefinition weapon)
+        public bool unit_has_weapon(Unit unit, ScenarioTag.WeaponPlacement weapon)
         {
             return default(bool);
         }
@@ -2389,7 +2389,7 @@ namespace OpenH2.Engine.Scripting
         /// <summary>wakes a sleeping script in the next update.</summary>
         public void wake(ScriptReference script_name)
         {
-            this.executionOrchestrator.SetLifecycle(script_name.Method.Name, Lifecycle.Continuous);
+            this.executionOrchestrator.SetStatus(script_name.Method.Name, ScriptStatus.RunOnce);
         }
 
         /// <summary>turns the trigger for a weapon  on/off</summary>
