@@ -7,7 +7,7 @@ namespace OpenH2.Engine.Scripting
     using System;
     using System.Threading.Tasks;
 
-    public class ScriptEngine : IScriptEngine
+    public partial class ScriptEngine : IScriptEngine
     {
         public const short TicksPerSecond = 60;
         private readonly IScriptExecutor executionOrchestrator;
@@ -32,340 +32,6 @@ namespace OpenH2.Engine.Scripting
         {
         }
 
-        /// <summary>converts an ai reference to an object list.</summary>
-        public ObjectList ai_actors(AI ai)
-
-        {
-            return default(ObjectList);
-        }
-
-        /// <summary>creates an allegiance between two teams.</summary>
-        public void ai_allegiance(Team team, Team team1)
-        {
-        }
-
-        /// <summary>attaches the specified list of units to the specified encounter.</summary>
-        public void ai_attach_units(ObjectList units, AI ai)
-        {
-        }
-
-        /// <summary>attaches the specified list of units to the specified encounter.</summary>
-        public void ai_attach_units(Unit unit, AI ai)
-        {
-        }
-
-        /// <summary>forces a group of actors to start or stop berserking</summary>
-        public void ai_berserk(AI ai, bool boolean)
-        {
-        }
-
-        /// <summary>makes a group of actors braindead, or restores them to life (in their initial state)</summary>
-        public void ai_braindead(AI ai, bool boolean)
-        {
-        }
-
-        /// <summary>AI cannot die from damage (as opposed to by scripting)</summary>
-        public void ai_cannot_die(AI ai, bool boolean)
-        {
-        }
-
-        /// <summary>Returns the highest integer combat status in the given squad-group/squad/actor</summary>
-        public short ai_combat_status(AI ai)
-        {
-            return default(short);
-        }
-
-        /// <summary>turn combat dialogue on/off</summary>
-        public void ai_dialogue_enable(bool boolean)
-        {
-        }
-
-        /// <summary>enables or disables automatic garbage collection for actors in the specified encounter and/or squad.</summary>
-        public void ai_disposable(AI ai, bool boolean)
-        {
-        }
-
-        /// <summary>if TRUE, forces all actors to completely disregard the specified units, otherwise lets them acknowledge the units again</summary>
-        public void ai_disregard(Entity unit, bool boolean)
-        {
-            System.Diagnostics.Debug.Assert(unit is Unit);
-        }
-
-        /// <summary>if TRUE, forces all actors to completely disregard the specified units, otherwise lets them acknowledge the units again</summary>
-        public void ai_disregard(ObjectList object_list, bool boolean)
-        {
-        }
-
-        /// <summary>Instructs the ai in the given squad to get in all their vehicles</summary>
-        public void ai_enter_squad_vehicles(AI ai)
-        {
-        }
-
-        /// <summary>erases the specified encounter and/or squad.</summary>
-        public void ai_erase(AI ai)
-        {
-        }
-
-        /// <summary>erases all AI.</summary>
-        public void ai_erase_all()
-        {
-        }
-
-        /// <summary>return the number of actors that are fighting in a squad or squad_group</summary>
-        public short ai_fighting_count(AI ai)
-        {
-            return default(short);
-        }
-
-        /// <summary>returns the unit/object corresponding to the given actor</summary>
-        public Entity ai_get_object(AI ai)
-        {
-            return default(Entity);
-        }
-
-        /// <summary>returns the unit/object corresponding to the given actor</summary>
-        public Unit ai_get_unit(AI ai)
-        {
-            return default(Unit);
-        }
-
-        /// <summary>instantly kills the specified encounter and/or squad.</summary>
-        public void ai_kill(AI ai)
-        {
-        }
-
-        /// <summary>instantly and silently (no animation or sound played) kills the specified encounter and/or squad.</summary>
-        public void ai_kill_silent(AI ai)
-        {
-        }
-
-        /// <summary>return the number of living actors in the specified encounter and/or squad.</summary>
-        public short ai_living_count(AI ai)
-        {
-            return default(short);
-        }
-
-        /// <summary>Make one squad magically aware of another.</summary>
-        public void ai_magically_see(AI ai, AI ai1)
-        {
-        }
-
-        /// <summary>Make a squad magically aware of a particular object.</summary>
-        public void ai_magically_see_object(AI ai, Entity value)
-        {
-        }
-
-        /// <summary>makes all or part of an encounter move to another encounter.</summary>
-        public void ai_migrate(AI ai, AI ai1)
-        {
-        }
-
-        /// <summary>makes all or part of an encounter move to another encounter.</summary>
-        public void ai_migrate(AI ai)
-        {
-        }
-
-        /// <summary>return the number of non-swarm actors in the specified encounter and/or squad.</summary>
-        public short ai_nonswarm_count(AI ai)
-        {
-            return default(short);
-        }
-
-        /// <summary>Don't use this for anything other than bug 3926.  AI magically cancels vehicle oversteer.</summary>
-        public void ai_overcomes_oversteer(AI ai, bool boolean)
-        {
-        }
-
-        /// <summary>places the specified squad on the map.</summary>
-        public void ai_place(AI ai)
-        {
-        }
-
-        /// <summary>places the specified squad on the map.</summary>
-        public void ai_place(AI ai, short value)
-        {
-        }
-
-        /// <summary>places the specified squad on the map.</summary>
-        public void ai_place(AI ai, float value)
-        {
-        }
-
-        /// <summary>places the specified squad (1st arg) on the map in the vehicles belonging to the specified vehicle squad (2nd arg).</summary>
-        public void ai_place_in_vehicle(AI ai, AI ai1)
-        {
-        }
-
-        /// <summary>Play the given mission dialogue line on the given ai</summary>
-        public short ai_play_line(AI ai, string /*id*/ string_id)
-        {
-            return default(short);
-        }
-
-        /// <summary>Play the given mission dialogue line on the given ai, directing the ai's gaze at the nearest visible player</summary>
-        public short ai_play_line_at_player(AI ai, string /*id*/ string_id)
-        {
-            return default(short);
-        }
-
-        /// <summary>Play the given mission dialogue line on the given ai, directing the ai's gaze at the nearest visible player</summary>
-        public short ai_play_line_at_player(string /*id*/ emotion)
-        {
-            return default(short);
-        }
-
-        /// <summary>Play the given mission dialogue line on the given object (uses first available variant)</summary>
-        public short ai_play_line_on_object(Entity entity, string /*id*/ string_id)
-        {
-            return default(short);
-        }
-
-        /// <summary>if TRUE, *ALL* enemies will prefer to attack the specified units. if FALSE, removes the preference.</summary>
-        public void ai_prefer_target(ObjectList units, bool boolean)
-        {
-        }
-
-        /// <summary>refreshes the health and grenade count of a group of actors, so they are as good as new</summary>
-        public void ai_renew(AI ai)
-        {
-        }
-
-        /// <summary>Start the named scene, with the named command script on the named squad</summary>
-        public bool ai_scene(string /*id*/ string_id, AIScript ai_command_script, AI ai)
-        {
-            return default(bool);
-        }
-
-        /// <summary>Start the named scene, with the named command script on the named set of squads</summary>
-        public bool ai_scene(string /*id*/ string_id, AIScript ai_command_script, AI ai, AI ai1)
-        {
-            return default(bool);
-        }
-
-        /// <summary>Start the named scene, with the named command script on the named squad</summary>
-        public bool ai_scene(string /*id*/ emotion, AIScript aiScript)
-        {
-            return default(bool);
-        }
-
-        /// <summary>Turn on active camoflage on actor/squad/squad-group</summary>
-        public void ai_set_active_camo(AI ai, bool boolean)
-        {
-        }
-
-        /// <summary>enables or disables sight for actors in the specified encounter.</summary>
-        public void ai_set_blind(AI ai, bool boolean)
-        {
-        }
-
-        /// <summary>enables or disables hearing for actors in the specified encounter.</summary>
-        public void ai_set_deaf(AI ai, bool boolean)
-        {
-        }
-
-        /// <summary>Takes the squad or squad group (arg1) and gives it the order (arg3) in zone (arg2). Use the zone_name/order_name format</summary>
-        public void ai_set_orders(AI ai, ScenarioTag.AiOrderDefinition ai_orders)
-        {
-        }
-
-        /// <summary>returns the number of actors spawned in the given squad or squad group</summary>
-        public short ai_spawn_count(AI ai)
-        {
-            return default(short);
-        }
-
-        /// <summary>return the current strength (average body vitality from 0-1) of the specified encounter and/or squad.</summary>
-        public float ai_strength(AI ai)
-        {
-            return default(float);
-        }
-
-        /// <summary>Turn on/off combat suppression on actor/squad/squad-group</summary>
-        public void ai_suppress_combat(AI ai, bool boolean)
-        {
-        }
-
-        /// <summary>return the number of swarm actors in the specified encounter and/or squad.</summary>
-        public short ai_swarm_count(AI ai)
-        {
-            return default(short);
-        }
-
-        /// <summary>teleports a group of actors to the starting locations of their current squad(s) if they are currently outside the world.</summary>
-        public void ai_teleport_to_starting_location_if_outside_bsp(AI ai)
-        {
-        }
-
-        /// <summary>Tests the named trigger on the named squad</summary>
-        public bool ai_trigger_test(string value, AI ai)
-        {
-            return default(bool);
-        }
-
-        /// <summary>tells a group of actors to get into a vehicle, in the substring-specified seats (e.g. passenger for pelican)... does not interrupt any actors who are already going to vehicles</summary>
-        public void ai_vehicle_enter(AI ai)
-        {
-        }
-
-        /// <summary>tells a group of actors to get into a vehicle, in the substring-specified seats (e.g. passenger for pelican)... does not interrupt any actors who are already going to vehicles</summary>
-        public void ai_vehicle_enter(AI ai, Unit unit, /*VehicleSeat*/ string unit_seat_mapping = null)
-        {
-        }
-
-        /// <summary>tells a group of actors to get into a vehicle... does not interrupt any actors who are already going to vehicles</summary>
-        public void ai_vehicle_enter(AI ai, /*VehicleSeat*/ string unit)
-        {
-        }
-
-        /// <summary>the given group of actors is snapped into a vehicle, in the substring-specified seats (e.g. passenger for pelican)... does not interrupt any actors who are already going to vehicles</summary>
-        public void ai_vehicle_enter_immediate(AI ai, Unit unit, /*VehicleSeat*/ string seat = null)
-        {
-        }
-
-        /// <summary>tells a group of actors to get out of any vehicles that they are in</summary>
-        public void ai_vehicle_exit(AI ai)
-        {
-        }
-
-
-        /// <summary>Returns the vehicle that the given actor is in.</summary>
-        public Vehicle ai_vehicle_get(AI ai)
-        {
-            return default(Vehicle);
-        }
-
-        /// <summary>Returns the vehicle that was spawned at the given starting location.</summary>
-        public Vehicle ai_vehicle_get_from_starting_location(AI ai)
-        {
-            return default(Vehicle);
-        }
-
-        /// <summary>Reserves the given vehicle (so that AI may not enter it</summary>
-        public void ai_vehicle_reserve(Vehicle vehicle, bool boolean)
-        {
-        }
-
-        /// <summary>Reserves the given seat on the given vehicle (so that AI may not enter it</summary>
-        public void ai_vehicle_reserve_seat(Vehicle vehicle, string /*id*/ string_id, bool boolean)
-        {
-        }
-
-        /// <summary>Reserves the given seat on the given vehicle (so that AI may not enter it</summary>
-        public void ai_vehicle_reserve_seat(string /*id*/ emotion, bool boolean)
-        {
-        }
-
-        /// <summary>Returns true if the ai's units are ALL vitality pinned (see object_vitality_pinned)</summary>
-        public bool ai_vitality_pinned(AI ai)
-        {
-            return default(bool);
-        }
-
-        /// <summary>evaluates the sequence of expressions in random order and returns the last value evaluated.</summary>
-        public void begin_random(params Action[] expressions)
-        {
-        }
-
         /// <summary>evaluates the sequence of expressions in random order and returns the last value evaluated.</summary>
         public void begin_random(params Func<Task>[] expressions)
         {
@@ -382,24 +48,8 @@ namespace OpenH2.Engine.Scripting
         {
         }
 
-        /// <summary>call this to force texture and geometry cache to block until satiated</summary>
-        public Task cache_block_for_one_frame()
-        {
-            return Task.CompletedTask;
-        }
-
         /// <summary>toggles script control of the camera.</summary>
         public void camera_control(bool boolean)
-        {
-        }
-
-        /// <summary>predict resources at a frame in camera animation.</summary>
-        public void camera_predict_resources_at_frame(Animation animation, string /*id*/ emotion, Unit unit, ScenarioTag.LocationFlagDefinition locationFlag, int intValue)
-        {
-        }
-
-        /// <summary>predict resources given a camera point</summary>
-        public void camera_predict_resources_at_point(ScenarioTag.CameraPathTarget cutscene_camera_point)
         {
         }
 
@@ -555,334 +205,6 @@ namespace OpenH2.Engine.Scripting
         {
         }
 
-        /// <summary>Command script ends prematurely when actor's combat status raises to 'alert' or higher</summary>
-        public void cs_abort_on_alert(bool boolean)
-        {
-        }
-
-        /// <summary>Command script ends prematurely when actor's combat status rises to given level</summary>
-        public void cs_abort_on_combat_status(short value)
-        {
-        }
-
-        /// <summary>Command script ends prematurely when actor is damaged</summary>
-        public void cs_abort_on_damage(bool boolean)
-        {
-        }
-
-        /// <summary>Actor aims at the point for the remainder of the cs, or until overridden (overrides look)</summary>
-        public void cs_aim(bool boolean, SpatialPoint point)
-        {
-        }
-
-        /// <summary>Actor aims at the object for the duration of the cs, or until overridden (overrides look)</summary>
-        public void cs_aim_object(bool boolean, Entity entity)
-        {
-        }
-
-        /// <summary>Actor aims at the object for the duration of the cs, or until overridden (overrides look)</summary>
-        public void cs_aim_object(bool boolean)
-        {
-        }
-
-        /// <summary>Actor aims at nearest player for the duration of the cs, or until overridden (overrides look)</summary>
-        public void cs_aim_player(bool boolean)
-        {
-        }
-
-        /// <summary></summary>
-        public void cs_approach(Entity entity, float real, float real1, float real12)
-        {
-        }
-
-        /// <summary></summary>
-        public void cs_approach(float floatValue, float floatValue1, float floatValue2)
-        {
-        }
-
-        /// <summary></summary>
-        public void cs_approach_player(float real, float real1, float real12)
-        {
-        }
-
-        /// <summary>Actor stops approaching</summary>
-        public void cs_approach_stop()
-        {
-        }
-
-        /// <summary>Returns true if the command script is in the ai's cs queue</summary>
-        public bool cs_command_script_queued(AI ai, AIScript ai_command_script)
-        {
-            return default(bool);
-        }
-
-        /// <summary>Returns true if the ai is running the command script in question</summary>
-        public bool cs_command_script_running(AI ai, AIScript ai_command_script)
-        {
-            return default(bool);
-        }
-
-        /// <summary>Actor crouches for the remainder of the command script, or until overridden</summary>
-        public void cs_crouch(bool boolean)
-        {
-        }
-
-        /// <summary>starts a custom animation playing on the unit (interpolates into animation if last parameter is TRUE)</summary>
-        public void cs_custom_animation(Animation animation, string /*id*/ emotion, float floatValue, bool interpolate)
-        {
-        }
-
-        /// <summary>Deploy a turret at the given script point</summary>
-        public void cs_deploy_turret(SpatialPoint point)
-        {
-        }
-
-        /// <summary>Actor combat dialogue enabled/disabled.</summary>
-        public void cs_enable_dialogue(bool boolean)
-        {
-        }
-
-        /// <summary>Actor autonomous looking enabled/disabled.</summary>
-        public void cs_enable_looking(bool boolean)
-        {
-        }
-
-        /// <summary>Actor autonomous moving enabled/disabled.</summary>
-        public void cs_enable_moving(bool boolean)
-        {
-        }
-
-        /// <summary>Actor blocks until pathfinding calls succeed</summary>
-        public void cs_enable_pathfinding_failsafe(bool boolean)
-        {
-        }
-
-        /// <summary>Actor autonomous target selection enabled/disabled.</summary>
-        public void cs_enable_targeting(bool boolean)
-        {
-        }
-
-        /// <summary>Actor faces exactly the point for the remainder of the cs, or until overridden (overrides aim, look)</summary>
-        public void cs_face(bool boolean, SpatialPoint point = null)
-        {
-        }
-
-        /// <summary>Actor faces exactly the given object for the duration of the cs, or until overridden (overrides aim, look)</summary>
-        public void cs_face_object(bool boolean, Entity entity)
-        {
-        }
-
-        /// <summary>Actor faces exactly the nearest player for the duration of the cs, or until overridden (overrides aim, look)</summary>
-        public void cs_face_player(bool boolean)
-        {
-        }
-
-        /// <summary>Flies the actor through the given point</summary>
-        public void cs_fly_by()
-        {
-        }
-
-        /// <summary>Flies the actor through the given point</summary>
-        public void cs_fly_by(SpatialPoint point, float tolerance = 0f)
-        {
-        }
-
-        /// <summary>Flies the actor to the given point (within the given tolerance)</summary>
-        public void cs_fly_to(SpatialPoint point, float tolerance = 0f)
-        {
-        }
-
-        /// <summary>Flies the actor to the given point and orients him in the appropriate direction (within the given tolerance)</summary>
-        public void cs_fly_to_and_face(SpatialPoint point, SpatialPoint face, float tolerance = 0f)
-        {
-        }
-
-        /// <summary>Force the actor's combat status (0= no override, 1= asleep, 2=idle, 3= alert, 4= active)</summary>
-        public void cs_force_combat_status(short value)
-        {
-        }
-
-        /// <summary>Actor moves toward the point, and considers it hit when it breaks the indicated plane</summary>
-        public void cs_go_by(SpatialPoint point, SpatialPoint planeP, float planeD = 0f)
-        {
-        }
-
-        /// <summary>Moves the actor to a specified point</summary>
-        public void cs_go_to(SpatialPoint point, float tolerance = 1f)
-        {
-        }
-
-        /// <summary>Moves the actor to a specified point and has him face the second point</summary>
-        public void cs_go_to_and_face(SpatialPoint point, SpatialPoint faceTowards)
-        {
-        }
-
-        /// <summary>Given a point set, AI goes toward the nearest point</summary>
-        public void cs_go_to_nearest(SpatialPoint destination)
-        {
-        }
-
-        /// <summary>Actor gets in the appropriate vehicle</summary>
-        public void cs_go_to_vehicle()
-        {
-        }
-
-        /// <summary>Actor gets in the appropriate vehicle</summary>
-        public void cs_go_to_vehicle(Vehicle vehicle)
-        {
-        }
-
-        /// <summary>Actor throws a grenade, either by tossing (arg2=0), lobbing (1) or bouncing (2)</summary>
-        public void cs_grenade(SpatialPoint point, int action)
-        {
-        }
-
-        /// <summary>Actor does not avoid obstacles when true</summary>
-        public void cs_ignore_obstacles(bool boolean)
-        {
-        }
-
-        /// <summary>Actor jumps in direction of angle at the given velocity (angle, velocity)</summary>
-        public void cs_jump(float real, float real1)
-        {
-        }
-
-        /// <summary>Actor jumps with given horizontal and vertical velocity</summary>
-        public void cs_jump_to_point(float real, float real1)
-        {
-        }
-
-        /// <summary>Actor looks at the point for the remainder of the cs, or until overridden</summary>
-        public void cs_look(bool boolean, SpatialPoint point = null)
-        {
-        }
-
-        /// <summary>Actor looks at the object for the duration of the cs, or until overridden</summary>
-        public void cs_look_object(bool boolean)
-        {
-        }
-
-        /// <summary>Actor looks at the object for the duration of the cs, or until overridden</summary>
-        public void cs_look_object(bool boolean, Entity entity)
-        {
-        }
-
-        /// <summary>Actor looks at nearest player for the duration of the cs, or until overridden</summary>
-        public void cs_look_player(bool boolean)
-        {
-        }
-
-        /// <summary>Actor moves at given angle, for the given distance, optionally with the given facing (angle, distance, facing)</summary>
-        public void cs_move_in_direction(float real, float real1, float real12)
-        {
-        }
-
-        /// <summary>Actor switches to given animation mode</summary>
-        public void cs_movement_mode(short value)
-        {
-        }
-
-        /// <summary>Returns TRUE if the actor is currently following a path</summary>
-        public bool cs_moving()
-        {
-            return default(bool);
-        }
-
-        /// <summary>The actor does nothing for the given number of seconds</summary>
-        public void cs_pause(float real)
-        {
-        }
-
-        /// <summary>Play the named line in the current scene</summary>
-        public void cs_play_line(string /*id*/ string_id)
-        {
-        }
-
-        /// <summary>Add a command script onto the end of an actor's command script queue</summary>
-        public void cs_queue_command_script(AI ai, AIScript ai_command_script)
-        {
-        }
-
-        /// <summary>Causes the specified actor(s) to start executing a command script immediately (discarding any other command scripts in the queue)</summary>
-        public void cs_run_command_script(AI ai, AIScript ai_command_script)
-        {
-        }
-
-        /// <summary>Actor performs the indicated behavior</summary>
-        public void cs_set_behavior(AIBehavior ai_behavior)
-        {
-        }
-
-        /// <summary>Actor is allowed to shoot at its target or not</summary>
-        public void cs_shoot(bool boolean)
-        {
-        }
-
-        /// <summary>Actor is allowed to shoot at its target or not</summary>
-        public void cs_shoot(bool boolean, Entity entity)
-        {
-        }
-
-        /// <summary>Actor shoots at given point</summary>
-        public void cs_shoot_point(bool boolean, SpatialPoint point)
-        {
-        }
-
-        /// <summary>Push a command script to the top of the actor's command script queue</summary>
-        public void cs_stack_command_script(AI ai, AIScript ai_command_script)
-        {
-        }
-
-        /// <summary></summary>
-        public void cs_start_approach(Entity entity, float real, float real1, float real12)
-        {
-        }
-
-        /// <summary></summary>
-        public void cs_start_approach_player(float real, float real1, float real12)
-        {
-        }
-
-        /// <summary>Moves the actor to a specified point. DOES NOT BLOCK SCRIPT EXECUTION.</summary>
-        public void cs_start_to(SpatialPoint destination)
-        {
-        }
-
-        /// <summary>Stop running a custom animation</summary>
-        public void cs_stop_custom_animation()
-        {
-        }
-
-        /// <summary>Combat dialogue is suppressed for the remainder of the command script</summary>
-        public void cs_suppress_dialogue_global(bool boolean)
-        {
-        }
-
-        /// <summary>Switch control of the joint command script to the given member</summary>
-        public void cs_switch(string /*id*/ string_id)
-        {
-
-        }
-        /// <summary>Actor teleports to point1 facing point2</summary>
-        public void cs_teleport(SpatialPoint destination, SpatialPoint facing)
-        {
-        }
-
-        /// <summary>Set the sharpness of a vehicle turn (values 0 -> 1). Only applicable to nondirectional flying vehicles (e.g. dropships)</summary>
-        public void cs_turn_sharpness(bool boolean, float real)
-        {
-        }
-
-        /// <summary>Enables or disables boost</summary>
-        public void cs_vehicle_boost(bool boolean)
-        {
-        }
-
-        /// <summary>Set the speed at which the actor will drive a vehicle, expressed as a multiplier 0-1</summary>
-        public void cs_vehicle_speed(float real)
-        {
-        }
-
         /// <summary>starts a custom animation playing on a unit (interpolates into animation if last parameter is TRUE)</summary>
         public void custom_animation(Unit unit, Animation animation, string /*id*/ stringid, bool interpolate)
         {
@@ -933,11 +255,6 @@ namespace OpenH2.Engine.Scripting
         {
         }
 
-        /// <summary>sets the mission segment for single player data mine events</summary>
-        public void data_mine_set_mission_segment(string value)
-        {
-        }
-
         /// <summary>deactivates a nav point type attached to a team anchored to a flag</summary>
         public void deactivate_team_nav_point_flag(Team team, ScenarioTag.LocationFlagDefinition cutscene_flag)
         {
@@ -950,97 +267,6 @@ namespace OpenH2.Engine.Scripting
 
         /// <summary>deactivates a nav point type attached to a team anchored to an object</summary>
         public void deactivate_team_nav_point_object(Team team, Entity entity)
-        {
-        }
-
-        /// <summary>animate the overlay over time</summary>
-        public void device_animate_overlay(Device device, float real, float real1, float real12, float real123)
-        {
-        }
-
-        /// <summary>animate the position over time</summary>
-        public void device_animate_position(Device device, float real, float real1, float real12, float real123, bool boolean)
-        {
-        }
-
-        /// <summary>animate the position over time</summary>
-        public void device_animate_position(Device device, float floatValue, float floatValue0, float floatValue1, bool boolean)
-        {
-        }
-
-        /// <summary>TRUE makes the given device close automatically after it has opened, FALSE makes it not</summary>
-        public void device_closes_automatically_set(Device device, bool boolean)
-        {
-        }
-
-        /// <summary>gets the current position of the given device (used for devices without explicit device groups)</summary>
-        public float device_get_position(Device device)
-        {
-            return default(float);
-        }
-
-        /// <summary>TRUE allows a device to change states only once</summary>
-        public void device_group_change_only_once_more_set(ScenarioTag.DeviceGroupDefinition device_group, bool boolean)
-        {
-        }
-
-        /// <summary>returns the desired value of the specified device group.</summary>
-        public float device_group_get(ScenarioTag.DeviceGroupDefinition device_group)
-        {
-            return default(float);
-        }
-
-        /// <summary>changes the desired value of the specified device group.</summary>
-        public void device_group_set(Device device, ScenarioTag.DeviceGroupDefinition device_group, float real)
-        {
-        }
-
-        /// <summary>instantaneously changes the value of the specified device group.</summary>
-        public void device_group_set_immediate(ScenarioTag.DeviceGroupDefinition device_group, float real)
-        {
-        }
-
-        /// <summary>TRUE makes the given device one-sided (only able to be opened from one direction), FALSE makes it two-sided</summary>
-        public void device_one_sided_set(Device device, bool boolean)
-        {
-        }
-
-        /// <summary>TRUE makes the given device open automatically when any biped is nearby, FALSE makes it not</summary>
-        public void device_operates_automatically_set(Device device, bool boolean)
-        {
-        }
-
-        /// <summary>changes a machine's never_appears_locked flag, but only if paul is a bastard</summary>
-        public void device_set_never_appears_locked(Device device, bool boolean)
-        {
-        }
-
-        /// <summary>set the desired overlay animation to use</summary>
-        public void device_set_overlay_track(Device device, string /*id*/ string_id)
-        {
-        }
-
-        /// <summary>set the desired position of the given device (used for devices without explicit device groups)</summary>
-        public void device_set_position(Device device, float real)
-        {
-        }
-
-        /// <summary>instantaneously changes the position of the given device (used for devices without explicit device groups</summary>
-        public void device_set_position_immediate(Device device, float real)
-        {
-        }
-
-        /// <summary>set the desired position track animation to use (optional interpolation time onto track)</summary>
-        public void device_set_position_track(Device device, string /*id*/ string_id, float real)
-        {
-        }
-
-        /// <summary>immediately sets the power of a named device to the given value</summary>
-        public void device_set_power(Device device, float real)
-        {
-        }
-
-        public void disable_render_light_suppressor()
         {
         }
 
@@ -1095,10 +321,6 @@ namespace OpenH2.Engine.Scripting
         }
 
         /// <summary>returns the current difficulty setting, but lies to you and will never return easy, instead returning normal</summary>
-        // public GameDifficulty game_difficulty_get()
-        // {
-        //     return default(GameDifficulty);
-        // }
         public string game_difficulty_get()
         {
             return "";
@@ -1175,21 +397,6 @@ namespace OpenH2.Engine.Scripting
         {
         }
 
-        /// <summary>causes all garbage objects except those visible to a player to be collected immediately</summary>
-        public void garbage_collect_now()
-        {
-        }
-
-        /// <summary>forces all garbage objects to be collected immediately, even those visible to a player (dangerous!)</summary>
-        public void garbage_collect_unsafe()
-        {
-        }
-
-        /// <summary>we fear change</summary>
-        public void geometry_cache_flush()
-        {
-        }
-
         /// <summary>parameter 1 is how, parameter 2 is when</summary>
         public void hud_cinematic_fade(float real, float real1)
         {
@@ -1222,7 +429,7 @@ namespace OpenH2.Engine.Scripting
         }
 
         /// <summary><name> <final value> <time></summary>
-        public void interpolator_start(string /*id*/ string_id, float real, float real1)
+        public void interpolator_start(string /*id*/ name, float finalValue, float time)
         {
         }
 
@@ -1243,21 +450,21 @@ namespace OpenH2.Engine.Scripting
         }
 
         /// <summary>returns the number of objects in a list</summary>
-        public short list_count(ObjectList object_list)
+        public short list_count(EntityList object_list)
         {
             return (short)object_list.Objects.Length;
         }
 
         /// <summary>returns the number of objects in a list that aren't dead</summary>
-        public short list_count_not_dead(ObjectList objects)
+        public short list_count_not_dead(EntityList objects)
         {
             return default(short);
         }
 
         /// <summary>returns an item in an object list.</summary>
-        public Entity list_get(ObjectList object_list, int index)
+        public Entity list_get(EntityList object_list, int index)
         {
-            return default(Entity);
+            return object_list.Objects[index];
         }
 
         /// <summary>sets the next loading screen to just fade to white</summary>
@@ -1276,441 +483,10 @@ namespace OpenH2.Engine.Scripting
             return default(float);
         }
 
-        /// <summary>returns the maximum of all specified expressions.</summary>
-        public short max(short a, short b)
-        {
-            return default(short);
-        }
-
         /// <summary>returns the minimum of all specified expressions.</summary>
         public float min(float a, float b)
         {
             return default(float);
-        }
-
-        /// <summary>returns the minimum of all specified expressions.</summary>
-        public short min(short a, short b)
-        {
-            return default(short);
-        }
-
-        /// <summary>returns the object attached to the marker of the given parent object</summary>
-        public Entity entity_at_marker(Entity entity, string /*id*/ string_id)
-        {
-            return default(Entity);
-        }
-
-        public Entity object_at_marker(Entity entity, string stringId)
-        {
-            return default(Entity);
-        }
-
-        /// <summary>allows an object to take damage again</summary>
-        public void object_can_take_damage(Entity entity)
-        {
-        }
-
-        /// <summary>allows an object to take damage again</summary>
-        public void object_can_take_damage(ObjectList object_list)
-        {
-        }
-
-        /// <summary>Set whether the object can die from damage or not (as opposed to by scripting)</summary>
-        public void object_cannot_die(Entity entity, bool boolean)
-        {
-        }
-
-        /// <summary>Set whether the object can die from damage or not (as opposed to by scripting)</summary>
-        public void object_cannot_die(bool boolean)
-        {
-        }
-
-        /// <summary>prevents an object from taking damage</summary>
-        public void object_cannot_take_damage(Entity entity) // Unit?
-        {
-        }
-
-        /// <summary>prevents an object from taking damage</summary>
-        public void object_cannot_take_damage(ObjectList object_list)
-        {
-        }
-
-        /// <summary>makes an object use the highest lod for the remainder of the levels' cutscenes.</summary>
-        public void object_cinematic_lod(Entity entity, bool boolean)
-        {
-        }
-
-        /// <summary>makes an object use the highest lod for the remainder of the levels' cutscenes.</summary>
-        public void object_cinematic_lod(bool boolean)
-        {
-        }
-
-        /// <summary>makes an object bypass visibility and always render during cinematics.</summary>
-        public void object_cinematic_visibility(Entity entity, bool boolean)
-        {
-        }
-
-        /// <summary>clears all funciton variables for sin-o-matic use</summary>
-        public void object_clear_all_function_variables(Entity entity)
-        {
-        }
-
-        /// <summary>clears one funciton variables for sin-o-matic use</summary>
-        public void object_clear_function_variable(Entity entity, string /*id*/ string_id)
-        {
-        }
-
-        /// <summary>creates an object from the scenario.</summary>
-        public void object_create(EntityIdentifier object_name)
-        {
-        }
-
-        /// <summary>creates an object from the scenario.</summary>
-        public void object_create(Entity object_name)
-        {
-        }
-
-        /// <summary>creates an object, destroying it first if it already exists.</summary>
-        public void object_create_anew(EntityIdentifier object_name)
-        {
-        }
-
-        /// <summary>creates an object, destroying it first if it already exists.</summary>
-        public void object_create_anew(Entity entity)
-        {
-        }
-
-        /// <summary>creates anew all objects from the scenario whose names contain the given substring.</summary>
-        public void object_create_anew_containing(string value)
-        {
-        }
-
-        /// <summary>creates an object, potentially resulting in multiple objects if it already exists.</summary>
-        public void object_create_clone(EntityIdentifier object_name)
-        {
-        }
-
-        /// <summary>creates all objects from the scenario whose names contain the given substring.</summary>
-        public void object_create_containing(string value)
-        {
-        }
-
-        /// <summary>applies damage to a damage section, causing all manner of effects/constraint breakage to occur</summary>
-        public void object_damage_damage_section(Entity entity, string /*id*/ string_id, float real)
-        {
-        }
-
-        /// <summary>applies damage to a damage section, causing all manner of effects/constraint breakage to occur</summary>
-        public void object_damage_damage_section(string /*id*/ emotion, float floatValue)
-        {
-        }
-
-        /// <summary>destroys an object.</summary>
-        public void object_destroy(Entity entity)
-        {
-        }
-
-        /// <summary>destroys an object.</summary>
-        public void object_destroy()
-        {
-        }
-
-        /// <summary>destroys all objects from the scenario whose names contain the given substring.</summary>
-        public void object_destroy_containing(string value)
-        {
-        }
-
-        /// <summary>destroys all objects matching the type mask</summary>
-        public void object_destroy_type_mask(int value)
-        {
-        }
-
-        /// <summary>disabled dynamic simulation for this object (makes it fixed)</summary>
-        public void object_dynamic_simulation_disable(bool boolean)
-        {
-        }
-
-        /// <summary>disabled dynamic simulation for this object (makes it fixed)</summary>
-        public void object_dynamic_simulation_disable(Entity entity, bool boolean)
-        {
-        }
-
-        /// <summary>returns the parent of the given object</summary>
-        public Entity object_get_parent(Entity entity)
-        {
-            return default(Entity);
-        }
-
-        /// <summary>returns the ai attached to this object, if any</summary>
-        public AI object_get_ai()
-        {
-            return default(AI);
-        }
-
-        /// <summary>returns the ai attached to this object, if any</summary>
-        public AI object_get_ai(Entity entity)
-        {
-            return default(AI);
-        }
-
-        /// <summary>returns the health [0,1] of the object, returns -1 if the object does not exist</summary>
-        public float object_get_health(Entity entity)
-        {
-            return default(float);
-        }
-
-        /// <summary>returns the health [0,1] of the object, returns -1 if the object does not exist</summary>
-        public float object_get_health()
-        {
-            return default(float);
-        }
-
-        /// <summary>returns the parent of the given object</summary>
-        public Entity entity_get_parent()
-        {
-            return default(Entity);
-        }
-
-        /// <summary>returns the parent of the given object</summary>
-        public Entity entity_get_parent(Entity entity)
-        {
-            return default(Entity);
-        }
-
-        /// <summary>returns the shield [0,1] of the object, returns -1 if the object does not exist</summary>
-        public float object_get_shield(Entity entity)
-        {
-            return default(float);
-        }
-
-        /// <summary>returns the shield [0,1] of the object, returns -1 if the object does not exist</summary>
-        public float object_get_shield()
-        {
-            return default(float);
-        }
-
-        /// <summary>hides or shows the object passed in</summary>
-        public void object_hide(Entity entity, bool boolean)
-        {
-        }
-
-        /// <summary>returns TRUE if the specified model target is destroyed</summary>
-        public short object_model_targets_destroyed(Entity entity, string /*id*/ target)
-        {
-            return default(short);
-        }
-
-        /// <summary>when this object deactivates it will be deleted</summary>
-        public void object_set_deleted_when_deactivated(Entity entity)
-        {
-        }
-
-        /// <summary>sets funciton variable for sin-o-matic use</summary>
-        public void object_set_function_variable(Entity entity, string /*id*/ string_id, float real, float real1)
-        {
-        }
-
-        /// <summary>sets funciton variable for sin-o-matic use</summary>
-        public void object_set_function_variable(string /*id*/ emotion, float floatValue0, float floatValue1)
-        {
-        }
-
-        /// <summary>sets the desired region (use "" for all regions) to the permutation with the given name, e.g. (object_set_permutation flood "right arm" ~damaged)</summary>
-        public void object_set_permutation(Entity entity, string /*id*/ string_id, string /*id*/ string_id1)
-        {
-        }
-
-        /// <summary>sets the desired region (use "" for all regions) to the permutation with the given name, e.g. (object_set_permutation flood "right arm" ~damaged)</summary>
-        public void object_set_permutation(string /*id*/ emotion, string /*id*/ emotion1)
-        {
-        }
-
-        /// <summary>sets phantom power to be latched at 1.0f or 0.0f</summary>
-        public void object_set_phantom_power(bool boolean)
-        {
-        }
-
-        /// <summary>sets phantom power to be latched at 1.0f or 0.0f</summary>
-        public void object_set_phantom_power(Entity entity, bool boolean)
-        {
-        }
-
-        /// <summary>sets the desired region (use "" for all regions) to the model state with the given name, e.g. (object_set_region_state marine head destroyed)</summary>
-        public void object_set_region_state(Entity entity, string /*id*/ string_id, DamageState model_state)
-        {
-        }
-
-        /// <summary>sets the scale for a given object and interpolates over the given number of frames to achieve that scale</summary>
-        public void object_set_scale(float floatValue, short valueValue)
-        {
-        }
-
-        /// <summary>sets the scale for a given object and interpolates over the given number of frames to achieve that scale</summary>
-        public void object_set_scale(Entity entity, float real, short value)
-        {
-        }
-
-        /// <summary>sets the shield vitality of the specified object (between 0 and 1).</summary>
-        public void object_set_shield(Entity entity, float real)
-        {
-        }
-
-        /// <summary>sets the shield vitality of the specified object (between 0 and 1).</summary>
-        public void object_set_shield()
-        {
-        }
-
-        /// <summary>make this objects shield be stunned permanently</summary>
-        public void object_set_shield_stun_infinite(Entity entity)
-        {
-        }
-
-        /// <summary>Sets the (object-relative) forward velocity of the given object</summary>
-        public void object_set_velocity(Entity entity, float real)
-        {
-        }
-
-        /// <summary>Sets the (object-relative) forward velocity of the given object</summary>
-        public void object_set_velocity(Entity entity, float real, float real1, float real12)
-        {
-        }
-
-        /// <summary>moves the specified object to the specified flag.</summary>
-        public void object_teleport(Entity entity, ScenarioTag.LocationFlagDefinition cutscene_flag)
-        {
-        }
-
-        /// <summary>loads textures necessary to draw an object that's about to come on-screen.</summary>
-        public void object_type_predict(Entity entity)
-        {
-        }
-
-        /// <summary>loads textures necessary to draw an object that's about to come on-screen.</summary>
-        public void object_type_predict_high(Entity entity)
-        {
-        }
-
-        /// <summary>makes an object use the cinematic directional and ambient lights instead of sampling the lightmap.</summary>
-        public void object_uses_cinematic_lighting(Entity entity, bool boolean)
-        {
-        }
-
-        /// <summary>makes an object use the cinematic directional and ambient lights instead of sampling the lightmap.</summary>
-        public void object_uses_cinematic_lighting(bool boolean)
-        {
-        }
-
-        /// <summary>clears the mission objectives.</summary>
-        public void objectives_clear()
-        {
-        }
-
-        /// <summary>mark objectives 0..n as complete</summary>
-        public void objectives_finish_up_to(int value)
-        {
-        }
-
-        /// <summary>show objectives 0..n</summary>
-        public void objectives_show_up_to(int value)
-        {
-        }
-
-        /// <summary>attaches the second object to the first both strings can be empty</summary>
-        public void objects_attach(Entity entity, string /*id*/ string_id, Entity entity1, string /*id*/ string_id1)
-        {
-        }
-
-        /// <summary>attaches the second object to the first both strings can be empty</summary>
-        public void objects_attach(Entity entity, string /*id*/ emotion0, string /*id*/ emotion1)
-        {
-        }
-
-        /// <summary>attaches the second object to the first both strings can be empty</summary>
-        public void objects_attach(string /*id*/ emotion0, Entity entity, string /*id*/ emotion1)
-        {
-        }
-
-        /// <summary>attaches the second object to the first both strings can be empty</summary>
-        public void objects_attach(string /*id*/ emotion0, string /*id*/ emotion1)
-        {
-        }
-
-        /// <summary>returns true if any of the specified units are looking within the specified number of degrees of the flag.</summary>
-        public bool objects_can_see_flag(Entity entity, ScenarioTag.LocationFlagDefinition locationFlag, float floatValue)
-        {
-            return default(bool);
-        }
-
-        /// <summary>returns true if any of the specified units are looking within the specified number of degrees of the flag.</summary>
-        public bool objects_can_see_flag(ObjectList list, ScenarioTag.LocationFlagDefinition locationFlag, float floatValue)
-        {
-            return default(bool);
-        }
-
-        /// <summary>returns true if any of the specified units are looking within the specified number of degrees of the object.</summary>
-        public bool objects_can_see_object(Entity entity, EntityIdentifier obj, float degrees)
-        {
-            return default(bool);
-        }
-
-        /// <summary>returns true if any of the specified units are looking within the specified number of degrees of the object.</summary>
-        public bool objects_can_see_object(ObjectList list, EntityIdentifier obj, float degrees)
-        {
-            return default(bool);
-        }
-
-        /// <summary>returns true if any of the specified units are looking within the specified number of degrees of the object.</summary>
-        public bool objects_can_see_object(float floatValue)
-        {
-            return default(bool);
-        }
-
-        /// <summary>detaches from the given parent object the given child object</summary>
-        public void objects_detach(Entity entity, Entity entity1)
-        {
-        }
-
-        /// <summary>detaches from the given parent object the given child object</summary>
-        public void objects_detach(Entity entity)
-        {
-        }
-
-        /// <summary>detaches from the given parent object the given child object</summary>
-        public void objects_detach()
-        {
-        }
-
-        /// <summary>returns minimum distance from any of the specified objects to the specified flag. (returns -1 if there are no objects, or no flag, to check)</summary>
-        public float objects_distance_to_flag(ObjectList list, ScenarioTag.LocationFlagDefinition locationFlag)
-        {
-            return default(float);
-        }
-
-        /// <summary>returns minimum distance from any of the specified objects to the specified flag. (returns -1 if there are no objects, or no flag, to check)</summary>
-        public float objects_distance_to_flag(Entity entity, ScenarioTag.LocationFlagDefinition locationFlag)
-        {
-            return default(float);
-        }
-
-        /// <summary>returns minimum distance from any of the specified objects to the specified destination object. (returns -1 if there are no objects to check)</summary>
-        public float objects_distance_to_object(ObjectList list, Entity entity)
-        {
-            return default(float);
-        }
-
-        /// <summary>loads textures/geometry/sounds necessary to present objects that are about to come on-screen</summary>
-        public void objects_predict(ObjectList object_list)
-        {
-        }
-
-        /// <summary>loads textures/geometry/sounds necessary to present objects that are about to come on-screen</summary>
-        public void objects_predict(Entity entity)
-        {
-        }
-
-        /// <summary>loads textures/geometry/sounds necessary to present objects that are about to come on-screen</summary>
-        public void objects_predict_high(Entity entity)
-        {
         }
 
         /// <summary>turn off ground adhesion forces so you can play tricks with gravity</summary>
@@ -1729,177 +505,13 @@ namespace OpenH2.Engine.Scripting
         }
 
         /// <summary>returns the first value pinned between the second two</summary>
-        public short pin(short value, short min, short max)
-        {
-            return default(short);
-        }
-
-        /// <summary>returns the first value pinned between the second two</summary>
         public float pin(float value, float min, float max)
         {
             return default(float);
         }
 
-
         /// <summary>ur...</summary>
         public void play_credits()
-        {
-        }
-
-        /// <summary>returns true if any player has hit accept since the last call to (player_action_test_reset).</summary>
-        public bool player_action_test_accept()
-        {
-            return default(bool);
-        }
-
-        /// <summary>returns true if any player has hit cancel key since the last call to (player_action_test_reset).</summary>
-        public bool player_action_test_cancel()
-        {
-            return default(bool);
-        }
-
-        /// <summary>returns true if any player has used grenade trigger since the last call to (player_action_test_reset).</summary>
-        public bool player_action_test_grenade_trigger()
-        {
-            return default(bool);
-        }
-
-        /// <summary>sets down player look down test</summary>
-        public void player_action_test_look_down_begin()
-        {
-        }
-
-        /// <summary>ends the look pitch testing</summary>
-        public void player_action_test_look_pitch_end()
-        {
-        }
-
-        /// <summary>sets up player look up test</summary>
-        public void player_action_test_look_up_begin()
-        {
-        }
-
-        /// <summary>true if the first player pushed backward on lookstick</summary>
-        public bool player_action_test_lookstick_backward()
-        {
-            return default(bool);
-        }
-
-        /// <summary>true if the first player pushed forward on lookstick</summary>
-        public bool player_action_test_lookstick_forward()
-        {
-            return default(bool);
-        }
-
-        /// <summary>returns true if any player has hit the melee button since the last call to (player_action_test_reset).</summary>
-        public bool player_action_test_melee()
-        {
-            return default(bool);
-        }
-
-        /// <summary>returns true if any player has used primary trigger since the last call to (player_action_test_reset).</summary>
-        public bool player_action_test_primary_trigger()
-        {
-            return default(bool);
-        }
-
-        /// <summary>resets the player action test state so that all tests will return false.</summary>
-        public void player_action_test_reset()
-        {
-        }
-
-        /// <summary>returns true if any player has used vision trigger since the last call to (player_action_test_reset).</summary>
-        public bool player_action_test_vision_trigger()
-        {
-            return default(bool);
-        }
-
-        /// <summary>enables/disables camera control globally</summary>
-        public void player_camera_control(bool boolean)
-        {
-        }
-
-        /// <summary>toggle player input. the look stick works, but nothing else.</summary>
-        public void player_disable_movement(bool boolean)
-        {
-        }
-
-        /// <summary><yaw> <pitch> <roll></summary>
-        public void player_effect_set_max_rotation(float real, float real1, float real12)
-        {
-        }
-
-        /// <summary><left> <right></summary>
-        public void player_effect_set_max_vibration(float real, float real1)
-        {
-        }
-
-        /// <summary><max_intensity> <attack time></summary>
-        public void player_effect_start(float real, float real1)
-        {
-        }
-
-        /// <summary><max_intensity> <attack time></summary>
-        public void player_effect_start()
-        {
-        }
-
-        /// <summary><decay></summary>
-        public void player_effect_stop(float real)
-        {
-        }
-
-        /// <summary><decay></summary>
-        public void player_effect_stop()
-        {
-        }
-
-        /// <summary>toggle player input. the player can still free-look, but nothing else.</summary>
-        public void player_enable_input(bool boolean)
-        {
-        }
-
-        /// <summary>returns true if any player has a flashlight on</summary>
-        public bool player_flashlight_on()
-        {
-            return default(bool);
-        }
-
-        /// <summary>guess</summary>
-        public void player_training_activate_flashlight()
-        {
-        }
-
-        /// <summary>guess</summary>
-        public void player_training_activate_stealth()
-        {
-        }
-
-        /// <summary>true if the first player is looking down</summary>
-        public bool player0_looking_down()
-        {
-            return default(bool);
-        }
-
-        /// <summary>true if the first player is looking up</summary>
-        public bool player0_looking_up()
-        {
-            return default(bool);
-        }
-
-        /// <summary>returns a list of the players</summary>
-        public ObjectList players()
-        {
-            return new ObjectList() { Objects = new Entity[] { null } };
-        }
-
-        /// <summary>predict a geometry block.</summary>
-        public void predict_model_section(Model render_model, int value)
-        {
-        }
-
-        /// <summary>predict a geometry block.</summary>
-        public void predict_structure_section(Bsp structure_bsp, int value, bool boolean)
         {
         }
 
@@ -1909,52 +521,16 @@ namespace OpenH2.Engine.Scripting
             Logger.Log(value, Logger.Color.Magenta);
         }
 
-        /// <summary>removes the special place that activates everything it sees.</summary>
-        public void pvs_clear()
-        {
-        }
-
-        /// <summary>sets the specified object as the special place that activates everything it sees.</summary>
-        public void pvs_set_object(Entity entity)
-        {
-        }
-
-        /// <summary>returns a random value in the range [lower bound, upper bound)</summary>
-        public float random_range(float value, float value1)
-        {
-            return default(float);
-        }
-
         /// <summary>returns a random value in the range [lower bound, upper bound)</summary>
         public int random_range(int value, int value1)
         {
             return default(int);
         }
 
-        /// <summary>enable</summary>
-        public void rasterizer_bloom_override(bool boolean)
-        {
-        }
-
-        /// <summary>brightness</summary>
-        public void rasterizer_bloom_override_brightness(float real)
-        {
-        }
-
-        /// <summary>threshold</summary>
-        public void rasterizer_bloom_override_threshold(float real)
-        {
-        }
-
         /// <summary>returns a random value in the range [lower bound, upper bound)</summary>
         public float real_random_range(float real, float real1)
         {
             return default(float);
-        }
-
-        /// <summary>enable/disable the specified unit to receive cinematic shadows where the shadow is focused about a radius around a marker name</summary>
-        public void render_lights_enable_cinematic_shadow(bool boolean, Entity entity, string /*id*/ string_id, float real)
-        {
         }
 
         /// <summary>starts a custom looping animation playing on a piece of scenery</summary>
@@ -2028,72 +604,6 @@ namespace OpenH2.Engine.Scripting
             }
         }
 
-        /// <summary>changes the gain on the specified sound class(es) to the specified gain over the specified number of ticks.</summary>
-        public void sound_class_set_gain(string value, float gain, int ticks)
-        {
-        }
-
-        /// <summary>returns the time remaining for the specified impulse sound. DO NOT CALL IN CUTSCENES.</summary>
-        public int sound_impulse_language_time(ReferenceGet soundRef)
-        {
-            return TicksPerSecond;
-        }
-
-        /// <summary>your mom part 2.</summary>
-        public void sound_impulse_predict(ReferenceGet soundRef)
-        {
-        }
-
-        /// <summary>plays an impulse sound from the specified source object (or "none"), with the specified scale.</summary>
-        public void sound_impulse_start(object sound, Entity entity, float floatValue)
-        {
-        }
-
-        /// <summary>plays an impulse sound from the specified source object (or "none"), with the specified scale and effect.</summary>
-        public void sound_impulse_start_effect(ReferenceGet sound, Entity entity, float floatValue, string /*id*/ effect)
-        {
-        }
-
-        /// <summary>stops the specified impulse sound.</summary>
-        public void sound_impulse_stop(ReferenceGet sound)
-        {
-        }
-
-        /// <summary>plays an impulse sound from the specified source object (or "none"), with the specified scale.</summary>
-        public void sound_impulse_trigger(Entity sound, float floatValue, int intValue)
-        {
-        }
-
-        /// <summary>plays an impulse sound from the specified source object (or "none"), with the specified scale.</summary>
-        public void sound_impulse_trigger(Entity sound, Entity source, float floatValue, int intValue)
-        {
-        }
-
-        /// <summary>enables or disables the alternate loop/alternate end for a looping sound.</summary>
-        public void sound_looping_set_alternate(LoopingSound looping_sound, bool boolean)
-        {
-        }
-
-        /// <summary>plays a looping sound from the specified source object (or "none"), with the specified scale.</summary>
-        public void sound_looping_start(LoopingSound looping_sound, Entity entity, float real)
-        {
-        }
-
-        /// <summary>plays a looping sound from the specified source object (or "none"), with the specified scale.</summary>
-        public void sound_looping_start(LoopingSound loopingSound, float floatValue)
-        {
-        }
-
-        /// <summary>stops the specified looping sound.</summary>
-        public void sound_looping_stop(LoopingSound looping_sound)
-        {
-        }
-
-        /// <summary>call this when transitioning between two cinematics so ambience won't fade in between the skips</summary>
-        public void sound_suppress_ambience_update_on_revert()
-        {
-        }
-
         /// <summary>returns the current structure bsp index</summary>
         public short structure_bsp_index()
         {
@@ -2110,11 +620,6 @@ namespace OpenH2.Engine.Scripting
         {
         }
 
-        /// <summary>don't make me kick your ass</summary>
-        public void texture_cache_flush()
-        {
-        }
-
         /// <summary>turns off the render texture camera</summary>
         public void texture_camera_off()
         {
@@ -2125,175 +630,6 @@ namespace OpenH2.Engine.Scripting
         {
         }
 
-        /// <summary>resets the time code timer</summary>
-        public void time_code_reset()
-        {
-        }
-
-        /// <summary>shows the time code timer</summary>
-        public void time_code_show(bool boolean)
-        {
-        }
-
-        /// <summary>starts/stops the time code timer</summary>
-        public void time_code_start(bool boolean)
-        {
-        }
-
-        /// <summary>converts an object to a unit.</summary>
-        public Unit unit(Entity entity)
-        {
-            return default(Unit);
-        }
-
-        /// <summary>adds/resets the unit's health, shield, and inventory (weapons and grenades) to the named profile. resets if third parameter is true, adds if false. weapons will be marked as garbage if fourth parameter is true (for respawning equipment).</summary>
-        public void unit_add_equipment(Unit unit, ScenarioTag.StartingProfileDefinition starting_profile, bool reset, bool isGarbage)
-        {
-        }
-
-        /// <summary>prevents any of the given units from dropping weapons or grenades when they die</summary>
-        public void unit_doesnt_drop_items(ObjectList entities)
-        {
-        }
-
-        /// <summary>makes a unit exit its vehicle</summary>
-        public void unit_exit_vehicle(Unit unit, short value)
-        {
-        }
-
-        /// <summary>returns the number of ticks remaining in a unit's custom animation (or zero, if the animation is over).</summary>
-        public short unit_get_custom_animation_time(Unit unit)
-        {
-            return default(short);
-        }
-
-        /// <summary>returns the health [0,1] of the unit, returns -1 if the unit does not exist</summary>
-        public float unit_get_health(Unit unit)
-        {
-            return default(float);
-        }
-
-        /// <summary>returns the shield [0,1] of the unit, returns -1 if the unit does not exist</summary>
-        public float unit_get_shield(Unit unit)
-        {
-            return default(float);
-        }
-
-        /// <summary>returns the shield [0,1] of the unit, returns -1 if the unit does not exist</summary>
-        public float unit_get_shield()
-        {
-            return default(float);
-        }
-
-        /// <summary>returns TRUE if the <unit> has <object> as a weapon, FALSE otherwise</summary>
-        public bool unit_has_weapon(Unit unit, ScenarioTag.WeaponPlacement weapon)
-        {
-            return default(bool);
-        }
-
-        /// <summary>prevents any of the given units from being knocked around or playing ping animations</summary>
-        public void unit_impervious(Entity unit, bool boolean)
-        {
-        }
-
-        /// <summary>prevents any of the given units from being knocked around or playing ping animations</summary>
-        public void unit_impervious(ObjectList object_list, bool boolean)
-        {
-        }
-
-        /// <summary>returns true if the given unit is seated on a parent unit</summary>
-        public bool unit_in_vehicle()
-        {
-            return default(bool);
-        }
-
-        /// <summary>returns true if the given unit is seated on a parent unit</summary>
-        public bool unit_in_vehicle(Unit unit)
-        {
-            return default(bool);
-        }
-
-        /// <summary>returns whether or not the given unit is current emitting an ai</summary>
-        public bool unit_is_emitting(Unit unit)
-        {
-            return default(bool);
-        }
-
-        /// <summary>kills a given unit, no saving throw</summary>
-        public void unit_kill()
-        {
-        }
-
-        /// <summary>kills a given unit, no saving throw</summary>
-        public void unit_kill(Unit unit)
-        {
-        }
-
-        /// <summary>kills a given unit silently (doesn't make them play their normal death animation or sound)</summary>
-        public void unit_kill_silent(Unit unit)
-        {
-        }
-
-        /// <summary>used for the tartarus boss fight</summary>
-        public void unit_only_takes_damage_from_players_team(Unit unit, bool boolean)
-        {
-        }
-
-        /// <summary>enable or disable active camo for the given unit over the specified number of seconds</summary>
-        public void unit_set_active_camo(Unit unit, bool boolean, float real)
-        {
-        }
-
-        /// <summary>sets a unit's current body and shield vitality</summary>
-        public void unit_set_current_vitality(Unit unit, float real, float real1)
-        {
-        }
-
-        /// <summary>sets a unit's current body and shield vitality</summary>
-        public void unit_set_current_vitality(float body, float shield)
-        {
-        }
-
-        /// <summary>sets a unit's facial expression by name with weight and transition time</summary>
-        public void unit_set_emotional_state(Unit unit, string /*id*/ string_id, float real, short value)
-        {
-        }
-
-        /// <summary>sets a unit's facial expression by name with weight and transition time</summary>
-        public void unit_set_emotional_state(string /*id*/ emotion, float floatValue, short valueValue)
-        {
-        }
-
-        /// <summary>can be used to prevent the player from entering a vehicle</summary>
-        public void unit_set_enterable_by_player(Unit unit, bool boolean)
-        {
-        }
-
-        /// <summary>sets a unit's maximum body and shield vitality</summary>
-        public void unit_set_maximum_vitality(Unit unit, float real, float real1)
-        {
-        }
-
-        /// <summary>sets a unit's maximum body and shield vitality</summary>
-        public void unit_set_maximum_vitality(float body, float shield)
-        {
-        }
-
-        /// <summary>stops the custom animation running on the given unit.</summary>
-        public void unit_stop_custom_animation(Unit unit)
-        {
-        }
-
-        /// <summary>sets a group of units' current body and shield vitality</summary>
-        public void units_set_current_vitality(ObjectList units, float body, float shield)
-        {
-        }
-
-        /// <summary>sets a group of units' maximum body and shield vitality</summary>
-        public void units_set_maximum_vitality(ObjectList units, float body, float shield)
-        {
-        }
-
         /// <summary>returns the driver of a vehicle</summary>
         public Entity vehicle_driver(Unit unit)
         {
@@ -2301,7 +637,7 @@ namespace OpenH2.Engine.Scripting
         }
 
         /// <summary>makes a list of units (named or by encounter) magically get into a vehicle, in the substring-specified seats (e.g. CD-passenger... empty string matches all seats)</summary>
-        public void vehicle_load_magic(Entity vehicle, /*VehicleSeat*/ string vehicleSeat, ObjectList units)
+        public void vehicle_load_magic(Entity vehicle, /*VehicleSeat*/ string vehicleSeat, EntityList units)
         {
         }
 
@@ -2317,7 +653,7 @@ namespace OpenH2.Engine.Scripting
         }
 
         /// <summary>tests whether the named seat has an object in the object list (use "" to test all seats for any unit in the list)</summary>
-        public bool vehicle_test_seat_list(Vehicle vehicle, string /*id*/ seat, ObjectList subjects)
+        public bool vehicle_test_seat_list(Vehicle vehicle, string /*id*/ seat, EntityList subjects)
         {
             return default(bool);
         }
@@ -2334,15 +670,15 @@ namespace OpenH2.Engine.Scripting
         }
 
         /// <summary>returns list of objects in volume or (max 128).</summary>
-        public ObjectList volume_return_objects(ScenarioTag.TriggerVolume trigger_volume)
+        public EntityList volume_return_objects(ScenarioTag.TriggerVolume trigger_volume)
         {
-            return default(ObjectList);
+            return default(EntityList);
         }
 
         /// <summary>returns list of objects in volume or (max 128).</summary>
-        public ObjectList volume_return_objects_by_type(ScenarioTag.TriggerVolume trigger_volume, int value)
+        public EntityList volume_return_objects_by_type(ScenarioTag.TriggerVolume trigger_volume, int value)
         {
-            return default(ObjectList);
+            return default(EntityList);
         }
 
         /// <summary>moves all players outside a specified trigger volume to a specified flag.</summary>
@@ -2369,13 +705,13 @@ namespace OpenH2.Engine.Scripting
         }
 
         /// <summary>returns true if any of the specified objects are within the specified volume. trigger volume must have been postprocessed</summary>
-        public bool volume_test_objects(ScenarioTag.TriggerVolume trigger_volume, ObjectList object_list)
+        public bool volume_test_objects(ScenarioTag.TriggerVolume trigger_volume, EntityList object_list)
         {
             return default(bool);
         }
 
         /// <summary>returns true if any (rb: all?) of the specified objects are within the specified volume. trigger volume must have been postprocessed</summary>
-        public bool volume_test_objects_all(ScenarioTag.TriggerVolume trigger, ObjectList object_list)
+        public bool volume_test_objects_all(ScenarioTag.TriggerVolume trigger, EntityList object_list)
         {
             return default(bool);
         }

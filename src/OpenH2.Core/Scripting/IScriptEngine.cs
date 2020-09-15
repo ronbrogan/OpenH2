@@ -15,13 +15,13 @@ namespace OpenH2.Core.Scripting
         void activate_team_nav_point_object(NavigationPoint navpoint, Team team, Entity entity, float real);
 
         /// <summary>converts an ai reference to an object list.</summary>
-        ObjectList ai_actors(AI ai);
+        EntityList ai_actors(AI ai);
 
         /// <summary>creates an allegiance between two teams.</summary>
         void ai_allegiance(Team team, Team team1);
 
         /// <summary>attaches the specified list of units to the specified encounter.</summary>
-        void ai_attach_units(ObjectList units, AI ai);
+        void ai_attach_units(EntityList units, AI ai);
 
         /// <summary>attaches the specified list of units to the specified encounter.</summary>
         void ai_attach_units(Unit unit, AI ai);
@@ -48,7 +48,7 @@ namespace OpenH2.Core.Scripting
         void ai_disregard(Entity unit, bool boolean);
 
         /// <summary>if TRUE, forces all actors to completely disregard the specified units, otherwise lets them acknowledge the units again</summary>
-        void ai_disregard(ObjectList object_list, bool boolean);
+        void ai_disregard(EntityList object_list, bool boolean);
 
         /// <summary>Instructs the ai in the given squad to get in all their vehicles</summary>
         void ai_enter_squad_vehicles(AI ai);
@@ -120,7 +120,7 @@ namespace OpenH2.Core.Scripting
         short ai_play_line_on_object(Entity entity, string string_id);
 
         /// <summary>if TRUE, *ALL* enemies will prefer to attack the specified units. if FALSE, removes the preference.</summary>
-        void ai_prefer_target(ObjectList units, bool boolean);
+        void ai_prefer_target(EntityList units, bool boolean);
 
         /// <summary>refreshes the health and grenade count of a group of actors, so they are as good as new</summary>
         void ai_renew(AI ai);
@@ -197,9 +197,6 @@ namespace OpenH2.Core.Scripting
 
         /// <summary>Returns true if the ai's units are ALL vitality pinned (see object_vitality_pinned)</summary>
         bool ai_vitality_pinned(AI ai);
-
-        /// <summary>evaluates the sequence of expressions in random order and returns the last value evaluated.</summary>
-        void begin_random(params Action[] expressions);
 
         /// <summary>evaluates the sequence of expressions in random order and returns the last value evaluated.</summary>
         void begin_random(params Func<Task>[] expressions);
@@ -724,13 +721,13 @@ namespace OpenH2.Core.Scripting
         short list_count(Entity e);
 
         /// <summary>returns the number of objects in a list</summary>
-        short list_count(ObjectList object_list);
+        short list_count(EntityList object_list);
 
         /// <summary>returns the number of objects in a list that aren't dead</summary>
-        short list_count_not_dead(ObjectList objects);
+        short list_count_not_dead(EntityList objects);
 
         /// <summary>returns an item in an object list.</summary>
-        Entity list_get(ObjectList object_list, int index);
+        Entity list_get(EntityList object_list, int index);
 
         /// <summary>sets the next loading screen to just fade to white</summary>
         void loading_screen_fade_to_white();
@@ -741,14 +738,8 @@ namespace OpenH2.Core.Scripting
         /// <summary>returns the maximum of all specified expressions.</summary>
         float max(float a, float b);
 
-        /// <summary>returns the maximum of all specified expressions.</summary>
-        short max(short a, short b);
-
         /// <summary>returns the minimum of all specified expressions.</summary>
         float min(float a, float b);
-
-        /// <summary>returns the minimum of all specified expressions.</summary>
-        short min(short a, short b);
 
         /// <summary>clears the mission objectives.</summary>
         void objectives_clear();
@@ -775,7 +766,7 @@ namespace OpenH2.Core.Scripting
         bool objects_can_see_flag(Entity entity, ScenarioTag.LocationFlagDefinition locationFlag, float floatValue);
 
         /// <summary>returns true if any of the specified units are looking within the specified number of degrees of the flag.</summary>
-        bool objects_can_see_flag(ObjectList list, ScenarioTag.LocationFlagDefinition locationFlag, float floatValue);
+        bool objects_can_see_flag(EntityList list, ScenarioTag.LocationFlagDefinition locationFlag, float floatValue);
 
         /// <summary>returns true if any of the specified units are looking within the specified number of degrees of the object.</summary>
         bool objects_can_see_object(Entity entity, EntityIdentifier obj, float degrees);
@@ -784,7 +775,7 @@ namespace OpenH2.Core.Scripting
         bool objects_can_see_object(float floatValue);
 
         /// <summary>returns true if any of the specified units are looking within the specified number of degrees of the object.</summary>
-        bool objects_can_see_object(ObjectList list, EntityIdentifier obj, float degrees);
+        bool objects_can_see_object(EntityList list, EntityIdentifier obj, float degrees);
 
         /// <summary>detaches from the given parent object the given child object</summary>
         void objects_detach();
@@ -799,16 +790,16 @@ namespace OpenH2.Core.Scripting
         float objects_distance_to_flag(Entity entity, ScenarioTag.LocationFlagDefinition locationFlag);
 
         /// <summary>returns minimum distance from any of the specified objects to the specified flag. (returns -1 if there are no objects, or no flag, to check)</summary>
-        float objects_distance_to_flag(ObjectList list, ScenarioTag.LocationFlagDefinition locationFlag);
+        float objects_distance_to_flag(EntityList list, ScenarioTag.LocationFlagDefinition locationFlag);
 
         /// <summary>returns minimum distance from any of the specified objects to the specified destination object. (returns -1 if there are no objects to check)</summary>
-        float objects_distance_to_object(ObjectList list, Entity entity);
+        float objects_distance_to_object(EntityList list, Entity entity);
 
         /// <summary>loads textures/geometry/sounds necessary to present objects that are about to come on-screen</summary>
         void objects_predict(Entity entity);
 
         /// <summary>loads textures/geometry/sounds necessary to present objects that are about to come on-screen</summary>
-        void objects_predict(ObjectList object_list);
+        void objects_predict(EntityList object_list);
 
         /// <summary>loads textures/geometry/sounds necessary to present objects that are about to come on-screen</summary>
         void objects_predict_high(Entity entity);
@@ -825,13 +816,13 @@ namespace OpenH2.Core.Scripting
         void object_cannot_take_damage(Entity entity);
 
         /// <summary>prevents an object from taking damage</summary>
-        void object_cannot_take_damage(ObjectList object_list);
+        void object_cannot_take_damage(EntityList object_list);
 
         /// <summary>allows an object to take damage again</summary>
         void object_can_take_damage(Entity entity);
 
         /// <summary>allows an object to take damage again</summary>
-        void object_can_take_damage(ObjectList object_list);
+        void object_can_take_damage(EntityList object_list);
 
         /// <summary>makes an object use the highest lod for the remainder of the levels' cutscenes.</summary>
         void object_cinematic_lod(bool boolean);
@@ -992,9 +983,6 @@ namespace OpenH2.Core.Scripting
         /// <summary>returns the first value pinned between the second two</summary>
         float pin(float value, float min, float max);
 
-        /// <summary>returns the first value pinned between the second two</summary>
-        short pin(short value, short min, short max);
-
         /// <summary>true if the first player is looking down</summary>
         bool player0_looking_down();
 
@@ -1002,7 +990,7 @@ namespace OpenH2.Core.Scripting
         bool player0_looking_up();
 
         /// <summary>returns a list of the players</summary>
-        ObjectList players();
+        EntityList players();
 
         /// <summary>returns true if any player has hit accept since the last call to (player_action_test_reset).</summary>
         bool player_action_test_accept();
@@ -1076,7 +1064,6 @@ namespace OpenH2.Core.Scripting
         /// <summary>guess</summary>
         void player_training_activate_stealth();
 
-
         /// <summary>ur...</summary>
         void play_credits();
 
@@ -1094,9 +1081,6 @@ namespace OpenH2.Core.Scripting
 
         /// <summary>sets the specified object as the special place that activates everything it sees.</summary>
         void pvs_set_object(Entity entity);
-
-        /// <summary>returns a random value in the range [lower bound, upper bound)</summary>
-        float random_range(float value, float value1);
 
         /// <summary>returns a random value in the range [lower bound, upper bound)</summary>
         int random_range(int value, int value1);
@@ -1216,16 +1200,16 @@ namespace OpenH2.Core.Scripting
         Unit unit(Entity entity);
 
         /// <summary>sets a group of units' current body and shield vitality</summary>
-        void units_set_current_vitality(ObjectList units, float body, float shield);
+        void units_set_current_vitality(EntityList units, float body, float shield);
 
         /// <summary>sets a group of units' maximum body and shield vitality</summary>
-        void units_set_maximum_vitality(ObjectList units, float body, float shield);
+        void units_set_maximum_vitality(EntityList units, float body, float shield);
 
         /// <summary>adds/resets the unit's health, shield, and inventory (weapons and grenades) to the named profile. resets if third parameter is true, adds if false. weapons will be marked as garbage if fourth parameter is true (for respawning equipment).</summary>
         void unit_add_equipment(Unit unit, ScenarioTag.StartingProfileDefinition starting_profile, bool reset, bool isGarbage);
 
         /// <summary>prevents any of the given units from dropping weapons or grenades when they die</summary>
-        void unit_doesnt_drop_items(ObjectList entities);
+        void unit_doesnt_drop_items(EntityList entities);
 
         /// <summary>makes a unit exit its vehicle</summary>
         void unit_exit_vehicle(Unit unit, short value);
@@ -1249,7 +1233,7 @@ namespace OpenH2.Core.Scripting
         void unit_impervious(Entity unit, bool boolean);
 
         /// <summary>prevents any of the given units from being knocked around or playing ping animations</summary>
-        void unit_impervious(ObjectList object_list, bool boolean);
+        void unit_impervious(EntityList object_list, bool boolean);
 
         /// <summary>returns true if the given unit is seated on a parent unit</summary>
         bool unit_in_vehicle();
@@ -1297,7 +1281,7 @@ namespace OpenH2.Core.Scripting
         void vehicle_load_magic(Entity vehicle, string vehicleSeat, Entity unit);
 
         /// <summary>makes a list of units (named or by encounter) magically get into a vehicle, in the substring-specified seats (e.g. CD-passenger... empty string matches all seats)</summary>
-        void vehicle_load_magic(Entity vehicle, string vehicleSeat, ObjectList units);
+        void vehicle_load_magic(Entity vehicle, string vehicleSeat, EntityList units);
 
         /// <summary>tests whether the named seat has a specified unit in it (use "" to test all seats for this unit)</summary>
         bool vehicle_test_seat(Vehicle vehicle, string seat, Unit unit);
@@ -1306,16 +1290,16 @@ namespace OpenH2.Core.Scripting
         bool vehicle_test_seat_list(Vehicle vehicle, string seat, Entity subject);
 
         /// <summary>tests whether the named seat has an object in the object list (use "" to test all seats for any unit in the list)</summary>
-        bool vehicle_test_seat_list(Vehicle vehicle, string seat, ObjectList subjects);
+        bool vehicle_test_seat_list(Vehicle vehicle, string seat, EntityList subjects);
 
         /// <summary>makes units get out of an object from the substring-specified seats (e.g. CD-passenger... empty string matches all seats)</summary>
         void vehicle_unload(Entity entity, string unit_seat_mapping);
 
         /// <summary>returns list of objects in volume or (max 128).</summary>
-        ObjectList volume_return_objects(ScenarioTag.TriggerVolume trigger_volume);
+        EntityList volume_return_objects(ScenarioTag.TriggerVolume trigger_volume);
 
         /// <summary>returns list of objects in volume or (max 128).</summary>
-        ObjectList volume_return_objects_by_type(ScenarioTag.TriggerVolume trigger_volume, int value);
+        EntityList volume_return_objects_by_type(ScenarioTag.TriggerVolume trigger_volume, int value);
 
         /// <summary>moves all players outside a specified trigger volume to a specified flag.</summary>
         void volume_teleport_players_not_inside(ScenarioTag.TriggerVolume trigger_volume, ScenarioTag.LocationFlagDefinition cutscene_flag);
@@ -1330,13 +1314,13 @@ namespace OpenH2.Core.Scripting
         bool volume_test_objects(ScenarioTag.TriggerVolume trigger, Entity entity);
 
         /// <summary>returns true if any of the specified objects are within the specified volume. trigger volume must have been postprocessed</summary>
-        bool volume_test_objects(ScenarioTag.TriggerVolume trigger_volume, ObjectList object_list);
+        bool volume_test_objects(ScenarioTag.TriggerVolume trigger_volume, EntityList object_list);
 
         /// <summary>returns true if any (rb: all?) of the specified objects are within the specified volume. trigger volume must have been postprocessed</summary>
         bool volume_test_objects_all(ScenarioTag.TriggerVolume trigger, Entity entity);
 
         /// <summary>returns true if any (rb: all?) of the specified objects are within the specified volume. trigger volume must have been postprocessed</summary>
-        bool volume_test_objects_all(ScenarioTag.TriggerVolume trigger, ObjectList object_list);
+        bool volume_test_objects_all(ScenarioTag.TriggerVolume trigger, EntityList object_list);
 
         /// <summary>wakes a sleeping script in the next update.</summary>
         void wake(ScriptReference script_name);

@@ -8,28 +8,24 @@
     public class Device : Entity { }
     public class EntityIdentifier { }
     public class Animation { }
-    public class ObjectList 
+    public class EntityList 
     {
         public Entity[] Objects { get; set; }
 
-        public static implicit operator Entity (ObjectList o) => o.Objects[0];
+        public static implicit operator Entity (EntityList o) => o.Objects[0];
     }
-    public class StringId { }
-    //public class ScriptReference { }
+
     public delegate Task ScriptReference();
 
     public class Bsp { }
     public class Effect { }
     public class LoopingSound { }
-    public class GameDifficulty { }
     public class Unit : Entity { }
-    public class Scenery : Entity { }
 
     public class NavigationPoint { }
     public class Model { }
     public class Team { }
     public class Vehicle : Unit { }
-    public class Weapon : Entity { }
     public class WeaponReference { }
 
     public class AIBehavior { }
