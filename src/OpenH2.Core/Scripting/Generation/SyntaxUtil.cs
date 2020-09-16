@@ -2,6 +2,7 @@
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using OpenH2.Core.Extensions;
+using OpenH2.Core.GameObjects;
 using OpenH2.Core.Tags.Scenario;
 using System;
 using System.Collections.Generic;
@@ -38,6 +39,12 @@ namespace OpenH2.Core.Scripting.Generation
                 ScriptDataType.Weapon => ParseTypeName(nameof(ScenarioTag) + "." + nameof(ScenarioTag.WeaponPlacement)),
                 ScriptDataType.Scenery => ParseTypeName(nameof(ScenarioTag) + "." + nameof(ScenarioTag.SceneryInstance)),
 
+                ScriptDataType.Entity => ParseTypeName(nameof(IGameObject)),
+                ScriptDataType.Unit => ParseTypeName(nameof(IUnit)),
+                ScriptDataType.Vehicle => ParseTypeName(nameof(IVehicle)),
+                ScriptDataType.AI => ParseTypeName(nameof(IAiActor)),
+                ScriptDataType.Device => ParseTypeName(nameof(IDevice)),
+
                 _ => Enum.IsDefined(typeof(ScriptDataType), dataType)
                     ? ParseTypeName(dataType.ToString())
                     : ParseTypeName(nameof(ScriptDataType) + dataType.ToString()),
@@ -49,7 +56,7 @@ namespace OpenH2.Core.Scripting.Generation
             return type switch
             {
                 ScenarioTag.WellKnownVarType.Biped => $"{nameof(ScenarioTag)}.{nameof(ScenarioTag.BipedInstance)}",
-                ScenarioTag.WellKnownVarType.Vehicle => ScriptDataType.Vehicle.ToString(),
+                ScenarioTag.WellKnownVarType.Vehicle => nameof(IVehicle),
                 ScenarioTag.WellKnownVarType.Weapon => $"{nameof(ScenarioTag)}.{nameof(ScenarioTag.WeaponPlacement)}",
                 ScenarioTag.WellKnownVarType.Equipment => $"{nameof(ScenarioTag)}.{nameof(ScenarioTag.EquipmentPlacement)}",
                 ScenarioTag.WellKnownVarType.Scenery => $"{nameof(ScenarioTag)}.{nameof(ScenarioTag.SceneryInstance)}",
@@ -57,7 +64,7 @@ namespace OpenH2.Core.Scripting.Generation
                 ScenarioTag.WellKnownVarType.Controller => $"{nameof(ScenarioTag)}.{nameof(ScenarioTag.ControllerInstance)}",
                 ScenarioTag.WellKnownVarType.Sound => $"{nameof(ScenarioTag)}.{nameof(ScenarioTag.SoundSceneryInstance)}",
                 ScenarioTag.WellKnownVarType.Bloc => $"{nameof(ScenarioTag)}.{nameof(ScenarioTag.BlocInstance)}",
-                _ => typeof(Entity).Name
+                _ => typeof(IGameObject).Name
             };
         }
 
@@ -88,7 +95,7 @@ namespace OpenH2.Core.Scripting.Generation
             { typeof(string), ScriptDataType.String },
             { typeof(bool), ScriptDataType.Boolean },
             { typeof(Team), ScriptDataType.Team },
-            { typeof(AI), ScriptDataType.AI },
+            { typeof(IAiActor), ScriptDataType.AI },
             { typeof(AIBehavior), ScriptDataType.AIBehavior },
             { typeof(DamageState), ScriptDataType.DamageState },
             { typeof(NavigationPoint), ScriptDataType.NavigationPoint }

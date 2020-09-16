@@ -1,4 +1,5 @@
-﻿using OpenH2.Core.Scripting;
+﻿using OpenH2.Core.GameObjects;
+using OpenH2.Core.Scripting;
 
 namespace OpenH2.Engine.Scripting
 {
@@ -26,7 +27,7 @@ namespace OpenH2.Engine.Scripting
         }
 
         /// <summary>Actor aims at the object for the duration of the cs, or until overridden (overrides look)</summary>
-        public void cs_aim_object(bool boolean, Entity entity)
+        public void cs_aim_object(bool boolean, IGameObject entity)
         {
         }
 
@@ -41,7 +42,7 @@ namespace OpenH2.Engine.Scripting
         }
 
         /// <summary></summary>
-        public void cs_approach(Entity entity, float real, float real1, float real12)
+        public void cs_approach(IGameObject entity, float real, float real1, float real12)
         {
         }
 
@@ -61,13 +62,13 @@ namespace OpenH2.Engine.Scripting
         }
 
         /// <summary>Returns true if the command script is in the ai's cs queue</summary>
-        public bool cs_command_script_queued(AI ai, AIScript ai_command_script)
+        public bool cs_command_script_queued(IAiActor ai, AIScript ai_command_script)
         {
             return default(bool);
         }
 
         /// <summary>Returns true if the ai is running the command script in question</summary>
-        public bool cs_command_script_running(AI ai, AIScript ai_command_script)
+        public bool cs_command_script_running(IAiActor ai, AIScript ai_command_script)
         {
             return default(bool);
         }
@@ -118,7 +119,7 @@ namespace OpenH2.Engine.Scripting
         }
 
         /// <summary>Actor faces exactly the given object for the duration of the cs, or until overridden (overrides aim, look)</summary>
-        public void cs_face_object(bool boolean, Entity entity)
+        public void cs_face_object(bool boolean, IGameObject entity)
         {
         }
 
@@ -178,7 +179,7 @@ namespace OpenH2.Engine.Scripting
         }
 
         /// <summary>Actor gets in the appropriate vehicle</summary>
-        public void cs_go_to_vehicle(Vehicle vehicle)
+        public void cs_go_to_vehicle(IVehicle vehicle)
         {
         }
 
@@ -213,7 +214,7 @@ namespace OpenH2.Engine.Scripting
         }
 
         /// <summary>Actor looks at the object for the duration of the cs, or until overridden</summary>
-        public void cs_look_object(bool boolean, Entity entity)
+        public void cs_look_object(bool boolean, IGameObject entity)
         {
         }
 
@@ -249,12 +250,12 @@ namespace OpenH2.Engine.Scripting
         }
 
         /// <summary>Add a command script onto the end of an actor's command script queue</summary>
-        public void cs_queue_command_script(AI ai, AIScript ai_command_script)
+        public void cs_queue_command_script(IAiActor ai, AIScript ai_command_script)
         {
         }
 
         /// <summary>Causes the specified actor(s) to start executing a command script immediately (discarding any other command scripts in the queue)</summary>
-        public void cs_run_command_script(AI ai, AIScript ai_command_script)
+        public void cs_run_command_script(IAiActor ai, AIScript ai_command_script)
         {
         }
 
@@ -269,7 +270,7 @@ namespace OpenH2.Engine.Scripting
         }
 
         /// <summary>Actor is allowed to shoot at its target or not</summary>
-        public void cs_shoot(bool boolean, Entity entity)
+        public void cs_shoot(bool boolean, IGameObject entity)
         {
         }
 
@@ -279,12 +280,12 @@ namespace OpenH2.Engine.Scripting
         }
 
         /// <summary>Push a command script to the top of the actor's command script queue</summary>
-        public void cs_stack_command_script(AI ai, AIScript ai_command_script)
+        public void cs_stack_command_script(IAiActor ai, AIScript ai_command_script)
         {
         }
 
         /// <summary></summary>
-        public void cs_start_approach(Entity entity, float real, float real1, float real12)
+        public void cs_start_approach(IGameObject entity, float real, float real1, float real12)
         {
         }
 

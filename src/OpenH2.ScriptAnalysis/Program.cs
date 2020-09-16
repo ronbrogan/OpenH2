@@ -26,10 +26,10 @@ namespace OpenH2.ScriptAnalysis
 
             foreach(var map in maps)
             {
-                //if (map.Contains("0") == false)
-                //{
-                //    continue;
-                //}
+                if (map.Contains("0") == false)
+                {
+                    continue;
+                }
 
                 var factory = new MapFactory(Path.GetDirectoryName(map), NullMaterialFactory.Instance);
                 var scene = factory.FromFile(File.OpenRead(map));

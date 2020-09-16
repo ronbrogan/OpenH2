@@ -1,4 +1,5 @@
-﻿using OpenH2.Core.Representations;
+﻿using OpenH2.Core.GameObjects;
+using OpenH2.Core.Representations;
 using OpenH2.Core.Scripting;
 using OpenH2.Core.Tags.Layout;
 using OpenH2.Serialization.Layout;
@@ -23,7 +24,7 @@ namespace OpenH2.Core.Tags.Scenario
         }
 
         [FixedLength(84)]
-        public class WeaponPlacement : Entity
+        public class WeaponPlacement : IGameObject
         {
             [PrimitiveValue(0)]
             public ushort Index { get; set; }
@@ -56,7 +57,7 @@ namespace OpenH2.Core.Tags.Scenario
         }
 
         [FixedLength(76)]
-        public class BlocInstance : Entity
+        public class BlocInstance : IGameObject
         {
             [PrimitiveValue(0)]
             public ushort BlocDefinitionIndex { get; set; }

@@ -1,4 +1,5 @@
-﻿using OpenH2.Core.Scripting;
+﻿using OpenH2.Core.GameObjects;
+using OpenH2.Core.Scripting;
 using OpenH2.Core.Tags.Scenario;
 using System.Threading.Tasks;
 
@@ -14,7 +15,7 @@ namespace OpenH2.Engine.Scripting
         }
 
         /// <summary>predict resources at a frame in camera animation.</summary>
-        public void camera_predict_resources_at_frame(Animation animation, string /*id*/ emotion, Unit unit, ScenarioTag.LocationFlagDefinition locationFlag, int intValue)
+        public void camera_predict_resources_at_frame(Animation animation, string /*id*/ emotion, IUnit unit, ScenarioTag.LocationFlagDefinition locationFlag, int intValue)
         {
         }
 
@@ -49,27 +50,27 @@ namespace OpenH2.Engine.Scripting
         }
 
         /// <summary>loads textures necessary to draw an object that's about to come on-screen.</summary>
-        public void object_type_predict(Entity entity)
+        public void object_type_predict(IGameObject entity)
         {
         }
 
         /// <summary>loads textures necessary to draw an object that's about to come on-screen.</summary>
-        public void object_type_predict_high(Entity entity)
+        public void object_type_predict_high(IGameObject entity)
         {
         }
 
         /// <summary>loads textures/geometry/sounds necessary to present objects that are about to come on-screen</summary>
-        public void objects_predict(EntityList object_list)
+        public void objects_predict(GameObjectList object_list)
         {
         }
 
         /// <summary>loads textures/geometry/sounds necessary to present objects that are about to come on-screen</summary>
-        public void objects_predict(Entity entity)
+        public void objects_predict(IGameObject entity)
         {
         }
 
         /// <summary>loads textures/geometry/sounds necessary to present objects that are about to come on-screen</summary>
-        public void objects_predict_high(Entity entity)
+        public void objects_predict_high(IGameObject entity)
         {
         }
 
@@ -89,7 +90,7 @@ namespace OpenH2.Engine.Scripting
         }
 
         /// <summary>sets the specified object as the special place that activates everything it sees.</summary>
-        public void pvs_set_object(Entity entity)
+        public void pvs_set_object(IGameObject entity)
         {
         }
 
@@ -110,7 +111,7 @@ namespace OpenH2.Engine.Scripting
         }
 
         /// <summary>enable/disable the specified unit to receive cinematic shadows where the shadow is focused about a radius around a marker name</summary>
-        public void render_lights_enable_cinematic_shadow(bool boolean, Entity entity, string /*id*/ string_id, float real)
+        public void render_lights_enable_cinematic_shadow(bool boolean, IGameObject entity, string /*id*/ string_id, float real)
         {
         }
 

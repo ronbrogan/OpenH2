@@ -1,4 +1,5 @@
-﻿using OpenH2.Core.Scripting;
+﻿using OpenH2.Core.GameObjects;
+using OpenH2.Core.Scripting;
 
 namespace OpenH2.Engine.Scripting
 {
@@ -16,12 +17,12 @@ namespace OpenH2.Engine.Scripting
         }
 
         /// <summary>plays an impulse sound from the specified source object (or "none"), with the specified scale.</summary>
-        public void sound_impulse_start(object sound, Entity entity, float floatValue)
+        public void sound_impulse_start(object sound, IGameObject entity, float floatValue)
         {
         }
 
         /// <summary>plays an impulse sound from the specified source object (or "none"), with the specified scale and effect.</summary>
-        public void sound_impulse_start_effect(ReferenceGet sound, Entity entity, float floatValue, string /*id*/ effect)
+        public void sound_impulse_start_effect(ReferenceGet sound, IGameObject entity, float floatValue, string /*id*/ effect)
         {
         }
 
@@ -31,12 +32,12 @@ namespace OpenH2.Engine.Scripting
         }
 
         /// <summary>plays an impulse sound from the specified source object (or "none"), with the specified scale.</summary>
-        public void sound_impulse_trigger(Entity sound, float floatValue, int intValue)
+        public void sound_impulse_trigger(IGameObject sound, float floatValue, int intValue)
         {
         }
 
         /// <summary>plays an impulse sound from the specified source object (or "none"), with the specified scale.</summary>
-        public void sound_impulse_trigger(Entity sound, Entity source, float floatValue, int intValue)
+        public void sound_impulse_trigger(IGameObject sound, IGameObject source, float floatValue, int intValue)
         {
         }
 
@@ -46,7 +47,7 @@ namespace OpenH2.Engine.Scripting
         }
 
         /// <summary>plays a looping sound from the specified source object (or "none"), with the specified scale.</summary>
-        public void sound_looping_start(LoopingSound looping_sound, Entity entity, float real)
+        public void sound_looping_start(LoopingSound looping_sound, IGameObject entity, float real)
         {
         }
 

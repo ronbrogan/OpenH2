@@ -1,4 +1,5 @@
-﻿using OpenH2.Core.Scripting;
+﻿using OpenH2.Core.GameObjects;
+using OpenH2.Core.Scripting;
 
 namespace OpenH2.Engine.Scripting
 {
@@ -146,9 +147,9 @@ namespace OpenH2.Engine.Scripting
         }
 
         /// <summary>returns a list of the players</summary>
-        public EntityList players()
+        public GameObjectList players()
         {
-            return new EntityList() { Objects = new Entity[] { null } };
+            return new GameObjectList() { Objects = new IGameObject[] { null } };
         }
     }
 }

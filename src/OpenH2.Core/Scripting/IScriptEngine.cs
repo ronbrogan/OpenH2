@@ -1,3 +1,4 @@
+using OpenH2.Core.GameObjects;
 using OpenH2.Core.Scripting;
 using OpenH2.Core.Tags.Scenario;
 using System;
@@ -12,191 +13,191 @@ namespace OpenH2.Core.Scripting
         void activate_team_nav_point_flag(NavigationPoint navpoint, Team team, ScenarioTag.LocationFlagDefinition cutscene_flag, float real);
 
         /// <summary>activates a nav point type <string> attached to a team anchored to an object with a vertical offset <real>. If the player is not local to the machine, this will fail</summary>
-        void activate_team_nav_point_object(NavigationPoint navpoint, Team team, Entity entity, float real);
+        void activate_team_nav_point_object(NavigationPoint navpoint, Team team, IGameObject entity, float real);
 
         /// <summary>converts an ai reference to an object list.</summary>
-        EntityList ai_actors(AI ai);
+        GameObjectList ai_actors(IAiActor ai);
 
         /// <summary>creates an allegiance between two teams.</summary>
         void ai_allegiance(Team team, Team team1);
 
         /// <summary>attaches the specified list of units to the specified encounter.</summary>
-        void ai_attach_units(EntityList units, AI ai);
+        void ai_attach_units(GameObjectList units, IAiActor ai);
 
         /// <summary>attaches the specified list of units to the specified encounter.</summary>
-        void ai_attach_units(Unit unit, AI ai);
+        void ai_attach_units(IUnit unit, IAiActor ai);
 
         /// <summary>forces a group of actors to start or stop berserking</summary>
-        void ai_berserk(AI ai, bool boolean);
+        void ai_berserk(IAiActor ai, bool boolean);
 
         /// <summary>makes a group of actors braindead, or restores them to life (in their initial state)</summary>
-        void ai_braindead(AI ai, bool boolean);
+        void ai_braindead(IAiActor ai, bool boolean);
 
         /// <summary>AI cannot die from damage (as opposed to by scripting)</summary>
-        void ai_cannot_die(AI ai, bool boolean);
+        void ai_cannot_die(IAiActor ai, bool boolean);
 
         /// <summary>Returns the highest integer combat status in the given squad-group/squad/actor</summary>
-        short ai_combat_status(AI ai);
+        short ai_combat_status(IAiActor ai);
 
         /// <summary>turn combat dialogue on/off</summary>
         void ai_dialogue_enable(bool boolean);
 
         /// <summary>enables or disables automatic garbage collection for actors in the specified encounter and/or squad.</summary>
-        void ai_disposable(AI ai, bool boolean);
+        void ai_disposable(IAiActor ai, bool boolean);
 
         /// <summary>if TRUE, forces all actors to completely disregard the specified units, otherwise lets them acknowledge the units again</summary>
-        void ai_disregard(Entity unit, bool boolean);
+        void ai_disregard(IGameObject unit, bool boolean);
 
         /// <summary>if TRUE, forces all actors to completely disregard the specified units, otherwise lets them acknowledge the units again</summary>
-        void ai_disregard(EntityList object_list, bool boolean);
+        void ai_disregard(GameObjectList object_list, bool boolean);
 
         /// <summary>Instructs the ai in the given squad to get in all their vehicles</summary>
-        void ai_enter_squad_vehicles(AI ai);
+        void ai_enter_squad_vehicles(IAiActor ai);
 
         /// <summary>erases the specified encounter and/or squad.</summary>
-        void ai_erase(AI ai);
+        void ai_erase(IAiActor ai);
 
         /// <summary>erases all AI.</summary>
         void ai_erase_all();
 
         /// <summary>return the number of actors that are fighting in a squad or squad_group</summary>
-        short ai_fighting_count(AI ai);
+        short ai_fighting_count(IAiActor ai);
 
         /// <summary>returns the unit/object corresponding to the given actor</summary>
-        Entity ai_get_object(AI ai);
+        IGameObject ai_get_object(IAiActor ai);
 
         /// <summary>returns the unit/object corresponding to the given actor</summary>
-        Unit ai_get_unit(AI ai);
+        IUnit ai_get_unit(IAiActor ai);
 
         /// <summary>instantly kills the specified encounter and/or squad.</summary>
-        void ai_kill(AI ai);
+        void ai_kill(IAiActor ai);
 
         /// <summary>instantly and silently (no animation or sound played) kills the specified encounter and/or squad.</summary>
-        void ai_kill_silent(AI ai);
+        void ai_kill_silent(IAiActor ai);
 
         /// <summary>return the number of living actors in the specified encounter and/or squad.</summary>
-        short ai_living_count(AI ai);
+        short ai_living_count(IAiActor ai);
 
         /// <summary>Make one squad magically aware of another.</summary>
-        void ai_magically_see(AI ai, AI ai1);
+        void ai_magically_see(IAiActor ai, IAiActor ai1);
 
         /// <summary>Make a squad magically aware of a particular object.</summary>
-        void ai_magically_see_object(AI ai, Entity value);
+        void ai_magically_see_object(IAiActor ai, IGameObject value);
 
         /// <summary>makes all or part of an encounter move to another encounter.</summary>
-        void ai_migrate(AI ai);
+        void ai_migrate(IAiActor ai);
 
         /// <summary>makes all or part of an encounter move to another encounter.</summary>
-        void ai_migrate(AI ai, AI ai1);
+        void ai_migrate(IAiActor ai, IAiActor ai1);
 
         /// <summary>return the number of non-swarm actors in the specified encounter and/or squad.</summary>
-        short ai_nonswarm_count(AI ai);
+        short ai_nonswarm_count(IAiActor ai);
 
         /// <summary>Don't use this for anything other than bug 3926.  AI magically cancels vehicle oversteer.</summary>
-        void ai_overcomes_oversteer(AI ai, bool boolean);
+        void ai_overcomes_oversteer(IAiActor ai, bool boolean);
 
         /// <summary>places the specified squad on the map.</summary>
-        void ai_place(AI ai);
+        void ai_place(IAiActor ai);
 
         /// <summary>places the specified squad on the map.</summary>
-        void ai_place(AI ai, float value);
+        void ai_place(IAiActor ai, float value);
 
         /// <summary>places the specified squad on the map.</summary>
-        void ai_place(AI ai, short value);
+        void ai_place(IAiActor ai, short value);
 
         /// <summary>places the specified squad (1st arg) on the map in the vehicles belonging to the specified vehicle squad (2nd arg).</summary>
-        void ai_place_in_vehicle(AI ai, AI ai1);
+        void ai_place_in_vehicle(IAiActor ai, IAiActor ai1);
 
         /// <summary>Play the given mission dialogue line on the given ai</summary>
-        short ai_play_line(AI ai, string string_id);
+        short ai_play_line(IAiActor ai, string string_id);
 
         /// <summary>Play the given mission dialogue line on the given ai, directing the ai's gaze at the nearest visible player</summary>
-        short ai_play_line_at_player(AI ai, string string_id);
+        short ai_play_line_at_player(IAiActor ai, string string_id);
 
         /// <summary>Play the given mission dialogue line on the given ai, directing the ai's gaze at the nearest visible player</summary>
         short ai_play_line_at_player(string emotion);
 
         /// <summary>Play the given mission dialogue line on the given object (uses first available variant)</summary>
-        short ai_play_line_on_object(Entity entity, string string_id);
+        short ai_play_line_on_object(IGameObject entity, string string_id);
 
         /// <summary>if TRUE, *ALL* enemies will prefer to attack the specified units. if FALSE, removes the preference.</summary>
-        void ai_prefer_target(EntityList units, bool boolean);
+        void ai_prefer_target(GameObjectList units, bool boolean);
 
         /// <summary>refreshes the health and grenade count of a group of actors, so they are as good as new</summary>
-        void ai_renew(AI ai);
+        void ai_renew(IAiActor ai);
 
         /// <summary>Start the named scene, with the named command script on the named squad</summary>
         bool ai_scene(string emotion, AIScript aiScript);
 
         /// <summary>Start the named scene, with the named command script on the named squad</summary>
-        bool ai_scene(string string_id, AIScript ai_command_script, AI ai);
+        bool ai_scene(string string_id, AIScript ai_command_script, IAiActor ai);
 
         /// <summary>Start the named scene, with the named command script on the named squad</summary>
-        bool ai_scene(string string_id, AIScript ai_command_script, AI ai, AI ai1);
+        bool ai_scene(string string_id, AIScript ai_command_script, IAiActor ai, IAiActor ai1);
 
         /// <summary>Turn on active camoflage on actor/squad/squad-group</summary>
-        void ai_set_active_camo(AI ai, bool boolean);
+        void ai_set_active_camo(IAiActor ai, bool boolean);
 
         /// <summary>enables or disables sight for actors in the specified encounter.</summary>
-        void ai_set_blind(AI ai, bool boolean);
+        void ai_set_blind(IAiActor ai, bool boolean);
 
         /// <summary>enables or disables hearing for actors in the specified encounter.</summary>
-        void ai_set_deaf(AI ai, bool boolean);
+        void ai_set_deaf(IAiActor ai, bool boolean);
 
         /// <summary>Takes the squad or squad group (arg1) and gives it the order (arg3) in zone (arg2). Use the zone_name/order_name format</summary>
-        void ai_set_orders(AI ai, ScenarioTag.AiOrderDefinition ai_orders);
+        void ai_set_orders(IAiActor ai, ScenarioTag.AiOrderDefinition ai_orders);
 
         /// <summary>returns the number of actors spawned in the given squad or squad group</summary>
-        short ai_spawn_count(AI ai);
+        short ai_spawn_count(IAiActor ai);
 
         /// <summary>return the current strength (average body vitality from 0-1) of the specified encounter and/or squad.</summary>
-        float ai_strength(AI ai);
+        float ai_strength(IAiActor ai);
 
         /// <summary>Turn on/off combat suppression on actor/squad/squad-group</summary>
-        void ai_suppress_combat(AI ai, bool boolean);
+        void ai_suppress_combat(IAiActor ai, bool boolean);
 
         /// <summary>return the number of swarm actors in the specified encounter and/or squad.</summary>
-        short ai_swarm_count(AI ai);
+        short ai_swarm_count(IAiActor ai);
 
         /// <summary>teleports a group of actors to the starting locations of their current squad(s) if they are currently outside the world.</summary>
-        void ai_teleport_to_starting_location_if_outside_bsp(AI ai);
+        void ai_teleport_to_starting_location_if_outside_bsp(IAiActor ai);
 
         /// <summary>Tests the named trigger on the named squad</summary>
-        bool ai_trigger_test(string value, AI ai);
+        bool ai_trigger_test(string value, IAiActor ai);
 
         /// <summary>tells a group of actors to get into a vehicle... does not interrupt any actors who are already going to vehicles</summary>
-        void ai_vehicle_enter(AI ai);
+        void ai_vehicle_enter(IAiActor ai);
 
         /// <summary>tells a group of actors to get into a vehicle... does not interrupt any actors who are already going to vehicles</summary>
-        void ai_vehicle_enter(AI ai, string unit);
+        void ai_vehicle_enter(IAiActor ai, string unit);
 
         /// <summary>tells a group of actors to get into a vehicle... does not interrupt any actors who are already going to vehicles</summary>
-        void ai_vehicle_enter(AI ai, Unit unit, string unit_seat_mapping = null);
+        void ai_vehicle_enter(IAiActor ai, IUnit unit, string unit_seat_mapping = null);
 
         /// <summary>the given group of actors is snapped into a vehicle, in the substring-specified seats (e.g. passenger for pelican)... does not interrupt any actors who are already going to vehicles</summary>
-        void ai_vehicle_enter_immediate(AI ai, Unit unit, string seat = null);
+        void ai_vehicle_enter_immediate(IAiActor ai, IUnit unit, string seat = null);
 
         /// <summary>tells a group of actors to get out of any vehicles that they are in</summary>
-        void ai_vehicle_exit(AI ai);
+        void ai_vehicle_exit(IAiActor ai);
 
 
         /// <summary>Returns the vehicle that the given actor is in.</summary>
-        Vehicle ai_vehicle_get(AI ai);
+        IVehicle ai_vehicle_get(IAiActor ai);
 
         /// <summary>Returns the vehicle that was spawned at the given starting location.</summary>
-        Vehicle ai_vehicle_get_from_starting_location(AI ai);
+        IVehicle ai_vehicle_get_from_starting_location(IAiActor ai);
 
         /// <summary>Reserves the given vehicle (so that AI may not enter it</summary>
-        void ai_vehicle_reserve(Vehicle vehicle, bool boolean);
+        void ai_vehicle_reserve(IVehicle vehicle, bool boolean);
 
         /// <summary>Reserves the given seat on the given vehicle (so that AI may not enter it</summary>
         void ai_vehicle_reserve_seat(string emotion, bool boolean);
 
         /// <summary>Reserves the given seat on the given vehicle (so that AI may not enter it</summary>
-        void ai_vehicle_reserve_seat(Vehicle vehicle, string string_id, bool boolean);
+        void ai_vehicle_reserve_seat(IVehicle vehicle, string string_id, bool boolean);
 
         /// <summary>Returns true if the ai's units are ALL vitality pinned (see object_vitality_pinned)</summary>
-        bool ai_vitality_pinned(AI ai);
+        bool ai_vitality_pinned(IAiActor ai);
 
         /// <summary>evaluates the sequence of expressions in random order and returns the last value evaluated.</summary>
         void begin_random(params Func<Task>[] expressions);
@@ -205,7 +206,7 @@ namespace OpenH2.Core.Scripting
         bool bink_done();
 
         /// <summary>given a dead biped, turns on ragdoll</summary>
-        void biped_ragdoll(Unit unit);
+        void biped_ragdoll(IUnit unit);
 
         /// <summary>call this to force texture and geometry cache to block until satiated</summary>
         Task cache_block_for_one_frame();
@@ -214,7 +215,7 @@ namespace OpenH2.Core.Scripting
         void camera_control(bool boolean);
 
         /// <summary>predict resources at a frame in camera animation.</summary>
-        void camera_predict_resources_at_frame(Animation animation, string emotion, Unit unit, ScenarioTag.LocationFlagDefinition locationFlag, int intValue);
+        void camera_predict_resources_at_frame(Animation animation, string emotion, IUnit unit, ScenarioTag.LocationFlagDefinition locationFlag, int intValue);
 
         /// <summary>predict resources given a camera point</summary>
         void camera_predict_resources_at_point(ScenarioTag.CameraPathTarget cutscene_camera_point);
@@ -223,7 +224,7 @@ namespace OpenH2.Core.Scripting
         void camera_set(ScenarioTag.CameraPathTarget cutscene_camera_point, short value);
 
         /// <summary>begins a prerecorded camera animation synchronized to unit relative to cutscene flag.</summary>
-        void camera_set_animation_relative(Animation animation, string id, Unit unit, ScenarioTag.LocationFlagDefinition locationFlag);
+        void camera_set_animation_relative(Animation animation, string id, IUnit unit, ScenarioTag.LocationFlagDefinition locationFlag);
 
         /// <summary>sets the field of view</summary>
         void camera_set_field_of_view(float degrees, short ticks);
@@ -235,7 +236,7 @@ namespace OpenH2.Core.Scripting
         void cheat_active_camouflage_by_player(short value, bool boolean);
 
         /// <summary>clone the first player's most reasonable weapon and attach it to the specified object's marker</summary>
-        void cinematic_clone_players_weapon(Entity entity, string string_id, string string_id1);
+        void cinematic_clone_players_weapon(IGameObject entity, string string_id, string string_id1);
 
         /// <summary>enable/disable ambience details in cinematics</summary>
         void cinematic_enable_ambience_details(bool boolean);
@@ -325,13 +326,13 @@ namespace OpenH2.Core.Scripting
         void cs_aim_object(bool boolean);
 
         /// <summary>Actor aims at the object for the duration of the cs, or until overridden (overrides look)</summary>
-        void cs_aim_object(bool boolean, Entity entity);
+        void cs_aim_object(bool boolean, IGameObject entity);
 
         /// <summary>Actor aims at nearest player for the duration of the cs, or until overridden (overrides look)</summary>
         void cs_aim_player(bool boolean);
 
         /// <summary></summary>
-        void cs_approach(Entity entity, float real, float real1, float real12);
+        void cs_approach(IGameObject entity, float real, float real1, float real12);
 
         /// <summary></summary>
         void cs_approach(float floatValue, float floatValue1, float floatValue2);
@@ -343,10 +344,10 @@ namespace OpenH2.Core.Scripting
         void cs_approach_stop();
 
         /// <summary>Returns true if the command script is in the ai's cs queue</summary>
-        bool cs_command_script_queued(AI ai, AIScript ai_command_script);
+        bool cs_command_script_queued(IAiActor ai, AIScript ai_command_script);
 
         /// <summary>Returns true if the ai is running the command script in question</summary>
-        bool cs_command_script_running(AI ai, AIScript ai_command_script);
+        bool cs_command_script_running(IAiActor ai, AIScript ai_command_script);
 
         /// <summary>Actor crouches for the remainder of the command script, or until overridden</summary>
         void cs_crouch(bool boolean);
@@ -376,7 +377,7 @@ namespace OpenH2.Core.Scripting
         void cs_face(bool boolean, SpatialPoint point = null);
 
         /// <summary>Actor faces exactly the given object for the duration of the cs, or until overridden (overrides aim, look)</summary>
-        void cs_face_object(bool boolean, Entity entity);
+        void cs_face_object(bool boolean, IGameObject entity);
 
         /// <summary>Actor faces exactly the nearest player for the duration of the cs, or until overridden (overrides aim, look)</summary>
         void cs_face_player(bool boolean);
@@ -412,7 +413,7 @@ namespace OpenH2.Core.Scripting
         void cs_go_to_vehicle();
 
         /// <summary>Actor gets in the appropriate vehicle</summary>
-        void cs_go_to_vehicle(Vehicle vehicle);
+        void cs_go_to_vehicle(IVehicle vehicle);
 
         /// <summary>Actor throws a grenade, either by tossing (arg2=0), lobbing (1) or bouncing (2)</summary>
         void cs_grenade(SpatialPoint point, int action);
@@ -433,7 +434,7 @@ namespace OpenH2.Core.Scripting
         void cs_look_object(bool boolean);
 
         /// <summary>Actor looks at the object for the duration of the cs, or until overridden</summary>
-        void cs_look_object(bool boolean, Entity entity);
+        void cs_look_object(bool boolean, IGameObject entity);
 
         /// <summary>Actor looks at nearest player for the duration of the cs, or until overridden</summary>
         void cs_look_player(bool boolean);
@@ -454,10 +455,10 @@ namespace OpenH2.Core.Scripting
         void cs_play_line(string string_id);
 
         /// <summary>Add a command script onto the end of an actor's command script queue</summary>
-        void cs_queue_command_script(AI ai, AIScript ai_command_script);
+        void cs_queue_command_script(IAiActor ai, AIScript ai_command_script);
 
         /// <summary>Causes the specified actor(s) to start executing a command script immediately (discarding any other command scripts in the queue)</summary>
-        void cs_run_command_script(AI ai, AIScript ai_command_script);
+        void cs_run_command_script(IAiActor ai, AIScript ai_command_script);
 
         /// <summary>Actor performs the indicated behavior</summary>
         void cs_set_behavior(AIBehavior ai_behavior);
@@ -466,16 +467,16 @@ namespace OpenH2.Core.Scripting
         void cs_shoot(bool boolean);
 
         /// <summary>Actor is allowed to shoot at its target or not</summary>
-        void cs_shoot(bool boolean, Entity entity);
+        void cs_shoot(bool boolean, IGameObject entity);
 
         /// <summary>Actor shoots at given point</summary>
         void cs_shoot_point(bool boolean, SpatialPoint point);
 
         /// <summary>Push a command script to the top of the actor's command script queue</summary>
-        void cs_stack_command_script(AI ai, AIScript ai_command_script);
+        void cs_stack_command_script(IAiActor ai, AIScript ai_command_script);
 
         /// <summary></summary>
-        void cs_start_approach(Entity entity, float real, float real1, float real12);
+        void cs_start_approach(IGameObject entity, float real, float real1, float real12);
 
         /// <summary></summary>
         void cs_start_approach_player(float real, float real1, float real12);
@@ -504,31 +505,31 @@ namespace OpenH2.Core.Scripting
         void cs_vehicle_speed(float real);
 
         /// <summary>starts a custom animation playing on a unit (interpolates into animation if last parameter is TRUE)</summary>
-        void custom_animation(Unit unit, Animation animation, string stringid, bool interpolate);
+        void custom_animation(IUnit unit, Animation animation, string stringid, bool interpolate);
 
         /// <summary>starts a custom animation playing on a unit (interpolates into animation if last parameter is TRUE)</summary>
-        void custom_animation(Unit unit, string emotion, bool interpolate);
+        void custom_animation(IUnit unit, string emotion, bool interpolate);
 
         /// <summary>starts a custom animation playing on a unit (interpolates into animation if last parameter is TRUE)</summary>
         void custom_animation_loop(string emotion, bool interpolate);
 
         /// <summary>starts a custom animation playing on a unit (interpolates into animation if last parameter is TRUE)</summary>
-        void custom_animation_loop(Unit unit, Animation animation1, string emotion, bool interpolate);
+        void custom_animation_loop(IUnit unit, Animation animation1, string emotion, bool interpolate);
 
         /// <summary>starts a custom animation relative to some other object (interpolates into animation if last parameter is TRUE)</summary>
-        void custom_animation_relative(Unit entity, Animation animation, string emotion, bool boolean, Entity other);
+        void custom_animation_relative(IUnit entity, Animation animation, string emotion, bool boolean, IGameObject other);
 
         /// <summary>starts a custom animation relative to some other object (interpolates into animation if last parameter is TRUE)</summary>
-        void custom_animation_relative(Unit unit, string emotion, bool interpolate, Entity entity);
+        void custom_animation_relative(IUnit unit, string emotion, bool interpolate, IGameObject entity);
 
         /// <summary>starts a custom animation relative to some other object (interpolates into animation if last parameter is TRUE)</summary>
-        void custom_animation_relative_loop(Unit unit, Animation animation2, string emotion, bool boolean, Entity entity);
+        void custom_animation_relative_loop(IUnit unit, Animation animation2, string emotion, bool boolean, IGameObject entity);
 
         /// <summary>causes the specified damage at the specified flag.</summary>
         void damage_new(Damage damage, ScenarioTag.LocationFlagDefinition cutscene_flag);
 
         /// <summary>causes the specified damage at the specified object.</summary>
-        void damage_object(Damage damage, Entity entity);
+        void damage_object(Damage damage, IGameObject entity);
 
         /// <summary>damages all players with the given damage effect</summary>
         void damage_players(Damage damage);
@@ -543,19 +544,19 @@ namespace OpenH2.Core.Scripting
         void deactivate_team_nav_point_object(Team team);
 
         /// <summary>deactivates a nav point type attached to a team anchored to an object</summary>
-        void deactivate_team_nav_point_object(Team team, Entity entity);
+        void deactivate_team_nav_point_object(Team team, IGameObject entity);
 
         /// <summary>animate the overlay over time</summary>
-        void device_animate_overlay(Device device, float real, float real1, float real12, float real123);
+        void device_animate_overlay(IDevice device, float real, float real1, float real12, float real123);
 
         /// <summary>animate the position over time</summary>
-        void device_animate_position(Device device, float desiredPosition, float seconds, float real12, float real123, bool boolean);
+        void device_animate_position(IDevice device, float desiredPosition, float seconds, float real12, float real123, bool boolean);
 
         /// <summary>TRUE makes the given device close automatically after it has opened, FALSE makes it not</summary>
-        void device_closes_automatically_set(Device device, bool boolean);
+        void device_closes_automatically_set(IDevice device, bool boolean);
 
         /// <summary>gets the current position of the given device (used for devices without explicit device groups)</summary>
-        float device_get_position(Device device);
+        float device_get_position(IDevice device);
 
         /// <summary>TRUE allows a device to change states only once</summary>
         void device_group_change_only_once_more_set(ScenarioTag.DeviceGroupDefinition device_group, bool boolean);
@@ -564,34 +565,34 @@ namespace OpenH2.Core.Scripting
         float device_group_get(ScenarioTag.DeviceGroupDefinition device_group);
 
         /// <summary>changes the desired value of the specified device group.</summary>
-        void device_group_set(Device device, ScenarioTag.DeviceGroupDefinition device_group, float real);
+        void device_group_set(IDevice device, ScenarioTag.DeviceGroupDefinition device_group, float real);
 
         /// <summary>instantaneously changes the value of the specified device group.</summary>
         void device_group_set_immediate(ScenarioTag.DeviceGroupDefinition device_group, float real);
 
         /// <summary>TRUE makes the given device one-sided (only able to be opened from one direction), FALSE makes it two-sided</summary>
-        void device_one_sided_set(Device device, bool boolean);
+        void device_one_sided_set(IDevice device, bool boolean);
 
         /// <summary>TRUE makes the given device open automatically when any biped is nearby, FALSE makes it not</summary>
-        void device_operates_automatically_set(Device device, bool boolean);
+        void device_operates_automatically_set(IDevice device, bool boolean);
 
         /// <summary>changes a machine's never_appears_locked flag, but only if paul is a bastard</summary>
-        void device_set_never_appears_locked(Device device, bool boolean);
+        void device_set_never_appears_locked(IDevice device, bool boolean);
 
         /// <summary>set the desired overlay animation to use</summary>
-        void device_set_overlay_track(Device device, string string_id);
+        void device_set_overlay_track(IDevice device, string string_id);
 
         /// <summary>set the desired position of the given device (used for devices without explicit device groups)</summary>
-        void device_set_position(Device device, float real);
+        void device_set_position(IDevice device, float real);
 
         /// <summary>instantaneously changes the position of the given device (used for devices without explicit device groups</summary>
-        void device_set_position_immediate(Device device, float real);
+        void device_set_position_immediate(IDevice device, float real);
 
         /// <summary>set the desired position track animation to use (optional interpolation time onto track)</summary>
-        void device_set_position_track(Device device, string string_id, float real);
+        void device_set_position_track(IDevice device, string string_id, float real);
 
         /// <summary>immediately sets the power of a named device to the given value</summary>
-        void device_set_power(Device device, float real);
+        void device_set_power(IDevice device, float real);
 
         void disable_render_light_suppressor();
 
@@ -602,7 +603,7 @@ namespace OpenH2.Core.Scripting
         void effect_new(Effect effect, ScenarioTag.LocationFlagDefinition cutscene_flag);
 
         /// <summary>starts the specified effect on the specified object at the specified marker.</summary>
-        void effect_new_on_object_marker(Effect effect, Entity entity, string string_id);
+        void effect_new_on_object_marker(Effect effect, IGameObject entity, string string_id);
 
         /// <summary>starts the specified effect on the specified object at the specified marker.</summary>
         void effect_new_on_object_marker(Effect effect, string emotion);
@@ -611,13 +612,13 @@ namespace OpenH2.Core.Scripting
         void enable_render_light_suppressor();
 
         /// <summary>returns the object attached to the marker of the given parent object</summary>
-        Entity entity_at_marker(Entity entity, string string_id);
+        IGameObject entity_at_marker(IGameObject entity, string string_id);
 
         /// <summary>returns the parent of the given object</summary>
-        Entity entity_get_parent();
+        IGameObject entity_get_parent();
 
         /// <summary>returns the parent of the given object</summary>
-        Entity entity_get_parent(Entity entity);
+        IGameObject entity_get_parent(IGameObject entity);
 
         /// <summary>does a screen fade in from a particular color</summary>
         void fade_in(float real, float real1, float real12, short value);
@@ -718,16 +719,16 @@ namespace OpenH2.Core.Scripting
         void kill_volume_enable(ScenarioTag.TriggerVolume trigger_volume);
 
         /// <summary>returns the number of objects in a list</summary>
-        short list_count(Entity e);
+        short list_count(IGameObject e);
 
         /// <summary>returns the number of objects in a list</summary>
-        short list_count(EntityList object_list);
+        short list_count(GameObjectList object_list);
 
         /// <summary>returns the number of objects in a list that aren't dead</summary>
-        short list_count_not_dead(EntityList objects);
+        short list_count_not_dead(GameObjectList objects);
 
         /// <summary>returns an item in an object list.</summary>
-        Entity list_get(EntityList object_list, int index);
+        IGameObject list_get(GameObjectList object_list, int index);
 
         /// <summary>sets the next loading screen to just fade to white</summary>
         void loading_screen_fade_to_white();
@@ -751,102 +752,108 @@ namespace OpenH2.Core.Scripting
         void objectives_show_up_to(int value);
 
         /// <summary>attaches the second object to the first both strings can be empty</summary>
-        void objects_attach(Entity entity, string string_id, Entity entity1, string string_id1);
+        void objects_attach(IGameObject entity, string string_id, IGameObject entity1, string string_id1);
 
         /// <summary>attaches the second object to the first both strings can be empty</summary>
-        void objects_attach(Entity entity, string emotion0, string emotion1);
+        void objects_attach(IGameObject entity, string emotion0, string emotion1);
 
         /// <summary>attaches the second object to the first both strings can be empty</summary>
-        void objects_attach(string emotion0, Entity entity, string emotion1);
+        void objects_attach(string emotion0, IGameObject entity, string emotion1);
 
         /// <summary>attaches the second object to the first both strings can be empty</summary>
         void objects_attach(string emotion0, string emotion1);
 
         /// <summary>returns true if any of the specified units are looking within the specified number of degrees of the flag.</summary>
-        bool objects_can_see_flag(Entity entity, ScenarioTag.LocationFlagDefinition locationFlag, float floatValue);
+        bool objects_can_see_flag(IGameObject entity, ScenarioTag.LocationFlagDefinition locationFlag, float floatValue);
 
         /// <summary>returns true if any of the specified units are looking within the specified number of degrees of the flag.</summary>
-        bool objects_can_see_flag(EntityList list, ScenarioTag.LocationFlagDefinition locationFlag, float floatValue);
+        bool objects_can_see_flag(GameObjectList list, ScenarioTag.LocationFlagDefinition locationFlag, float floatValue);
 
         /// <summary>returns true if any of the specified units are looking within the specified number of degrees of the object.</summary>
-        bool objects_can_see_object(Entity entity, EntityIdentifier obj, float degrees);
+        bool objects_can_see_object(IGameObject entity, IGameObject target, float degrees);
+
+        /// <summary>returns true if any of the specified units are looking within the specified number of degrees of the object.</summary>
+        bool objects_can_see_object(IGameObject entity, EntityIdentifier target, float degrees);
 
         /// <summary>returns true if any of the specified units are looking within the specified number of degrees of the object.</summary>
         bool objects_can_see_object(float floatValue);
 
         /// <summary>returns true if any of the specified units are looking within the specified number of degrees of the object.</summary>
-        bool objects_can_see_object(EntityList list, EntityIdentifier obj, float degrees);
+        bool objects_can_see_object(GameObjectList list, EntityIdentifier target, float degrees);
+        
+        /// <summary>returns true if any of the specified units are looking within the specified number of degrees of the object.</summary>
+        bool objects_can_see_object(GameObjectList list, IGameObject target, float degrees);
 
         /// <summary>detaches from the given parent object the given child object</summary>
         void objects_detach();
 
         /// <summary>detaches from the given parent object the given child object</summary>
-        void objects_detach(Entity entity);
+        void objects_detach(IGameObject entity);
 
         /// <summary>detaches from the given parent object the given child object</summary>
-        void objects_detach(Entity entity, Entity entity1);
+        void objects_detach(IGameObject entity, IGameObject entity1);
 
         /// <summary>returns minimum distance from any of the specified objects to the specified flag. (returns -1 if there are no objects, or no flag, to check)</summary>
-        float objects_distance_to_flag(Entity entity, ScenarioTag.LocationFlagDefinition locationFlag);
+        float objects_distance_to_flag(IGameObject entity, ScenarioTag.LocationFlagDefinition locationFlag);
 
         /// <summary>returns minimum distance from any of the specified objects to the specified flag. (returns -1 if there are no objects, or no flag, to check)</summary>
-        float objects_distance_to_flag(EntityList list, ScenarioTag.LocationFlagDefinition locationFlag);
+        float objects_distance_to_flag(GameObjectList list, ScenarioTag.LocationFlagDefinition locationFlag);
 
         /// <summary>returns minimum distance from any of the specified objects to the specified destination object. (returns -1 if there are no objects to check)</summary>
-        float objects_distance_to_object(EntityList list, Entity entity);
+        float objects_distance_to_object(GameObjectList list, IGameObject entity);
 
         /// <summary>loads textures/geometry/sounds necessary to present objects that are about to come on-screen</summary>
-        void objects_predict(Entity entity);
+        void objects_predict(IGameObject entity);
 
         /// <summary>loads textures/geometry/sounds necessary to present objects that are about to come on-screen</summary>
-        void objects_predict(EntityList object_list);
+        void objects_predict(GameObjectList object_list);
 
         /// <summary>loads textures/geometry/sounds necessary to present objects that are about to come on-screen</summary>
-        void objects_predict_high(Entity entity);
+        void objects_predict_high(IGameObject entity);
 
-        Entity object_at_marker(Entity entity, string stringId);
+        IGameObject object_at_marker(IGameObject entity, string stringId);
 
         /// <summary>Set whether the object can die from damage or not (as opposed to by scripting)</summary>
         void object_cannot_die(bool boolean);
 
         /// <summary>Set whether the object can die from damage or not (as opposed to by scripting)</summary>
-        void object_cannot_die(Entity entity, bool boolean);
+        void object_cannot_die(IGameObject entity, bool boolean);
 
         /// <summary>prevents an object from taking damage</summary>
-        void object_cannot_take_damage(Entity entity);
+        void object_cannot_take_damage(IGameObject entity);
 
         /// <summary>prevents an object from taking damage</summary>
-        void object_cannot_take_damage(EntityList object_list);
+        void object_cannot_take_damage(GameObjectList object_list);
 
         /// <summary>allows an object to take damage again</summary>
-        void object_can_take_damage(Entity entity);
+        void object_can_take_damage(IGameObject entity);
 
         /// <summary>allows an object to take damage again</summary>
-        void object_can_take_damage(EntityList object_list);
+        void object_can_take_damage(GameObjectList object_list);
 
         /// <summary>makes an object use the highest lod for the remainder of the levels' cutscenes.</summary>
         void object_cinematic_lod(bool boolean);
 
         /// <summary>makes an object use the highest lod for the remainder of the levels' cutscenes.</summary>
-        void object_cinematic_lod(Entity entity, bool boolean);
+        void object_cinematic_lod(IGameObject entity, bool boolean);
 
         /// <summary>makes an object bypass visibility and always render during cinematics.</summary>
-        void object_cinematic_visibility(Entity entity, bool boolean);
+        void object_cinematic_visibility(IGameObject entity, bool boolean);
 
         /// <summary>clears all funciton variables for sin-o-matic use</summary>
-        void object_clear_all_function_variables(Entity entity);
+        void object_clear_all_function_variables(IGameObject entity);
 
         /// <summary>clears one funciton variables for sin-o-matic use</summary>
-        void object_clear_function_variable(Entity entity, string string_id);
+        void object_clear_function_variable(IGameObject entity, string string_id);
 
         /// <summary>creates an object from the scenario.</summary>
-        void object_create(Entity object_name);
+        void object_create(IGameObject object_name);
 
         /// <summary>creates an object from the scenario.</summary>
         void object_create(EntityIdentifier object_name);
 
         /// <summary>creates an object, destroying it first if it already exists.</summary>
-        void object_create_anew(Entity entity);
+        void object_create_anew(IGameObject entity);
 
         /// <summary>creates an object, destroying it first if it already exists.</summary>
         void object_create_anew(EntityIdentifier object_name);
@@ -857,11 +864,14 @@ namespace OpenH2.Core.Scripting
         /// <summary>creates an object, potentially resulting in multiple objects if it already exists.</summary>
         void object_create_clone(EntityIdentifier object_name);
 
+        /// <summary>creates an object, potentially resulting in multiple objects if it already exists.</summary>
+        void object_create_clone(IGameObject entity);
+
         /// <summary>creates all objects from the scenario whose names contain the given substring.</summary>
         void object_create_containing(string value);
 
         /// <summary>applies damage to a damage section, causing all manner of effects/constraint breakage to occur</summary>
-        void object_damage_damage_section(Entity entity, string string_id, float real);
+        void object_damage_damage_section(IGameObject entity, string string_id, float real);
 
         /// <summary>applies damage to a damage section, causing all manner of effects/constraint breakage to occur</summary>
         void object_damage_damage_section(string emotion, float floatValue);
@@ -870,7 +880,7 @@ namespace OpenH2.Core.Scripting
         void object_destroy();
 
         /// <summary>destroys an object.</summary>
-        void object_destroy(Entity entity);
+        void object_destroy(IGameObject entity);
 
         /// <summary>destroys all objects from the scenario whose names contain the given substring.</summary>
         void object_destroy_containing(string value);
@@ -882,46 +892,46 @@ namespace OpenH2.Core.Scripting
         void object_dynamic_simulation_disable(bool boolean);
 
         /// <summary>disabled dynamic simulation for this object (makes it fixed)</summary>
-        void object_dynamic_simulation_disable(Entity entity, bool boolean);
+        void object_dynamic_simulation_disable(IGameObject entity, bool boolean);
 
         /// <summary>returns the ai attached to this object, if any</summary>
-        AI object_get_ai();
+        IAiActor object_get_ai();
 
         /// <summary>returns the ai attached to this object, if any</summary>
-        AI object_get_ai(Entity entity);
+        IAiActor object_get_ai(IGameObject entity);
 
         /// <summary>returns the health [0,1] of the object, returns -1 if the object does not exist</summary>
         float object_get_health();
 
         /// <summary>returns the health [0,1] of the object, returns -1 if the object does not exist</summary>
-        float object_get_health(Entity entity);
+        float object_get_health(IGameObject entity);
 
         /// <summary>returns the parent of the given object</summary>
-        Entity object_get_parent(Entity entity);
+        IGameObject object_get_parent(IGameObject entity);
 
         /// <summary>returns the shield [0,1] of the object, returns -1 if the object does not exist</summary>
         float object_get_shield();
 
         /// <summary>returns the shield [0,1] of the object, returns -1 if the object does not exist</summary>
-        float object_get_shield(Entity entity);
+        float object_get_shield(IGameObject entity);
 
         /// <summary>hides or shows the object passed in</summary>
-        void object_hide(Entity entity, bool boolean);
+        void object_hide(IGameObject entity, bool boolean);
 
         /// <summary>returns TRUE if the specified model target is destroyed</summary>
-        short object_model_targets_destroyed(Entity entity, string target);
+        short object_model_targets_destroyed(IGameObject entity, string target);
 
         /// <summary>when this object deactivates it will be deleted</summary>
-        void object_set_deleted_when_deactivated(Entity entity);
+        void object_set_deleted_when_deactivated(IGameObject entity);
 
         /// <summary>sets funciton variable for sin-o-matic use</summary>
-        void object_set_function_variable(Entity entity, string string_id, float real, float real1);
+        void object_set_function_variable(IGameObject entity, string string_id, float real, float real1);
 
         /// <summary>sets funciton variable for sin-o-matic use</summary>
         void object_set_function_variable(string emotion, float floatValue0, float floatValue1);
 
         /// <summary>sets the desired region (use "" for all regions) to the permutation with the given name, e.g. (object_set_permutation flood "right arm" ~damaged)</summary>
-        void object_set_permutation(Entity entity, string string_id, string string_id1);
+        void object_set_permutation(IGameObject entity, string string_id, string string_id1);
 
         /// <summary>sets the desired region (use "" for all regions) to the permutation with the given name, e.g. (object_set_permutation flood "right arm" ~damaged)</summary>
         void object_set_permutation(string emotion, string emotion1);
@@ -930,13 +940,13 @@ namespace OpenH2.Core.Scripting
         void object_set_phantom_power(bool boolean);
 
         /// <summary>sets phantom power to be latched at 1.0f or 0.0f</summary>
-        void object_set_phantom_power(Entity entity, bool boolean);
+        void object_set_phantom_power(IGameObject entity, bool boolean);
 
         /// <summary>sets the desired region (use "" for all regions) to the model state with the given name, e.g. (object_set_region_state marine head destroyed)</summary>
-        void object_set_region_state(Entity entity, string string_id, DamageState model_state);
+        void object_set_region_state(IGameObject entity, string string_id, DamageState model_state);
 
         /// <summary>sets the scale for a given object and interpolates over the given number of frames to achieve that scale</summary>
-        void object_set_scale(Entity entity, float real, short value);
+        void object_set_scale(IGameObject entity, float real, short value);
 
         /// <summary>sets the scale for a given object and interpolates over the given number of frames to achieve that scale</summary>
         void object_set_scale(float floatValue, short valueValue);
@@ -945,31 +955,31 @@ namespace OpenH2.Core.Scripting
         void object_set_shield();
 
         /// <summary>sets the shield vitality of the specified object (between 0 and 1).</summary>
-        void object_set_shield(Entity entity, float real);
+        void object_set_shield(IGameObject entity, float real);
 
         /// <summary>make this objects shield be stunned permanently</summary>
-        void object_set_shield_stun_infinite(Entity entity);
+        void object_set_shield_stun_infinite(IGameObject entity);
 
         /// <summary>Sets the (object-relative) forward velocity of the given object</summary>
-        void object_set_velocity(Entity entity, float real);
+        void object_set_velocity(IGameObject entity, float real);
 
         /// <summary>Sets the (object-relative) forward velocity of the given object</summary>
-        void object_set_velocity(Entity entity, float real, float real1, float real12);
+        void object_set_velocity(IGameObject entity, float real, float real1, float real12);
 
         /// <summary>moves the specified object to the specified flag.</summary>
-        void object_teleport(Entity entity, ScenarioTag.LocationFlagDefinition cutscene_flag);
+        void object_teleport(IGameObject entity, ScenarioTag.LocationFlagDefinition cutscene_flag);
 
         /// <summary>loads textures necessary to draw an object that's about to come on-screen.</summary>
-        void object_type_predict(Entity entity);
+        void object_type_predict(IGameObject entity);
 
         /// <summary>loads textures necessary to draw an object that's about to come on-screen.</summary>
-        void object_type_predict_high(Entity entity);
+        void object_type_predict_high(IGameObject entity);
 
         /// <summary>makes an object use the cinematic directional and ambient lights instead of sampling the lightmap.</summary>
         void object_uses_cinematic_lighting(bool boolean);
 
         /// <summary>makes an object use the cinematic directional and ambient lights instead of sampling the lightmap.</summary>
-        void object_uses_cinematic_lighting(Entity entity, bool boolean);
+        void object_uses_cinematic_lighting(IGameObject entity, bool boolean);
 
         /// <summary>turn off ground adhesion forces so you can play tricks with gravity</summary>
         void physics_disable_character_ground_adhesion_forces(float real);
@@ -990,7 +1000,7 @@ namespace OpenH2.Core.Scripting
         bool player0_looking_up();
 
         /// <summary>returns a list of the players</summary>
-        EntityList players();
+        GameObjectList players();
 
         /// <summary>returns true if any player has hit accept since the last call to (player_action_test_reset).</summary>
         bool player_action_test_accept();
@@ -1080,7 +1090,7 @@ namespace OpenH2.Core.Scripting
         void pvs_clear();
 
         /// <summary>sets the specified object as the special place that activates everything it sees.</summary>
-        void pvs_set_object(Entity entity);
+        void pvs_set_object(IGameObject entity);
 
         /// <summary>returns a random value in the range [lower bound, upper bound)</summary>
         int random_range(int value, int value1);
@@ -1098,16 +1108,16 @@ namespace OpenH2.Core.Scripting
         float real_random_range(float real, float real1);
 
         /// <summary>enable/disable the specified unit to receive cinematic shadows where the shadow is focused about a radius around a marker name</summary>
-        void render_lights_enable_cinematic_shadow(bool boolean, Entity entity, string string_id, float real);
+        void render_lights_enable_cinematic_shadow(bool boolean, IGameObject entity, string string_id, float real);
 
         /// <summary>starts a custom looping animation playing on a piece of scenery</summary>
         void scenery_animation_start_loop(ScenarioTag.SceneryInstance scenery, Animation animation, string emotion);
 
         /// <summary>starts a custom animation playing on a piece of scenery relative to a parent object</summary>
-        void scenery_animation_start_relative(ScenarioTag.SceneryInstance scenery, Animation animation, string emotion, Entity entity);
+        void scenery_animation_start_relative(ScenarioTag.SceneryInstance scenery, Animation animation, string emotion, IGameObject entity);
 
         /// <summary>starts a custom animation playing on a piece of scenery relative to a parent object</summary>
-        void scenery_animation_start_relative(ScenarioTag.SceneryInstance scenery, string emotion, Entity entity);
+        void scenery_animation_start_relative(ScenarioTag.SceneryInstance scenery, string emotion, IGameObject entity);
 
         /// <summary>returns the number of ticks remaining in a custom animation (or zero, if the animation is over).</summary>
         short scenery_get_animation_time(ScenarioTag.SceneryInstance scenery);
@@ -1140,25 +1150,25 @@ namespace OpenH2.Core.Scripting
         void sound_impulse_predict(ReferenceGet soundRef);
 
         /// <summary>plays an impulse sound from the specified source object (or "none"), with the specified scale.</summary>
-        void sound_impulse_start(object sound, Entity entity, float floatValue);
+        void sound_impulse_start(object sound, IGameObject entity, float floatValue);
 
         /// <summary>plays an impulse sound from the specified source object (or "none"), with the specified scale and effect.</summary>
-        void sound_impulse_start_effect(ReferenceGet sound, Entity entity, float floatValue, string effect);
+        void sound_impulse_start_effect(ReferenceGet sound, IGameObject entity, float floatValue, string effect);
 
         /// <summary>stops the specified impulse sound.</summary>
         void sound_impulse_stop(ReferenceGet sound);
 
         /// <summary>plays an impulse sound from the specified source object (or "none"), with the specified scale.</summary>
-        void sound_impulse_trigger(Entity sound, Entity source, float floatValue, int intValue);
+        void sound_impulse_trigger(IGameObject sound, IGameObject source, float floatValue, int intValue);
 
         /// <summary>plays an impulse sound from the specified source object (or "none"), with the specified scale.</summary>
-        void sound_impulse_trigger(Entity sound, float floatValue, int intValue);
+        void sound_impulse_trigger(IGameObject sound, float floatValue, int intValue);
 
         /// <summary>enables or disables the alternate loop/alternate end for a looping sound.</summary>
         void sound_looping_set_alternate(LoopingSound looping_sound, bool boolean);
 
         /// <summary>plays a looping sound from the specified source object (or "none"), with the specified scale.</summary>
-        void sound_looping_start(LoopingSound looping_sound, Entity entity, float real);
+        void sound_looping_start(LoopingSound looping_sound, IGameObject entity, float real);
 
         /// <summary>plays a looping sound from the specified source object (or "none"), with the specified scale.</summary>
         void sound_looping_start(LoopingSound loopingSound, float floatValue);
@@ -1185,7 +1195,7 @@ namespace OpenH2.Core.Scripting
         void texture_camera_off();
 
         /// <summary>sets the render texture camera to a given object marker</summary>
-        void texture_camera_set_object_marker(Entity entity, string string_id, float real);
+        void texture_camera_set_object_marker(IGameObject entity, string string_id, float real);
 
         /// <summary>resets the time code timer</summary>
         void time_code_reset();
@@ -1197,109 +1207,109 @@ namespace OpenH2.Core.Scripting
         void time_code_start(bool boolean);
 
         /// <summary>converts an object to a unit.</summary>
-        Unit unit(Entity entity);
+        IUnit unit(IGameObject entity);
 
         /// <summary>sets a group of units' current body and shield vitality</summary>
-        void units_set_current_vitality(EntityList units, float body, float shield);
+        void units_set_current_vitality(GameObjectList units, float body, float shield);
 
         /// <summary>sets a group of units' maximum body and shield vitality</summary>
-        void units_set_maximum_vitality(EntityList units, float body, float shield);
+        void units_set_maximum_vitality(GameObjectList units, float body, float shield);
 
         /// <summary>adds/resets the unit's health, shield, and inventory (weapons and grenades) to the named profile. resets if third parameter is true, adds if false. weapons will be marked as garbage if fourth parameter is true (for respawning equipment).</summary>
-        void unit_add_equipment(Unit unit, ScenarioTag.StartingProfileDefinition starting_profile, bool reset, bool isGarbage);
+        void unit_add_equipment(IUnit unit, ScenarioTag.StartingProfileDefinition starting_profile, bool reset, bool isGarbage);
 
         /// <summary>prevents any of the given units from dropping weapons or grenades when they die</summary>
-        void unit_doesnt_drop_items(EntityList entities);
+        void unit_doesnt_drop_items(GameObjectList entities);
 
         /// <summary>makes a unit exit its vehicle</summary>
-        void unit_exit_vehicle(Unit unit, short value);
+        void unit_exit_vehicle(IUnit unit, short value);
 
         /// <summary>returns the number of ticks remaining in a unit's custom animation (or zero, if the animation is over).</summary>
-        short unit_get_custom_animation_time(Unit unit);
+        short unit_get_custom_animation_time(IUnit unit);
 
         /// <summary>returns the health [0,1] of the unit, returns -1 if the unit does not exist</summary>
-        float unit_get_health(Unit unit);
+        float unit_get_health(IUnit unit);
 
         /// <summary>returns the shield [0,1] of the unit, returns -1 if the unit does not exist</summary>
         float unit_get_shield();
 
         /// <summary>returns the shield [0,1] of the unit, returns -1 if the unit does not exist</summary>
-        float unit_get_shield(Unit unit);
+        float unit_get_shield(IUnit unit);
 
         /// <summary>returns TRUE if the <unit> has <object> as a weapon, FALSE otherwise</summary>
-        bool unit_has_weapon(Unit unit, ScenarioTag.WeaponPlacement weapon);
+        bool unit_has_weapon(IUnit unit, ScenarioTag.WeaponPlacement weapon);
 
         /// <summary>prevents any of the given units from being knocked around or playing ping animations</summary>
-        void unit_impervious(Entity unit, bool boolean);
+        void unit_impervious(IGameObject unit, bool boolean);
 
         /// <summary>prevents any of the given units from being knocked around or playing ping animations</summary>
-        void unit_impervious(EntityList object_list, bool boolean);
+        void unit_impervious(GameObjectList object_list, bool boolean);
 
         /// <summary>returns true if the given unit is seated on a parent unit</summary>
         bool unit_in_vehicle();
 
         /// <summary>returns true if the given unit is seated on a parent unit</summary>
-        bool unit_in_vehicle(Unit unit);
+        bool unit_in_vehicle(IUnit unit);
 
         /// <summary>returns whether or not the given unit is current emitting an ai</summary>
-        bool unit_is_emitting(Unit unit);
+        bool unit_is_emitting(IUnit unit);
 
         /// <summary>kills a given unit, no saving throw</summary>
         void unit_kill();
 
         /// <summary>kills a given unit, no saving throw</summary>
-        void unit_kill(Unit unit);
+        void unit_kill(IUnit unit);
 
         /// <summary>kills a given unit silently (doesn't make them play their normal death animation or sound)</summary>
-        void unit_kill_silent(Unit unit);
+        void unit_kill_silent(IUnit unit);
 
         /// <summary>used for the tartarus boss fight</summary>
-        void unit_only_takes_damage_from_players_team(Unit unit, bool boolean);
+        void unit_only_takes_damage_from_players_team(IUnit unit, bool boolean);
 
         /// <summary>enable or disable active camo for the given unit over the specified number of seconds</summary>
-        void unit_set_active_camo(Unit unit, bool boolean, float real);
+        void unit_set_active_camo(IUnit unit, bool boolean, float real);
 
         /// <summary>sets a unit's current body and shield vitality</summary>
-        void unit_set_current_vitality(Unit unit, float body, float shield);
+        void unit_set_current_vitality(IUnit unit, float body, float shield);
 
         /// <summary>sets a unit's facial expression by name with weight and transition time</summary>
-        void unit_set_emotional_state(Unit unit, string string_id, float weight, short transitionTime);
+        void unit_set_emotional_state(IUnit unit, string string_id, float weight, short transitionTime);
 
         /// <summary>can be used to prevent the player from entering a vehicle</summary>
-        void unit_set_enterable_by_player(Unit unit, bool boolean);
+        void unit_set_enterable_by_player(IUnit unit, bool boolean);
 
         /// <summary>sets a unit's maximum body and shield vitality</summary>
-        void unit_set_maximum_vitality(Unit unit, float real, float real1);
+        void unit_set_maximum_vitality(IUnit unit, float real, float real1);
 
         /// <summary>stops the custom animation running on the given unit.</summary>
-        void unit_stop_custom_animation(Unit unit);
+        void unit_stop_custom_animation(IUnit unit);
 
         /// <summary>returns the driver of a vehicle</summary>
-        Entity vehicle_driver(Unit unit);
+        IGameObject vehicle_driver(IUnit unit);
 
         /// <summary>makes a list of units (named or by encounter) magically get into a vehicle, in the substring-specified seats (e.g. CD-passenger... empty string matches all seats)</summary>
-        void vehicle_load_magic(Entity vehicle, string vehicleSeat, Entity unit);
+        void vehicle_load_magic(IGameObject vehicle, string vehicleSeat, IGameObject unit);
 
         /// <summary>makes a list of units (named or by encounter) magically get into a vehicle, in the substring-specified seats (e.g. CD-passenger... empty string matches all seats)</summary>
-        void vehicle_load_magic(Entity vehicle, string vehicleSeat, EntityList units);
+        void vehicle_load_magic(IGameObject vehicle, string vehicleSeat, GameObjectList units);
 
         /// <summary>tests whether the named seat has a specified unit in it (use "" to test all seats for this unit)</summary>
-        bool vehicle_test_seat(Vehicle vehicle, string seat, Unit unit);
+        bool vehicle_test_seat(IVehicle vehicle, string seat, IUnit unit);
 
         /// <summary>tests whether the named seat has an object in the object list (use "" to test all seats for any unit in the list)</summary>
-        bool vehicle_test_seat_list(Vehicle vehicle, string seat, Entity subject);
+        bool vehicle_test_seat_list(IVehicle vehicle, string seat, IGameObject subject);
 
         /// <summary>tests whether the named seat has an object in the object list (use "" to test all seats for any unit in the list)</summary>
-        bool vehicle_test_seat_list(Vehicle vehicle, string seat, EntityList subjects);
+        bool vehicle_test_seat_list(IVehicle vehicle, string seat, GameObjectList subjects);
 
         /// <summary>makes units get out of an object from the substring-specified seats (e.g. CD-passenger... empty string matches all seats)</summary>
-        void vehicle_unload(Entity entity, string unit_seat_mapping);
+        void vehicle_unload(IGameObject entity, string unit_seat_mapping);
 
         /// <summary>returns list of objects in volume or (max 128).</summary>
-        EntityList volume_return_objects(ScenarioTag.TriggerVolume trigger_volume);
+        GameObjectList volume_return_objects(ScenarioTag.TriggerVolume trigger_volume);
 
         /// <summary>returns list of objects in volume or (max 128).</summary>
-        EntityList volume_return_objects_by_type(ScenarioTag.TriggerVolume trigger_volume, int value);
+        GameObjectList volume_return_objects_by_type(ScenarioTag.TriggerVolume trigger_volume, int value);
 
         /// <summary>moves all players outside a specified trigger volume to a specified flag.</summary>
         void volume_teleport_players_not_inside(ScenarioTag.TriggerVolume trigger_volume, ScenarioTag.LocationFlagDefinition cutscene_flag);
@@ -1308,19 +1318,19 @@ namespace OpenH2.Core.Scripting
         bool volume_test_object(ScenarioTag.TriggerVolume trigger);
 
         /// <summary>returns true if the specified object is within the specified volume.</summary>
-        bool volume_test_object(ScenarioTag.TriggerVolume trigger_volume, Entity entity);
+        bool volume_test_object(ScenarioTag.TriggerVolume trigger_volume, IGameObject entity);
 
         /// <summary>returns true if any of the specified objects are within the specified volume. trigger volume must have been postprocessed</summary>
-        bool volume_test_objects(ScenarioTag.TriggerVolume trigger, Entity entity);
+        bool volume_test_objects(ScenarioTag.TriggerVolume trigger, IGameObject entity);
 
         /// <summary>returns true if any of the specified objects are within the specified volume. trigger volume must have been postprocessed</summary>
-        bool volume_test_objects(ScenarioTag.TriggerVolume trigger_volume, EntityList object_list);
+        bool volume_test_objects(ScenarioTag.TriggerVolume trigger_volume, GameObjectList object_list);
 
         /// <summary>returns true if any (rb: all?) of the specified objects are within the specified volume. trigger volume must have been postprocessed</summary>
-        bool volume_test_objects_all(ScenarioTag.TriggerVolume trigger, Entity entity);
+        bool volume_test_objects_all(ScenarioTag.TriggerVolume trigger, IGameObject entity);
 
         /// <summary>returns true if any (rb: all?) of the specified objects are within the specified volume. trigger volume must have been postprocessed</summary>
-        bool volume_test_objects_all(ScenarioTag.TriggerVolume trigger, EntityList object_list);
+        bool volume_test_objects_all(ScenarioTag.TriggerVolume trigger, GameObjectList object_list);
 
         /// <summary>wakes a sleeping script in the next update.</summary>
         void wake(ScriptReference script_name);

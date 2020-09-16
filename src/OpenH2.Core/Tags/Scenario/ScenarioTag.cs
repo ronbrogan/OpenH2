@@ -1,4 +1,5 @@
-﻿using OpenH2.Core.Representations;
+﻿using OpenH2.Core.GameObjects;
+using OpenH2.Core.Representations;
 using OpenH2.Core.Scripting;
 using OpenH2.Core.Tags.Layout;
 using OpenH2.Serialization.Layout;
@@ -122,7 +123,7 @@ namespace OpenH2.Core.Tags.Scenario
 
         // TODO: placement test
         [FixedLength(84)]
-        public class VehicleInstance : Vehicle
+        public class VehicleInstance : IVehicle
         {
             [PrimitiveValue(0)]
             public ushort Index { get; set; }
@@ -135,7 +136,7 @@ namespace OpenH2.Core.Tags.Scenario
         }
 
         [FixedLength(56)]
-        public class EquipmentPlacement : Entity
+        public class EquipmentPlacement : IGameObject
         {
             [PrimitiveValue(0)]
             public ushort Index { get; set; }
@@ -148,7 +149,7 @@ namespace OpenH2.Core.Tags.Scenario
         }
 
         [FixedLength(84)]
-        public class BipedInstance : Unit
+        public class BipedInstance : IUnit
         {
             [PrimitiveValue(0)]
             public ushort Index { get; set; }

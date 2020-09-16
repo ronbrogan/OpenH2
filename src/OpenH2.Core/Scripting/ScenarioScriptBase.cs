@@ -1,4 +1,5 @@
-﻿using OpenH2.Core.Tags.Scenario;
+﻿using OpenH2.Core.GameObjects;
+using OpenH2.Core.Tags.Scenario;
 
 namespace OpenH2.Core.Scripting
 {
@@ -12,8 +13,8 @@ namespace OpenH2.Core.Scripting
         public Team sentinel;
         public Team heretic;
         public short cinematic_letterbox_style;
-        public AI ai_current_actor;
-        public AI ai_current_squad;
+        public IAiActor ai_current_actor;
+        public IAiActor ai_current_squad;
         public AIBehavior guard;
         public short ai_combat_status_active;
         public short ai_combat_status_alert;

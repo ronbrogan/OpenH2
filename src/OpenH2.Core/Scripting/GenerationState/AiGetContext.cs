@@ -53,8 +53,16 @@ namespace OpenH2.Core.Scripting.GenerationState
                     // Ambiguous reference to either a squad or squad group...?
                     if (nameRepo.TryGetName(stringVal, node.DataType.ToString(), node.NodeData_H16, out var finalSquad))
                     {
-                        // TODO: Need to split on '.' and create MemberAccessExpressions?
-                        accessor = SyntaxFactory.IdentifierName(finalSquad);
+                        if(nameRepo.NestedRepos.TryGetValue(finalSquad, out var nestedRepo))
+                        {
+                            accessor = SyntaxFactory.MemberAccessExpression(SyntaxKind.SimpleMemberAccessExpression,
+                                SyntaxFactory.IdentifierName(SyntaxUtil.SanitizeIdentifier(finalSquad)),
+                                SyntaxFactory.IdentifierName(SyntaxUtil.SanitizeIdentifier("Squad")));
+                        }
+                        else
+                        {
+                            accessor = SyntaxFactory.IdentifierName(finalSquad);
+                        }
                     }
                     else
                     {

@@ -1,4 +1,5 @@
-﻿using OpenH2.Core.Representations;
+﻿using OpenH2.Core.GameObjects;
+using OpenH2.Core.Representations;
 using OpenH2.Core.Scripting;
 using OpenH2.Core.Tags.Layout;
 using OpenH2.Serialization.Layout;
@@ -12,7 +13,7 @@ namespace OpenH2.Core.Tags.Scenario
     public partial class ScenarioTag
     {
         [FixedLength(36)]
-        public class AiSquadGroupDefinition : AI
+        public class AiSquadGroupDefinition : IAiActor
         {
             [StringValue(0, 32)]
             public string Description { get; set; }
@@ -25,7 +26,7 @@ namespace OpenH2.Core.Tags.Scenario
         }
 
         [FixedLength(116)]
-        public class AiSquadDefinition : AI
+        public class AiSquadDefinition : IAiActor
         {
             [StringValue(0, 32)]
             public string Description { get; set; }
@@ -34,7 +35,7 @@ namespace OpenH2.Core.Tags.Scenario
             public StartingLocation[] StartingLocations { get; set; }
 
             [FixedLength(100)]
-            public class StartingLocation : AI
+            public class StartingLocation : IAiActor
             {
                 [InternedString(0)]
                 public string Description { get; set; }

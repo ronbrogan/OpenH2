@@ -89,19 +89,19 @@ namespace OpenH2.Core.Scripting.Generation
 
                 var cls = ClassDeclaration(squadTypeName)
                     .AddModifiers(Token(SyntaxKind.PublicKeyword))
-                    .WithMembers(new SyntaxList<MemberDeclarationSyntax>(dataClassProps))
-                    .AddMembers(
-                        ConversionOperatorDeclaration(Token(SyntaxKind.ImplicitKeyword), SyntaxUtil.ScriptTypeSyntax(ScriptDataType.AI))
-                            .AddModifiers(Token(SyntaxKind.PublicKeyword), Token(SyntaxKind.StaticKeyword))
-                            .WithOperatorKeyword(Token(SyntaxKind.OperatorKeyword))
-                            .AddParameterListParameters(Parameter(Identifier("s")).WithType(ParseTypeName(squadTypeName)))
-                            .WithExpressionBody(
-                                ArrowExpressionClause(
-                                    MemberAccessExpression(
-                                        SyntaxKind.SimpleMemberAccessExpression,
-                                        IdentifierName("s"),
-                                        IdentifierName("Squad"))))
-                            .WithSemicolonToken(Token(SyntaxKind.SemicolonToken)));
+                    .WithMembers(new SyntaxList<MemberDeclarationSyntax>(dataClassProps));
+                    //.AddMembers(
+                    //    ConversionOperatorDeclaration(Token(SyntaxKind.ImplicitKeyword), SyntaxUtil.ScriptTypeSyntax(ScriptDataType.AI))
+                    //        .AddModifiers(Token(SyntaxKind.PublicKeyword), Token(SyntaxKind.StaticKeyword))
+                    //        .WithOperatorKeyword(Token(SyntaxKind.OperatorKeyword))
+                    //        .AddParameterListParameters(Parameter(Identifier("s")).WithType(ParseTypeName(squadTypeName)))
+                    //        .WithExpressionBody(
+                    //            ArrowExpressionClause(
+                    //                MemberAccessExpression(
+                    //                    SyntaxKind.SimpleMemberAccessExpression,
+                    //                    IdentifierName("s"),
+                    //                    IdentifierName("Squad"))))
+                    //        .WithSemicolonToken(Token(SyntaxKind.SemicolonToken)));
 
                 nestedDataClasses.Add(cls);
                 nameRepo.NestedRepos.Add(squadPropName, nestedRepo);
@@ -765,7 +765,8 @@ namespace OpenH2.Core.Scripting.Generation
                     UsingDirective(ParseName("System")),
                     UsingDirective(ParseName("System.Threading.Tasks")),
                     UsingDirective(ParseName("OpenH2.Core.Tags.Scenario")),
-                    UsingDirective(ParseName("OpenH2.Core.Scripting"))
+                    UsingDirective(ParseName("OpenH2.Core.Scripting")),
+                    UsingDirective(ParseName("OpenH2.Core.GameObjects"))
                 );
 
             return (NamespaceDeclarationSyntax)SyntaxUtil.Normalize(ns);

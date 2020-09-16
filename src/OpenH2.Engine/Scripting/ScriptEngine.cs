@@ -1,5 +1,6 @@
 namespace OpenH2.Engine.Scripting
 {
+    using OpenH2.Core.GameObjects;
     using OpenH2.Core.Scripting;
     using OpenH2.Core.Scripting.Execution;
     using OpenH2.Core.Tags.Scenario;
@@ -28,7 +29,7 @@ namespace OpenH2.Engine.Scripting
         }
 
         /// <summary>activates a nav point type <string> attached to a team anchored to an object with a vertical offset <real>. If the player is not local to the machine, this will fail</summary>
-        public void activate_team_nav_point_object(NavigationPoint navpoint, Team team, Entity entity, float real)
+        public void activate_team_nav_point_object(NavigationPoint navpoint, Team team, IGameObject entity, float real)
         {
         }
 
@@ -44,7 +45,7 @@ namespace OpenH2.Engine.Scripting
         }
 
         /// <summary>given a dead biped, turns on ragdoll</summary>
-        public void biped_ragdoll(Unit unit)
+        public void biped_ragdoll(IUnit unit)
         {
         }
 
@@ -59,7 +60,7 @@ namespace OpenH2.Engine.Scripting
         }
 
         /// <summary>begins a prerecorded camera animation synchronized to unit relative to cutscene flag.</summary>
-        public void camera_set_animation_relative(Animation animation, string /*id*/ id, Unit unit, ScenarioTag.LocationFlagDefinition locationFlag)
+        public void camera_set_animation_relative(Animation animation, string /*id*/ id, IUnit unit, ScenarioTag.LocationFlagDefinition locationFlag)
         {
         }
 
@@ -80,7 +81,7 @@ namespace OpenH2.Engine.Scripting
         }
 
         /// <summary>clone the first player's most reasonable weapon and attach it to the specified object's marker</summary>
-        public void cinematic_clone_players_weapon(Entity entity, string /*id*/ string_id, string /*id*/ string_id1)
+        public void cinematic_clone_players_weapon(IGameObject entity, string /*id*/ string_id, string /*id*/ string_id1)
         {
         }
 
@@ -206,17 +207,17 @@ namespace OpenH2.Engine.Scripting
         }
 
         /// <summary>starts a custom animation playing on a unit (interpolates into animation if last parameter is TRUE)</summary>
-        public void custom_animation(Unit unit, Animation animation, string /*id*/ stringid, bool interpolate)
+        public void custom_animation(IUnit unit, Animation animation, string /*id*/ stringid, bool interpolate)
         {
         }
 
         /// <summary>starts a custom animation playing on a unit (interpolates into animation if last parameter is TRUE)</summary>
-        public void custom_animation(Unit unit, string /*id*/ emotion, bool interpolate)
+        public void custom_animation(IUnit unit, string /*id*/ emotion, bool interpolate)
         {
         }
 
         /// <summary>starts a custom animation playing on a unit (interpolates into animation if last parameter is TRUE)</summary>
-        public void custom_animation_loop(Unit unit, Animation animation1, string /*id*/ emotion, bool interpolate)
+        public void custom_animation_loop(IUnit unit, Animation animation1, string /*id*/ emotion, bool interpolate)
         {
         }
 
@@ -226,17 +227,17 @@ namespace OpenH2.Engine.Scripting
         }
 
         /// <summary>starts a custom animation relative to some other object (interpolates into animation if last parameter is TRUE)</summary>
-        public void custom_animation_relative(Unit unit, string /*id*/ emotion, bool interpolate, Entity entity)
+        public void custom_animation_relative(IUnit unit, string /*id*/ emotion, bool interpolate, IGameObject entity)
         {
         }
 
         /// <summary>starts a custom animation relative to some other object (interpolates into animation if last parameter is TRUE)</summary>
-        public void custom_animation_relative(Unit entity, Animation animation, string /*id*/ emotion, bool boolean, Entity other)
+        public void custom_animation_relative(IUnit entity, Animation animation, string /*id*/ emotion, bool boolean, IGameObject other)
         {
         }
 
         /// <summary>starts a custom animation relative to some other object (interpolates into animation if last parameter is TRUE)</summary>
-        public void custom_animation_relative_loop(Unit unit, Animation animation2, string /*id*/ emotion, bool boolean, Entity entity)
+        public void custom_animation_relative_loop(IUnit unit, Animation animation2, string /*id*/ emotion, bool boolean, IGameObject entity)
         {
         }
 
@@ -246,7 +247,7 @@ namespace OpenH2.Engine.Scripting
         }
 
         /// <summary>causes the specified damage at the specified object.</summary>
-        public void damage_object(Damage damage, Entity entity)
+        public void damage_object(Damage damage, IGameObject entity)
         {
         }
 
@@ -266,7 +267,7 @@ namespace OpenH2.Engine.Scripting
         }
 
         /// <summary>deactivates a nav point type attached to a team anchored to an object</summary>
-        public void deactivate_team_nav_point_object(Team team, Entity entity)
+        public void deactivate_team_nav_point_object(Team team, IGameObject entity)
         {
         }
 
@@ -281,7 +282,7 @@ namespace OpenH2.Engine.Scripting
         }
 
         /// <summary>starts the specified effect on the specified object at the specified marker.</summary>
-        public void effect_new_on_object_marker(Effect effect, Entity entity, string /*id*/ string_id)
+        public void effect_new_on_object_marker(Effect effect, IGameObject entity, string /*id*/ string_id)
         {
         }
 
@@ -444,25 +445,25 @@ namespace OpenH2.Engine.Scripting
         }
 
         /// <summary>returns the number of objects in a list</summary>
-        public short list_count(Entity e)
+        public short list_count(IGameObject e)
         {
             return (short)(e == null ? 0 : 1);
         }
 
         /// <summary>returns the number of objects in a list</summary>
-        public short list_count(EntityList object_list)
+        public short list_count(GameObjectList object_list)
         {
             return (short)object_list.Objects.Length;
         }
 
         /// <summary>returns the number of objects in a list that aren't dead</summary>
-        public short list_count_not_dead(EntityList objects)
+        public short list_count_not_dead(GameObjectList objects)
         {
             return default(short);
         }
 
         /// <summary>returns an item in an object list.</summary>
-        public Entity list_get(EntityList object_list, int index)
+        public IGameObject list_get(GameObjectList object_list, int index)
         {
             return object_list.Objects[index];
         }
@@ -539,12 +540,12 @@ namespace OpenH2.Engine.Scripting
         }
 
         /// <summary>starts a custom animation playing on a piece of scenery relative to a parent object</summary>
-        public void scenery_animation_start_relative(ScenarioTag.SceneryInstance scenery, string /*id*/ emotion, Entity entity)
+        public void scenery_animation_start_relative(ScenarioTag.SceneryInstance scenery, string /*id*/ emotion, IGameObject entity)
         {
         }
 
         /// <summary>starts a custom animation playing on a piece of scenery relative to a parent object</summary>
-        public void scenery_animation_start_relative(ScenarioTag.SceneryInstance scenery, Animation animation, string /*id*/ emotion, Entity entity)
+        public void scenery_animation_start_relative(ScenarioTag.SceneryInstance scenery, Animation animation, string /*id*/ emotion, IGameObject entity)
         {
         }
 
@@ -626,59 +627,59 @@ namespace OpenH2.Engine.Scripting
         }
 
         /// <summary>sets the render texture camera to a given object marker</summary>
-        public void texture_camera_set_object_marker(Entity entity, string /*id*/ string_id, float real)
+        public void texture_camera_set_object_marker(IGameObject entity, string /*id*/ string_id, float real)
         {
         }
 
         /// <summary>returns the driver of a vehicle</summary>
-        public Entity vehicle_driver(Unit unit)
+        public IGameObject vehicle_driver(IUnit unit)
         {
-            return default(Entity);
+            return default(IGameObject);
         }
 
         /// <summary>makes a list of units (named or by encounter) magically get into a vehicle, in the substring-specified seats (e.g. CD-passenger... empty string matches all seats)</summary>
-        public void vehicle_load_magic(Entity vehicle, /*VehicleSeat*/ string vehicleSeat, EntityList units)
+        public void vehicle_load_magic(IGameObject vehicle, /*VehicleSeat*/ string vehicleSeat, GameObjectList units)
         {
         }
 
         /// <summary>makes a list of units (named or by encounter) magically get into a vehicle, in the substring-specified seats (e.g. CD-passenger... empty string matches all seats)</summary>
-        public void vehicle_load_magic(Entity vehicle, /*VehicleSeat*/ string vehicleSeat, Entity unit)
+        public void vehicle_load_magic(IGameObject vehicle, /*VehicleSeat*/ string vehicleSeat, IGameObject unit)
         {
         }
 
         /// <summary>tests whether the named seat has a specified unit in it (use "" to test all seats for this unit)</summary>
-        public bool vehicle_test_seat(Vehicle vehicle, string seat, Unit unit)
+        public bool vehicle_test_seat(IVehicle vehicle, string seat, IUnit unit)
         {
             return default(bool);
         }
 
         /// <summary>tests whether the named seat has an object in the object list (use "" to test all seats for any unit in the list)</summary>
-        public bool vehicle_test_seat_list(Vehicle vehicle, string /*id*/ seat, EntityList subjects)
+        public bool vehicle_test_seat_list(IVehicle vehicle, string /*id*/ seat, GameObjectList subjects)
         {
             return default(bool);
         }
 
         /// <summary>tests whether the named seat has an object in the object list (use "" to test all seats for any unit in the list)</summary>
-        public bool vehicle_test_seat_list(Vehicle vehicle, string /*id*/ seat, Entity subject)
+        public bool vehicle_test_seat_list(IVehicle vehicle, string /*id*/ seat, IGameObject subject)
         {
             return default(bool);
         }
 
         /// <summary>makes units get out of an object from the substring-specified seats (e.g. CD-passenger... empty string matches all seats)</summary>
-        public void vehicle_unload(Entity entity, /*VehicleSeat*/ string unit_seat_mapping)
+        public void vehicle_unload(IGameObject entity, /*VehicleSeat*/ string unit_seat_mapping)
         {
         }
 
         /// <summary>returns list of objects in volume or (max 128).</summary>
-        public EntityList volume_return_objects(ScenarioTag.TriggerVolume trigger_volume)
+        public GameObjectList volume_return_objects(ScenarioTag.TriggerVolume trigger_volume)
         {
-            return default(EntityList);
+            return default(GameObjectList);
         }
 
         /// <summary>returns list of objects in volume or (max 128).</summary>
-        public EntityList volume_return_objects_by_type(ScenarioTag.TriggerVolume trigger_volume, int value)
+        public GameObjectList volume_return_objects_by_type(ScenarioTag.TriggerVolume trigger_volume, int value)
         {
-            return default(EntityList);
+            return default(GameObjectList);
         }
 
         /// <summary>moves all players outside a specified trigger volume to a specified flag.</summary>
@@ -693,31 +694,31 @@ namespace OpenH2.Engine.Scripting
         }
 
         /// <summary>returns true if the specified object is within the specified volume.</summary>
-        public bool volume_test_object(ScenarioTag.TriggerVolume trigger_volume, Entity entity)
+        public bool volume_test_object(ScenarioTag.TriggerVolume trigger_volume, IGameObject entity)
         {
             return default(bool);
         }
 
         /// <summary>returns true if any of the specified objects are within the specified volume. trigger volume must have been postprocessed</summary>
-        public bool volume_test_objects(ScenarioTag.TriggerVolume trigger, Entity entity)
+        public bool volume_test_objects(ScenarioTag.TriggerVolume trigger, IGameObject entity)
         {
             return default(bool);
         }
 
         /// <summary>returns true if any of the specified objects are within the specified volume. trigger volume must have been postprocessed</summary>
-        public bool volume_test_objects(ScenarioTag.TriggerVolume trigger_volume, EntityList object_list)
+        public bool volume_test_objects(ScenarioTag.TriggerVolume trigger_volume, GameObjectList object_list)
         {
             return default(bool);
         }
 
         /// <summary>returns true if any (rb: all?) of the specified objects are within the specified volume. trigger volume must have been postprocessed</summary>
-        public bool volume_test_objects_all(ScenarioTag.TriggerVolume trigger, EntityList object_list)
+        public bool volume_test_objects_all(ScenarioTag.TriggerVolume trigger, GameObjectList object_list)
         {
             return default(bool);
         }
 
         /// <summary>returns true if any (rb: all?) of the specified objects are within the specified volume. trigger volume must have been postprocessed</summary>
-        public bool volume_test_objects_all(ScenarioTag.TriggerVolume trigger, Entity entity)
+        public bool volume_test_objects_all(ScenarioTag.TriggerVolume trigger, IGameObject entity)
         {
             return default(bool);
         }
