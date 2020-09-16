@@ -103,6 +103,11 @@ namespace OpenH2.Engine.Scripting
         {
         }
 
+        /// <summary>creates an object, potentially resulting in multiple objects if it already exists.</summary>
+        public void object_create_clone(IGameObject entity)
+        {
+        }
+
         /// <summary>creates all objects from the scenario whose names contain the given substring.</summary>
         public void object_create_containing(string value)
         {
@@ -351,13 +356,25 @@ namespace OpenH2.Engine.Scripting
         }
 
         /// <summary>returns true if any of the specified units are looking within the specified number of degrees of the object.</summary>
-        public bool objects_can_see_object(IGameObject entity, EntityIdentifier obj, float degrees)
+        public bool objects_can_see_object(IGameObject entity, EntityIdentifier target, float degrees)
+        {
+            return default(bool);
+        }
+
+        /// <summary>returns true if any of the specified units are looking within the specified number of degrees of the object.</summary>
+        public bool objects_can_see_object(IGameObject entity, IGameObject target, float degrees)
         {
             return default(bool);
         }
 
         /// <summary>returns true if any of the specified units are looking within the specified number of degrees of the object.</summary>
         public bool objects_can_see_object(GameObjectList list, EntityIdentifier obj, float degrees)
+        {
+            return default(bool);
+        }
+        
+        /// <summary>returns true if any of the specified units are looking within the specified number of degrees of the object.</summary>
+        public bool objects_can_see_object(GameObjectList list, IGameObject target, float degrees)
         {
             return default(bool);
         }
