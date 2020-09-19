@@ -63,7 +63,7 @@ namespace OpenH2.Engine
 
             matFactory.AddListener(() =>
             {
-                LoadScene(factory, mapPath);
+                LoadMap(factory, mapPath);
             });
 
             var rtWorld = new RealtimeWorld(this, gameWindowGetter());
@@ -71,14 +71,13 @@ namespace OpenH2.Engine
 
             world = rtWorld;
 
-            var scenario = LoadScene(factory, mapPath);
-            rtWorld.UseSystem(new ScriptSystem(scenario, rtWorld));
+            LoadMap(factory, mapPath);
 
             gameLoop.RegisterCallbacks(world.Update, world.Render);
             gameLoop.Start(60, 60);
         }
 
-        private ScenarioTag LoadScene(MapFactory factory, string mapPath)
+        private void LoadMap(MapFactory factory, string mapPath)
         {
             SpectatorCamera camera = new SpectatorCamera();
 
@@ -87,120 +86,20 @@ namespace OpenH2.Engine
                 camera = world.Scene.Entities.FirstOrDefault((v) => v.Value.GetType() == typeof(SpectatorCamera)).Value as SpectatorCamera;
             }
 
-            var scene = new Scene();
+            using var fs = new FileStream(mapPath, FileMode.Open, FileAccess.Read, FileShare.Read, 8096);
+            var map = factory.FromFile(fs);
+
+            var watch = new Stopwatch();
+            watch.Start();
+            var scene = new Scene(map, new EntityCreator(map));
+            scene.Load();
+            watch.Stop();
+            Console.WriteLine($"Loading map took {watch.ElapsedMilliseconds / 1000f} seconds");
 
             scene.AddEntity(camera);
             //scene.AddEntity(new Player(true));
 
-            var watch = new Stopwatch();
-            watch.Start();
-            var scenario = LoadMap(scene, factory, mapPath);
-            watch.Stop();
-            Console.WriteLine($"Loading map took {watch.ElapsedMilliseconds / 1000f} seconds");
-
             world.LoadScene(scene);
-
-            return scenario;
-        }
-
-        public ScenarioTag LoadMap(Scene destination, MapFactory factory, string mapPath)
-        {
-            var fs = new FileStream(mapPath, FileMode.Open, FileAccess.Read, FileShare.Read, 8096);
-            var map = factory.FromFile(fs);
-
-            LoadGlobals(destination, map);
-            var scenario = LoadScenario(destination, map);
-
-            //PositioningEntities.AddLocators(map, destination);
-
-            //PlaceLights(destination);
-
-            return scenario;
-        }
-
-        private static ScenarioTag LoadScenario(Scene destination, H2vMap map)
-        {
-            map.TryGetTag(map.IndexHeader.Scenario, out var scenario);
-            var terrains = scenario.Terrains;
-
-            foreach (var terrain in terrains)
-            {
-                map.TryGetTag(terrain.Bsp, out var bsp);
-
-                destination.AddEntity(TerrainFactory.FromBspData(map, bsp));
-
-                foreach (var instance in bsp.InstancedGeometryInstances)
-                {
-                    destination.AddEntity(SceneryFactory.FromInstancedGeometry(map, bsp, instance));
-                }
-            }
-
-            foreach (var sky in scenario.SkyboxInstances)
-            {
-                if (sky.Skybox == uint.MaxValue)
-                    continue;
-
-                destination.AddEntity(SkyboxFactory.FromTag(map, scenario, sky));
-            }
-
-            foreach (var scen in scenario.SceneryInstances)
-            {
-                if (scen.SceneryDefinitionIndex == ushort.MaxValue)
-                    continue;
-
-                destination.AddEntity(SceneryFactory.FromTag(map, scenario, scen));
-            }
-
-            foreach (var bloc in scenario.BlocInstances)
-            {
-                destination.AddEntity(BlocFactory.FromTag(map, scenario, bloc));
-            }
-
-            foreach (var mach in scenario.MachineryInstances)
-            {
-                destination.AddEntity(MachineryFactory.FromTag(map, scenario, mach));
-            }
-
-            foreach (var item in scenario.ItemCollectionPlacements)
-            {
-                destination.AddEntity(ItemFactory.FromTag(map, scenario, item));
-            }
-
-            foreach (var item in scenario.VehicleInstances)
-            {
-                // HACK: sometimes maxval, headlong
-                if (item.Index == ushort.MaxValue)
-                    continue;
-
-                destination.AddEntity(ItemFactory.CreateFromVehicleInstance(map, scenario, item));
-            }
-
-            foreach(var item in scenario.TriggerVolumes)
-            {
-                destination.AddEntity(TriggerFactory.FromScenarioTriggerVolume(scenario, item));
-            }
-
-            return scenario;
-        }
-
-        private static void LoadGlobals(Scene destination, H2vMap map)
-        {
-            var gotGlobals = map.TryGetTag(map.IndexHeader.Globals, out var globals);
-            Debug.Assert(gotGlobals);
-
-            var globalEntity = new GlobalSettings();
-            var globalMaterials = new MaterialListComponent(globalEntity);
-
-            for (var i = 0; i < globals.MaterialDefinitions.Length; i++)
-            {
-                var def = globals.MaterialDefinitions[i];
-                var mat = new PhysicsMaterial(i, def.Friction, def.Friction, def.Restitution);
-
-                globalMaterials.AddPhysicsMaterial(mat);
-            }
-
-            globalEntity.SetComponents(new Component[] { globalMaterials });
-            destination.AddEntity(globalEntity);
         }
 
         private void PlaceLights(Scene destination)

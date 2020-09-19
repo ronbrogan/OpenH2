@@ -15,12 +15,12 @@ namespace OpenH2.Engine.Scripting
         }
 
         /// <summary>predict resources at a frame in camera animation.</summary>
-        public void camera_predict_resources_at_frame(Animation animation, string /*id*/ emotion, IUnit unit, ScenarioTag.LocationFlagDefinition locationFlag, int intValue)
+        public void camera_predict_resources_at_frame(IAnimation animation, string /*id*/ emotion, IUnit unit, ILocationFlag locationFlag, int intValue)
         {
         }
 
         /// <summary>predict resources given a camera point</summary>
-        public void camera_predict_resources_at_point(ScenarioTag.CameraPathTarget cutscene_camera_point)
+        public void camera_predict_resources_at_point(ICameraPathTarget cutscene_camera_point)
         {
         }
 
@@ -75,12 +75,12 @@ namespace OpenH2.Engine.Scripting
         }
 
         /// <summary>predict a geometry block.</summary>
-        public void predict_model_section(Model render_model, int value)
+        public void predict_model_section(IModel render_model, int value)
         {
         }
 
         /// <summary>predict a geometry block.</summary>
-        public void predict_structure_section(Bsp structure_bsp, int value, bool boolean)
+        public void predict_structure_section(IBsp structure_bsp, int value, bool boolean)
         {
         }
 
@@ -116,7 +116,7 @@ namespace OpenH2.Engine.Scripting
         }
 
         /// <summary>your mom part 2.</summary>
-        public void sound_impulse_predict(ReferenceGet soundRef)
+        public void sound_impulse_predict(IReferenceGet soundRef)
         {
         }
 

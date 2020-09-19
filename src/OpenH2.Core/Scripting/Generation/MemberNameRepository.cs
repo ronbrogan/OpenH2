@@ -10,8 +10,9 @@ namespace OpenH2.Core.Scripting.Generation
 
         public Dictionary<string, MemberNameRepository> NestedRepos = new Dictionary<string, MemberNameRepository>();
 
-        public string RegisterName(string desiredName, string type, int? index = null)
+        public string RegisterName(string desiredName, ScriptDataType dataType, int? index = null)
         {
+            var type = SyntaxUtil.ScriptTypeSyntax(dataType).ToString();
             var key = SimplifiedKey(desiredName);
 
             if(string.IsNullOrWhiteSpace(desiredName))
@@ -58,8 +59,9 @@ namespace OpenH2.Core.Scripting.Generation
             return name.UniqueName;
         }
 
-        public bool TryGetName(string desiredName, string type, int? index, out string result)
+        public bool TryGetName(string desiredName, ScriptDataType dataType, int? index, out string result)
         {
+            var type = SyntaxUtil.ScriptTypeSyntax(dataType).ToString();
             var universalKey = SimplifiedKey(desiredName);
 
             if (originalNameLookup.TryGetValue(universalKey, out var nameSlot) == false)

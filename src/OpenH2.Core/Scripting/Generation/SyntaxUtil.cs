@@ -28,16 +28,16 @@ namespace OpenH2.Core.Scripting.Generation
                 ScriptDataType.String => PredefinedType(Token(SyntaxKind.StringKeyword)),
                 ScriptDataType.Void => PredefinedType(Token(SyntaxKind.VoidKeyword)),
 
-                ScriptDataType.Trigger => ParseTypeName(nameof(ScenarioTag) + "." + nameof(ScenarioTag.TriggerVolume)),
-                ScriptDataType.LocationFlag => ParseTypeName(nameof(ScenarioTag) + "." + nameof(ScenarioTag.LocationFlagDefinition)),
-                ScriptDataType.CameraPathTarget => ParseTypeName(nameof(ScenarioTag) + "." + nameof(ScenarioTag.CameraPathTarget)),
-                ScriptDataType.CinematicTitle => ParseTypeName(nameof(ScenarioTag) + "." + nameof(ScenarioTag.CinematicTitleDefinition)),
-                ScriptDataType.DeviceGroup => ParseTypeName(nameof(ScenarioTag) + "." + nameof(ScenarioTag.DeviceGroupDefinition)),
-                ScriptDataType.AIScript => ParseTypeName(nameof(ScenarioTag) + "." + nameof(ScenarioTag.AiNamedTrigger)),
-                ScriptDataType.AIOrders => ParseTypeName(nameof(ScenarioTag) + "." + nameof(ScenarioTag.AiOrderDefinition)),
-                ScriptDataType.Equipment => ParseTypeName(nameof(ScenarioTag) + "." + nameof(ScenarioTag.StartingProfileDefinition)),
-                ScriptDataType.Weapon => ParseTypeName(nameof(ScenarioTag) + "." + nameof(ScenarioTag.WeaponPlacement)),
-                ScriptDataType.Scenery => ParseTypeName(nameof(ScenarioTag) + "." + nameof(ScenarioTag.SceneryInstance)),
+                ScriptDataType.Trigger => ParseTypeName(nameof(ITriggerVolume)),
+                ScriptDataType.LocationFlag => ParseTypeName(nameof(ILocationFlag)),
+                ScriptDataType.CameraPathTarget => ParseTypeName(nameof(ICameraPathTarget)),
+                ScriptDataType.CinematicTitle => ParseTypeName(nameof(ICinematicTitle)),
+                ScriptDataType.DeviceGroup => ParseTypeName(nameof(IDeviceGroup)),
+                ScriptDataType.AIScript => ParseTypeName(nameof(IAiScript)),
+                ScriptDataType.AIOrders => ParseTypeName(nameof(IAiOrders)),
+                ScriptDataType.Equipment => ParseTypeName(nameof(IEquipment)),
+                ScriptDataType.Weapon => ParseTypeName(nameof(IWeapon)),
+                ScriptDataType.Scenery => ParseTypeName(nameof(IScenery)),
 
                 ScriptDataType.Entity => ParseTypeName(nameof(IGameObject)),
                 ScriptDataType.Unit => ParseTypeName(nameof(IUnit)),
@@ -46,25 +46,25 @@ namespace OpenH2.Core.Scripting.Generation
                 ScriptDataType.Device => ParseTypeName(nameof(IDevice)),
 
                 _ => Enum.IsDefined(typeof(ScriptDataType), dataType)
-                    ? ParseTypeName(dataType.ToString())
+                    ? ParseTypeName("I" + dataType.ToString())
                     : ParseTypeName(nameof(ScriptDataType) + dataType.ToString()),
             };
         }
 
-        public static string WellKnownTypeString(ScenarioTag.WellKnownVarType type)
+        public static ScriptDataType ToScriptDataType(ScenarioTag.WellKnownVarType type)
         {
             return type switch
             {
-                ScenarioTag.WellKnownVarType.Biped => $"{nameof(ScenarioTag)}.{nameof(ScenarioTag.BipedInstance)}",
-                ScenarioTag.WellKnownVarType.Vehicle => nameof(IVehicle),
-                ScenarioTag.WellKnownVarType.Weapon => $"{nameof(ScenarioTag)}.{nameof(ScenarioTag.WeaponPlacement)}",
-                ScenarioTag.WellKnownVarType.Equipment => $"{nameof(ScenarioTag)}.{nameof(ScenarioTag.EquipmentPlacement)}",
-                ScenarioTag.WellKnownVarType.Scenery => $"{nameof(ScenarioTag)}.{nameof(ScenarioTag.SceneryInstance)}",
-                ScenarioTag.WellKnownVarType.Machinery => $"{nameof(ScenarioTag)}.{nameof(ScenarioTag.MachineryInstance)}",
-                ScenarioTag.WellKnownVarType.Controller => $"{nameof(ScenarioTag)}.{nameof(ScenarioTag.ControllerInstance)}",
-                ScenarioTag.WellKnownVarType.Sound => $"{nameof(ScenarioTag)}.{nameof(ScenarioTag.SoundSceneryInstance)}",
-                ScenarioTag.WellKnownVarType.Bloc => $"{nameof(ScenarioTag)}.{nameof(ScenarioTag.BlocInstance)}",
-                _ => typeof(IGameObject).Name
+                ScenarioTag.WellKnownVarType.Biped => ScriptDataType.Unit,
+                ScenarioTag.WellKnownVarType.Vehicle => ScriptDataType.Vehicle,
+                ScenarioTag.WellKnownVarType.Weapon => ScriptDataType.Weapon,
+                ScenarioTag.WellKnownVarType.Equipment => ScriptDataType.Equipment,
+                ScenarioTag.WellKnownVarType.Scenery => ScriptDataType.Scenery,
+                ScenarioTag.WellKnownVarType.Machinery => ScriptDataType.Device,
+                ScenarioTag.WellKnownVarType.Controller => ScriptDataType.Device,
+                ScenarioTag.WellKnownVarType.Sound => ScriptDataType.LoopingSound,
+                ScenarioTag.WellKnownVarType.Bloc => ScriptDataType.Entity,
+                _ => throw new NotSupportedException()
             };
         }
 
@@ -94,11 +94,11 @@ namespace OpenH2.Core.Scripting.Generation
             { typeof(float), ScriptDataType.Float },
             { typeof(string), ScriptDataType.String },
             { typeof(bool), ScriptDataType.Boolean },
-            { typeof(Team), ScriptDataType.Team },
+            { typeof(ITeam), ScriptDataType.Team },
             { typeof(IAiActor), ScriptDataType.AI },
-            { typeof(AIBehavior), ScriptDataType.AIBehavior },
-            { typeof(DamageState), ScriptDataType.DamageState },
-            { typeof(NavigationPoint), ScriptDataType.NavigationPoint }
+            { typeof(IAIBehavior), ScriptDataType.AIBehavior },
+            { typeof(IDamageState), ScriptDataType.DamageState },
+            { typeof(INavigationPoint), ScriptDataType.NavigationPoint }
         };
 
         private static Dictionary<ScriptDataType, Type> toTypeMap = toScriptTypeMap.ToDictionary(kv => kv.Value, kv => kv.Key);

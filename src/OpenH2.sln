@@ -54,6 +54,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OpenH2.Foundation.Tests", "
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OpenH2.ScriptAnalysis", "OpenH2.ScriptAnalysis\OpenH2.ScriptAnalysis.csproj", "{86F24910-5F4D-4F1B-9288-A5C8449F8997}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Scripts", "D:\h2scratch\scripts\Scripts.csproj", "{2B9E1151-AAC7-4672-8CED-E1F548CFF255}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -206,6 +208,14 @@ Global
 		{86F24910-5F4D-4F1B-9288-A5C8449F8997}.Release|Any CPU.Build.0 = Release|Any CPU
 		{86F24910-5F4D-4F1B-9288-A5C8449F8997}.Release|x64.ActiveCfg = Release|Any CPU
 		{86F24910-5F4D-4F1B-9288-A5C8449F8997}.Release|x64.Build.0 = Release|Any CPU
+		{2B9E1151-AAC7-4672-8CED-E1F548CFF255}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2B9E1151-AAC7-4672-8CED-E1F548CFF255}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2B9E1151-AAC7-4672-8CED-E1F548CFF255}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{2B9E1151-AAC7-4672-8CED-E1F548CFF255}.Debug|x64.Build.0 = Debug|Any CPU
+		{2B9E1151-AAC7-4672-8CED-E1F548CFF255}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2B9E1151-AAC7-4672-8CED-E1F548CFF255}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2B9E1151-AAC7-4672-8CED-E1F548CFF255}.Release|x64.ActiveCfg = Release|Any CPU
+		{2B9E1151-AAC7-4672-8CED-E1F548CFF255}.Release|x64.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -229,6 +239,7 @@ Global
 		{AD8F60AF-422B-44F5-B5F8-1577D8B5C0E8} = {D955C66F-CF2B-4A63-A95F-F8D3F98253DF}
 		{E467DB44-C310-48E6-91AE-5C1BEEC62FC9} = {F8FDF358-B807-4FC4-AB33-13D15FB1B906}
 		{86F24910-5F4D-4F1B-9288-A5C8449F8997} = {D955C66F-CF2B-4A63-A95F-F8D3F98253DF}
+		{2B9E1151-AAC7-4672-8CED-E1F548CFF255} = {368A54CE-E383-4154-997F-EA2B46E0AC4A}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {D941C8C9-2B2C-47A1-82CB-B045206BA267}

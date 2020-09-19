@@ -19,15 +19,22 @@ namespace OpenH2.Engine.Systems
         private ScenarioScriptBase scripts;
         private Stopwatch stopwatch;
 
-        public ScriptSystem(ScenarioTag scenario, World world) : base(world)
+        public ScriptSystem(World world) : base(world)
         {
+            
+        }
+
+        public override void Initialize(Scene scene)
+        {
+            var scenario = scene.Map.Scenario;
+
             var loader = new ScriptLoader();
             Logger.LogInfo("Generating script code");
             loader.Load(scenario);
             Logger.LogInfo("Compiling scripts");
             var assembly = loader.CompileScripts();
 
-            var scriptType = assembly.GetTypes().Select(t => new 
+            var scriptType = assembly.GetTypes().Select(t => new
             {
                 Type = t,
                 Attr = t.GetCustomAttribute<OriginScenarioAttribute>()
@@ -38,9 +45,12 @@ namespace OpenH2.Engine.Systems
             this.engine = new ScriptEngine(this.executor);
 
             this.scripts = (ScenarioScriptBase)Activator.CreateInstance(scriptType, new object[] { this.engine });
-            scripts.InitializeData(scenario);
+            scripts.InitializeData(scenario, scene);
             this.executor.Setup(scripts);
             this.stopwatch = new Stopwatch();
+
+
+            base.Initialize(scene);
         }
 
         public override void Update(double timestep)

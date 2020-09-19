@@ -67,13 +67,13 @@ namespace OpenH2.Core.Scripting.Generation
             for (var i = 0; i < scnr.ScriptVariables.Length; i++)
             {
                 var variable = scnr.ScriptVariables[i];
-                var returnedName = repo.RegisterName(variable.Description, variable.DataType.ToString(), i);
+                var returnedName = repo.RegisterName(variable.Description, variable.DataType, i);
             }
 
             for (var i = 0; i < scnr.ScriptMethods.Length; i++)
             {
                 var method = scnr.ScriptMethods[i];
-                var returnedName = repo.RegisterName(method.Description, ScriptDataType.ScriptReference.ToString(), i);
+                var returnedName = repo.RegisterName(method.Description, ScriptDataType.ScriptReference, i);
             }
 
             var baseFields = typeof(ScenarioScriptBase).GetFields();
@@ -84,7 +84,7 @@ namespace OpenH2.Core.Scripting.Generation
 
                 Debug.Assert(found);
 
-                repo.RegisterName(field.Name, t.ToString());
+                repo.RegisterName(field.Name, t);
             }
 
             // Generate data properties

@@ -33,9 +33,9 @@ namespace OpenH2.Core.Scripting.GenerationState
                     var squadName = stringVal.Substring(0, slashIndex);
                     var memberName = stringVal.Substring(slashIndex + 1);
 
-                    if (nameRepo.TryGetName(squadName, node.DataType.ToString(), node.NodeData_H16, out var finalSquad)
+                    if (nameRepo.TryGetName(squadName, node.DataType, node.NodeData_H16, out var finalSquad)
                         && nameRepo.NestedRepos.TryGetValue(finalSquad, out var nestedRepo)
-                        && nestedRepo.TryGetName(memberName, node.DataType.ToString(), node.NodeData_H16, out var finalProp))
+                        && nestedRepo.TryGetName(memberName, node.DataType, node.NodeData_H16, out var finalProp))
                     {
                         accessor = SyntaxFactory.MemberAccessExpression(SyntaxKind.SimpleMemberAccessExpression,
                             SyntaxFactory.IdentifierName(SyntaxUtil.SanitizeIdentifier(finalSquad)),
@@ -51,7 +51,7 @@ namespace OpenH2.Core.Scripting.GenerationState
                 else
                 {
                     // Ambiguous reference to either a squad or squad group...?
-                    if (nameRepo.TryGetName(stringVal, node.DataType.ToString(), node.NodeData_H16, out var finalSquad))
+                    if (nameRepo.TryGetName(stringVal, node.DataType, node.NodeData_H16, out var finalSquad))
                     {
                         if(nameRepo.NestedRepos.TryGetValue(finalSquad, out var nestedRepo))
                         {

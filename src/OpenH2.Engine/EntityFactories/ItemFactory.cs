@@ -94,7 +94,7 @@ namespace OpenH2.Engine.EntityFactories
                     throw new Exception("No tag found for vehc reference");
                 }
 
-                Entity entity = new Vehicle();
+                var entity = new Vehicle();
                 var xform = new TransformComponent(entity, instance.Position, QuaternionExtensions.FromH2vOrientation(instance.Orientation));
                 entities.Add(CreateFromVehicleTag(entity, map, xform, vehi));
             }
@@ -104,7 +104,7 @@ namespace OpenH2.Engine.EntityFactories
 
         public static Entity CreateFromVehicleInstance(H2vMap map, ScenarioTag scenario, ScenarioTag.VehicleInstance instance)
         {
-            Entity item = new Vehicle();
+            var item = new Vehicle();
 
             var def = scenario.VehicleDefinitions[instance.Index];
  
@@ -118,25 +118,16 @@ namespace OpenH2.Engine.EntityFactories
             return CreateFromVehicleTag(item, map, xform, vehi);
         }
 
-        private static Entity CreateFromVehicleTag(Entity item, H2vMap map, TransformComponent xform, VehicleTag vehi)
+        private static Entity CreateFromVehicleTag(Vehicle item, H2vMap map, TransformComponent xform, VehicleTag vehi)
         {
-            List<Component> components = new List<Component>();
-
-            components.Add(xform);
-
-            components.Add(new RenderModelComponent(item, new Model<BitmapTag>
-            {
-                Note = $"[{vehi.Id}] {vehi.Name}",
-                //Position = instance.Position,
-                //Orientation = baseRotation,
-                //Scale = new Vector3(1.3f),
-                Flags = ModelFlags.Diffuse | ModelFlags.CastsShadows | ModelFlags.ReceivesShadows,
-                Meshes = MeshFactory.GetRenderModel(map, vehi.Hlmt)
-            }));
-
-            components.Add(PhysicsComponentFactory.CreateDynamicRigidBody(item, xform, map, vehi.Hlmt));
-
-            item.SetComponents(components.ToArray());
+            item.SetComponents(xform,
+                PhysicsComponentFactory.CreateDynamicRigidBody(item, xform, map, vehi.Hlmt),
+                new RenderModelComponent(item, new Model<BitmapTag>
+                {
+                    Note = $"[{vehi.Id}] {vehi.Name}",
+                    Flags = ModelFlags.Diffuse | ModelFlags.CastsShadows | ModelFlags.ReceivesShadows,
+                    Meshes = MeshFactory.GetRenderModel(map, vehi.Hlmt)
+                }));
 
             return item;
         }

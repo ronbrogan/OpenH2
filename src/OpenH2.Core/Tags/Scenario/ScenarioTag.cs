@@ -123,7 +123,7 @@ namespace OpenH2.Core.Tags.Scenario
 
         // TODO: placement test
         [FixedLength(84)]
-        public class VehicleInstance : IVehicle
+        public class VehicleInstance
         {
             [PrimitiveValue(0)]
             public ushort Index { get; set; }
@@ -136,7 +136,7 @@ namespace OpenH2.Core.Tags.Scenario
         }
 
         [FixedLength(56)]
-        public class EquipmentPlacement : IGameObject
+        public class EquipmentPlacement
         {
             [PrimitiveValue(0)]
             public ushort Index { get; set; }
@@ -149,7 +149,7 @@ namespace OpenH2.Core.Tags.Scenario
         }
 
         [FixedLength(84)]
-        public class BipedInstance : IUnit
+        public class BipedInstance
         {
             [PrimitiveValue(0)]
             public ushort Index { get; set; }

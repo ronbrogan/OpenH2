@@ -13,7 +13,12 @@ namespace OpenH2.Engine.Scripting
         }
 
         /// <summary>adds/resets the unit's health, shield, and inventory (weapons and grenades) to the named profile. resets if third parameter is true, adds if false. weapons will be marked as garbage if fourth parameter is true (for respawning equipment).</summary>
-        public void unit_add_equipment(IUnit unit, ScenarioTag.StartingProfileDefinition starting_profile, bool reset, bool isGarbage)
+        public void unit_add_equipment(IUnit unit, IStartingProfile starting_profile, bool reset, bool isGarbage)
+        {
+        }
+
+        /// <summary>adds/resets the unit's health, shield, and inventory (weapons and grenades) to the named profile. resets if third parameter is true, adds if false. weapons will be marked as garbage if fourth parameter is true (for respawning equipment).</summary>
+        public void unit_add_equipment(IUnit unit, IEquipment equipment, bool reset, bool isGarbage)
         {
         }
 
@@ -52,7 +57,7 @@ namespace OpenH2.Engine.Scripting
         }
 
         /// <summary>returns TRUE if the <unit> has <object> as a weapon, FALSE otherwise</summary>
-        public bool unit_has_weapon(IUnit unit, ScenarioTag.WeaponPlacement weapon)
+        public bool unit_has_weapon(IUnit unit, IWeapon weapon)
         {
             return default(bool);
         }

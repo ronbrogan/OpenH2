@@ -22,7 +22,7 @@ namespace OpenH2.Engine.Scripting
         }
 
         /// <summary>Actor aims at the point for the remainder of the cs, or until overridden (overrides look)</summary>
-        public void cs_aim(bool boolean, SpatialPoint point)
+        public void cs_aim(bool boolean, ISpatialPoint point)
         {
         }
 
@@ -79,12 +79,12 @@ namespace OpenH2.Engine.Scripting
         }
 
         /// <summary>starts a custom animation playing on the unit (interpolates into animation if last parameter is TRUE)</summary>
-        public void cs_custom_animation(Animation animation, string /*id*/ emotion, float floatValue, bool interpolate)
+        public void cs_custom_animation(IAnimation animation, string /*id*/ emotion, float floatValue, bool interpolate)
         {
         }
 
         /// <summary>Deploy a turret at the given script point</summary>
-        public void cs_deploy_turret(SpatialPoint point)
+        public void cs_deploy_turret(ISpatialPoint point)
         {
         }
 
@@ -114,7 +114,7 @@ namespace OpenH2.Engine.Scripting
         }
 
         /// <summary>Actor faces exactly the point for the remainder of the cs, or until overridden (overrides aim, look)</summary>
-        public void cs_face(bool boolean, SpatialPoint point = null)
+        public void cs_face(bool boolean, ISpatialPoint point = null)
         {
         }
 
@@ -134,17 +134,17 @@ namespace OpenH2.Engine.Scripting
         }
 
         /// <summary>Flies the actor through the given point</summary>
-        public void cs_fly_by(SpatialPoint point, float tolerance = 0f)
+        public void cs_fly_by(ISpatialPoint point, float tolerance = 0f)
         {
         }
 
         /// <summary>Flies the actor to the given point (within the given tolerance)</summary>
-        public void cs_fly_to(SpatialPoint point, float tolerance = 0f)
+        public void cs_fly_to(ISpatialPoint point, float tolerance = 0f)
         {
         }
 
         /// <summary>Flies the actor to the given point and orients him in the appropriate direction (within the given tolerance)</summary>
-        public void cs_fly_to_and_face(SpatialPoint point, SpatialPoint face, float tolerance = 0f)
+        public void cs_fly_to_and_face(ISpatialPoint point, ISpatialPoint face, float tolerance = 0f)
         {
         }
 
@@ -154,22 +154,22 @@ namespace OpenH2.Engine.Scripting
         }
 
         /// <summary>Actor moves toward the point, and considers it hit when it breaks the indicated plane</summary>
-        public void cs_go_by(SpatialPoint point, SpatialPoint planeP, float planeD = 0f)
+        public void cs_go_by(ISpatialPoint point, ISpatialPoint planeP, float planeD = 0f)
         {
         }
 
         /// <summary>Moves the actor to a specified point</summary>
-        public void cs_go_to(SpatialPoint point, float tolerance = 1f)
+        public void cs_go_to(ISpatialPoint point, float tolerance = 1f)
         {
         }
 
         /// <summary>Moves the actor to a specified point and has him face the second point</summary>
-        public void cs_go_to_and_face(SpatialPoint point, SpatialPoint faceTowards)
+        public void cs_go_to_and_face(ISpatialPoint point, ISpatialPoint faceTowards)
         {
         }
 
         /// <summary>Given a point set, AI goes toward the nearest point</summary>
-        public void cs_go_to_nearest(SpatialPoint destination)
+        public void cs_go_to_nearest(ISpatialPoint destination)
         {
         }
 
@@ -184,7 +184,7 @@ namespace OpenH2.Engine.Scripting
         }
 
         /// <summary>Actor throws a grenade, either by tossing (arg2=0), lobbing (1) or bouncing (2)</summary>
-        public void cs_grenade(SpatialPoint point, int action)
+        public void cs_grenade(ISpatialPoint point, int action)
         {
         }
 
@@ -204,7 +204,7 @@ namespace OpenH2.Engine.Scripting
         }
 
         /// <summary>Actor looks at the point for the remainder of the cs, or until overridden</summary>
-        public void cs_look(bool boolean, SpatialPoint point = null)
+        public void cs_look(bool boolean, ISpatialPoint point = null)
         {
         }
 
@@ -260,7 +260,7 @@ namespace OpenH2.Engine.Scripting
         }
 
         /// <summary>Actor performs the indicated behavior</summary>
-        public void cs_set_behavior(AIBehavior ai_behavior)
+        public void cs_set_behavior(IAIBehavior ai_behavior)
         {
         }
 
@@ -275,7 +275,7 @@ namespace OpenH2.Engine.Scripting
         }
 
         /// <summary>Actor shoots at given point</summary>
-        public void cs_shoot_point(bool boolean, SpatialPoint point)
+        public void cs_shoot_point(bool boolean, ISpatialPoint point)
         {
         }
 
@@ -295,7 +295,7 @@ namespace OpenH2.Engine.Scripting
         }
 
         /// <summary>Moves the actor to a specified point. DOES NOT BLOCK SCRIPT EXECUTION.</summary>
-        public void cs_start_to(SpatialPoint destination)
+        public void cs_start_to(ISpatialPoint destination)
         {
         }
 
@@ -315,7 +315,7 @@ namespace OpenH2.Engine.Scripting
 
         }
         /// <summary>Actor teleports to point1 facing point2</summary>
-        public void cs_teleport(SpatialPoint destination, SpatialPoint facing)
+        public void cs_teleport(ISpatialPoint destination, ISpatialPoint facing)
         {
         }
 

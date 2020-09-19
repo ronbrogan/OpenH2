@@ -5,6 +5,7 @@ using OpenH2.Core.Offsets;
 using OpenH2.Core.Parsing;
 using OpenH2.Core.Tags;
 using OpenH2.Core.Tags.Common.Models;
+using OpenH2.Core.Tags.Scenario;
 using OpenH2.Foundation;
 using System;
 using System.Collections.Generic;
@@ -22,6 +23,9 @@ namespace OpenH2.Core.Representations
         private Dictionary<uint, BaseTag> Tags = new Dictionary<uint, BaseTag>();
         private IMaterialFactory materialFactory;
 
+        public ScenarioTag Scenario { get; private set; }
+        public GlobalsTag Globals { get; private set; }
+
         internal H2vMap(H2vReader reader, H2vLazyLoadingMap mainMenu, H2vLazyLoadingMap mpShared, H2vLazyLoadingMap spShared)
         {
             this.reader = reader;
@@ -33,6 +37,16 @@ namespace OpenH2.Core.Representations
         internal void SetTags(Dictionary<uint, BaseTag> tags)
         {
             this.Tags = tags;
+
+            if (this.Tags.TryGetValue(this.IndexHeader.Scenario.Id, out var scnr))
+            {
+                this.Scenario = (ScenarioTag)scnr;
+            }
+
+            if (this.Tags.TryGetValue(this.IndexHeader.Globals.Id, out var globals))
+            {
+                this.Globals = (GlobalsTag)globals;
+            }
         }
 
         // TODO: consider if material construction belongs here
@@ -49,6 +63,16 @@ namespace OpenH2.Core.Representations
         public IEnumerable<T> GetLocalTagsOfType<T>() where T : BaseTag
         {
             return Tags.Select(t => t.Value as T).Where(t => t != null);
+        }
+
+        public T GetTag<T>(uint id) where T: BaseTag
+        {
+            if(TryGetTag<T>(id, out var t))
+            {
+                return t;
+            }
+
+            throw new Exception($"Unable to find tag {id}");
         }
 
         public bool TryGetTag<T>(uint id, out T tag) where T : BaseTag

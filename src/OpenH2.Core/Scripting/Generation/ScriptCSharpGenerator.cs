@@ -1,6 +1,7 @@
 ﻿using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
+using OpenH2.Core.Architecture;
 using OpenH2.Core.Extensions;
 using OpenH2.Core.Scripting.GenerationState;
 using OpenH2.Core.Tags.Scenario;
@@ -14,7 +15,7 @@ using static Microsoft.CodeAnalysis.CSharp.SyntaxFactory;
 namespace OpenH2.Core.Scripting.Generation
 {
     public class ScriptCSharpGenerator
-    { 
+    {
         private readonly ScenarioTag scenario;
         private readonly ClassDeclarationSyntax classDecl;
         private readonly NamespaceDeclarationSyntax nsDecl;
@@ -34,7 +35,7 @@ namespace OpenH2.Core.Scripting.Generation
         {
             this.scenario = scnr;
             this.nameRepo = nameRepo;
-            
+
             var scenarioParts = scnr.Name.Split('\\', StringSplitOptions.RemoveEmptyEntries);
 
             var ns = "OpenH2.Scripts.Generated" + string.Join(".", scenarioParts.Take(2));
@@ -42,12 +43,12 @@ namespace OpenH2.Core.Scripting.Generation
             this.nsDecl = NamespaceDeclaration(ParseName(ns));
 
             var classModifiers = SyntaxTokenList.Create(Token(SyntaxKind.PublicKeyword))
-                .Add(Token(SyntaxKind.PartialKeyword));            
+                .Add(Token(SyntaxKind.PartialKeyword));
 
             this.classDecl = ClassDeclaration("scnr_" + scenarioParts.Last())
                 .WithModifiers(classModifiers);
 
-            if(classAttributes != null && classAttributes.Any())
+            if (classAttributes != null && classAttributes.Any())
             {
                 var classAttrs = List<AttributeListSyntax>()
                     .Add(AttributeList(SeparatedList(classAttributes)));
@@ -68,7 +69,7 @@ namespace OpenH2.Core.Scripting.Generation
             {
                 var squad = tag.AiSquadDefinitions[i];
 
-                var squadPropName = nameRepo.RegisterName(squad.Description, ScriptDataType.AI.ToString(), i);
+                var squadPropName = nameRepo.RegisterName(squad.Description, ScriptDataType.AI, i);
 
                 var dataClassProps = new List<PropertyDeclarationSyntax>();
 
@@ -77,7 +78,7 @@ namespace OpenH2.Core.Scripting.Generation
                 var m = 0;
                 foreach (var ai in squad.StartingLocations)
                 {
-                    var propName = nestedRepo.RegisterName(ai.Description, ScriptDataType.AI.ToString(), m++);
+                    var propName = nestedRepo.RegisterName(ai.Description, ScriptDataType.AI, m++);
 
                     dataClassProps.Add(SyntaxUtil.CreateProperty(ScriptDataType.AI, propName));
                 }
@@ -90,18 +91,6 @@ namespace OpenH2.Core.Scripting.Generation
                 var cls = ClassDeclaration(squadTypeName)
                     .AddModifiers(Token(SyntaxKind.PublicKeyword))
                     .WithMembers(new SyntaxList<MemberDeclarationSyntax>(dataClassProps));
-                    //.AddMembers(
-                    //    ConversionOperatorDeclaration(Token(SyntaxKind.ImplicitKeyword), SyntaxUtil.ScriptTypeSyntax(ScriptDataType.AI))
-                    //        .AddModifiers(Token(SyntaxKind.PublicKeyword), Token(SyntaxKind.StaticKeyword))
-                    //        .WithOperatorKeyword(Token(SyntaxKind.OperatorKeyword))
-                    //        .AddParameterListParameters(Parameter(Identifier("s")).WithType(ParseTypeName(squadTypeName)))
-                    //        .WithExpressionBody(
-                    //            ArrowExpressionClause(
-                    //                MemberAccessExpression(
-                    //                    SyntaxKind.SimpleMemberAccessExpression,
-                    //                    IdentifierName("s"),
-                    //                    IdentifierName("Squad"))))
-                    //        .WithSemicolonToken(Token(SyntaxKind.SemicolonToken)));
 
                 nestedDataClasses.Add(cls);
                 nameRepo.NestedRepos.Add(squadPropName, nestedRepo);
@@ -109,7 +98,7 @@ namespace OpenH2.Core.Scripting.Generation
                 properties.Add(PropertyDeclaration(ParseTypeName(squadTypeName), squadPropName)
                     .AddModifiers(Token(SyntaxKind.PublicKeyword))
                     .WithAccessorList(SyntaxUtil.AutoPropertyAccessorList()));
-            }            
+            }
         }
 
         public void AddProperties(ScenarioTag scnr)
@@ -117,6 +106,10 @@ namespace OpenH2.Core.Scripting.Generation
             for (int i = 0; i < scnr.WellKnownItems.Length; i++)
             {
                 var externalRef = scnr.WellKnownItems[i];
+
+                if (externalRef.ItemType == ScenarioTag.WellKnownVarType.Undef)
+                    continue;
+
                 AddPublicProperty(externalRef, i);
             }
 
@@ -174,6 +167,7 @@ namespace OpenH2.Core.Scripting.Generation
         public void CreateDataInitializer(ScenarioTag scnr)
         {
             var scenarioParam = Identifier("scenarioTag");
+            var sceneParam = Identifier("scene");
 
             var statements = new List<StatementSyntax>();
 
@@ -192,13 +186,13 @@ namespace OpenH2.Core.Scripting.Generation
                     ScenarioTag.WellKnownVarType.Controller => nameof(scnr.ControllerInstances),
                     ScenarioTag.WellKnownVarType.Sound => nameof(scnr.SoundSceneryInstances),
                     ScenarioTag.WellKnownVarType.Bloc => nameof(scnr.BlocInstances),
-                    ScenarioTag.WellKnownVarType.Undef=> null,
+                    ScenarioTag.WellKnownVarType.Undef => null,
                     _ => "unknown"
                 };
 
-                if(scnrPropName != null)
+                if (scnrPropName != null)
                 {
-                    var varType = SyntaxUtil.WellKnownTypeString(externalRef.ItemType);
+                    var varType = SyntaxUtil.ToScriptDataType(externalRef.ItemType);
                     statements.Add(CreateAssignment(scnrPropName, varType, externalRef.Description, externalRef.Index));
                 }
             }
@@ -257,7 +251,9 @@ namespace OpenH2.Core.Scripting.Generation
                 MethodDeclaration(
                     PredefinedType(Token(SyntaxKind.VoidKeyword)),
                     nameof(ScenarioScriptBase.InitializeData))
-                .AddParameterListParameters(Parameter(scenarioParam).WithType(ParseTypeName(nameof(ScenarioTag))))
+                .AddParameterListParameters(
+                    Parameter(scenarioParam).WithType(ParseTypeName(nameof(ScenarioTag))),
+                    Parameter(sceneParam).WithType(ParseTypeName(nameof(Scene))))
                 .AddModifiers(Token(SyntaxKind.PublicKeyword), Token(SyntaxKind.OverrideKeyword))
                 .WithBody(Block(statements)));
         }
@@ -268,7 +264,7 @@ namespace OpenH2.Core.Scripting.Generation
             {
                 var squad = tag.AiSquadDefinitions[i];
 
-                if(nameRepo.TryGetName(squad.Description, ScriptDataType.AI.ToString(), i, out var squadPropName) == false)
+                if (nameRepo.TryGetName(squad.Description, ScriptDataType.AI, i, out var squadPropName) == false)
                 {
                     return;
                 }
@@ -280,7 +276,7 @@ namespace OpenH2.Core.Scripting.Generation
                 var m = 0;
                 foreach (var ai in squad.StartingLocations)
                 {
-                    if(nestedRepo.TryGetName(ai.Description, ScriptDataType.AI.ToString(), m, out var propName) == false)
+                    if (nestedRepo.TryGetName(ai.Description, ScriptDataType.AI, m, out var propName) == false)
                     {
                         continue;
                     }
@@ -295,9 +291,17 @@ namespace OpenH2.Core.Scripting.Generation
                             IdentifierName(nameof(squad.StartingLocations))))
                         .AddArgumentListArguments(Argument(SyntaxUtil.LiteralExpression(m)));
 
+                    var entityIndex = ElementAccessExpression(
+                        MemberAccessExpression(SyntaxKind.SimpleMemberAccessExpression,
+                            IdentifierName("scene"),
+                            IdentifierName(nameof(Scene.ScenarioSourcedEntities))))
+                        .WithArgumentList(BracketedArgumentList(SingletonSeparatedList(Argument(access))));
+
+                    var castTo = CastExpression(SyntaxUtil.ScriptTypeSyntax(ScriptDataType.AI), entityIndex);
+
                     var exp = AssignmentExpression(SyntaxKind.SimpleAssignmentExpression,
                         IdentifierName(propName),
-                        access);
+                        castTo);
 
                     initializerExpressions.Add(exp);
                     m++;
@@ -309,9 +313,18 @@ namespace OpenH2.Core.Scripting.Generation
                                     IdentifierName(nameof(tag.AiSquadDefinitions))))
                             .AddArgumentListArguments(Argument(SyntaxUtil.LiteralExpression(i)));
 
+                var squadEntityIndex = ElementAccessExpression(
+                        MemberAccessExpression(SyntaxKind.SimpleMemberAccessExpression,
+                            IdentifierName("scene"),
+                            IdentifierName(nameof(Scene.ScenarioSourcedEntities))))
+                        .WithArgumentList(BracketedArgumentList(SingletonSeparatedList(Argument(squadAccess))));
+
+                var squadCastTo = CastExpression(SyntaxUtil.ScriptTypeSyntax(ScriptDataType.AI), squadEntityIndex);
+
+
                 var squadExp = AssignmentExpression(SyntaxKind.SimpleAssignmentExpression,
                     IdentifierName("Squad"),
-                    squadAccess);
+                    squadCastTo);
 
                 initializerExpressions.Add(squadExp);
 
@@ -355,7 +368,7 @@ namespace OpenH2.Core.Scripting.Generation
 
         public void AddPublicProperty(ScenarioTag.WellKnownItem externalRef, int itemIndex)
         {
-            var varType = SyntaxUtil.WellKnownTypeString(externalRef.ItemType);
+            var varType = SyntaxUtil.ToScriptDataType(externalRef.ItemType);
 
             AddPublicProperty(varType, externalRef.Description, itemIndex);
         }
@@ -372,13 +385,6 @@ namespace OpenH2.Core.Scripting.Generation
 
         public void AddPublicProperty(ScriptDataType type, string name, int itemIndex)
         {
-            var propName = nameRepo.RegisterName(name, type.ToString(), itemIndex);
-
-            properties.Add(SyntaxUtil.CreateProperty(type, propName));
-        }
-
-        public void AddPublicProperty(string type, string name, int itemIndex)
-        {
             var propName = nameRepo.RegisterName(name, type, itemIndex);
 
             properties.Add(SyntaxUtil.CreateProperty(type, propName));
@@ -389,14 +395,6 @@ namespace OpenH2.Core.Scripting.Generation
             string desiredName,
             int itemIndex)
         {
-            return CreateAssignment(originCollectionname, type.ToString(), desiredName, itemIndex);
-        }
-
-        public StatementSyntax CreateAssignment(string originCollectionname, 
-            string type, 
-            string desiredName, 
-            int itemIndex)
-        {
             if (nameRepo.TryGetName(desiredName, type, itemIndex, out var name))
             {
                 var access = ElementAccessExpression(MemberAccessExpression(SyntaxKind.SimpleMemberAccessExpression,
@@ -404,9 +402,17 @@ namespace OpenH2.Core.Scripting.Generation
                             IdentifierName(originCollectionname)))
                         .AddArgumentListArguments(Argument(SyntaxUtil.LiteralExpression(itemIndex)));
 
+                var entityIndex = ElementAccessExpression(
+                    MemberAccessExpression(SyntaxKind.SimpleMemberAccessExpression,
+                        IdentifierName("scene"),
+                        IdentifierName(nameof(Scene.ScenarioSourcedEntities))))
+                    .WithArgumentList(BracketedArgumentList(SingletonSeparatedList(Argument(access))));
+
+                var castTo = CastExpression(SyntaxUtil.ScriptTypeSyntax(type), entityIndex);
+
                 var exp = AssignmentExpression(SyntaxKind.SimpleAssignmentExpression,
                     IdentifierName(name),
-                    access);
+                    castTo);
 
                 return ExpressionStatement(exp);
             }
@@ -438,7 +444,7 @@ namespace OpenH2.Core.Scripting.Generation
                 MemberAccessExpression(
                     SyntaxKind.SimpleMemberAccessExpression,
                     ThisExpression(),
-                    IdentifierName(field.Declaration.Variables.First().Identifier.ToString())), 
+                    IdentifierName(field.Declaration.Variables.First().Identifier.ToString())),
                 expressionContext.GetInnerExpression());
 
             constructorStatements.Add(ExpressionStatement(assignment));
@@ -451,7 +457,7 @@ namespace OpenH2.Core.Scripting.Generation
 
             TypeSyntax returnType = ParseTypeName("Task");
 
-            if(scriptMethod.ReturnType != ScriptDataType.Void)
+            if (scriptMethod.ReturnType != ScriptDataType.Void)
             {
                 returnType = GenericName("Task").AddTypeArgumentListArguments(SyntaxUtil.ScriptTypeSyntax(scriptMethod.ReturnType));
             }
@@ -493,7 +499,7 @@ namespace OpenH2.Core.Scripting.Generation
                 if (isContinuation == false)
                 {
                     var newContext = HandleNodeStart(node);
-                    if(newContext.CreatesScope)
+                    if (newContext.CreatesScope)
                     {
                         var newScope = currentScope.CreateChild(newContext);
                         scopes.Push(newScope);
@@ -534,7 +540,7 @@ namespace OpenH2.Core.Scripting.Generation
                 NodeType.ScriptInvocation => HandleScriptInvocation(node),
                 NodeType.VariableAccess => HandleVariableAccess(node),
                 _ => throw new NotSupportedException($"Node type {node.NodeType} is not yet supported")
-            }; 
+            };
         }
 
         // Scopes seems to use NodeData to specify what is inside the scope
@@ -561,7 +567,7 @@ namespace OpenH2.Core.Scripting.Generation
             Debug.Assert(scenario.ScriptSyntaxNodes[node.NodeData_H16].Checkval == node.NodeData_L16, "Scope's next node checkval didn't match");
             childIndices.PushFull(node.NodeData_H16);
 
-            if(currentScope.IsInStatementContext)
+            if (currentScope.IsInStatementContext)
             {
                 return new ScopeGenerationContext.StatementContext(node, currentScope);
             }
@@ -659,14 +665,14 @@ namespace OpenH2.Core.Scripting.Generation
                 "begin" => new BeginCallContext(node, currentScope, rt),
                 "begin_random" => new BeginRandomContext(node, rt),
                 "sleep_until" => new SleepUntilContext(node, rt),
-                "-" =>  new BinaryOperatorContext(node, SyntaxKind.SubtractExpression, rt),
-                "+" =>  new BinaryOperatorContext(node, SyntaxKind.AddExpression, rt),
-                "*" =>  new BinaryOperatorContext(node, SyntaxKind.MultiplyExpression, rt),
-                "/" =>  new BinaryOperatorContext(node, SyntaxKind.DivideExpression, rt),
-                "%" =>  new BinaryOperatorContext(node, SyntaxKind.ModuloExpression, rt),
-                "=" =>  new BinaryOperatorContext(node, SyntaxKind.EqualsExpression, rt),
-                "<" =>  new BinaryOperatorContext(node, SyntaxKind.LessThanExpression, rt),
-                ">" =>  new BinaryOperatorContext(node, SyntaxKind.GreaterThanExpression, rt),
+                "-" => new BinaryOperatorContext(node, SyntaxKind.SubtractExpression, rt),
+                "+" => new BinaryOperatorContext(node, SyntaxKind.AddExpression, rt),
+                "*" => new BinaryOperatorContext(node, SyntaxKind.MultiplyExpression, rt),
+                "/" => new BinaryOperatorContext(node, SyntaxKind.DivideExpression, rt),
+                "%" => new BinaryOperatorContext(node, SyntaxKind.ModuloExpression, rt),
+                "=" => new BinaryOperatorContext(node, SyntaxKind.EqualsExpression, rt),
+                "<" => new BinaryOperatorContext(node, SyntaxKind.LessThanExpression, rt),
+                ">" => new BinaryOperatorContext(node, SyntaxKind.GreaterThanExpression, rt),
                 "<=" => new BinaryOperatorContext(node, SyntaxKind.LessThanOrEqualExpression, rt),
                 ">=" => new BinaryOperatorContext(node, SyntaxKind.GreaterThanOrEqualExpression, rt),
                 "or" => new BinaryOperatorContext(node, SyntaxKind.LogicalOrExpression, rt),
@@ -681,7 +687,7 @@ namespace OpenH2.Core.Scripting.Generation
         private void HandleNodeEnd(ScenarioTag.ScriptSyntaxNode node)
         {
             // Only generate into parent scope when the current scope ends
-            if(node == currentScope.Context.OriginalNode)
+            if (node == currentScope.Context.OriginalNode)
             {
                 var endingScope = scopes.Pop();
 
@@ -714,12 +720,12 @@ namespace OpenH2.Core.Scripting.Generation
                 cls = cls.AddMembers(f);
             }
 
-            foreach(var prop in properties)
+            foreach (var prop in properties)
             {
                 cls = cls.AddMembers(prop);
             }
 
-            if(constructorStatements.Any())
+            if (constructorStatements.Any())
             {
                 constructorStatements.Insert(0, ExpressionStatement(AssignmentExpression(
                    SyntaxKind.SimpleAssignmentExpression,
@@ -735,13 +741,13 @@ namespace OpenH2.Core.Scripting.Generation
                     .AddParameterListParameters(Parameter(Identifier("scriptEngine")).WithType(ParseName("IScriptEngine")))
                     .WithBody(Block(constructorStatements)));
             }
-            
+
             foreach (var method in methods)
             {
                 var m = method;
                 if (addedFieldRegionStart && addedFieldRegionEnd == false)
                 {
-                    m = m.InsertTriviaBefore(m.GetLeadingTrivia().First(), new[]{ 
+                    m = m.InsertTriviaBefore(m.GetLeadingTrivia().First(), new[]{
                         Trivia(
                             EndRegionDirectiveTrivia(false))});
 
@@ -764,6 +770,7 @@ namespace OpenH2.Core.Scripting.Generation
                 .AddUsings(
                     UsingDirective(ParseName("System")),
                     UsingDirective(ParseName("System.Threading.Tasks")),
+                    UsingDirective(ParseName("OpenH2.Core.Architecture")),
                     UsingDirective(ParseName("OpenH2.Core.Tags.Scenario")),
                     UsingDirective(ParseName("OpenH2.Core.Scripting")),
                     UsingDirective(ParseName("OpenH2.Core.GameObjects"))

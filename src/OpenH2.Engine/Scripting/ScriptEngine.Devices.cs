@@ -34,23 +34,23 @@ namespace OpenH2.Engine.Scripting
         }
 
         /// <summary>TRUE allows a device to change states only once</summary>
-        public void device_group_change_only_once_more_set(ScenarioTag.DeviceGroupDefinition device_group, bool boolean)
+        public void device_group_change_only_once_more_set(IDeviceGroup device_group, bool boolean)
         {
         }
 
         /// <summary>returns the desired value of the specified device group.</summary>
-        public float device_group_get(ScenarioTag.DeviceGroupDefinition device_group)
+        public float device_group_get(IDeviceGroup device_group)
         {
             return default(float);
         }
 
         /// <summary>changes the desired value of the specified device group.</summary>
-        public void device_group_set(IDevice device, ScenarioTag.DeviceGroupDefinition device_group, float real)
+        public void device_group_set(IDevice device, IDeviceGroup device_group, float real)
         {
         }
 
         /// <summary>instantaneously changes the value of the specified device group.</summary>
-        public void device_group_set_immediate(ScenarioTag.DeviceGroupDefinition device_group, float real)
+        public void device_group_set_immediate(IDeviceGroup device_group, float real)
         {
         }
 

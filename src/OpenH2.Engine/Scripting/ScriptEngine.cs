@@ -24,12 +24,12 @@ namespace OpenH2.Engine.Scripting
         }
 
         /// <summary>activates a nav point type <string> attached to a team anchored to a flag with a vertical offset <real>. If the player is not local to the machine, this will fail</summary>
-        public void activate_team_nav_point_flag(NavigationPoint navpoint, Team team, ScenarioTag.LocationFlagDefinition cutscene_flag, float real)
+        public void activate_team_nav_point_flag(INavigationPoint navpoint, ITeam team, ILocationFlag cutscene_flag, float real)
         {
         }
 
         /// <summary>activates a nav point type <string> attached to a team anchored to an object with a vertical offset <real>. If the player is not local to the machine, this will fail</summary>
-        public void activate_team_nav_point_object(NavigationPoint navpoint, Team team, IGameObject entity, float real)
+        public void activate_team_nav_point_object(INavigationPoint navpoint, ITeam team, IGameObject entity, float real)
         {
         }
 
@@ -55,12 +55,12 @@ namespace OpenH2.Engine.Scripting
         }
 
         /// <summary>moves the camera to the specified camera point over the specified number of ticks.</summary>
-        public void camera_set(ScenarioTag.CameraPathTarget cutscene_camera_point, short value)
+        public void camera_set(ICameraPathTarget cutscene_camera_point, short value)
         {
         }
 
         /// <summary>begins a prerecorded camera animation synchronized to unit relative to cutscene flag.</summary>
-        public void camera_set_animation_relative(Animation animation, string /*id*/ id, IUnit unit, ScenarioTag.LocationFlagDefinition locationFlag)
+        public void camera_set_animation_relative(IAnimation animation, string /*id*/ id, IUnit unit, ILocationFlag locationFlag)
         {
         }
 
@@ -151,7 +151,7 @@ namespace OpenH2.Engine.Scripting
         }
 
         /// <summary>activates the chapter title</summary>
-        public void cinematic_set_title(ScenarioTag.CinematicTitleDefinition cutscene_title)
+        public void cinematic_set_title(ICinematicTitle cutscene_title)
         {
         }
 
@@ -207,7 +207,7 @@ namespace OpenH2.Engine.Scripting
         }
 
         /// <summary>starts a custom animation playing on a unit (interpolates into animation if last parameter is TRUE)</summary>
-        public void custom_animation(IUnit unit, Animation animation, string /*id*/ stringid, bool interpolate)
+        public void custom_animation(IUnit unit, IAnimation animation, string /*id*/ stringid, bool interpolate)
         {
         }
 
@@ -217,7 +217,7 @@ namespace OpenH2.Engine.Scripting
         }
 
         /// <summary>starts a custom animation playing on a unit (interpolates into animation if last parameter is TRUE)</summary>
-        public void custom_animation_loop(IUnit unit, Animation animation1, string /*id*/ emotion, bool interpolate)
+        public void custom_animation_loop(IUnit unit, IAnimation animation1, string /*id*/ emotion, bool interpolate)
         {
         }
 
@@ -232,42 +232,42 @@ namespace OpenH2.Engine.Scripting
         }
 
         /// <summary>starts a custom animation relative to some other object (interpolates into animation if last parameter is TRUE)</summary>
-        public void custom_animation_relative(IUnit entity, Animation animation, string /*id*/ emotion, bool boolean, IGameObject other)
+        public void custom_animation_relative(IUnit entity, IAnimation animation, string /*id*/ emotion, bool boolean, IGameObject other)
         {
         }
 
         /// <summary>starts a custom animation relative to some other object (interpolates into animation if last parameter is TRUE)</summary>
-        public void custom_animation_relative_loop(IUnit unit, Animation animation2, string /*id*/ emotion, bool boolean, IGameObject entity)
+        public void custom_animation_relative_loop(IUnit unit, IAnimation animation2, string /*id*/ emotion, bool boolean, IGameObject entity)
         {
         }
 
         /// <summary>causes the specified damage at the specified flag.</summary>
-        public void damage_new(Damage damage, ScenarioTag.LocationFlagDefinition cutscene_flag)
+        public void damage_new(IDamage damage, ILocationFlag cutscene_flag)
         {
         }
 
         /// <summary>causes the specified damage at the specified object.</summary>
-        public void damage_object(Damage damage, IGameObject entity)
+        public void damage_object(IDamage damage, IGameObject entity)
         {
         }
 
         /// <summary>damages all players with the given damage effect</summary>
-        public void damage_players(Damage damage)
+        public void damage_players(IDamage damage)
         {
         }
 
         /// <summary>deactivates a nav point type attached to a team anchored to a flag</summary>
-        public void deactivate_team_nav_point_flag(Team team, ScenarioTag.LocationFlagDefinition cutscene_flag)
+        public void deactivate_team_nav_point_flag(ITeam team, ILocationFlag cutscene_flag)
         {
         }
 
         /// <summary>deactivates a nav point type attached to a team anchored to an object</summary>
-        public void deactivate_team_nav_point_object(Team team)
+        public void deactivate_team_nav_point_object(ITeam team)
         {
         }
 
         /// <summary>deactivates a nav point type attached to a team anchored to an object</summary>
-        public void deactivate_team_nav_point_object(Team team, IGameObject entity)
+        public void deactivate_team_nav_point_object(ITeam team, IGameObject entity)
         {
         }
 
@@ -277,17 +277,17 @@ namespace OpenH2.Engine.Scripting
         }
 
         /// <summary>starts the specified effect at the specified flag.</summary>
-        public void effect_new(Effect effect, ScenarioTag.LocationFlagDefinition cutscene_flag)
+        public void effect_new(IEffect effect, ILocationFlag cutscene_flag)
         {
         }
 
         /// <summary>starts the specified effect on the specified object at the specified marker.</summary>
-        public void effect_new_on_object_marker(Effect effect, IGameObject entity, string /*id*/ string_id)
+        public void effect_new_on_object_marker(IEffect effect, IGameObject entity, string /*id*/ string_id)
         {
         }
 
         /// <summary>starts the specified effect on the specified object at the specified marker.</summary>
-        public void effect_new_on_object_marker(Effect effect, string /*id*/ emotion)
+        public void effect_new_on_object_marker(IEffect effect, string /*id*/ emotion)
         {
         }
 
@@ -435,12 +435,12 @@ namespace OpenH2.Engine.Scripting
         }
 
         /// <summary>disables a kill volume</summary>
-        public void kill_volume_disable(ScenarioTag.TriggerVolume trigger_volume)
+        public void kill_volume_disable(ITriggerVolume trigger_volume)
         {
         }
 
         /// <summary>enables a kill volume</summary>
-        public void kill_volume_enable(ScenarioTag.TriggerVolume trigger_volume)
+        public void kill_volume_enable(ITriggerVolume trigger_volume)
         {
         }
 
@@ -535,22 +535,22 @@ namespace OpenH2.Engine.Scripting
         }
 
         /// <summary>starts a custom looping animation playing on a piece of scenery</summary>
-        public void scenery_animation_start_loop(ScenarioTag.SceneryInstance scenery, Animation animation, string /*id*/ emotion)
+        public void scenery_animation_start_loop(IScenery scenery, IAnimation animation, string /*id*/ emotion)
         {
         }
 
         /// <summary>starts a custom animation playing on a piece of scenery relative to a parent object</summary>
-        public void scenery_animation_start_relative(ScenarioTag.SceneryInstance scenery, string /*id*/ emotion, IGameObject entity)
+        public void scenery_animation_start_relative(IScenery scenery, string /*id*/ emotion, IGameObject entity)
         {
         }
 
         /// <summary>starts a custom animation playing on a piece of scenery relative to a parent object</summary>
-        public void scenery_animation_start_relative(ScenarioTag.SceneryInstance scenery, Animation animation, string /*id*/ emotion, IGameObject entity)
+        public void scenery_animation_start_relative(IScenery scenery, IAnimation animation, string /*id*/ emotion, IGameObject entity)
         {
         }
 
         /// <summary>returns the number of ticks remaining in a custom animation (or zero, if the animation is over).</summary>
-        public short scenery_get_animation_time(ScenarioTag.SceneryInstance scenery)
+        public short scenery_get_animation_time(IScenery scenery)
         {
             return default(short);
         }
@@ -617,7 +617,7 @@ namespace OpenH2.Engine.Scripting
         }
 
         /// <summary>leaves your condom on and changes to a different structure bsp by name</summary>
-        public void switch_bsp_by_name(Bsp structure_bsp)
+        public void switch_bsp_by_name(IBsp structure_bsp)
         {
         }
 
@@ -671,54 +671,54 @@ namespace OpenH2.Engine.Scripting
         }
 
         /// <summary>returns list of objects in volume or (max 128).</summary>
-        public GameObjectList volume_return_objects(ScenarioTag.TriggerVolume trigger_volume)
+        public GameObjectList volume_return_objects(ITriggerVolume trigger_volume)
         {
             return default(GameObjectList);
         }
 
         /// <summary>returns list of objects in volume or (max 128).</summary>
-        public GameObjectList volume_return_objects_by_type(ScenarioTag.TriggerVolume trigger_volume, int value)
+        public GameObjectList volume_return_objects_by_type(ITriggerVolume trigger_volume, int value)
         {
             return default(GameObjectList);
         }
 
         /// <summary>moves all players outside a specified trigger volume to a specified flag.</summary>
-        public void volume_teleport_players_not_inside(ScenarioTag.TriggerVolume trigger_volume, ScenarioTag.LocationFlagDefinition cutscene_flag)
+        public void volume_teleport_players_not_inside(ITriggerVolume trigger_volume, ILocationFlag cutscene_flag)
         {
         }
 
         /// <summary>returns true if the specified object is within the specified volume.</summary>
-        public bool volume_test_object(ScenarioTag.TriggerVolume trigger)
+        public bool volume_test_object(ITriggerVolume trigger)
         {
             return default(bool);
         }
 
         /// <summary>returns true if the specified object is within the specified volume.</summary>
-        public bool volume_test_object(ScenarioTag.TriggerVolume trigger_volume, IGameObject entity)
+        public bool volume_test_object(ITriggerVolume trigger_volume, IGameObject entity)
         {
             return default(bool);
         }
 
         /// <summary>returns true if any of the specified objects are within the specified volume. trigger volume must have been postprocessed</summary>
-        public bool volume_test_objects(ScenarioTag.TriggerVolume trigger, IGameObject entity)
+        public bool volume_test_objects(ITriggerVolume trigger, IGameObject entity)
         {
             return default(bool);
         }
 
         /// <summary>returns true if any of the specified objects are within the specified volume. trigger volume must have been postprocessed</summary>
-        public bool volume_test_objects(ScenarioTag.TriggerVolume trigger_volume, GameObjectList object_list)
+        public bool volume_test_objects(ITriggerVolume trigger_volume, GameObjectList object_list)
         {
             return default(bool);
         }
 
         /// <summary>returns true if any (rb: all?) of the specified objects are within the specified volume. trigger volume must have been postprocessed</summary>
-        public bool volume_test_objects_all(ScenarioTag.TriggerVolume trigger, GameObjectList object_list)
+        public bool volume_test_objects_all(ITriggerVolume trigger, GameObjectList object_list)
         {
             return default(bool);
         }
 
         /// <summary>returns true if any (rb: all?) of the specified objects are within the specified volume. trigger volume must have been postprocessed</summary>
-        public bool volume_test_objects_all(ScenarioTag.TriggerVolume trigger, IGameObject entity)
+        public bool volume_test_objects_all(ITriggerVolume trigger, IGameObject entity)
         {
             return default(bool);
         }
@@ -735,7 +735,7 @@ namespace OpenH2.Engine.Scripting
         }
 
         /// <summary>turns the trigger for a weapon  on/off</summary>
-        public void weapon_hold_trigger(WeaponReference weapon, int triggerIndex, bool boolean)
+        public void weapon_hold_trigger(IWeaponReference weapon, int triggerIndex, bool boolean)
         {
         }
 

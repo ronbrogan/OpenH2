@@ -13,7 +13,7 @@ namespace OpenH2.Core.Tags.Scenario
     public partial class ScenarioTag
     {
         [FixedLength(36)]
-        public class AiSquadGroupDefinition : IAiActor
+        public class AiSquadGroupDefinition
         {
             [StringValue(0, 32)]
             public string Description { get; set; }
@@ -26,7 +26,7 @@ namespace OpenH2.Core.Tags.Scenario
         }
 
         [FixedLength(116)]
-        public class AiSquadDefinition : IAiActor
+        public class AiSquadDefinition
         {
             [StringValue(0, 32)]
             public string Description { get; set; }
@@ -35,7 +35,7 @@ namespace OpenH2.Core.Tags.Scenario
             public StartingLocation[] StartingLocations { get; set; }
 
             [FixedLength(100)]
-            public class StartingLocation : IAiActor
+            public class StartingLocation
             {
                 [InternedString(0)]
                 public string Description { get; set; }

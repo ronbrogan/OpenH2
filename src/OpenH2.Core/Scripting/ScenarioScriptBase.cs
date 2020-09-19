@@ -1,4 +1,5 @@
-﻿using OpenH2.Core.GameObjects;
+﻿using OpenH2.Core.Architecture;
+using OpenH2.Core.GameObjects;
 using OpenH2.Core.Tags.Scenario;
 
 namespace OpenH2.Core.Scripting
@@ -6,16 +7,16 @@ namespace OpenH2.Core.Scripting
     public abstract class ScenarioScriptBase
     {
         protected IScriptEngine Engine;
-        public Team player;
-        public Team human;
-        public Team prophet;
-        public Team covenant;
-        public Team sentinel;
-        public Team heretic;
+        public ITeam player;
+        public ITeam human;
+        public ITeam prophet;
+        public ITeam covenant;
+        public ITeam sentinel;
+        public ITeam heretic;
         public short cinematic_letterbox_style;
         public IAiActor ai_current_actor;
         public IAiActor ai_current_squad;
-        public AIBehavior guard;
+        public IAIBehavior guard;
         public short ai_combat_status_active;
         public short ai_combat_status_alert;
         public short ai_combat_status_idle;
@@ -28,10 +29,10 @@ namespace OpenH2.Core.Scripting
         public short ai_movement_combat;
         public short ai_movement_patrol;
         public short ai_movement_flee;
-        public DamageState destroyed;
-        public NavigationPoint _default;
-        public NavigationPoint default_red;
+        public IDamageState destroyed;
+        public INavigationPoint _default;
+        public INavigationPoint default_red;
 
-        public abstract void InitializeData(ScenarioTag scenario);
+        public abstract void InitializeData(ScenarioTag scenario, Scene scene);
     }
 }

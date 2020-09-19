@@ -11,7 +11,7 @@ namespace OpenH2.Engine.Scripting
         }
 
         /// <summary>returns the time remaining for the specified impulse sound. DO NOT CALL IN CUTSCENES.</summary>
-        public int sound_impulse_language_time(ReferenceGet soundRef)
+        public int sound_impulse_language_time(IReferenceGet soundRef)
         {
             return TicksPerSecond;
         }
@@ -22,12 +22,12 @@ namespace OpenH2.Engine.Scripting
         }
 
         /// <summary>plays an impulse sound from the specified source object (or "none"), with the specified scale and effect.</summary>
-        public void sound_impulse_start_effect(ReferenceGet sound, IGameObject entity, float floatValue, string /*id*/ effect)
+        public void sound_impulse_start_effect(IReferenceGet sound, IGameObject entity, float floatValue, string /*id*/ effect)
         {
         }
 
         /// <summary>stops the specified impulse sound.</summary>
-        public void sound_impulse_stop(ReferenceGet sound)
+        public void sound_impulse_stop(IReferenceGet sound)
         {
         }
 
@@ -42,22 +42,22 @@ namespace OpenH2.Engine.Scripting
         }
 
         /// <summary>enables or disables the alternate loop/alternate end for a looping sound.</summary>
-        public void sound_looping_set_alternate(LoopingSound looping_sound, bool boolean)
+        public void sound_looping_set_alternate(ILoopingSound looping_sound, bool boolean)
         {
         }
 
         /// <summary>plays a looping sound from the specified source object (or "none"), with the specified scale.</summary>
-        public void sound_looping_start(LoopingSound looping_sound, IGameObject entity, float real)
+        public void sound_looping_start(ILoopingSound looping_sound, IGameObject entity, float real)
         {
         }
 
         /// <summary>plays a looping sound from the specified source object (or "none"), with the specified scale.</summary>
-        public void sound_looping_start(LoopingSound loopingSound, float floatValue)
+        public void sound_looping_start(ILoopingSound loopingSound, float floatValue)
         {
         }
 
         /// <summary>stops the specified looping sound.</summary>
-        public void sound_looping_stop(LoopingSound looping_sound)
+        public void sound_looping_stop(ILoopingSound looping_sound)
         {
         }
 

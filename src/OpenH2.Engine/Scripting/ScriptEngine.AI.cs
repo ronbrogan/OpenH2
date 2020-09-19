@@ -15,7 +15,7 @@ namespace OpenH2.Engine.Scripting
         }
 
         /// <summary>creates an allegiance between two teams.</summary>
-        public void ai_allegiance(Team team, Team team1)
+        public void ai_allegiance(ITeam team, ITeam team1)
         {
         }
 
@@ -239,7 +239,7 @@ namespace OpenH2.Engine.Scripting
         }
 
         /// <summary>Takes the squad or squad group (arg1) and gives it the order (arg3) in zone (arg2). Use the zone_name/order_name format</summary>
-        public void ai_set_orders(IAiActor ai, ScenarioTag.AiOrderDefinition ai_orders)
+        public void ai_set_orders(IAiActor ai, IAiOrders ai_orders)
         {
         }
 

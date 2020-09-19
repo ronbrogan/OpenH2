@@ -33,11 +33,6 @@ namespace OpenH2.Engine.Scripting
         {
         }
 
-        /// <summary>Set whether the object can die from damage or not (as opposed to by scripting)</summary>
-        public void object_cannot_die(bool boolean)
-        {
-        }
-
         /// <summary>prevents an object from taking damage</summary>
         public void object_cannot_take_damage(IGameObject entity) // Unit?
         {
@@ -210,6 +205,14 @@ namespace OpenH2.Engine.Scripting
         /// <summary>hides or shows the object passed in</summary>
         public void object_hide(IGameObject entity, bool boolean)
         {
+            if(boolean)
+            {
+                entity.Hide();
+            }
+            else
+            {
+                entity.Show();
+            }
         }
 
         /// <summary>returns TRUE if the specified model target is destroyed</summary>
@@ -254,7 +257,7 @@ namespace OpenH2.Engine.Scripting
         }
 
         /// <summary>sets the desired region (use "" for all regions) to the model state with the given name, e.g. (object_set_region_state marine head destroyed)</summary>
-        public void object_set_region_state(IGameObject entity, string /*id*/ string_id, DamageState model_state)
+        public void object_set_region_state(IGameObject entity, string /*id*/ string_id, IDamageState model_state)
         {
         }
 
@@ -269,13 +272,9 @@ namespace OpenH2.Engine.Scripting
         }
 
         /// <summary>sets the shield vitality of the specified object (between 0 and 1).</summary>
-        public void object_set_shield(IGameObject entity, float real)
+        public void object_set_shield(IGameObject entity, float vitality)
         {
-        }
-
-        /// <summary>sets the shield vitality of the specified object (between 0 and 1).</summary>
-        public void object_set_shield()
-        {
+            entity.SetShield(vitality);
         }
 
         /// <summary>make this objects shield be stunned permanently</summary>
@@ -294,8 +293,9 @@ namespace OpenH2.Engine.Scripting
         }
 
         /// <summary>moves the specified object to the specified flag.</summary>
-        public void object_teleport(IGameObject entity, ScenarioTag.LocationFlagDefinition cutscene_flag)
+        public void object_teleport(IGameObject entity, ILocationFlag cutscene_flag)
         {
+            entity.TeleportTo(cutscene_flag.Position);
         }
 
         /// <summary>makes an object use the cinematic directional and ambient lights instead of sampling the lightmap.</summary>
@@ -328,29 +328,14 @@ namespace OpenH2.Engine.Scripting
         {
         }
 
-        /// <summary>attaches the second object to the first both strings can be empty</summary>
-        public void objects_attach(IGameObject entity, string /*id*/ emotion0, string /*id*/ emotion1)
-        {
-        }
-
-        /// <summary>attaches the second object to the first both strings can be empty</summary>
-        public void objects_attach(string /*id*/ emotion0, IGameObject entity, string /*id*/ emotion1)
-        {
-        }
-
-        /// <summary>attaches the second object to the first both strings can be empty</summary>
-        public void objects_attach(string /*id*/ emotion0, string /*id*/ emotion1)
-        {
-        }
-
         /// <summary>returns true if any of the specified units are looking within the specified number of degrees of the flag.</summary>
-        public bool objects_can_see_flag(IGameObject entity, ScenarioTag.LocationFlagDefinition locationFlag, float floatValue)
+        public bool objects_can_see_flag(IGameObject entity, ILocationFlag locationFlag, float floatValue)
         {
             return default(bool);
         }
 
         /// <summary>returns true if any of the specified units are looking within the specified number of degrees of the flag.</summary>
-        public bool objects_can_see_flag(GameObjectList list, ScenarioTag.LocationFlagDefinition locationFlag, float floatValue)
+        public bool objects_can_see_flag(GameObjectList list, ILocationFlag locationFlag, float floatValue)
         {
             return default(bool);
         }
@@ -401,13 +386,13 @@ namespace OpenH2.Engine.Scripting
         }
 
         /// <summary>returns minimum distance from any of the specified objects to the specified flag. (returns -1 if there are no objects, or no flag, to check)</summary>
-        public float objects_distance_to_flag(GameObjectList list, ScenarioTag.LocationFlagDefinition locationFlag)
+        public float objects_distance_to_flag(GameObjectList list, ILocationFlag locationFlag)
         {
             return default(float);
         }
 
         /// <summary>returns minimum distance from any of the specified objects to the specified flag. (returns -1 if there are no objects, or no flag, to check)</summary>
-        public float objects_distance_to_flag(IGameObject entity, ScenarioTag.LocationFlagDefinition locationFlag)
+        public float objects_distance_to_flag(IGameObject entity, ILocationFlag locationFlag)
         {
             return default(float);
         }
