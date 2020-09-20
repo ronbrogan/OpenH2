@@ -43,6 +43,16 @@ namespace OpenH2.Core.Architecture
 
         public delegate void EntityEventHandler(Entity entity);
 
+        public T? GetScenarioEntity<T>(object o)
+        {
+            if(this.ScenarioSourcedEntities.TryGetValue(o, out var e))
+            {
+                return (T)(object)e;
+            }
+
+            return default;
+        }
+
         public void Load()
         {
             var terrains = this.Map.Scenario.Terrains;

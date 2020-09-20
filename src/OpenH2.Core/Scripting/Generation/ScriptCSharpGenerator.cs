@@ -291,17 +291,16 @@ namespace OpenH2.Core.Scripting.Generation
                             IdentifierName(nameof(squad.StartingLocations))))
                         .AddArgumentListArguments(Argument(SyntaxUtil.LiteralExpression(m)));
 
-                    var entityIndex = ElementAccessExpression(
+                    var entityGet = InvocationExpression(
                         MemberAccessExpression(SyntaxKind.SimpleMemberAccessExpression,
                             IdentifierName("scene"),
-                            IdentifierName(nameof(Scene.ScenarioSourcedEntities))))
-                        .WithArgumentList(BracketedArgumentList(SingletonSeparatedList(Argument(access))));
-
-                    var castTo = CastExpression(SyntaxUtil.ScriptTypeSyntax(ScriptDataType.AI), entityIndex);
+                            GenericName(Identifier(nameof(Scene.GetScenarioEntity)))
+                                .AddTypeArgumentListArguments(SyntaxUtil.ScriptTypeSyntax(ScriptDataType.AI))))
+                        .AddArgumentListArguments(Argument(access));
 
                     var exp = AssignmentExpression(SyntaxKind.SimpleAssignmentExpression,
                         IdentifierName(propName),
-                        castTo);
+                        entityGet);
 
                     initializerExpressions.Add(exp);
                     m++;
@@ -313,18 +312,16 @@ namespace OpenH2.Core.Scripting.Generation
                                     IdentifierName(nameof(tag.AiSquadDefinitions))))
                             .AddArgumentListArguments(Argument(SyntaxUtil.LiteralExpression(i)));
 
-                var squadEntityIndex = ElementAccessExpression(
+                var squadEntityGet = InvocationExpression(
                         MemberAccessExpression(SyntaxKind.SimpleMemberAccessExpression,
                             IdentifierName("scene"),
-                            IdentifierName(nameof(Scene.ScenarioSourcedEntities))))
-                        .WithArgumentList(BracketedArgumentList(SingletonSeparatedList(Argument(squadAccess))));
-
-                var squadCastTo = CastExpression(SyntaxUtil.ScriptTypeSyntax(ScriptDataType.AI), squadEntityIndex);
-
+                            GenericName(Identifier(nameof(Scene.GetScenarioEntity)))
+                                .AddTypeArgumentListArguments(SyntaxUtil.ScriptTypeSyntax(ScriptDataType.AI))))
+                        .AddArgumentListArguments(Argument(squadAccess));
 
                 var squadExp = AssignmentExpression(SyntaxKind.SimpleAssignmentExpression,
                     IdentifierName("Squad"),
-                    squadCastTo);
+                    squadEntityGet);
 
                 initializerExpressions.Add(squadExp);
 
@@ -402,17 +399,16 @@ namespace OpenH2.Core.Scripting.Generation
                             IdentifierName(originCollectionname)))
                         .AddArgumentListArguments(Argument(SyntaxUtil.LiteralExpression(itemIndex)));
 
-                var entityIndex = ElementAccessExpression(
+                var entityGet = InvocationExpression(
                     MemberAccessExpression(SyntaxKind.SimpleMemberAccessExpression,
                         IdentifierName("scene"),
-                        IdentifierName(nameof(Scene.ScenarioSourcedEntities))))
-                    .WithArgumentList(BracketedArgumentList(SingletonSeparatedList(Argument(access))));
-
-                var castTo = CastExpression(SyntaxUtil.ScriptTypeSyntax(type), entityIndex);
+                        GenericName(Identifier(nameof(Scene.GetScenarioEntity)))
+                                .AddTypeArgumentListArguments(SyntaxUtil.ScriptTypeSyntax(type))))
+                    .AddArgumentListArguments(Argument(access));
 
                 var exp = AssignmentExpression(SyntaxKind.SimpleAssignmentExpression,
                     IdentifierName(name),
-                    castTo);
+                    entityGet);
 
                 return ExpressionStatement(exp);
             }

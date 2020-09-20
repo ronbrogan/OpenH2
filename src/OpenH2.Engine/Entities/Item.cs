@@ -5,7 +5,7 @@ using System.Text;
 
 namespace OpenH2.Engine.Entities
 {
-    public class Item : Entity
+    public class Item : GameObjectEntity
     {
         public Item()
         {

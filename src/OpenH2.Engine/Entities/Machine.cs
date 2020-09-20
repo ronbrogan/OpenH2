@@ -4,9 +4,9 @@ using OpenH2.Engine.Components;
 
 namespace OpenH2.Engine.Entities
 {
-    public class Scenery : GameObjectEntity, IScenery
+    public class Machine : GameObjectEntity, IMachine
     {
-        public Scenery()
+        public Machine()
         {
         }
     }
