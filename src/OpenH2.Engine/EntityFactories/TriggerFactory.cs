@@ -1,4 +1,5 @@
-﻿using OpenH2.Core.Architecture;
+﻿using Microsoft.CodeAnalysis;
+using OpenH2.Core.Architecture;
 using OpenH2.Core.Extensions;
 using OpenH2.Core.Factories;
 using OpenH2.Core.Tags.Scenario;
@@ -14,20 +15,19 @@ namespace OpenH2.Engine.EntityFactories
         public static TriggerVolume FromScenarioTriggerVolume(ScenarioTag tag, ScenarioTag.TriggerVolume tvDefinition)
         {
             var ent = new TriggerVolume();
-            var comps = new List<Component>();
 
             var orient = QuaternionExtensions.FromH2vOrientation(tvDefinition.Orientation);
             var xform = new TransformComponent(ent, tvDefinition.Position, orient);
 
-            //var lower = -(tvDefinition.Size / 2);
-            //var upper = tvDefinition.Size / 2;
             var renderModel = ModelFactory.Cuboid(new Vector3(), tvDefinition.Size, new Vector4(1f, 1f, 0f, 0.5f));
-            renderModel.Flags = Foundation.ModelFlags.Wireframe | Foundation.ModelFlags.Diffuse;
-
-            comps.Add(xform);
-            comps.Add(new RenderModelComponent(ent, renderModel));
+            renderModel.Flags = Foundation.ModelFlags.Wireframe | 
+                Foundation.ModelFlags.Diffuse | 
+                Foundation.ModelFlags.IsTransparent | 
+                Foundation.ModelFlags.DoubleSided;
             
-            ent.SetComponents(comps.ToArray());
+            ent.SetComponents(xform,
+                TriggerGeometryComponent.Cuboid(ent, xform, tvDefinition.Size, tvDefinition.Description),
+                new RenderModelComponent(ent, renderModel));
             return ent;
         }
     }

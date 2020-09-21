@@ -98,18 +98,8 @@ namespace OpenH2.Engine.Scripting
         {
         }
 
-        /// <summary><max_intensity> <attack time></summary>
-        public void player_effect_start()
-        {
-        }
-
         /// <summary><decay></summary>
         public void player_effect_stop(float real)
-        {
-        }
-
-        /// <summary><decay></summary>
-        public void player_effect_stop()
         {
         }
 
@@ -134,13 +124,13 @@ namespace OpenH2.Engine.Scripting
         {
         }
 
-        /// <summary>true if the first player is looking down</summary>
+        /// <summary>true if the first player is looking all the way down</summary>
         public bool player0_looking_down()
         {
             return default(bool);
         }
 
-        /// <summary>true if the first player is looking up</summary>
+        /// <summary>true if the first player is looking all the way up</summary>
         public bool player0_looking_up()
         {
             return default(bool);
@@ -149,7 +139,7 @@ namespace OpenH2.Engine.Scripting
         /// <summary>returns a list of the players</summary>
         public GameObjectList players()
         {
-            return new GameObjectList() { Objects = new IGameObject[] { null } };
+            return new GameObjectList(new IGameObject[] { null });
         }
     }
 }

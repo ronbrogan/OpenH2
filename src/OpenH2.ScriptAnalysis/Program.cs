@@ -102,7 +102,7 @@ namespace OpenH2.ScriptAnalysis
                         case ScriptDataType.EntityIdentifier:
                             value = strings.ReadStringStarting(node.NodeString);
                             break;
-                        case ScriptDataType.Entity:
+                        case ScriptDataType.Bloc:
                             break;
                         default:
                             // TODO: hack until everything is tracked down, populating string as value if exists

@@ -42,7 +42,7 @@ namespace OpenH2.Engine.Systems
             .First(a => a.Attr.ScenarioId == scenario.Name).Type;
 
             this.executor = new ScriptTaskExecutor();
-            this.engine = new ScriptEngine(this.executor);
+            this.engine = new ScriptEngine(scene, this.executor);
 
             this.scripts = (ScenarioScriptBase)Activator.CreateInstance(scriptType, new object[] { this.engine });
             scripts.InitializeData(scenario, scene);

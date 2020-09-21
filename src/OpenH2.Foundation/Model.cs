@@ -39,6 +39,7 @@ namespace OpenH2.Foundation
         IsSkybox        = 1 << 4,
         IsTransparent   = 1 << 5,
         Wireframe       = 1 << 6,
-        DebugViz        = 1 << 7
+        DebugViz        = 1 << 7,
+        DoubleSided     = 1 << 8
     }
 }

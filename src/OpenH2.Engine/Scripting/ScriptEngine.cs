@@ -1,9 +1,11 @@
 namespace OpenH2.Engine.Scripting
 {
+    using OpenH2.Core.Architecture;
     using OpenH2.Core.GameObjects;
     using OpenH2.Core.Scripting;
     using OpenH2.Core.Scripting.Execution;
     using OpenH2.Core.Tags.Scenario;
+    using OpenH2.Foundation.Extensions;
     using OpenH2.Foundation.Logging;
     using System;
     using System.Threading.Tasks;
@@ -11,11 +13,15 @@ namespace OpenH2.Engine.Scripting
     public partial class ScriptEngine : IScriptEngine
     {
         public const short TicksPerSecond = 60;
+        private readonly Scene scene;
         private readonly IScriptExecutor executionOrchestrator;
+        private readonly Random rng;
 
-        public ScriptEngine(IScriptExecutor executionOrchestrator)
+        public ScriptEngine(Scene scene, IScriptExecutor executionOrchestrator)
         {
+            this.scene = scene;
             this.executionOrchestrator = executionOrchestrator;
+            this.rng = new Random(42);
         }
 
         public T GetReference<T>(string reference)
@@ -77,116 +83,6 @@ namespace OpenH2.Engine.Scripting
 
         /// <summary>gives a specific player active camouflage</summary>
         public void cheat_active_camouflage_by_player(short value, bool boolean)
-        {
-        }
-
-        /// <summary>clone the first player's most reasonable weapon and attach it to the specified object's marker</summary>
-        public void cinematic_clone_players_weapon(IGameObject entity, string /*id*/ string_id, string /*id*/ string_id1)
-        {
-        }
-
-        /// <summary>enable/disable ambience details in cinematics</summary>
-        public void cinematic_enable_ambience_details(bool boolean)
-        {
-        }
-
-        /// <summary>sets the color (red, green, blue) of the cinematic ambient light.</summary>
-        public void cinematic_lighting_set_ambient_light(float real, float real1, float real12)
-        {
-        }
-
-        /// <summary>sets the pitch, yaw, and color (red, green, blue) of the cinematic shadowing diffuse and specular directional light.</summary>
-        public void cinematic_lighting_set_primary_light(float real, float real1, float real12, float real123, float real1234)
-        {
-        }
-
-        /// <summary>sets the pitch, yaw, and color (red, green, blue) of the cinematic non-shadowing diffuse directional light.</summary>
-        public void cinematic_lighting_set_secondary_light(float real, float real1, float real12, float real123, float real1234)
-        {
-        }
-
-        /// <summary>turn off lightmap shadow in cinematics</summary>
-        public void cinematic_lightmap_shadow_disable()
-        {
-        }
-
-        /// <summary>turn on lightmap shadow in cinematics</summary>
-        public void cinematic_lightmap_shadow_enable()
-        {
-        }
-
-        /// <summary>flag this cutscene as an outro cutscene</summary>
-        public void cinematic_outro_start()
-        {
-        }
-
-        /// <summary>transition-time</summary>
-        public void cinematic_screen_effect_set_crossfade(float real)
-        {
-        }
-
-        /// <summary>sets dof: <seperation dist>, <near blur lower bound> <upper bound> <time> <far blur lower bound> <upper bound> <time></summary>
-        public void cinematic_screen_effect_set_depth_of_field(float real, float real1, float real12, float real123, float real1234, float real12345, float real123456)
-        {
-        }
-
-        /// <summary>starts screen effect pass TRUE to clear</summary>
-        public void cinematic_screen_effect_start(bool boolean)
-        {
-        }
-
-        /// <summary>returns control of the screen effects to the rest of the game</summary>
-        public void cinematic_screen_effect_stop()
-        {
-        }
-
-        /// <summary></summary>
-        public void cinematic_set_far_clip_distance(float real)
-        {
-        }
-
-        /// <summary></summary>
-        public void cinematic_set_near_clip_distance(float real)
-        {
-        }
-
-        /// <summary>activates the chapter title</summary>
-        public void cinematic_set_title(ICinematicTitle cutscene_title)
-        {
-        }
-
-        /// <summary>sets or removes the letterbox bars</summary>
-        public void cinematic_show_letterbox(bool boolean)
-        {
-        }
-
-        /// <summary>sets or removes the letterbox bars</summary>
-        public void cinematic_show_letterbox_immediate(bool boolean)
-        {
-        }
-
-        /// <summary></summary>
-        public void cinematic_skip_start_internal()
-        {
-        }
-
-        /// <summary></summary>
-        public void cinematic_skip_stop_internal()
-        {
-        }
-
-        /// <summary>initializes game to start a cinematic (interruptive) cutscene</summary>
-        public void cinematic_start()
-        {
-        }
-
-        /// <summary>initializes the game to end a cinematic (interruptive) cutscene</summary>
-        public void cinematic_stop()
-        {
-        }
-
-        /// <summary>displays the named subtitle for <real> seconds</summary>
-        public void cinematic_subtitle(string /*id*/ string_id, float real)
         {
         }
 
@@ -324,19 +220,19 @@ namespace OpenH2.Engine.Scripting
         /// <summary>returns the current difficulty setting, but lies to you and will never return easy, instead returning normal</summary>
         public string game_difficulty_get()
         {
-            return "";
+            return "normal";
         }
 
         /// <summary>returns the actual current difficulty setting without lying</summary>
         public string game_difficulty_get_real()
         {
-            return default(string);
+            return "easy";
         }
 
         /// <summary>returns TRUE if the game is cooperative</summary>
         public bool game_is_cooperative()
         {
-            return default(bool);
+            return false;
         }
 
         /// <summary>returns the hs global boolean 'global_playtest_mode' which can be set in your init.txt</summary>
@@ -398,26 +294,6 @@ namespace OpenH2.Engine.Scripting
         {
         }
 
-        /// <summary>parameter 1 is how, parameter 2 is when</summary>
-        public void hud_cinematic_fade(float real, float real1)
-        {
-        }
-
-        /// <summary>true turns training on, false turns it off.</summary>
-        public void hud_enable_training(bool boolean)
-        {
-        }
-
-        /// <summary>sets the string id fo the scripted training text</summary>
-        public void hud_set_training_text(string /*id*/ string_id)
-        {
-        }
-
-        /// <summary>true turns on scripted training text</summary>
-        public void hud_show_training_text(bool boolean)
-        {
-        }
-
         /// <summary></summary>
         public bool ice_cream_flavor_available(int value)
         {
@@ -437,11 +313,13 @@ namespace OpenH2.Engine.Scripting
         /// <summary>disables a kill volume</summary>
         public void kill_volume_disable(ITriggerVolume trigger_volume)
         {
+            trigger_volume.KillOnEnter(false);
         }
 
         /// <summary>enables a kill volume</summary>
         public void kill_volume_enable(ITriggerVolume trigger_volume)
         {
+            trigger_volume.KillOnEnter(true);
         }
 
         /// <summary>returns the number of objects in a list</summary>
@@ -459,18 +337,20 @@ namespace OpenH2.Engine.Scripting
         /// <summary>returns the number of objects in a list that aren't dead</summary>
         public short list_count_not_dead(GameObjectList objects)
         {
-            return default(short);
+            short live = 0;
+
+            foreach (var o in objects?.Objects)
+            {
+                if (o.IsAlive) live++;
+            }
+
+            return live;
         }
 
         /// <summary>returns an item in an object list.</summary>
         public IGameObject list_get(GameObjectList object_list, int index)
         {
             return object_list.Objects[index];
-        }
-
-        /// <summary>sets the next loading screen to just fade to white</summary>
-        public void loading_screen_fade_to_white()
-        {
         }
 
         /// <summary>starts the map from the beginning.</summary>
@@ -481,13 +361,29 @@ namespace OpenH2.Engine.Scripting
         /// <summary>returns the maximum of all specified expressions.</summary>
         public float max(float a, float b)
         {
-            return default(float);
+            return MathF.Max(a, b);
         }
 
         /// <summary>returns the minimum of all specified expressions.</summary>
         public float min(float a, float b)
         {
-            return default(float);
+            return MathF.Min(a, b);
+        }
+
+
+        /// <summary>clears the mission objectives.</summary>
+        public void objectives_clear()
+        {
+        }
+
+        /// <summary>mark objectives 0..n as complete</summary>
+        public void objectives_finish_up_to(int value)
+        {
+        }
+
+        /// <summary>show objectives 0..n</summary>
+        public void objectives_show_up_to(int value)
+        {
         }
 
         /// <summary>turn off ground adhesion forces so you can play tricks with gravity</summary>
@@ -508,12 +404,7 @@ namespace OpenH2.Engine.Scripting
         /// <summary>returns the first value pinned between the second two</summary>
         public float pin(float value, float min, float max)
         {
-            return default(float);
-        }
-
-        /// <summary>ur...</summary>
-        public void play_credits()
-        {
+            return MathExt.Clamp(value, min, max);
         }
 
         /// <summary>prints a string to the console.</summary>
@@ -525,13 +416,13 @@ namespace OpenH2.Engine.Scripting
         /// <summary>returns a random value in the range [lower bound, upper bound)</summary>
         public int random_range(int value, int value1)
         {
-            return default(int);
+            return this.rng.Next(value, value1);
         }
 
         /// <summary>returns a random value in the range [lower bound, upper bound)</summary>
-        public float real_random_range(float real, float real1)
+        public float real_random_range(float min, float max)
         {
-            return default(float);
+            return (float)(this.rng.NextDouble() * (max - min) + min);
         }
 
         /// <summary>starts a custom looping animation playing on a piece of scenery</summary>
@@ -634,7 +525,7 @@ namespace OpenH2.Engine.Scripting
         /// <summary>returns the driver of a vehicle</summary>
         public IGameObject vehicle_driver(IUnit unit)
         {
-            return default(IGameObject);
+            return unit.Driver;
         }
 
         /// <summary>makes a list of units (named or by encounter) magically get into a vehicle, in the substring-specified seats (e.g. CD-passenger... empty string matches all seats)</summary>
@@ -673,13 +564,17 @@ namespace OpenH2.Engine.Scripting
         /// <summary>returns list of objects in volume or (max 128).</summary>
         public GameObjectList volume_return_objects(ITriggerVolume trigger_volume)
         {
-            return default(GameObjectList);
+            var items = trigger_volume.GetObjects();
+
+            return new GameObjectList(items);
         }
 
         /// <summary>returns list of objects in volume or (max 128).</summary>
         public GameObjectList volume_return_objects_by_type(ITriggerVolume trigger_volume, int value)
         {
-            return default(GameObjectList);
+            var items = trigger_volume.GetObjects((TypeFlags)value);
+
+            return new GameObjectList(items);
         }
 
         /// <summary>moves all players outside a specified trigger volume to a specified flag.</summary>
@@ -688,39 +583,51 @@ namespace OpenH2.Engine.Scripting
         }
 
         /// <summary>returns true if the specified object is within the specified volume.</summary>
-        public bool volume_test_object(ITriggerVolume trigger)
-        {
-            return default(bool);
-        }
-
-        /// <summary>returns true if the specified object is within the specified volume.</summary>
         public bool volume_test_object(ITriggerVolume trigger_volume, IGameObject entity)
         {
-            return default(bool);
+            return trigger_volume.Contains(entity);
         }
 
         /// <summary>returns true if any of the specified objects are within the specified volume. trigger volume must have been postprocessed</summary>
-        public bool volume_test_objects(ITriggerVolume trigger, IGameObject entity)
+        public bool volume_test_objects(ITriggerVolume trigger_volume, IGameObject entity)
         {
-            return default(bool);
+            return trigger_volume.Contains(entity);
         }
 
         /// <summary>returns true if any of the specified objects are within the specified volume. trigger volume must have been postprocessed</summary>
         public bool volume_test_objects(ITriggerVolume trigger_volume, GameObjectList object_list)
         {
-            return default(bool);
+            foreach(var o in object_list)
+            {
+                if(trigger_volume.Contains(o))
+                {
+                    return true;
+                }
+            }
+
+            return false;
         }
 
-        /// <summary>returns true if any (rb: all?) of the specified objects are within the specified volume. trigger volume must have been postprocessed</summary>
-        public bool volume_test_objects_all(ITriggerVolume trigger, GameObjectList object_list)
+        /// <summary>returns true if all of the specified objects are within the specified volume. trigger volume must have been postprocessed</summary>
+        public bool volume_test_objects_all(ITriggerVolume trigger_volume, GameObjectList object_list)
         {
-            return default(bool);
+            var allIn = true;
+
+            foreach (var o in object_list)
+            {
+                if (trigger_volume.Contains(o) == false)
+                {
+                    allIn = false;
+                }
+            }
+
+            return allIn;
         }
 
-        /// <summary>returns true if any (rb: all?) of the specified objects are within the specified volume. trigger volume must have been postprocessed</summary>
+        /// <summary>returns true if all of the specified objects are within the specified volume. trigger volume must have been postprocessed</summary>
         public bool volume_test_objects_all(ITriggerVolume trigger, IGameObject entity)
         {
-            return default(bool);
+            return trigger.Contains(entity);
         }
 
         /// <summary>wakes a sleeping script in the next update.</summary>

@@ -33,6 +33,7 @@
             <Link>PhysXFoundation_64.dll</Link>
             <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
         </None>
+        <None Include="Scripting\ScriptEngine.Cinematics.cs" />
     </ItemGroup>
 
     <ItemGroup>

@@ -611,12 +611,6 @@ namespace OpenH2.Core.Scripting
         /// <summary>enables the code that constrains the max # active lights</summary>
         void enable_render_light_suppressor();
 
-        /// <summary>returns the object attached to the marker of the given parent object</summary>
-        IGameObject entity_at_marker(IGameObject entity, string string_id);
-
-        /// <summary>returns the parent of the given object</summary>
-        IGameObject entity_get_parent(IGameObject entity);
-
         /// <summary>does a screen fade in from a particular color</summary>
         void fade_in(float real, float real1, float real12, short value);
 
@@ -1235,9 +1229,6 @@ namespace OpenH2.Core.Scripting
 
         /// <summary>moves all players outside a specified trigger volume to a specified flag.</summary>
         void volume_teleport_players_not_inside(ITriggerVolume trigger_volume, ILocationFlag cutscene_flag);
-
-        /// <summary>returns true if the specified object is within the specified volume.</summary>
-        bool volume_test_object(ITriggerVolume trigger);
 
         /// <summary>returns true if the specified object is within the specified volume.</summary>
         bool volume_test_object(ITriggerVolume trigger_volume, IGameObject entity);

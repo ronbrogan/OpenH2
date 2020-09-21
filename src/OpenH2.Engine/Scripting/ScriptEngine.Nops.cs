@@ -49,6 +49,31 @@ namespace OpenH2.Engine.Scripting
         {
         }
 
+        /// <summary>parameter 1 is how, parameter 2 is when</summary>
+        public void hud_cinematic_fade(float real, float real1)
+        {
+        }
+
+        /// <summary>true turns training on, false turns it off.</summary>
+        public void hud_enable_training(bool boolean)
+        {
+        }
+
+        /// <summary>sets the string id fo the scripted training text</summary>
+        public void hud_set_training_text(string /*id*/ string_id)
+        {
+        }
+
+        /// <summary>true turns on scripted training text</summary>
+        public void hud_show_training_text(bool boolean)
+        {
+        }
+
+        /// <summary>sets the next loading screen to just fade to white</summary>
+        public void loading_screen_fade_to_white()
+        {
+        }
+
         /// <summary>loads textures necessary to draw an object that's about to come on-screen.</summary>
         public void object_type_predict(IGameObject entity)
         {

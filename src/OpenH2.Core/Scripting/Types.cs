@@ -1,6 +1,8 @@
 ﻿namespace OpenH2.Core.Scripting
 {
     using OpenH2.Core.GameObjects;
+    using System.Collections;
+    using System.Collections.Generic;
     using System.Threading.Tasks;
 
     public delegate Task ScriptReference();
@@ -8,9 +10,24 @@
 
     public class EntityIdentifier { }
 
-    public class GameObjectList 
+    public class GameObjectList : IEnumerable<IGameObject>
     {
+        public GameObjectList(IGameObject[] objects)
+        {
+            this.Objects = objects;
+        }
+
         public IGameObject[] Objects { get; set; }
+
+        public IEnumerator<IGameObject> GetEnumerator()
+        {
+            return ((IEnumerable<IGameObject>)this.Objects).GetEnumerator();
+        }
+
+        IEnumerator IEnumerable.GetEnumerator()
+        {
+            return this.Objects.GetEnumerator();
+        }
     }
 
     public interface IStartingProfile { }

@@ -47,6 +47,7 @@ namespace OpenH2.Engine.Systems
         private InputStore input;
         public bool StepMode = false;
         public bool ShouldStep = false;
+        private SimulationCallback simCallback;
 
         public PhysxPhysicsSystem(World world) : base(world)
         {
@@ -111,6 +112,9 @@ namespace OpenH2.Engine.Systems
             var contactProv = new ContactModifyProxy();
             this.contactProvider = contactProv;
             this.physxScene.ContactModifyCallback = contactProv;
+
+            this.simCallback = new SimulationCallback();
+            this.physxScene.SetSimulationEventCallback(simCallback);
         }
 
         public override void Initialize(Core.Architecture.Scene scene)
@@ -162,6 +166,12 @@ namespace OpenH2.Engine.Systems
             foreach (var mover in movers)
             {
                 AddCharacterController(mover);
+            }
+
+            var triggers = this.world.Components<TriggerGeometryComponent>();
+            foreach (var trigger in triggers)
+            {
+                AddTrigger(trigger);
             }
 
             scene.OnEntityAdd += this.AddEntity;
@@ -216,6 +226,19 @@ namespace OpenH2.Engine.Systems
                     mover.Transform.UpdateDerivedData();
                 }
             }
+
+            foreach(var triggerSet in this.simCallback.TriggerEventSets)
+            {
+                foreach(var triggerEvent in triggerSet)
+                {
+                    var comp = triggerEvent.TriggerActor.UserData as TriggerGeometryComponent;
+                    Debug.Assert(comp != null);
+
+                    Console.WriteLine($"[TRIG] {comp.Name} <{triggerEvent.Status}> {triggerEvent.OtherActor.UserData.ToString()}");
+                }
+            }
+
+            this.simCallback.TriggerEventSets.Clear();
         }
 
         public void AddEntity(Entity entity)
@@ -229,6 +252,11 @@ namespace OpenH2.Engine.Systems
             {
                 AddCharacterController(mover);
             }
+
+            if(entity.TryGetChild<TriggerGeometryComponent>(out var trigger))
+            {
+                AddTrigger(trigger);
+            }
         }
 
         private void RemoveEntity(Entity entity)
@@ -241,6 +269,11 @@ namespace OpenH2.Engine.Systems
             if (entity.TryGetChild<MoverComponent>(out var mover))
             {
                 RemoveCharacterController(mover);
+            }
+
+            if (entity.TryGetChild<TriggerGeometryComponent>(out var trigger))
+            {
+                RemoveTrigger(trigger);
             }
         }
 
@@ -352,6 +385,34 @@ namespace OpenH2.Engine.Systems
                     this.contactProvider.RegisterContactCallback(body, contactInfo, dynamicMover.ContactFound);
                 }
             }
+        }
+
+
+        public void AddTrigger(TriggerGeometryComponent component)
+        {
+            var halfSize = component.Size / 2f;
+            var posPose = Matrix4x4.CreateTranslation(component.Transform.TransformationMatrix.Translation + halfSize);
+            var rot = Matrix4x4.CreateFromQuaternion(component.Transform.Orientation);
+
+            var body = this.physxPhysics.CreateRigidStatic(rot * posPose);
+            body.Name = component.Name;
+
+            Geometry volume = component.Shape switch
+            {
+                TriggerGeometryShape.Cuboid => new BoxGeometry(halfSize),
+            };
+
+            var shape = RigidActorExt.CreateExclusiveShape(body, volume, defaultMat, ShapeFlag.TriggerShape);
+            shape.SimulationFilterData = new FilterData((uint)OpenH2FilterData.TriggerVolume, 0, 0, 0);
+
+            body.UserData = component;
+            this.physxScene.AddActor(body);
+        }
+
+
+        private void RemoveTrigger(TriggerGeometryComponent comp)
+        {
+            // TODO: implement cleaning up triggers
         }
 
         private bool TakeStep()

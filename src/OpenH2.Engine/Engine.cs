@@ -96,8 +96,13 @@ namespace OpenH2.Engine
             watch.Stop();
             Console.WriteLine($"Loading map took {watch.ElapsedMilliseconds / 1000f} seconds");
 
-            scene.AddEntity(camera);
-            //scene.AddEntity(new Player(true));
+            //scene.AddEntity(camera);
+
+            var player = new Player(true);
+            player.Transform.Position = map.Scenario.PlayerSpawnMarkers[0].Position;
+            player.Transform.UpdateDerivedData();
+
+            scene.AddEntity(player);
 
             world.LoadScene(scene);
         }

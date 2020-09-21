@@ -49,6 +49,11 @@ namespace OpenH2.Engine.Factories
 
         public static ICollider GetTriangleColliderForHlmt(H2vMap map, HaloModelTag hlmt, int damageLevel = 0)
         {
+            if(hlmt.ColliderId.IsInvalid)
+            {
+                return DefaultCollider;
+            }
+
             if (map.TryGetTag(hlmt.ColliderId, out var coll) == false)
             {
                 Console.WriteLine($"Couldn't find COLL[{hlmt.ColliderId.Id}]");

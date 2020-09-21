@@ -600,7 +600,7 @@ namespace OpenH2.Core.Scripting.Generation
                 case ScriptDataType.AIScript:
                 case ScriptDataType.Device:
                 case ScriptDataType.EntityIdentifier:
-                case ScriptDataType.Entity:
+                case ScriptDataType.Bloc:
                 case ScriptDataType.Trigger:
                 case ScriptDataType.LocationFlag:
                 case ScriptDataType.List:

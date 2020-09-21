@@ -4,8 +4,10 @@ using System.Text;
 
 namespace OpenH2.Core.GameObjects
 {
-    public interface IUnit : IGameObject
+    [Flags]
+    public enum TypeFlags : uint
     {
-        public IGameObject Driver { get; }
+
+        All = 0xFFFFFFFF
     }
 }

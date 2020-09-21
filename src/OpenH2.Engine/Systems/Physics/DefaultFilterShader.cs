@@ -4,7 +4,11 @@ namespace OpenH2.Engine.Systems.Physics
 {
     public enum OpenH2FilterData : uint
     {
-        PlayerCharacter = 1 << 0
+        PlayerCharacter = 1 << 0,
+        AiActor         = 1 << 1,
+        TriggerVolume   = 1 << 2,
+
+        TriggerSubject = PlayerCharacter | AiActor
     }
 
     public class DefaultFilterShader : SimulationFilterShader
@@ -17,7 +21,13 @@ namespace OpenH2.Engine.Systems.Physics
 
         private static FilterResult PlayerCharacterResult = new FilterResult()
         {
-            PairFlags = PairFlag.ModifyContacts | PairFlag.ContactDefault | PairFlag.TriggerDefault,
+            PairFlags = PairFlag.ModifyContacts | PairFlag.ContactDefault,
+            FilterFlag = FilterFlag.Default
+        };
+
+        private static FilterResult TriggerVolumeResult = new FilterResult()
+        {
+            PairFlags = PairFlag.TriggerDefault,
             FilterFlag = FilterFlag.Default
         };
 
@@ -33,9 +43,16 @@ namespace OpenH2.Engine.Systems.Physics
                 return PlayerCharacterResult;
             }
 
+            if(IsTriggerVolume(filterData0) || IsTriggerVolume(filterData1))
+            {
+                return TriggerVolumeResult;
+            }
+
             return DefaultResult;
         }
 
         private bool IsPlayerCharacter(FilterData fd) => (((OpenH2FilterData)fd.Word0) & OpenH2FilterData.PlayerCharacter) == OpenH2FilterData.PlayerCharacter;
+
+        private bool IsTriggerVolume(FilterData fd) => (((OpenH2FilterData)fd.Word0) & OpenH2FilterData.TriggerVolume) == OpenH2FilterData.TriggerVolume;
     }
 }

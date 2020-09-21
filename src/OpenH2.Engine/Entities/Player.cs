@@ -1,6 +1,7 @@
 ﻿using OpenH2.Core.Architecture;
 using OpenH2.Engine.Components;
 using OpenH2.Engine.Systems.Movement;
+using OpenH2.Foundation.Physics;
 using System;
 using System.Numerics;
 
@@ -8,12 +9,14 @@ namespace OpenH2.Engine.Entities
 {
     public class Player : Entity
     {
+        public ITransform Transform { get; }
+
         public Player(bool useDynamicController)
         {
             var xform = new TransformComponent(this, Quaternion.Identity);
             xform.Position = new Vector3(0, 0, 8);
             xform.UpdateDerivedData();
-
+            this.Transform = xform;
             
 
             var light = new PointLightEmitterComponent(this);

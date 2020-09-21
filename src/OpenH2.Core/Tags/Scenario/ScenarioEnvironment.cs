@@ -1,4 +1,5 @@
-﻿using OpenH2.Core.GameObjects;
+﻿using OpenH2.Core.Enums;
+using OpenH2.Core.GameObjects;
 using OpenH2.Core.Representations;
 using OpenH2.Core.Scripting;
 using OpenH2.Core.Tags.Layout;
@@ -24,7 +25,13 @@ namespace OpenH2.Core.Tags.Scenario
 
             // TODO implement lightmap tag
             [PrimitiveValue(28)]
-            public uint LightmapId { get; set; }
+            public TagRef LightmapId { get; set; }
+
+            [PrimitiveValue(60)]
+            public uint IndexA { get; set; }
+
+            [PrimitiveValue(64)]
+            public uint IndexB { get; set; }
         }
 
         [FixedLength(92)]
@@ -32,6 +39,9 @@ namespace OpenH2.Core.Tags.Scenario
         {
             [PrimitiveValue(0)]
             public ushort SceneryDefinitionIndex { get; set; }
+
+            [PrimitiveValue(4)]
+            public PlacementFlags PlacementFlags { get; set; }
 
             [PrimitiveValue(8)]
             public Vector3 Position { get; set; }
@@ -80,6 +90,9 @@ namespace OpenH2.Core.Tags.Scenario
             [PrimitiveValue(0)]
             public ushort Index { get; set; }
 
+            [PrimitiveValue(4)]
+            public PlacementFlags PlacementFlags { get; set; }
+
             [PrimitiveValue(8)]
             public Vector3 Position { get; set; }
 
@@ -91,7 +104,7 @@ namespace OpenH2.Core.Tags.Scenario
         public class ControllerDefinition
         {
             [PrimitiveValue(4)]
-            public uint ControllerId { get; set; }
+            public TagRef ControllerId { get; set; }
         }
 
 
@@ -100,6 +113,9 @@ namespace OpenH2.Core.Tags.Scenario
         {
             [PrimitiveValue(0)]
             public ushort MachineryDefinitionIndex { get; set; }
+
+            [PrimitiveValue(4)]
+            public PlacementFlags PlacementFlags { get; set; }
 
             [PrimitiveValue(8)]
             public Vector3 Position { get; set; }
@@ -121,6 +137,9 @@ namespace OpenH2.Core.Tags.Scenario
             [PrimitiveValue(0)]
             public ushort SoundSceneryDefinitionIndex { get; set; }
 
+            [PrimitiveValue(4)]
+            public PlacementFlags PlacementFlags { get; set; }
+
             [PrimitiveValue(8)]
             public Vector3 Position { get; set; }
 
@@ -140,6 +159,9 @@ namespace OpenH2.Core.Tags.Scenario
         {
             [PrimitiveValue(0)]
             public ushort Index { get; set; }
+
+            [PrimitiveValue(4)]
+            public PlacementFlags PlacementFlags { get; set; }
 
             [PrimitiveValue(8)]
             public Vector3 Position { get; set; }

@@ -12,6 +12,18 @@ namespace OpenH2.Engine.Entities
         public TransformComponent Transform { get; protected set; }
         public IPhysicsProxy Physics { get; protected set; }
 
+        public Vector3 Position => Transform.Position;
+        public Quaternion Orientation => Transform.Orientation;
+
+        public float Shield { get; set; }
+        public float Health { get; set; }
+
+        public IGameObject Parent { get; }
+
+        public IAiActor Ai { get; }
+
+        public bool IsAlive { get; }
+
         public GameObjectEntity()
         {
             this.Components = Array.Empty<Component>();
@@ -19,22 +31,27 @@ namespace OpenH2.Engine.Entities
 
         public virtual void Hide()
         {
-            throw new NotImplementedException();
-        }
-
-        public virtual void SetShield(float vitality)
-        {
-            throw new NotImplementedException();
         }
 
         public virtual void Show()
         {
-            throw new NotImplementedException();
         }
 
         public virtual void TeleportTo(Vector3 position)
         {
-            throw new NotImplementedException();
+            this.Physics.Move(position, 16);
+        }
+
+        public void Scale(float scale)
+        {
+        }
+
+        public void Attach(IGameObject entity)
+        {
+        }
+
+        public void Detach(IGameObject child)
+        {
         }
     }
 }

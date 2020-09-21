@@ -39,7 +39,7 @@ namespace OpenH2.Core.Scripting.Generation
                 ScriptDataType.Weapon => ParseTypeName(nameof(IWeapon)),
                 ScriptDataType.Scenery => ParseTypeName(nameof(IScenery)),
 
-                ScriptDataType.Entity => ParseTypeName(nameof(IGameObject)),
+                ScriptDataType.Bloc => ParseTypeName(nameof(IBloc)),
                 ScriptDataType.Unit => ParseTypeName(nameof(IUnit)),
                 ScriptDataType.Vehicle => ParseTypeName(nameof(IVehicle)),
                 ScriptDataType.AI => ParseTypeName(nameof(IAiActor)),
@@ -63,7 +63,7 @@ namespace OpenH2.Core.Scripting.Generation
                 ScenarioTag.WellKnownVarType.Machinery => ScriptDataType.Device,
                 ScenarioTag.WellKnownVarType.Controller => ScriptDataType.Device,
                 ScenarioTag.WellKnownVarType.Sound => ScriptDataType.LoopingSound,
-                ScenarioTag.WellKnownVarType.Bloc => ScriptDataType.Entity,
+                ScenarioTag.WellKnownVarType.Bloc => ScriptDataType.Bloc,
                 _ => throw new NotSupportedException()
             };
         }
