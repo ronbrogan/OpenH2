@@ -38,21 +38,26 @@ namespace OpenH2.Engine.Systems.Physics
                 return DefaultResult;
             }
 
+            var result = DefaultResult;
+            result.FilterFlag = FilterFlag.Default;
+            
             if(IsPlayerCharacter(filterData0) || IsPlayerCharacter(filterData1))
             {
-                return PlayerCharacterResult;
+                result.PairFlags |= PlayerCharacterResult.PairFlags;
             }
 
-            if(IsTriggerVolume(filterData0) || IsTriggerVolume(filterData1))
+            if ((IsTriggerSubject(filterData0) || IsTriggerSubject(filterData1)) &&
+                (IsTriggerVolume(filterData0) || IsTriggerVolume(filterData1)))
             {
-                return TriggerVolumeResult;
+                result.PairFlags |= TriggerVolumeResult.PairFlags;
             }
 
-            return DefaultResult;
+            return result;
         }
 
         private bool IsPlayerCharacter(FilterData fd) => (((OpenH2FilterData)fd.Word0) & OpenH2FilterData.PlayerCharacter) == OpenH2FilterData.PlayerCharacter;
 
         private bool IsTriggerVolume(FilterData fd) => (((OpenH2FilterData)fd.Word0) & OpenH2FilterData.TriggerVolume) == OpenH2FilterData.TriggerVolume;
+        private bool IsTriggerSubject(FilterData fd) => (((OpenH2FilterData)fd.Word0) & OpenH2FilterData.TriggerSubject) != 0;
     }
 }

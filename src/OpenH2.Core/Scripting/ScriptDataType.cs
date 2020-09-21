@@ -36,7 +36,7 @@
         GameDifficulty = 44,
         Team = 45,
         DamageState = 48,
-        Bloc = 50,
+        Entity = 50,
         Unit = 51,
         Vehicle = 52,
         WeaponReference = 53,

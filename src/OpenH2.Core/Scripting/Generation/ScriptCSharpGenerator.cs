@@ -190,7 +190,7 @@ namespace OpenH2.Core.Scripting.Generation
                     _ => "unknown"
                 };
 
-                if (scnrPropName != null)
+                if (scnrPropName != null && externalRef.Index != ushort.MaxValue)
                 {
                     var varType = SyntaxUtil.ToScriptDataType(externalRef.ItemType);
                     statements.Add(CreateAssignment(scnrPropName, varType, externalRef.Description, externalRef.Index));
@@ -600,7 +600,7 @@ namespace OpenH2.Core.Scripting.Generation
                 case ScriptDataType.AIScript:
                 case ScriptDataType.Device:
                 case ScriptDataType.EntityIdentifier:
-                case ScriptDataType.Bloc:
+                case ScriptDataType.Entity:
                 case ScriptDataType.Trigger:
                 case ScriptDataType.LocationFlag:
                 case ScriptDataType.List:

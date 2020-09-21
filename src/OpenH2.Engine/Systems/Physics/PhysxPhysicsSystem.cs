@@ -227,6 +227,7 @@ namespace OpenH2.Engine.Systems
                 }
             }
 
+            // TODO: track touch found/lost somwhere
             foreach(var triggerSet in this.simCallback.TriggerEventSets)
             {
                 foreach(var triggerEvent in triggerSet)
