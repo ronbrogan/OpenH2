@@ -22,16 +22,12 @@ namespace OpenH2.Core.Tags.Scenario
         [ReferenceArray(304)] public Obj304[] Obj304s { get; set; }
         [ReferenceArray(360)] public Obj360_String[] Obj360s_Locations { get; set; }
         [ReferenceArray(368)] public Obj368[] Obj368s { get; set; }
-        [ReferenceArray(536)] public Obj536[] Obj536s { get; set; }
         [ReferenceArray(560)] public Obj560[] Obj560s { get; set; }        
-        [ReferenceArray(592)] public Obj592[] Obj592s { get; set; }
-        [ReferenceArray(600)] public Obj600[] Obj600s { get; set; }
         [ReferenceArray(656)] public Obj656[] Obj656s { get; set; }
         [ReferenceArray(792)] public Obj792[] Obj792s { get; set; }
-        [ReferenceArray(832)] public Obj832[] Obj832s { get; set; }
         [ReferenceArray(896)] public Obj896[] Obj896s { get; set; }
-        [ReferenceArray(904)] public Obj904[] Obj904s { get; set; }
-        [ReferenceArray(920)] public Obj920[] Obj920s { get; set; }
+        
+        
 
 
 
@@ -79,14 +75,20 @@ namespace OpenH2.Core.Tags.Scenario
         [ReferenceArray(488)] public CameraPathTarget[] CameraPathTargets { get; set; }
         [ReferenceArray(496)] public CinematicTitleDefinition[] CinematicTitleDefinitions { get; set; }
         [ReferenceArray(528)] public Terrain[] Terrains { get; set; }
+        [ReferenceArray(536)] public OriginatingData[] OriginatingDatas { get; set; }
         [ReferenceArray(552)] public VehicleReference[] VehicleReferences { get; set; }
         [ReferenceArray(568), JsonIgnore] public ScriptSyntaxNode[] ScriptSyntaxNodes { get; set; }
         [ReferenceArray(576)] public AiOrderDefinition[] AiOrderDefinitions { get; set; }
         [ReferenceArray(584)] public AiNamedTrigger[] AiNamedTriggers { get; set; }
+        [ReferenceArray(592)] public BackgroundSoundDefinition[] BackgroundSoundDefinitions { get; set; }
+        [ReferenceArray(600)] public SoundEnvironmentDefinition[] SoundEnvironmentDefinitions { get; set; }
         [ReferenceArray(808)] public BlocInstance[] BlocInstances { get; set; }
         [ReferenceArray(816)] public BlocDefinition[] BlocDefinitions { get; set; }
+        [ReferenceArray(832)] public AtmosphericFogDefinition[] AtmosphericFogDefinitions { get; set; }
         [ReferenceArray(840)] public FogDefinition[] FogDefinitions { get; set; }
         [ReferenceArray(888)] public DecrDefinition[] DecrDefinitions { get; set; }
+        [ReferenceArray(904)] public BspLightingInfo[] BspLightingInfos { get; set; }
+        [ReferenceArray(920)] public LevelInfo[] LevelInfos { get; set; }
         [ReferenceArray(944)] public MdlgDefinition[] MdlgDefinitions { get; set; }
         //[ReferenceArray(984)] public uint[] FreeSpace { get; set; }
 
@@ -387,29 +389,6 @@ namespace OpenH2.Core.Tags.Scenario
         }
 
 
-        [FixedLength(24)]
-        public class Obj536
-        {
-            [ReferenceArray(0)]
-            public WildcardTagReference[] Obj0s { get; set; }
-
-            [ReferenceArray(8)]
-            public WildcardTagReference[] Obj8s { get; set; }
-
-            [ReferenceArray(16)]
-            public WildcardTagReference[] Obj16s { get; set; }
-
-            [FixedLength(8)]
-            public class WildcardTagReference
-            {
-                [StringValue(0, 4)]
-                public string TagType { get; set; }
-
-                [PrimitiveValue(4)]
-                public TagRef Tag { get; set; }
-            }
-        }
-
         [FixedLength(8)]
         public class VehicleReference
         {
@@ -484,7 +463,7 @@ namespace OpenH2.Core.Tags.Scenario
 
 
         [FixedLength(100)]
-        public class Obj592
+        public class BackgroundSoundDefinition
         {
             [StringValue(0, 32)]
             public string Description { get; set; }
@@ -503,7 +482,7 @@ namespace OpenH2.Core.Tags.Scenario
         }
 
         [FixedLength(72)]
-        public class Obj600
+        public class SoundEnvironmentDefinition
         {
             [StringValue(0, 32)]
             public string Description { get; set; }
@@ -555,12 +534,10 @@ namespace OpenH2.Core.Tags.Scenario
         }
 
         [FixedLength(244)]
-        public class Obj832
+        public class AtmosphericFogDefinition
         {
-            [PrimitiveValue(0)]
-            public ushort ValueA { get; set; }
-            [PrimitiveValue(2)]
-            public ushort ValueB { get; set; }
+            [InternedString(0)]
+            public string Name { get; set; }
 
             [PrimitiveArray(4, 9)]
             public float[] FloatsA { get; set; }
@@ -595,29 +572,36 @@ namespace OpenH2.Core.Tags.Scenario
         }
 
         [FixedLength(16)]
-        public class Obj904
+        public class BspLightingInfo
         {
             [PrimitiveValue(4)]
             public TagRef<BspTag> BspRef { get; set; }
 
             // TODO: using Vector4[] for ReferenceArray isn't supported
             //[ReferenceArray(8)]
-            public Vector4[] Params { get; set; }
+            public Vector4[] LightPoints { get; set; }
         }
 
         [FixedLength(24)]
-        // TODO: the localized map name and description are in here, after the ref array
-        public class Obj920
+        public class LevelInfo
         {
             [PrimitiveValue(4)]
-            public TagRef UnicRef { get; set; }
+            public TagRef DescriptionUnicode { get; set; }
 
             [ReferenceArray(8)]
-            public Obj8[] Obj8s { get; set; }
+            public CampaignInfo[] CampaignInfos { get; set; }
+
+            // TODO: there should be multiplayer info here too
 
             [FixedLength(16)]
-            public class Obj8
+            public class CampaignInfo
             {
+                [PrimitiveValue(0)]
+                public uint CampaignId { get; set; }
+
+                [PrimitiveValue(4)]
+                public uint MapId { get; set; }
+
                 [PrimitiveValue(12)]
                 public TagRef<BitmapTag> BitmapRef { get; set; }
             }

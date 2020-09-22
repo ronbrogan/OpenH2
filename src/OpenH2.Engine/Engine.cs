@@ -86,13 +86,14 @@ namespace OpenH2.Engine
                 camera = world.Scene.Entities.FirstOrDefault((v) => v.Value.GetType() == typeof(SpectatorCamera)).Value as SpectatorCamera;
             }
 
-            using var fs = new FileStream(mapPath, FileMode.Open, FileAccess.Read, FileShare.Read, 8096);
-            var map = factory.FromFile(fs);
-
             var watch = new Stopwatch();
             watch.Start();
+
+            using var fs = new FileStream(mapPath, FileMode.Open, FileAccess.Read, FileShare.Read, 8096);
+            var map = factory.FromFile(fs);
             var scene = new Scene(map, new EntityCreator(map));
             scene.Load();
+
             watch.Stop();
             Console.WriteLine($"Loading map took {watch.ElapsedMilliseconds / 1000f} seconds");
 

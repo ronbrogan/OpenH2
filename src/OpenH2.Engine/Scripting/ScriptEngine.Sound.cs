@@ -51,11 +51,6 @@ namespace OpenH2.Engine.Scripting
         {
         }
 
-        /// <summary>plays a looping sound from the specified source object (or "none"), with the specified scale.</summary>
-        public void sound_looping_start(ILoopingSound loopingSound, float floatValue)
-        {
-        }
-
         /// <summary>stops the specified looping sound.</summary>
         public void sound_looping_stop(ILoopingSound looping_sound)
         {

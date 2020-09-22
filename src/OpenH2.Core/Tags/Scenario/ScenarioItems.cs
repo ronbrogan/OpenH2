@@ -76,5 +76,28 @@ namespace OpenH2.Core.Tags.Scenario
             [PrimitiveValue(4)]
             public TagRef<BlocTag> Bloc { get; set; }
         }
+
+        [FixedLength(24)]
+        public class OriginatingData
+        {
+            [ReferenceArray(0)]
+            public WildcardTagReference[] Entities { get; set; }
+
+            [ReferenceArray(8)]
+            public WildcardTagReference[] Scripts { get; set; }
+
+            [ReferenceArray(16)]
+            public WildcardTagReference[] Ai { get; set; }
+
+            [FixedLength(8)]
+            public class WildcardTagReference
+            {
+                [StringValue(0, 4)]
+                public string TagType { get; set; }
+
+                [PrimitiveValue(4)]
+                public TagRef Tag { get; set; }
+            }
+        }
     }
 }
