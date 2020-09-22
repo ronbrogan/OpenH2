@@ -68,7 +68,7 @@ namespace OpenH2.Engine.Factories
         {
             if (map.TryGetTag(hlmtRef, out var hlmt) == false)
             {
-                throw new Exception($"Couldn't find HLMT[{hlmtRef.Id}]");
+                return null;
             }
 
             return new StaticGeometryComponent(parent, transform)

@@ -332,6 +332,31 @@ namespace OpenH2.Engine.Systems
 
             var radius = 0.175f;
 
+            // TODO: reduce duplicated code
+            if(component.Mode == MoverComponent.MovementMode.Freecam)
+            {
+                var posPose = Matrix4x4.CreateTranslation(component.Transform.TransformationMatrix.Translation);
+                var rot = Matrix4x4.CreateRotationY(MathF.PI / -2f);
+
+                var body = this.physxPhysics.CreateRigidDynamic(rot * posPose);
+                body.MassSpaceInertiaTensor = new Vector3(0, 0, 0);
+                body.Mass = 175f;
+                body.UserData = component;
+                body.RigidBodyFlags = RigidBodyFlag.Kinematic;
+
+                var capsuleDesc = new CapsuleGeometry(radius, config.Height / 2f - radius);
+
+                var shape = RigidActorExt.CreateExclusiveShape(body, capsuleDesc, characterControlMat);
+                // TODO: centralize filter data construction
+                shape.SimulationFilterData = new FilterData((uint)(OpenH2FilterData.NoClip | OpenH2FilterData.PlayerCharacter), 0, 0, 0);
+
+                shape.ContactOffset = 0.001f;
+                shape.RestOffset = 0.0009f;
+
+                var bodyProxy = new RigidBodyProxy(body);
+                component.PhysicsImplementation = bodyProxy;
+                this.physxScene.AddActor(body);
+            }
             if (component.Mode == MoverComponent.MovementMode.KinematicCharacterControl)
             {
                 

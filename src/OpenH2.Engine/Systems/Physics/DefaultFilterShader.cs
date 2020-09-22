@@ -7,6 +7,7 @@ namespace OpenH2.Engine.Systems.Physics
         PlayerCharacter = 1 << 0,
         AiActor         = 1 << 1,
         TriggerVolume   = 1 << 2,
+        NoClip          = 1 << 3,
 
         TriggerSubject = PlayerCharacter | AiActor
     }
@@ -52,10 +53,17 @@ namespace OpenH2.Engine.Systems.Physics
                 result.PairFlags |= TriggerVolumeResult.PairFlags;
             }
 
+            if(IsNoClip(filterData0) || IsNoClip(filterData1))
+            {
+                // TODO: surface PairFlag.SolveContact in package
+                result.PairFlags = (result.PairFlags) & (PairFlag)(~1);
+            }
+
             return result;
         }
 
         private bool IsPlayerCharacter(FilterData fd) => (((OpenH2FilterData)fd.Word0) & OpenH2FilterData.PlayerCharacter) == OpenH2FilterData.PlayerCharacter;
+        private bool IsNoClip(FilterData fd) => (((OpenH2FilterData)fd.Word0) & OpenH2FilterData.NoClip) == OpenH2FilterData.NoClip;
 
         private bool IsTriggerVolume(FilterData fd) => (((OpenH2FilterData)fd.Word0) & OpenH2FilterData.TriggerVolume) == OpenH2FilterData.TriggerVolume;
         private bool IsTriggerSubject(FilterData fd) => (((OpenH2FilterData)fd.Word0) & OpenH2FilterData.TriggerSubject) != 0;

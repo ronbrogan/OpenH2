@@ -111,6 +111,7 @@ namespace OpenH2.Engine.Systems
                     forward.Z = 0;
                     var offset = (moverInputVector.X * forward) + (moverInputVector.Y * strafe) + (moverInputVector.Z * EngineGlobals.Up);
                     xform.Position += offset;
+                    mover.PhysicsImplementation.Move(offset, timestep);
                 }
                 else if(mover.Mode == MoverComponent.MovementMode.DynamicCharacterControl)
                 {
