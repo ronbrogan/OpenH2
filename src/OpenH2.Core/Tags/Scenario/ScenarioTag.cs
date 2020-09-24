@@ -178,9 +178,11 @@ namespace OpenH2.Core.Tags.Scenario
             [InternedString(0)]
             public string Description { get; set; }
 
+            // This seems to be two short values, potentially related to parenting
             [PrimitiveValue(4)]
             public uint Unknown { get; set; }
 
+            // Seems to only have a value when parented
             [InternedString(8)]
             public string String2 { get; set; }
 
