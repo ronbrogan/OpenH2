@@ -417,10 +417,11 @@ namespace OpenH2.Engine.Systems
         public void AddTrigger(TriggerGeometryComponent component)
         {
             var halfSize = component.Size / 2f;
-            var posPose = Matrix4x4.CreateTranslation(component.Transform.TransformationMatrix.Translation + halfSize);
+            var posPose = Matrix4x4.CreateTranslation(component.Transform.TransformationMatrix.Translation);
             var rot = Matrix4x4.CreateFromQuaternion(component.Transform.Orientation);
+            var posCorrection = Matrix4x4.CreateTranslation(halfSize);
 
-            var body = this.physxPhysics.CreateRigidStatic(rot * posPose);
+            var body = this.physxPhysics.CreateRigidStatic(posCorrection * rot * posPose);
             body.Name = component.Name;
 
             Geometry volume = component.Shape switch

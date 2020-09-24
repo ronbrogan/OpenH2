@@ -69,6 +69,18 @@ namespace OpenH2.Rendering.Pipelines
                 }
             }
 
+            this.adapter.UseShader(Shader.Generic);
+            for (var i = 0; i < renderables.Count; i++)
+            {
+                var renderable = renderables[i];
+                if (RenderPasses.IsTransparent(renderable))
+                {
+                    this.adapter.UseTransform(renderable.Transform);
+
+                    this.adapter.DrawMeshes(renderable.DrawCommands);
+                }
+            }
+
             this.adapter.UseShader(Shader.Wireframe);
             for (var i = 0; i < renderables.Count; i++)
             {
