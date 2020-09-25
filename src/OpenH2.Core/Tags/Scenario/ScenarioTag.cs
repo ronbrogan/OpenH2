@@ -178,13 +178,15 @@ namespace OpenH2.Core.Tags.Scenario
             [InternedString(0)]
             public string Description { get; set; }
 
-            // This seems to be two short values, potentially related to parenting
             [PrimitiveValue(4)]
-            public uint Unknown { get; set; }
+            public ushort ParentId { get; set; }
+
+            [PrimitiveValue(6)]
+            public ushort Unknown2 { get; set; }
 
             // Seems to only have a value when parented
             [InternedString(8)]
-            public string String2 { get; set; }
+            public string ParentDescription { get; set; }
 
             [PrimitiveValue(16)]
             public Vector3 Orientation { get; set; }
@@ -201,8 +203,9 @@ namespace OpenH2.Core.Tags.Scenario
             [PrimitiveValue(60)]
             public float Param { get; set; }
 
+            // Non-max when it's a kill volume
             [PrimitiveValue(64)]
-            public uint Unknown2 { get; set; }
+            public uint Unknown3 { get; set; }
         }
 
         [FixedLength(32)]

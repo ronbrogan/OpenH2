@@ -11,6 +11,9 @@ namespace OpenH2.Core.Tags
         {
         }
 
+        [ReferenceArray(192)]
+        public SoundInfo[] SoundInfos { get; set; }
+
         [ReferenceArray(336)]
         public MaterialDefinition[] MaterialDefinitions { get; set; }
 
@@ -79,6 +82,25 @@ namespace OpenH2.Core.Tags
 
             [PrimitiveValue(176)]
             public TagRef FootTag { get; set; }
+        }
+
+        [FixedLength(36)]
+        public class SoundInfo
+        {
+            [PrimitiveValue(4)]
+            public TagRef SnclTag { get; set; }
+
+            [PrimitiveValue(12)]
+            public TagRef SfxTag { get; set; }
+
+            [PrimitiveValue(20)]
+            public TagRef SnmxTag { get; set; }
+
+            [PrimitiveValue(28)]
+            public TagRef SpkTag { get; set; }
+
+            [PrimitiveValue(32)]
+            public TagRef<SoundMappingTag> SoundMap { get; set; }
         }
     }
 }
