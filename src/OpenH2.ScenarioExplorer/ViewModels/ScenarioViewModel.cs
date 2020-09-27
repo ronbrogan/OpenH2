@@ -55,7 +55,24 @@ namespace OpenH2.ScenarioExplorer.ViewModels
                 TagName = globalsVm.Name
             };
 
+            var roots = new List<TagTreeEntryViewModel>
+            { 
+                globalsEntry, 
+                scenarioEntry 
+            };
 
+            if(scene.Header.LocalSounds.IsInvalid == false)
+            {
+                var soundsVm = GetTagViewModel(scene.Header.LocalSounds);
+                var soundsEntry = new TagTreeEntryViewModel()
+                {
+                    Id = scene.Header.LocalSounds,
+                    TagName = soundsVm.Name
+                };
+
+                roots.Insert(1, soundsEntry);
+            }
+            
             if (discoveryMode)
             {
                 treeProcessor = new DiscoveryTagTreeProcessor(scene);
@@ -68,7 +85,7 @@ namespace OpenH2.ScenarioExplorer.ViewModels
             treeProcessor.PopulateChildren(scenarioVm, scenarioEntry);
             //treeProcessor.PopulateChildren(scenarioVm, globalsEntry);
 
-            this.TreeRoots = new[] { globalsEntry, scenarioEntry };
+            this.TreeRoots = roots.ToArray();
         }
 
         internal void PopulateTreeChildren(TagTreeEntryViewModel selectedEntry)

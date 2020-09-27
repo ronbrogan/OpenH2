@@ -1,4 +1,5 @@
 ﻿using OpenH2.Core.Offsets;
+using OpenH2.Core.Tags;
 using OpenH2.Serialization.Layout;
 
 namespace OpenH2.Core.Representations
@@ -16,14 +17,11 @@ namespace OpenH2.Core.Representations
         public int TotalBytes { get; set; }
 
         [PrimitiveValue(16)]
-        public int RawIndexOffset { get; set; }
+        public NormalOffset IndexOffset { get; set; }
 
         [PrimitiveValue(20)]
         public int RawSecondaryOffset { get; set; }
-
-        public NormalOffset IndexOffset { get; set; }
         public PrimaryOffset SecondaryOffset { get; set; }
-
 
         [StringValue(32, 32)]
         public string MapOrigin { get; set; }
@@ -63,6 +61,9 @@ namespace OpenH2.Core.Representations
 
         [PrimitiveValue(728)]
         public int FilesIndex { get; set; }
+
+        [PrimitiveValue(740)]
+        public TagRef<SoundMappingTag> LocalSounds { get; set; }
 
         [PrimitiveValue(752)]
         public int StoredSignature { get; set; }

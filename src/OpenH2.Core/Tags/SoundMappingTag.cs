@@ -16,8 +16,8 @@ namespace OpenH2.Core.Tags
         [ReferenceArray(8)]  public Obj8[] Obj8s { get; set; }
         [ReferenceArray(16)] public NameInfo[] NameInfos { get; set; }
         [ReferenceArray(24)] public Obj24[] Obj24s { get; set; }
-        [ReferenceArray(32)] public Obj32[] Obj32s { get; set; }
-        [ReferenceArray(40)] public Obj40[] Obj40s { get; set; }
+        [ReferenceArray(32)] public SoundEntry[] SoundEntries { get; set; }
+        [ReferenceArray(40)] public NamedSoundSample[] NamedSoundSamples { get; set; }
         [ReferenceArray(56)] public byte[] ZeroPadding { get; set; }
         [ReferenceArray(64)] public SoundDataChunk[] SoundDataChunks { get; set; }
         [ReferenceArray(72)] public Obj72[] Obj72s { get; set; }
@@ -100,7 +100,7 @@ namespace OpenH2.Core.Tags
         }
 
         [FixedLength(12)]
-        public class Obj32
+        public class SoundEntry
         {
             // Nearly always 431?
             [PrimitiveValue(0)]
@@ -119,14 +119,14 @@ namespace OpenH2.Core.Tags
             public ushort Flags { get; set; }
 
             [PrimitiveValue(8)]
-            public ushort Obj40Index { get; set; }
+            public ushort NamedSoundSampleIndex { get; set; }
 
             [PrimitiveValue(10)]
-            public ushort Obj40Count { get; set; }
+            public ushort NamedSoundSampleCount { get; set; }
         }
 
         [FixedLength(16)]
-        public class Obj40
+        public class NamedSoundSample
         {
             [PrimitiveValue(0)]
             public ushort NameIndex { get; set; }
@@ -147,10 +147,10 @@ namespace OpenH2.Core.Tags
             public ushort IndexF { get; set; }
 
             [PrimitiveValue(12)]
-            public ushort Obj64Index { get; set; }
+            public ushort SoundDataChunkIndex { get; set; }
 
             [PrimitiveValue(14)]
-            public ushort Obj64Count { get; set; }
+            public ushort SoundDataChunkCount { get; set; }
         }
 
         [FixedLength(12)]

@@ -24,6 +24,7 @@ namespace OpenH2.Core.Representations
         private IMaterialFactory materialFactory;
 
         public ScenarioTag Scenario { get; private set; }
+        public SoundMappingTag LocalSounds { get; set; }
         public GlobalsTag Globals { get; private set; }
 
         internal H2vMap(H2vReader reader, H2vLazyLoadingMap mainMenu, H2vLazyLoadingMap mpShared, H2vLazyLoadingMap spShared)
@@ -43,9 +44,15 @@ namespace OpenH2.Core.Representations
                 this.Scenario = (ScenarioTag)scnr;
             }
 
-            if (this.Tags.TryGetValue(this.IndexHeader.Globals.Id, out var globals))
+            if (this.Tags.TryGetValue(this.Header.LocalSounds.Id, out var ugh))
             {
-                this.Globals = (GlobalsTag)globals;
+                this.LocalSounds = (SoundMappingTag)ugh;
+            }
+
+            // Globals tag isn't always local
+            if (this.TryGetTag(this.IndexHeader.Globals, out var globals))
+            {
+                this.Globals = globals;
             }
         }
 
@@ -73,6 +80,16 @@ namespace OpenH2.Core.Representations
             }
 
             throw new Exception($"Unable to find tag {id}");
+        }
+        
+        public T GetTag<T>(TagRef<T> tagref) where T : BaseTag
+        {
+            if (TryGetTag(tagref, out var t))
+            {
+                return t;
+            }
+
+            throw new Exception($"Unable to find tag {tagref.Id}");
         }
 
         public bool TryGetTag<T>(uint id, out T tag) where T : BaseTag

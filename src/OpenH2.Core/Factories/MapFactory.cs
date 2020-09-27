@@ -184,7 +184,6 @@ namespace OpenH2.Core.Factories
         {
             var head = BlamSerializer.Deserialize<H2vMapHeader>(reader.Data, instanceStart: 0);
 
-            head.IndexOffset = new NormalOffset(head.RawIndexOffset);
             head.SecondaryOffset = scene.PrimaryOffset(head.RawSecondaryOffset);
 
             return head;
