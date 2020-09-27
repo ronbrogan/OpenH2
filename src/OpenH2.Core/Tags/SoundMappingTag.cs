@@ -1,4 +1,5 @@
-﻿using OpenH2.Core.Representations;
+﻿using OpenH2.Core.Offsets;
+using OpenH2.Core.Representations;
 using OpenH2.Core.Tags.Layout;
 using OpenH2.Serialization.Layout;
 
@@ -13,14 +14,14 @@ namespace OpenH2.Core.Tags
 
         [ReferenceArray(0)]  public Obj0[] Obj0s { get; set; }
         [ReferenceArray(8)]  public Obj8[] Obj8s { get; set; }
-        [ReferenceArray(16)] public Obj16[] Obj16s { get; set; }
+        [ReferenceArray(16)] public NameInfo[] NameInfos { get; set; }
         [ReferenceArray(24)] public Obj24[] Obj24s { get; set; }
         [ReferenceArray(32)] public Obj32[] Obj32s { get; set; }
         [ReferenceArray(40)] public Obj40[] Obj40s { get; set; }
         [ReferenceArray(56)] public byte[] ZeroPadding { get; set; }
-        [ReferenceArray(64)] public Obj64[] Obj64s { get; set; }
+        [ReferenceArray(64)] public SoundDataChunk[] SoundDataChunks { get; set; }
         [ReferenceArray(72)] public Obj72[] Obj72s { get; set; }
-        [ReferenceArray(80)] public Obj80[] Obj80s { get; set; }
+        [ReferenceArray(80)] public DataInfo[] DataInfos { get; set; }
 
         [FixedLength(56)]
         public class Obj0
@@ -73,7 +74,7 @@ namespace OpenH2.Core.Tags
         }
 
         [FixedLength(4)]
-        public class Obj16
+        public class NameInfo
         {
             [InternedString(0)]
             public string Name { get; set; }
@@ -101,39 +102,40 @@ namespace OpenH2.Core.Tags
         [FixedLength(12)]
         public class Obj32
         {
+            // Nearly always 431?
             [PrimitiveValue(0)]
             public ushort IndexA { get; set; }
 
+            // Nearly always 0?
             [PrimitiveValue(2)]
             public ushort IndexB { get; set; }
 
+            // Usually 0, sometimes 65535
             [PrimitiveValue(4)]
             public ushort IndexC { get; set; }
 
+            // NOT Obj64 index
             [PrimitiveValue(6)]
             public ushort Flags { get; set; }
 
-            // Points to Obj40?
             [PrimitiveValue(8)]
-            public ushort IndexE { get; set; }
+            public ushort Obj40Index { get; set; }
 
             [PrimitiveValue(10)]
-            public ushort CountE { get; set; }
+            public ushort Obj40Count { get; set; }
         }
 
         [FixedLength(16)]
         public class Obj40
         {
-            // Seems like it increments most of the time
             [PrimitiveValue(0)]
-            public ushort IndexA { get; set; }
+            public ushort NameIndex { get; set; }
 
             [PrimitiveValue(2)]
             public ushort IndexB { get; set; }
 
-            // Also appears to usually increment
             [PrimitiveValue(4)]
-            public ushort IndexC { get; set; }
+            public ushort Flags { get; set; }
 
             [PrimitiveValue(6)]
             public ushort IndexD { get; set; }
@@ -145,26 +147,20 @@ namespace OpenH2.Core.Tags
             public ushort IndexF { get; set; }
 
             [PrimitiveValue(12)]
-            public ushort IndexG { get; set; }
+            public ushort Obj64Index { get; set; }
 
             [PrimitiveValue(14)]
-            public ushort IndexH { get; set; }
+            public ushort Obj64Count { get; set; }
         }
 
         [FixedLength(12)]
-        public class Obj64
+        public class SoundDataChunk
         {
             [PrimitiveValue(0)]
-            public ushort Flags { get; set; }
-
-            [PrimitiveValue(2)]
-            public ushort IndexA { get; set; }
+            public NormalOffset Offset { get; set; }
 
             [PrimitiveValue(4)]
-            public ushort IndexB { get; set; }
-
-            [PrimitiveValue(6)]
-            public ushort FlagsB { get; set; }
+            public uint Length { get; set; }
 
             [PrimitiveValue(8)]
             public uint MaxValue { get; set; }
@@ -216,7 +212,7 @@ namespace OpenH2.Core.Tags
         }
 
         [FixedLength(44)]
-        public class Obj80
+        public class DataInfo
         {
             // Lots of stuff here
 
@@ -233,14 +229,28 @@ namespace OpenH2.Core.Tags
             public uint DataLengthMaybe { get; set; }
 
             [ReferenceArray(24)]
-            public Obj80_24[] Obj24s { get; set; }
+            public SubResourceInfo[] SubResources { get; set; }
 
             [PrimitiveValue(32)]
             public TagRef UghRef { get; set; }
 
-            [FixedLength(0)]
-            public class Obj80_24
+            [FixedLength(16)]
+            public class SubResourceInfo
             {
+                [PrimitiveValue(0)]
+                public ushort IndexA { get; set; }
+
+                [PrimitiveValue(2)]
+                public ushort IndexB { get; set; }
+
+                [PrimitiveValue(4)]
+                public ushort IndexC { get; set; }
+
+                [PrimitiveValue(6)]
+                public ushort IndexD { get; set; }
+
+                [PrimitiveValue(8)]
+                public uint DataLength { get; set; }
             }
         }
     }

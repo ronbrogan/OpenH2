@@ -1,4 +1,5 @@
-﻿using OpenH2.Core.Representations;
+﻿using OpenH2.Core.Offsets;
+using OpenH2.Core.Representations;
 using OpenH2.Core.Tags;
 using OpenH2.Serialization.Materialization;
 using System;
@@ -344,6 +345,13 @@ namespace OpenH2.Core.Extensions
             where T : BaseTag
         {
             return ReadTagRefAt(data, offset);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        [PrimitiveValueMaterializer]
+        public static NormalOffset ReadNormalOffsetAt(this Stream data, int offset)
+        {
+            return new NormalOffset(data.ReadInt32At(offset));
         }
     }
 }

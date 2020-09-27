@@ -1,6 +1,7 @@
 ﻿using Avalonia.Media;
 using OpenH2.AvaloniaControls.HexViewerImpl;
 using OpenH2.Core.Extensions;
+using OpenH2.Core.Offsets;
 using OpenH2.Core.Representations;
 using OpenH2.Core.Tags;
 using OpenH2.Core.Tags.Common;
@@ -29,6 +30,7 @@ namespace OpenH2.ScenarioExplorer.ViewModels
             serializerOptions.Converters.Add(new Vector3Converter());
             serializerOptions.Converters.Add(new Vector4Converter());
             serializerOptions.Converters.Add(new NopConverter());
+            serializerOptions.Converters.Add(new NormalOffsetConverter());
         }
 
 
@@ -196,7 +198,6 @@ namespace OpenH2.ScenarioExplorer.ViewModels
 
         public class Vector2Converter : JsonConverter<Vector2>
         {
-
             public override bool CanConvert(Type typeToConvert) => typeToConvert == typeof(Vector2);
 
             public override Vector2 Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options) => throw new NotImplementedException();
@@ -209,7 +210,6 @@ namespace OpenH2.ScenarioExplorer.ViewModels
 
         public class Vector3Converter : JsonConverter<Vector3>
         {
-
             public override bool CanConvert(Type typeToConvert) => typeToConvert == typeof(Vector3);
 
             public override Vector3 Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options) => throw new NotImplementedException();
@@ -222,7 +222,6 @@ namespace OpenH2.ScenarioExplorer.ViewModels
 
         public class Vector4Converter : JsonConverter<Vector4>
         {
-
             public override bool CanConvert(Type typeToConvert) => typeToConvert == typeof(Vector4);
 
             public override Vector4 Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options) => throw new NotImplementedException();
@@ -230,6 +229,18 @@ namespace OpenH2.ScenarioExplorer.ViewModels
             public override void Write(Utf8JsonWriter writer, Vector4 value, JsonSerializerOptions options)
             {
                 writer.WriteStringValue(string.Format("({0}, {1}, {2}, {3})", value.X, value.Y, value.Z, value.W));
+            }
+        }
+
+        public class NormalOffsetConverter : JsonConverter<NormalOffset>
+        {
+            public override bool CanConvert(Type typeToConvert) => typeToConvert == typeof(NormalOffset);
+
+            public override NormalOffset Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options) => throw new NotImplementedException();
+
+            public override void Write(Utf8JsonWriter writer, NormalOffset value, JsonSerializerOptions options)
+            {
+                writer.WriteStringValue(string.Format("({0}@{1})", value.Location, value.Value));
             }
         }
     }

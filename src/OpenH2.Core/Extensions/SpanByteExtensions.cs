@@ -173,6 +173,13 @@ namespace OpenH2.Core.Extensions
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        [PrimitiveValueMaterializer]
+        public static NormalOffset ReadNormalOffsetAt(this Span<byte> data, int offset)
+        {
+            return new NormalOffset(data.ReadInt32At(offset));
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Vector2 ReadVec2At(this Span<byte> data, int offset)
         {
             data.Slice(offset, 8).CopyTo(vectorConverterBytes);
