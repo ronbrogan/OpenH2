@@ -30,16 +30,16 @@ namespace OpenH2.AudioAnalysis
 
             var maxSoundId = soundTags.Max(s => s.SoundEntryIndex);
 
-
+            // TODO: multiplayer sounds are referencing the wrong ugh! tag
 
             var i = 0;
             foreach (var snd in soundTags)
             {
                 var name = snd.Name.Substring(snd.Name.LastIndexOf("\\", snd.Name.LastIndexOf("\\") - 1) + 1).Replace('\\', '_');
 
-                Console.WriteLine($"[{i++}] {snd.Option1}-{snd.Option2}-{snd.Option3}-{snd.Option4}-{snd.Flags}-{snd.Unknown}-{snd.UsuallyMaxValue}-{snd.UsuallyZero} {name}");
+                Console.WriteLine($"[{i++}] {snd.Option1}-{snd.Option2}-{snd.Option3}-{snd.SampleRate}-{snd.Encoding}-{snd.Format2}-{snd.Unknown}-{snd.UsuallyMaxValue}-{snd.UsuallyZero} {name}");
 
-                var filenameFormat = $"{name}.{snd.Option1}-{snd.Option2}-{snd.Option3}-{snd.Option4}.{{0}}.sound";
+                var filenameFormat = $"{name}.{snd.SampleRate}-{snd.Encoding}-{snd.Format2}-{snd.Unknown}-{snd.UsuallyZero}-{snd.UsuallyMaxValue}.{{0}}.sound";
 
                 var soundEntry = soundMapping.SoundEntries[snd.SoundEntryIndex];
 
@@ -51,16 +51,16 @@ namespace OpenH2.AudioAnalysis
 
                     var clipFilename = string.Format(filenameFormat, s);
 
-                    //using var clipData = new FileStream(Path.Combine(scenarioOut, clipFilename), FileMode.Create);
-                    //
-                    //for(var c = 0; c < clipInfo.SoundDataChunkCount; c++)
-                    //{
-                    //    var chunk = soundMapping.SoundDataChunks[clipInfo.SoundDataChunkIndex + c];
-                    //
-                    //    var chunkData = scene.ReadData(chunk.Offset.Location, chunk.Offset, (int)(chunk.Length & 0x3FFFFFFF));
-                    //
-                    //    clipData.Write(chunkData.Span);
-                    //}
+                    using var clipData = new FileStream(Path.Combine(scenarioOut, clipFilename), FileMode.Create);
+
+                    for (var c = 0; c < clipInfo.SoundDataChunkCount; c++)
+                    {
+                        var chunk = soundMapping.SoundDataChunks[clipInfo.SoundDataChunkIndex + c];
+
+                        var chunkData = scene.ReadData(chunk.Offset.Location, chunk.Offset, (int)(chunk.Length & 0x3FFFFFFF));
+
+                        clipData.Write(chunkData.Span);
+                    }
                 }
             }
         }

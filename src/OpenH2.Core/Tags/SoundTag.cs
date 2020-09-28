@@ -3,6 +3,19 @@ using OpenH2.Serialization.Layout;
 
 namespace OpenH2.Core.Tags
 {
+    public enum EncodingType : byte
+    {
+        ImaAdpcmMono = 0,
+        ImaAdpcmStereo = 1,
+        UnknownCompression = 2
+    }
+
+    public enum SampleRate : byte
+    {
+        hz22k05 = 0,
+        hz44k1 = 1
+    }
+
     [TagLabel(TagName.snd)] // snd!
     public class SoundTag : BaseTag
     {
@@ -21,10 +34,13 @@ namespace OpenH2.Core.Tags
         public byte Option3 { get; set; }
 
         [PrimitiveValue(3)]
-        public byte Option4 { get; set; }
+        public SampleRate SampleRate { get; set; }
 
         [PrimitiveValue(4)]
-        public ushort Flags { get; set; }
+        public EncodingType Encoding { get; set; }
+
+        [PrimitiveValue(5)]
+        public byte Format2 { get; set; }
 
         [PrimitiveValue(6)]
         public ushort Unknown { get; set; }

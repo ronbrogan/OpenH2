@@ -10,7 +10,7 @@ namespace OpenH2.Core.ExternalFormats
             {
                 return DecodeImplementation(stereo, source);
             }
-            catch
+            catch (Exception)
             {
                 return Array.Empty<short>();
             }
