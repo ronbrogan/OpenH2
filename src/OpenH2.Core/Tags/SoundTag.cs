@@ -30,7 +30,7 @@ namespace OpenH2.Core.Tags
         public ushort Unknown { get; set; }
 
         [PrimitiveValue(8)]
-        public ushort SoundIndex { get; set; }
+        public ushort SoundEntryIndex { get; set; }
 
         [PrimitiveValue(10)]
         public ushort LoopLength { get; set; }

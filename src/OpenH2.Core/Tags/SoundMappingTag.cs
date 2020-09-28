@@ -17,7 +17,7 @@ namespace OpenH2.Core.Tags
         [ReferenceArray(16)] public NameInfo[] NameInfos { get; set; }
         [ReferenceArray(24)] public Obj24[] Obj24s { get; set; }
         [ReferenceArray(32)] public SoundEntry[] SoundEntries { get; set; }
-        [ReferenceArray(40)] public NamedSoundSample[] NamedSoundSamples { get; set; }
+        [ReferenceArray(40)] public NamedSoundSample[] NamedSoundClips { get; set; }
         [ReferenceArray(56)] public byte[] ZeroPadding { get; set; }
         [ReferenceArray(64)] public SoundDataChunk[] SoundDataChunks { get; set; }
         [ReferenceArray(72)] public Obj72[] Obj72s { get; set; }
@@ -119,10 +119,10 @@ namespace OpenH2.Core.Tags
             public ushort Flags { get; set; }
 
             [PrimitiveValue(8)]
-            public ushort NamedSoundSampleIndex { get; set; }
+            public ushort NamedSoundClipIndex { get; set; }
 
             [PrimitiveValue(10)]
-            public ushort NamedSoundSampleCount { get; set; }
+            public ushort NamedSoundClipCount { get; set; }
         }
 
         [FixedLength(16)]
