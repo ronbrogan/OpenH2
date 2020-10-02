@@ -1,5 +1,6 @@
 ﻿using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.CodeAnalysis.Emit;
 using OpenH2.Core.Tags.Scenario;
 using System;
 using System.Collections.Generic;
@@ -140,7 +141,7 @@ namespace OpenH2.Core.Scripting.Generation
             using (var pe = new FileStream(dllPath, FileMode.Create))
             using (var pdb = new FileStream(pdbPath, FileMode.Create))
             {
-                var result = this.compilation.Emit(pe, pdb);
+                var result = this.compilation.Emit(pe, pdb, options: new EmitOptions(false, DebugInformationFormat.Pdb));
 
                 if (result.Success == false)
                 {

@@ -43,8 +43,17 @@ namespace OpenH2.Core.Tags.Scenario
                 [PrimitiveValue(4)]
                 public Vector3 Position { get; set; }
 
+                [PrimitiveValue(16)]
+                public ushort Unknown1 { get; set; }
+
+                [PrimitiveValue(18)]
+                public ushort Unknown2 { get; set; }
+
                 [PrimitiveValue(20)]
                 public float Rotation { get; set; }
+
+                [PrimitiveArray(24, 20)]
+                public ushort[] Unknowns { get; set; }
 
                 [StringValue(64, 32)]
                 public string AnotherDescription { get; set; }

@@ -97,7 +97,7 @@ namespace OpenH2.ScriptAnalysis
                         case ScriptDataType.MethodOrOperator:
                         case ScriptDataType.AI:
                         case ScriptDataType.AIScript:
-                        case ScriptDataType.ReferenceGet:
+                        case ScriptDataType.Sound:
                         case ScriptDataType.Device:
                         case ScriptDataType.EntityIdentifier:
                             value = strings.ReadStringStarting(node.NodeString);

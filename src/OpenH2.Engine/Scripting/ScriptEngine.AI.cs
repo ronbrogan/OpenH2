@@ -1,6 +1,7 @@
 ﻿using OpenH2.Core.GameObjects;
 using OpenH2.Core.Scripting;
 using OpenH2.Core.Tags.Scenario;
+using System;
 
 namespace OpenH2.Engine.Scripting
 {
@@ -9,9 +10,8 @@ namespace OpenH2.Engine.Scripting
 
         /// <summary>converts an ai reference to an object list.</summary>
         public GameObjectList ai_actors(IAiActor ai)
-
         {
-            return default(GameObjectList);
+            return GameObjectList.Empty;
         }
 
         /// <summary>creates an allegiance between two teams.</summary>

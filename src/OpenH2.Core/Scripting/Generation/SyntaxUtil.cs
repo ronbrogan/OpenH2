@@ -176,7 +176,7 @@ namespace OpenH2.Core.Scripting.Generation
         {
             ScriptDataType.String,
             ScriptDataType.StringId,
-            ScriptDataType.ReferenceGet,
+            ScriptDataType.Sound,
             ScriptDataType.Animation,
             ScriptDataType.Weapon,
             ScriptDataType.SpatialPoint,

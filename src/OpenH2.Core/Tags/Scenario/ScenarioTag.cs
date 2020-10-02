@@ -19,7 +19,6 @@ namespace OpenH2.Core.Tags.Scenario
         
         
         [ReferenceArray(296)] public Obj296[] Obj296s { get; set; }
-        [ReferenceArray(304)] public Obj304[] Obj304s { get; set; }
         [ReferenceArray(360)] public Obj360_String[] Obj360s_Locations { get; set; }
         [ReferenceArray(368)] public Obj368[] Obj368s { get; set; }
         [ReferenceArray(560)] public Obj560[] Obj560s { get; set; }        
@@ -58,6 +57,7 @@ namespace OpenH2.Core.Tags.Scenario
         [ReferenceArray(264)] public TriggerVolume[] TriggerVolumes { get; set; }
         [ReferenceArray(280)] public GameModeMarker[] GameModeMarkers { get; set; }
         [ReferenceArray(288)] public ItemCollectionPlacement[] ItemCollectionPlacements { get; set; }
+        [ReferenceArray(304)] public BspTransitionTrigger[] BspTransitions { get; set; }
         [ReferenceArray(312)] public DecalInstance[] DecalInstances { get; set; }
         [ReferenceArray(320)] public DecalDefinition[] DecalDefinitions { get; set; }
         [ReferenceArray(336)] public StyleDefinition[] StyleDefinitions { get; set; }
@@ -219,16 +219,16 @@ namespace OpenH2.Core.Tags.Scenario
         [FixedLength(156)] public class Obj296 { }
 
         [FixedLength(14)]
-        public class Obj304
+        public class BspTransitionTrigger
         {
             [PrimitiveValue(0)]
-            public ushort Index1 { get; set; }
+            public ushort TriggerVolumeIndex { get; set; }
 
             [PrimitiveValue(2)]
-            public ushort Index2 { get; set; }
+            public ushort FromBsp { get; set; }
 
             [PrimitiveValue(4)]
-            public ushort Index3 { get; set; }
+            public ushort ToBsp { get; set; }
         }
 
         [FixedLength(8)]
@@ -242,19 +242,13 @@ namespace OpenH2.Core.Tags.Scenario
         public class Obj368 
         {
             [PrimitiveValue(0)]
-            public short Val1 { get; set; }
-
-            [PrimitiveValue(2)]
-            public short Val2 { get; set; }
+            public uint Val1 { get; set; }
 
             //[ReferenceArray(16)]
             public Obj16[] Obj16s { get; set; }
 
             [PrimitiveValue(24)]
-            public short Val3 { get; set; }
-
-            [PrimitiveValue(26)]
-            public short Val4 { get; set; }
+            public uint Val3 { get; set; }
 
             //[ReferenceArray(32)]
             public Obj32[] Obj32s { get; set; }
@@ -362,6 +356,9 @@ namespace OpenH2.Core.Tags.Scenario
 
             [PrimitiveValue(48)]
             public Vector3 Orientation { get; set; }
+
+            [PrimitiveValue(60)]
+            public float FieldOfView { get; set; }
         }
 
 

@@ -1066,19 +1066,19 @@ namespace OpenH2.Core.Scripting
         void sound_class_set_gain(string value, float gain, int ticks);
 
         /// <summary>returns the time remaining for the specified impulse sound. DO NOT CALL IN CUTSCENES.</summary>
-        int sound_impulse_language_time(IReferenceGet soundRef);
+        int sound_impulse_language_time(ISound soundRef);
 
         /// <summary>your mom part 2.</summary>
-        void sound_impulse_predict(IReferenceGet soundRef);
+        void sound_impulse_predict(ISound soundRef);
 
         /// <summary>plays an impulse sound from the specified source object (or "none"), with the specified scale.</summary>
         void sound_impulse_start(object sound, IGameObject entity, float floatValue);
 
         /// <summary>plays an impulse sound from the specified source object (or "none"), with the specified scale and effect.</summary>
-        void sound_impulse_start_effect(IReferenceGet sound, IGameObject entity, float floatValue, string effect);
+        void sound_impulse_start_effect(ISound sound, IGameObject entity, float floatValue, string effect);
 
         /// <summary>stops the specified impulse sound.</summary>
-        void sound_impulse_stop(IReferenceGet sound);
+        void sound_impulse_stop(ISound sound);
 
         /// <summary>plays an impulse sound from the specified source object (or "none"), with the specified scale.</summary>
         void sound_impulse_trigger(IGameObject sound, IGameObject source, float floatValue, int intValue);

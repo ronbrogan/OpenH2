@@ -8,6 +8,7 @@ namespace OpenH2.Engine.Scripting
     using OpenH2.Foundation.Extensions;
     using OpenH2.Foundation.Logging;
     using System;
+    using System.Diagnostics;
     using System.Threading.Tasks;
 
     public partial class ScriptEngine : IScriptEngine
@@ -410,6 +411,7 @@ namespace OpenH2.Engine.Scripting
         /// <summary>prints a string to the console.</summary>
         public void print(string value)
         {
+            Debugger.Break();
             Logger.Log(value, Logger.Color.Magenta);
         }
 

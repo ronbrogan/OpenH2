@@ -1,6 +1,7 @@
 ﻿namespace OpenH2.Core.Scripting
 {
     using OpenH2.Core.GameObjects;
+    using System;
     using System.Collections;
     using System.Collections.Generic;
     using System.Threading.Tasks;
@@ -12,6 +13,8 @@
 
     public class GameObjectList : IEnumerable<IGameObject>
     {
+        public static GameObjectList Empty => new GameObjectList(Array.Empty<IGameObject>());
+
         public GameObjectList(IGameObject[] objects)
         {
             this.Objects = objects;
@@ -43,5 +46,5 @@
     public interface IDamage { }
     public interface IDamageState { }
     public interface ISpatialPoint { }
-    public interface IReferenceGet : IGameObject { }
+    public interface ISound : IGameObject { }
 }

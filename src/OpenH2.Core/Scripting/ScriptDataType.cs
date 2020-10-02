@@ -26,7 +26,7 @@
         NavigationPoint = 27,
         SpatialPoint = 28,
         List = 31,
-        ReferenceGet = 32,
+        Sound = 32,
         Effect = 33,
         Damage = 34,
         LoopingSound = 35,

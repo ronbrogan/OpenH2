@@ -584,7 +584,7 @@ namespace OpenH2.Core.Scripting.Generation
                     return NullGenerationContext.Instance;
                 case ScriptDataType.MethodOrOperator:
                     return GetMethodState(node);
-                case ScriptDataType.ReferenceGet:
+                case ScriptDataType.Sound:
                 case ScriptDataType.Animation:
                 case ScriptDataType.Weapon:
                 case ScriptDataType.SpatialPoint:

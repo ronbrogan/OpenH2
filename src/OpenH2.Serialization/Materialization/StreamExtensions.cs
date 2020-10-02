@@ -163,38 +163,6 @@ namespace OpenH2.Serialization.Materialization
             return PBitConverter.ToUInt32(bytes);
         }
 
-        //[MethodImpl(MethodImplOptions.AggressiveInlining)]
-        //public static TagRef ReadTagRefAt(this Stream data, int offset)
-        //{
-        //    return new TagRef(data.ReadUInt32At(offset));
-        //}
-
-        //[MethodImpl(MethodImplOptions.AggressiveInlining)]
-        //public static InternedString ReadInternedStringAt(this Stream data, int offset)
-        //{
-        //    var val = data.ReadUInt32At(offset);
-
-        //    // top byte is length
-        //    var i = new InternedString(val & 0xFFFFFF, val >> 24);
-
-        //    //if(map.InternedStrings.TryGetValue((int)i.Id, out var s))
-        //    //{
-        //    //    i.Value = s;
-        //    //}
-
-        //    return i;
-        //}
-
-        //public static CountAndOffset ReadMetaCaoAt(this Stream data, int offset, TagIndexEntry index)
-        //{
-        //    return ReadMetaCaoAt(data, offset, index.Offset.Value);
-        //}
-
-        //public static CountAndOffset ReadMetaCaoAt(this Stream data, int offset, int magic)
-        //{
-        //    return new CountAndOffset(data.ReadInt32At(offset), new SecondaryOffset(magic, data.ReadInt32At(offset + 4)));
-        //}
-
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Vector2 ReadVec2At(this Stream data, int offset)
         {

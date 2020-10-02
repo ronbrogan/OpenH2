@@ -141,7 +141,7 @@ namespace OpenH2.Engine.Scripting
         }
 
         /// <summary>your mom part 2.</summary>
-        public void sound_impulse_predict(IReferenceGet soundRef)
+        public void sound_impulse_predict(ISound soundRef)
         {
         }
 

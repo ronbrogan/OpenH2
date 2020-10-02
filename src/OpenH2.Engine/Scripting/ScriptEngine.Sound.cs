@@ -11,7 +11,7 @@ namespace OpenH2.Engine.Scripting
         }
 
         /// <summary>returns the time remaining for the specified impulse sound. DO NOT CALL IN CUTSCENES.</summary>
-        public int sound_impulse_language_time(IReferenceGet soundRef)
+        public int sound_impulse_language_time(ISound soundRef)
         {
             return TicksPerSecond;
         }
@@ -22,12 +22,12 @@ namespace OpenH2.Engine.Scripting
         }
 
         /// <summary>plays an impulse sound from the specified source object (or "none"), with the specified scale and effect.</summary>
-        public void sound_impulse_start_effect(IReferenceGet sound, IGameObject entity, float floatValue, string /*id*/ effect)
+        public void sound_impulse_start_effect(ISound sound, IGameObject entity, float floatValue, string /*id*/ effect)
         {
         }
 
         /// <summary>stops the specified impulse sound.</summary>
-        public void sound_impulse_stop(IReferenceGet sound)
+        public void sound_impulse_stop(ISound sound)
         {
         }
 
