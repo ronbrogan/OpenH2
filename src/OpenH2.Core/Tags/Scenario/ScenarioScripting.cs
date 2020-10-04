@@ -31,6 +31,30 @@ namespace OpenH2.Core.Tags.Scenario
             [StringValue(0, 32)]
             public string Description { get; set; }
 
+            [PrimitiveValue(36)]
+            public ushort ValueA { get; set; }
+
+            [PrimitiveValue(38)]
+            public ushort ValueB { get; set; }
+
+            [PrimitiveValue(44)]
+            public ushort ValueC { get; set; }
+
+            [PrimitiveValue(46)]
+            public ushort ValueD { get; set; }
+
+            [PrimitiveValue(52)]
+            public ushort ValueE { get; set; }
+
+            [PrimitiveValue(60)]
+            public ushort ValueF { get; set; }
+
+            [PrimitiveValue(64)]
+            public ushort ValueG { get; set; }
+
+            [PrimitiveValue(66)]
+            public ushort ValueH { get; set; }
+
             [ReferenceArray(72)]
             public StartingLocation[] StartingLocations { get; set; }
 
@@ -56,7 +80,13 @@ namespace OpenH2.Core.Tags.Scenario
                 public ushort[] Unknowns { get; set; }
 
                 [StringValue(64, 32)]
-                public string AnotherDescription { get; set; }
+                public string StartupScript { get; set; }
+
+                [PrimitiveValue(96)]
+                public ushort Unknown3 { get; set; }
+
+                [PrimitiveValue(98)]
+                public ushort Unknown4 { get; set; }
             }
         }
 

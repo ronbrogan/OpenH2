@@ -111,12 +111,16 @@ namespace OpenH2.ScenarioExplorer.ViewModels
             }
 
             var internedStringRefs = new List<int>();
+            var tagRefs = new List<int>();
 
             var span = this.Data.Span;
 
             for (var i = 0; i < this.Data.Length; i += 4)
             {
                 var val = span.ReadUInt32At(i);
+
+                if (val == 0 || val == uint.MaxValue)
+                    continue;
 
                 if(val > this.InternalOffsetStart && val < this.InternalOffsetEnd)
                 {
@@ -138,6 +142,11 @@ namespace OpenH2.ScenarioExplorer.ViewModels
                     && str.Length == internedStringLength)
                 {
                     internedStringRefs.Add(i);
+                }
+
+                if(scene.TagIndex.ContainsKey(val))
+                {
+                    tagRefs.Add(i);
                 }
             }
 
@@ -175,6 +184,11 @@ namespace OpenH2.ScenarioExplorer.ViewModels
             foreach(var str in internedStringRefs)
             {
                 this.Features.Add(new HexViewerFeature(str, 4, Brushes.Red));
+            }
+
+            foreach (var tag in tagRefs)
+            {
+                this.Features.Add(new HexViewerFeature(tag, 4, Brushes.Turquoise));
             }
         }
 
