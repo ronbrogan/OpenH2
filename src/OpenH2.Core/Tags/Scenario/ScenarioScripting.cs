@@ -31,6 +31,7 @@ namespace OpenH2.Core.Tags.Scenario
             [StringValue(0, 32)]
             public string Description { get; set; }
 
+            // (Almost?) always 0 
             [PrimitiveValue(36)]
             public ushort ValueA { get; set; }
 
@@ -53,7 +54,10 @@ namespace OpenH2.Core.Tags.Scenario
             public ushort ValueG { get; set; }
 
             [PrimitiveValue(66)]
-            public ushort ValueH { get; set; }
+            public ushort AiOrderIndex { get; set; }
+
+            [InternedString(68)]
+            public string Variant { get; set; }
 
             [ReferenceArray(72)]
             public StartingLocation[] StartingLocations { get; set; }
@@ -67,26 +71,82 @@ namespace OpenH2.Core.Tags.Scenario
                 [PrimitiveValue(4)]
                 public Vector3 Position { get; set; }
 
+                // (Almost?) always 0 or ushort.MaxValue
                 [PrimitiveValue(16)]
-                public ushort Unknown1 { get; set; }
+                public ushort ZeroOrMax { get; set; }
 
+                // (Almost?) always 0 
                 [PrimitiveValue(18)]
-                public ushort Unknown2 { get; set; }
+                public ushort Zero { get; set; }
 
                 [PrimitiveValue(20)]
                 public float Rotation { get; set; }
 
-                [PrimitiveArray(24, 20)]
-                public ushort[] Unknowns { get; set; }
+                [PrimitiveValue(24)]
+                public ushort Index0 { get; set; }
+
+                [PrimitiveValue(26)]
+                public ushort Index1 { get; set; }
+
+                [PrimitiveValue(28)]
+                public ushort Flags { get; set; }
+
+                [PrimitiveValue(30)]
+                public ushort Zero2 { get; set; }
+
+                [PrimitiveValue(32)]
+                public ushort Index4 { get; set; }
+
+                [PrimitiveValue(34)]
+                public ushort Index5 { get; set; }
+
+                [PrimitiveValue(36)]
+                public ushort Index6 { get; set; }
+
+                [PrimitiveValue(38)]
+                public ushort Zero3 { get; set; }
+
+                [PrimitiveValue(40)]
+                public ushort Index8 { get; set; }
+
+                [PrimitiveValue(42)]
+                public ushort Index9 { get; set; }
+
+                [PrimitiveValue(44)]
+                public ushort Zero4 { get; set; }
+
+                [PrimitiveValue(46)]
+                public ushort Zero5 { get; set; }
+
+                [PrimitiveValue(48)]
+                public ushort Index12 { get; set; }
+
+                [PrimitiveValue(50)]
+                public ushort Index13 { get; set; }
+
+                [PrimitiveValue(52)]
+                public ushort Index14 { get; set; }
+
+                [PrimitiveValue(54)]
+                public ushort Index15 { get; set; }
+
+                [PrimitiveValue(56)]
+                public ushort Zero6 { get; set; }
+
+                [PrimitiveValue(58)]
+                public ushort Index17 { get; set; }
+
+                [PrimitiveValue(60)]
+                public ushort MaxValue { get; set; }
+
+                [PrimitiveValue(62)]
+                public ushort Zero7 { get; set; }
 
                 [StringValue(64, 32)]
                 public string StartupScript { get; set; }
 
                 [PrimitiveValue(96)]
-                public ushort Unknown3 { get; set; }
-
-                [PrimitiveValue(98)]
-                public ushort Unknown4 { get; set; }
+                public uint ScriptIndex { get; set; }
             }
         }
 
