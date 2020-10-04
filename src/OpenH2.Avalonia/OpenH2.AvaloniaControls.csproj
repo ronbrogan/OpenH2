@@ -14,10 +14,10 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Avalonia" Version="0.9.1" />
-    <PackageReference Include="Avalonia.ReactiveUI" Version="0.9.1" />
-    <PackageReference Include="PropertyChanged.Fody" Version="3.2.8" />
-    <PackageReference Include="ReactiveUI" Version="11.0.1" />
+    <PackageReference Include="Avalonia" Version="0.10.999-cibuild0010986-beta" />
+    <PackageReference Include="Avalonia.ReactiveUI" Version="0.10.999-cibuild0010986-beta" />
+    <PackageReference Include="PropertyChanged.Fody" Version="3.2.9" />
+    <PackageReference Include="ReactiveUI" Version="11.5.35" />
   </ItemGroup>
 
 </Project>

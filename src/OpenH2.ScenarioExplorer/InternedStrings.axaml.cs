@@ -15,9 +15,6 @@ namespace OpenH2.ScenarioExplorer
         public InternedStrings()
         {
             this.InitializeComponent();
-#if DEBUG
-            this.AttachDevTools();
-#endif
         }
 
         public void Bind(ScenarioViewModel vm)

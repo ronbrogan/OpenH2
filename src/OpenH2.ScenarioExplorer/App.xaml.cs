@@ -1,13 +1,10 @@
-﻿using System;
-using System.Threading;
-using Avalonia;
-using Avalonia.Controls;
+﻿using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
-using Avalonia.Logging.Serilog;
 using Avalonia.Markup.Xaml;
 using Avalonia.ReactiveUI;
 using OpenH2.AvaloniaControls;
 using PropertyChanged;
+using System;
 
 namespace OpenH2.ScenarioExplorer
 {

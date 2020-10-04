@@ -37,9 +37,6 @@ namespace OpenH2.ScenarioExplorer
             this.DataContext = DataCtx;
 
             this.InitializeComponent();
-#if DEBUG
-            this.AttachDevTools();
-#endif
 
             if(App.StartupArgs.Length > 0)
             {

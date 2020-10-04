@@ -126,7 +126,8 @@ namespace OpenH2.ScenarioExplorer.ViewModels
                         Count = span.ReadInt32At(i - 4)
                     };
 
-                    this.Caos.Add(cao);
+                    if(cao.Count > 0)
+                        this.Caos.Add(cao);
                 }
 
                 var internedStringIndex = val & 0xFFFFFF;
@@ -162,9 +163,13 @@ namespace OpenH2.ScenarioExplorer.ViewModels
             foreach(var cao in this.Caos)
             {
                 this.Features.Add(new HexViewerFeature(cao.Origin, 8, Brushes.Goldenrod));
-                var chunkFeature = new HexViewerFeature(cao.Offset, cao.Count * cao.ItemSize, Brushes.OliveDrab);
 
-                this.Features.Add(chunkFeature);
+                if(cao.ItemSize > 1)
+                {
+                    var chunkFeature = new HexViewerFeature(cao.Offset, cao.Count * cao.ItemSize, Brushes.OliveDrab);
+
+                    this.Features.Add(chunkFeature);
+                }
             }
 
             foreach(var str in internedStringRefs)
