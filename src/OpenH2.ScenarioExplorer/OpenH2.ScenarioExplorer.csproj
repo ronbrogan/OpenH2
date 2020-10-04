@@ -24,11 +24,15 @@
 
   <ItemGroup>
     <PackageReference Include="Avalonia" Version="0.10.999-cibuild0010986-beta" />
+    <PackageReference Include="Avalonia.Diagnostics" Version="0.10.999-cibuild0010986-beta"/>
+    <PackageReference Include="Microsoft.CodeAnalysis.Common" Version="3.8.0-2.final"/>
+    <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="3.8.0-2.final"/>
     <PackageReference Include="Avalonia.ReactiveUI" Version="0.10.999-cibuild0010986-beta" />
     <PackageReference Include="Avalonia.Desktop" Version="0.10.999-cibuild0010986-beta" />
     <PackageReference Include="System.Text.Json" Version="4.7.0" />
     <PackageReference Include="PropertyChanged.Fody" Version="3.2.9" />
     <PackageReference Include="ReactiveUI" Version="11.5.35" />
+    <PackageReference Include="TextCopy" Version="4.2.0" />
   </ItemGroup>
 
   <ItemGroup>

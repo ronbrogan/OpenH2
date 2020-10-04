@@ -18,9 +18,24 @@ namespace OpenH2.ScenarioExplorer.ViewModels
 
         public bool NullChildren => Children == null;
 
+        public TagTreeEntryViewModel()
+        {
+
+        }
+
         public void GenerateCaoCode()
         {
             Console.WriteLine("heyo");
+        }
+
+        public void CopyTagName()
+        {
+            TextCopy.ClipboardService.SetText(TagName);
+        }
+
+        public void CopyTagId()
+        {
+            TextCopy.ClipboardService.SetText(Id.ToString());
         }
     }
 }

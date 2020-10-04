@@ -40,20 +40,6 @@ namespace OpenH2.AvaloniaControls
         public static readonly DirectProperty<HexViewer, int> SelectedOffsetProperty =
             AvaloniaProperty.RegisterDirect<HexViewer, int>(nameof(SelectedOffset), h => h.SelectedOffset, (h, v) => { h.SelectedOffset = v; h.BringIntoView(v); }, defaultBindingMode: Avalonia.Data.BindingMode.TwoWay);
 
-        public static readonly DirectProperty<HexViewer, bool> IsDisabledProperty =
-            AvaloniaProperty.RegisterDirect<HexViewer, bool>(nameof(IsDisabled), h => h.IsDisabled, (h,v) => h.IsDisabled = v);
-
-        private bool _isDisabled;
-        public bool IsDisabled
-        {
-            get => _isDisabled;
-            set
-            {
-                SetAndRaise(IsDisabledProperty, ref _isDisabled, value);
-                UpdateData();
-            }
-        }
-
         private Memory<byte> allData;
         private Memory<byte> _data;
         private Memory<byte> Data
@@ -109,7 +95,6 @@ namespace OpenH2.AvaloniaControls
         private ScrollBar Scroller { get; set; }
         private TextPresenter AddressBox { get; set; }
         private TextPresenter HexBox { get; set; }
-        private List<FormattedTextStyleSpan> HexBoxStyleSpans = new List<FormattedTextStyleSpan>();
         private TextPresenter AsciiBox { get; set; }
         private Button ExportButton { get; set; }
         private TextBox GotoBox { get; }

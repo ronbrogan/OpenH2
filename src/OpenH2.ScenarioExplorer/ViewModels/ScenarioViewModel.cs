@@ -55,6 +55,15 @@ namespace OpenH2.ScenarioExplorer.ViewModels
                 TagName = globalsVm.Name
             };
 
+            if (discoveryMode)
+            {
+                treeProcessor = new DiscoveryTagTreeProcessor(scene);
+            }
+            else
+            {
+                treeProcessor = new ExplorationTagTreeProcessor(scene);
+            }
+
             var roots = new List<TagTreeEntryViewModel>
             { 
                 globalsEntry, 
@@ -71,19 +80,11 @@ namespace OpenH2.ScenarioExplorer.ViewModels
                 };
 
                 roots.Insert(1, soundsEntry);
-            }
-            
-            if (discoveryMode)
-            {
-                treeProcessor = new DiscoveryTagTreeProcessor(scene);
-            }
-            else
-            {
-                treeProcessor = new ExplorationTagTreeProcessor(scene);
+                treeProcessor.PopulateChildren(scenarioVm, soundsEntry);
             }
 
             treeProcessor.PopulateChildren(scenarioVm, scenarioEntry);
-            //treeProcessor.PopulateChildren(scenarioVm, globalsEntry);
+            treeProcessor.PopulateChildren(scenarioVm, globalsEntry);
 
             this.TreeRoots = roots.ToArray();
         }

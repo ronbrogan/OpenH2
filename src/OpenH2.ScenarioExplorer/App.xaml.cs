@@ -1,7 +1,10 @@
 ﻿using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
+using Avalonia.Diagnostics;
 using Avalonia.Markup.Xaml;
+using Avalonia.Markup.Xaml.Styling;
 using Avalonia.ReactiveUI;
+using Avalonia.Styling;
 using OpenH2.AvaloniaControls;
 using PropertyChanged;
 using System;
@@ -12,7 +15,6 @@ namespace OpenH2.ScenarioExplorer
     class App : Application
     {
         public static string[] StartupArgs;
-
 
         [STAThread]
         static void Main(string[] args)
@@ -36,7 +38,11 @@ namespace OpenH2.ScenarioExplorer
         public override void OnFrameworkInitializationCompleted()
         {
             if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
+            {
                 desktop.MainWindow = new ScenarioExplorer();
+                desktop.MainWindow.AttachDevTools();
+            }
+                
 
             base.OnFrameworkInitializationCompleted();
         }

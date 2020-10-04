@@ -16,7 +16,7 @@
 
         <StackPanel Orientation="Horizontal" Grid.Row="0" Background="LightGray">
             <TextBlock Text="Highlight Size" Margin="10"></TextBlock>
-            <DropDown Items="{Binding HighlightSizes}" 
+            <DropDown Items="{Binding HighlightSizes}"  Margin="10,6,0,0"
                 SelectedItem="{Binding HighlightSize}" 
                 Name="highlightSizeDropdown" 
                 MinWidth="50"
@@ -29,7 +29,7 @@
                 </DropDown.ItemTemplate>
             </DropDown>
             <TextBlock Text="Highlight Color" Margin="10"></TextBlock>
-            <DropDown Items="{Binding Colors}" 
+            <DropDown Items="{Binding Colors}" Margin="10,6,0,0"
                 SelectedItem="{Binding HighlightColor}" 
                 MinWidth="50"
                 Height="26"
@@ -71,7 +71,7 @@
             <TextBox MinWidth="80" TextWrapping="NoWrap" AcceptsReturn="False" Name="basisBox" Height="26" />
             <TextBlock Text="Offset" Margin="10" />
             <TextBox MinWidth="80" TextWrapping="NoWrap" AcceptsReturn="False" Name="gotoBox" Height="26" />
-            <Button Margin="6 0 6 0" Name="exportButton" Height="26">Export</Button>
+            <Button Margin="2 0 2 0" Name="exportButton" Height="30">Export</Button>
         </StackPanel>
     </Grid>
 </UserControl>
