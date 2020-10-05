@@ -22,7 +22,7 @@ namespace OpenH2.AiAnalysis
 
         static void Main(string[] args)
         {
-            var mapPath = @"D:\H2vMaps\03b_newmombasa.map";
+            var mapPath = @"D:\H2vMaps\03a_oldmombasa.map";
 
             var factory = new MapFactory(Path.GetDirectoryName(mapPath), NullMaterialFactory.Instance);
 
@@ -44,69 +44,47 @@ namespace OpenH2.AiAnalysis
             Write();
 
 
-            WriteMaxOn(map, s => s.ValueA);
-            WriteMaxOn(map, s => s.ValueB);
-            WriteMaxOn(map, s => s.ValueC);
-            WriteMaxOn(map, s => s.ValueD);
-            WriteMaxOn(map, s => s.ValueE);
-            WriteMaxOn(map, s => s.ValueF);
-            WriteMaxOn(map, s => s.ValueG);
-            WriteMaxOn(map, s => s.AiOrderIndex);
+            WriteInfo(map, s => s.ActorType);
+            WriteInfo(map, s => s.ValueE);
+            WriteInfo(map, s => s.ValueF);
+            WriteInfo(map, s => s.ValueG);
 
             var locs = map.Scenario.AiSquadDefinitions.SelectMany(d => d.StartingLocations);
-            WriteMaxOn(locs, l => l.ZeroOrMax);
-            WriteMaxOn(locs, l => l.Zero);
-            WriteMaxOn(locs, l => l.Index0);
-            WriteMaxOn(locs, l => l.Index1);
-            WriteMaxOn(locs, l => l.Flags);
-            WriteMaxOn(locs, l => l.Zero2);
-            WriteMaxOn(locs, l => l.Index4);
-            WriteMaxOn(locs, l => l.Index5);
-            WriteMaxOn(locs, l => l.Index6);
-            WriteMaxOn(locs, l => l.Zero3);
-            WriteMaxOn(locs, l => l.Index8);
-            WriteMaxOn(locs, l => l.Index9);
-            WriteMaxOn(locs, l => l.Zero4);
-            WriteMaxOn(locs, l => l.Zero5);
-            WriteMaxOn(locs, l => l.Index12);
-            WriteMaxOn(locs, l => l.Index13);
-            WriteMaxOn(locs, l => l.Index14);
-            WriteMaxOn(locs, l => l.Index15);
-            WriteMaxOn(locs, l => l.Zero6);
-            WriteMaxOn(locs, l => l.Index17);
-            WriteMaxOn(locs, l => l.MaxValue);
-            WriteMaxOn(locs, l => l.Zero7);
+            WriteInfo(locs, l => l.ZeroOrMax);
+            WriteInfo(locs, l => l.Zero);
+            WriteInfo(locs, l => l.Index0);
+            WriteInfo(locs, l => l.Index1);
+            WriteInfo(locs, l => l.Flags);
+            WriteInfo(locs, l => l.Zero2);
+            WriteInfo(locs, l => l.Index4);
+            WriteInfo(locs, l => l.Index5);
+            WriteInfo(locs, l => l.Index6);
+            WriteInfo(locs, l => l.Zero3);
+            WriteInfo(locs, l => l.Index8);
+            WriteInfo(locs, l => l.State);
+            WriteInfo(locs, l => l.Zero4Sometimes);
+            WriteInfo(locs, l => l.Zero5Sometimes);
+            WriteInfo(locs, l => l.Index12);
+            WriteInfo(locs, l => l.Index13);
+            WriteInfo(locs, l => l.Index14);
+            WriteInfo(locs, l => l.Index15);
+            WriteInfo(locs, l => l.Zero6);
+            WriteInfo(locs, l => l.Index17);
+            WriteInfo(locs, l => l.MaxValue);
+            WriteInfo(locs, l => l.Zero7Sometimes);
 
             TextCopy.ClipboardService.SetText(outb.ToString());
             Console.Read();
         }
 
-        private static void WriteMaxOn<TProp>(H2vMap map, Expression<Func<ScenarioTag.AiSquadDefinition, TProp>> accessor)
+        private static void WriteInfo<TProp>(H2vMap map, Expression<Func<ScenarioTag.AiSquadDefinition, TProp>> accessor)
         {
             var vals = map.Scenario.AiSquadDefinitions;
 
-            var func = accessor.Compile();
-            var maxVal = vals.Max(func);
-            var withoutMax = vals.Where(v => func(v).Equals(maxVal) == false);
-            var nextMax = maxVal;
-            if(withoutMax.Any())
-            {
-                nextMax = withoutMax.Max(func);
-            }
-            var minVal = vals.Min(func);
-            var nextMin = minVal;
-            var withoutMin = vals.Where(v => func(v).Equals(minVal) == false);
-            if (withoutMin.Any())
-            {
-                nextMin = withoutMin.Min(func);
-            }
-            var avgVal = vals.Avg(accessor);
-
-            Write($"{accessor}: [{minVal}, {nextMin}, {nextMax}, {maxVal}] {avgVal}");
+            WriteInfo(vals, accessor);
         }
 
-        private static void WriteMaxOn<TProp>(IEnumerable<ScenarioTag.AiSquadDefinition.StartingLocation> vals, Expression<Func<ScenarioTag.AiSquadDefinition.StartingLocation, TProp>> accessor)
-            where TProp : IEquatable<TProp>
+        private static void WriteInfo<TEnum, TProp>(IEnumerable<TEnum> vals, Expression<Func<TEnum, TProp>> accessor)
         {
             var func = accessor.Compile();
             var maxVal = vals.Max(func);
@@ -126,6 +104,8 @@ namespace OpenH2.AiAnalysis
             var avgVal = vals.Avg(accessor);
 
             Write($"{accessor}: [{minVal}, {nextMin}, {nextMax}, {maxVal}] {avgVal}");
+
+            Write($"\t\t{string.Join(",", vals.Select(func).Distinct())}");
         }
 
         public static object Avg<TEnum, TProp>(this IEnumerable<TEnum> source, Expression<Func<TEnum, TProp>> accessor)

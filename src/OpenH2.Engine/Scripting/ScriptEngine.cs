@@ -411,7 +411,6 @@ namespace OpenH2.Engine.Scripting
         /// <summary>prints a string to the console.</summary>
         public void print(string value)
         {
-            Debugger.Break();
             Logger.Log(value, Logger.Color.Magenta);
         }
 

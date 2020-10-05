@@ -176,7 +176,7 @@ namespace OpenH2.Core.Factories
                 {
 
                     // HACK: if texture is small, it's likely not a detail map
-                    if (bitm.Width <= 16 || bitm.Height <= 16)
+                    if (bitm.TextureInfos[0].Width <= 16 || bitm.TextureInfos[0].Height <= 16)
                         continue;
 
                     int inputOffset = i;

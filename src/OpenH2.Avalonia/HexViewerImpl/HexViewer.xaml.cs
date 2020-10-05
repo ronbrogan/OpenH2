@@ -185,7 +185,7 @@ namespace OpenH2.AvaloniaControls
             var visibleLines = (int)(this.HexBox.Bounds.Height / this.lineHeight);
             this.visibleOffset = this.LineSize * (int)this.Scroller.Value;
             this.visibleLength = visibleLines * this.LineSize;
-            this.Scroller.Maximum = this.totalLineCount - this.visibleLength;
+            this.Scroller.Maximum = this.totalLineCount - visibleLines;
             this.Scroller.ViewportSize = visibleLines;
 
             for (var i = 0; i < visibleLines; i++)

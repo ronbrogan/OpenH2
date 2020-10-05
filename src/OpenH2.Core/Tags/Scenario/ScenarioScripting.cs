@@ -5,6 +5,7 @@ using OpenH2.Core.Tags.Layout;
 using OpenH2.Serialization.Layout;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Numerics;
 using System.Text;
 
@@ -33,16 +34,16 @@ namespace OpenH2.Core.Tags.Scenario
 
             // (Almost?) always 0 
             [PrimitiveValue(36)]
-            public ushort ValueA { get; set; }
+            public ushort ActorType { get; set; }
 
             [PrimitiveValue(38)]
-            public ushort ValueB { get; set; }
+            public ushort SquadGroupIndex { get; set; }
 
             [PrimitiveValue(44)]
-            public ushort ValueC { get; set; }
+            public ushort StateA { get; set; }
 
             [PrimitiveValue(46)]
-            public ushort ValueD { get; set; }
+            public ushort StateB { get; set; }
 
             [PrimitiveValue(52)]
             public ushort ValueE { get; set; }
@@ -110,13 +111,13 @@ namespace OpenH2.Core.Tags.Scenario
                 public ushort Index8 { get; set; }
 
                 [PrimitiveValue(42)]
-                public ushort Index9 { get; set; }
+                public ushort State { get; set; }
 
                 [PrimitiveValue(44)]
-                public ushort Zero4 { get; set; }
+                public ushort Zero4Sometimes { get; set; }
 
                 [PrimitiveValue(46)]
-                public ushort Zero5 { get; set; }
+                public ushort Zero5Sometimes { get; set; }
 
                 [PrimitiveValue(48)]
                 public ushort Index12 { get; set; }
@@ -140,7 +141,7 @@ namespace OpenH2.Core.Tags.Scenario
                 public ushort MaxValue { get; set; }
 
                 [PrimitiveValue(62)]
-                public ushort Zero7 { get; set; }
+                public ushort Zero7Sometimes { get; set; }
 
                 [StringValue(64, 32)]
                 public string StartupScript { get; set; }
@@ -151,10 +152,33 @@ namespace OpenH2.Core.Tags.Scenario
         }
 
         [FixedLength(56)]
+        [DebuggerDisplay("{Description}")]
         public class Obj360_String
         {
             [StringValue(0, 32)]
             public string Description { get; set; }
+
+            [PrimitiveValue(32)]
+            public uint ValueA { get; set; }
+
+            [PrimitiveValue(36)]
+            public uint ValueB { get; set; }
+
+            [ReferenceArray(40)]
+            public float[] Obj40s { get; set; }
+
+            [ReferenceArray(48)]
+            public Obj48[] Obj48s { get; set; }
+
+            [FixedLength(136)]
+            public class Obj48
+            {
+                [StringValue(0, 32)]
+                public string Description { get; set; }
+
+                [PrimitiveValue(36)]
+                public Vector3 Position { get; set; }
+            }
         }
 
         [FixedLength(40)]

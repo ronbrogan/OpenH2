@@ -282,7 +282,7 @@ namespace OpenH2.Core.Tags.Scenario
         public class CharacterDefinition
         {
             [PrimitiveValue(4)]
-            public TagRef CharacterReference { get; set; }
+            public TagRef<CharacterTag> CharacterReference { get; set; }
         }
 
         [FixedLength(8)]

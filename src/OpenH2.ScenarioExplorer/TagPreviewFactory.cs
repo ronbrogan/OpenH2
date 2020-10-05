@@ -9,13 +9,10 @@ using OpenH2.Rendering.OpenGL;
 using OpenH2.Rendering.Shaders;
 using System.Numerics;
 using OpenH2.Foundation;
-using Vector2 = System.Numerics.Vector2;
-using Vector3 = System.Numerics.Vector3;
 using PixelFormat = OpenToolkit.Graphics.OpenGL.PixelFormat;
 using System.Runtime.InteropServices;
 using Avalonia.Media.Imaging;
 using Avalonia;
-using OpenToolkit.Mathematics;
 using OpenToolkit.Windowing.Common;
 using OpenToolkit.Windowing.Desktop;
 
@@ -43,8 +40,6 @@ namespace OpenH2.ScenarioExplorer
 
         private static TagPreviewViewModel GetBitmPreview(BitmapTag bitm)
         {
-            
-
             var preview = new TagPreviewViewModel();
 
             preview.AddItem("bitmap", bitm, GetBitmapPreview);
@@ -53,7 +48,8 @@ namespace OpenH2.ScenarioExplorer
 
             object GetBitmapPreview(BitmapTag bitm)
             {
-                if (bitm.Width == 0 || bitm.Height == 0)
+                // HACK: hard coding texture 0, needs texture binder rewrite to support here
+                if (bitm.TextureInfos[0].Width == 0 || bitm.TextureInfos[0].Height == 0)
                     return null;
 
                 var textureBinder = new OpenGLTextureBinder();
@@ -64,7 +60,7 @@ namespace OpenH2.ScenarioExplorer
                 {
                     API = ContextAPI.OpenGL,
                     AutoLoadBindings = true,
-                    Size = new Vector2i(bitm.Width, bitm.Height),
+                    Size = new OpenToolkit.Mathematics.Vector2i(bitm.TextureInfos[0].Width, bitm.TextureInfos[0].Height),
                     Title = "OpenH2",
                     Flags = ContextFlags.Debug | ContextFlags.Offscreen,
                     APIVersion = new Version(4, 0)
@@ -117,10 +113,10 @@ namespace OpenH2.ScenarioExplorer
 
                 GL.Flush();
 
-                var bmp = new WriteableBitmap(new PixelSize(bitm.Width, bitm.Height), new Avalonia.Vector(72, 72), Avalonia.Platform.PixelFormat.Rgba8888);
+                var bmp = new WriteableBitmap(new PixelSize(bitm.TextureInfos[0].Width, bitm.TextureInfos[0].Height), new Avalonia.Vector(72, 72), Avalonia.Platform.PixelFormat.Rgba8888);
                 using (var buf = bmp.Lock())
                 {
-                    GL.ReadPixels(0, 0, bitm.Width, bitm.Height, PixelFormat.Rgba, PixelType.UnsignedByte, buf.Address);
+                    GL.ReadPixels(0, 0, bitm.TextureInfos[0].Width, bitm.TextureInfos[0].Height, PixelFormat.Rgba, PixelType.UnsignedByte, buf.Address);
                 }
 
                 window.Close();

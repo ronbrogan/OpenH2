@@ -75,8 +75,9 @@ namespace OpenH2.Rendering.OpenGL
                 return ids.Item1;
             }
 
-            var width = bitm.Width;
-            var height = bitm.Height;
+            // HACK: hard coding texture 0
+            var width = bitm.TextureInfos[0].Width;
+            var height = bitm.TextureInfos[0].Height;
 
             if(width == 0 || height == 0)
             {
@@ -84,12 +85,12 @@ namespace OpenH2.Rendering.OpenGL
                 return int.MaxValue;
             }
 
-            var topLod = bitm.LevelsOfDetail[0];
+            var topLod = bitm.TextureInfos[0].LevelsOfDetail[0];
 
             GL.GenTextures(1, out int texId);
             GL.BindTexture(TextureTarget.Texture2D, texId);
 
-            UploadMips(topLod.Data.Span, bitm.TextureFormat, bitm.Format, width, height, bitm.MipMapCount == 0 ? bitm.MipMapCount2 : bitm.MipMapCount);
+            UploadMips(topLod.Data.Span, bitm.TextureFormat, bitm.TextureInfos[0].Format, width, height, bitm.MipMapCount == 0 ? bitm.TextureInfos[0].MipMapCount2 : bitm.MipMapCount);
 
             SetCommonTextureParams();
 
