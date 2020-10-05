@@ -1,52 +1,54 @@
-﻿using OpenH2.Core.GameObjects;
-using OpenH2.Core.Representations;
-using OpenH2.Core.Scripting;
-using OpenH2.Core.Tags.Layout;
+﻿using OpenH2.Core.Scripting;
 using OpenH2.Serialization.Layout;
-using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.Numerics;
-using System.Text;
 
 namespace OpenH2.Core.Tags.Scenario
 {
     public partial class ScenarioTag
     {
         [FixedLength(36)]
+        [DebuggerDisplay("{Description}")]
         public class AiSquadGroupDefinition
         {
             [StringValue(0, 32)]
             public string Description { get; set; }
 
             [PrimitiveValue(32)]
-            public ushort Index1 { get; set; }
+            public ushort ParentGroupIndex { get; set; }
 
             [PrimitiveValue(34)]
             public ushort Index2 { get; set; }
         }
 
         [FixedLength(116)]
+        [DebuggerDisplay("{Description}")]
         public class AiSquadDefinition
         {
             [StringValue(0, 32)]
             public string Description { get; set; }
 
+            [PrimitiveValue(32)]
+            public ushort ValueA { get; set; }
+
+            [PrimitiveValue(34)]
+            public ushort ValueB { get; set; }
+
             // (Almost?) always 0 
             [PrimitiveValue(36)]
-            public ushort ActorType { get; set; }
+            public ushort ValueC { get; set; }
 
             [PrimitiveValue(38)]
             public ushort SquadGroupIndex { get; set; }
 
             [PrimitiveValue(44)]
-            public ushort StateA { get; set; }
+            public ushort ValueD { get; set; }
 
             [PrimitiveValue(46)]
-            public ushort StateB { get; set; }
+            public ushort ValueD2 { get; set; }
 
             [PrimitiveValue(52)]
-            public ushort ValueE { get; set; }
+            public ushort VehicleIndex { get; set; }
 
             [PrimitiveValue(60)]
             public ushort ValueF { get; set; }
@@ -64,6 +66,7 @@ namespace OpenH2.Core.Tags.Scenario
             public StartingLocation[] StartingLocations { get; set; }
 
             [FixedLength(100)]
+            [DebuggerDisplay("{Description}")]
             public class StartingLocation
             {
                 [InternedString(0)]
@@ -171,6 +174,7 @@ namespace OpenH2.Core.Tags.Scenario
             public Obj48[] Obj48s { get; set; }
 
             [FixedLength(136)]
+            [DebuggerDisplay("{Description}")]
             public class Obj48
             {
                 [StringValue(0, 32)]
@@ -182,6 +186,7 @@ namespace OpenH2.Core.Tags.Scenario
         }
 
         [FixedLength(40)]
+        [DebuggerDisplay("{Description}")]
         public class ScriptVariableDefinition
         {
             [StringValue(0, 32)]
@@ -204,6 +209,7 @@ namespace OpenH2.Core.Tags.Scenario
         }
 
         [FixedLength(40)]
+        [DebuggerDisplay("{Description}")]
         public class ScriptMethodDefinition
         {
             [StringValue(0, 32)]

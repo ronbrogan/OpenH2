@@ -43,9 +43,45 @@ namespace OpenH2.AiAnalysis
 
             Write();
 
+            for(var i = 0; i < map.Scenario.VehicleDefinitions.Length; i++)
+            {
+                var tag = map.GetTag(map.Scenario.VehicleDefinitions[i].Vehicle);
+                Write($"VEHI {i}: {tag.Name}");
+            }
 
-            WriteInfo(map, s => s.ActorType);
-            WriteInfo(map, s => s.ValueE);
+            for (var i = 0; i < map.Scenario.CharacterDefinitions.Length; i++)
+            {
+                var tag = map.GetTag(map.Scenario.CharacterDefinitions[i].CharacterReference);
+                Write($"CHAR {i}: {tag.Name}");
+            }
+
+            var slProps = typeof(ScenarioTag.AiSquadDefinition.StartingLocation).GetProperties();
+
+            foreach(var squad in map.Scenario.AiSquadDefinitions)
+            {
+                Write($"Squad: {squad.Description}, A:{squad.ValueA}, B:{squad.ValueB}, C:{squad.ValueC}, D:{squad.ValueD}, D2:{squad.ValueD2}, Vehi:{squad.VehicleIndex}, F:{squad.ValueF}, G:{squad.ValueG}");
+
+                foreach(var sl in squad.StartingLocations)
+                {
+                    var sb = new StringBuilder();
+
+                    sb.Append($"\t> {sl.Description}");
+
+                    foreach (var p in slProps)
+                    {
+                        sb.Append($",{p.Name}:{p.GetValue(sl)}");
+                    }
+
+                    Write(sb.ToString());
+                }
+            }
+
+            WriteInfo(map, s => s.ValueA);
+            WriteInfo(map, s => s.ValueB);
+            WriteInfo(map, s => s.ValueC);
+            WriteInfo(map, s => s.ValueD);
+            WriteInfo(map, s => s.ValueD2);
+            WriteInfo(map, s => s.VehicleIndex);
             WriteInfo(map, s => s.ValueF);
             WriteInfo(map, s => s.ValueG);
 
