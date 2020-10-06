@@ -168,10 +168,21 @@ namespace OpenH2.Core.Tags.Scenario
             public uint ValueB { get; set; }
 
             [ReferenceArray(40)]
-            public float[] Obj40s { get; set; }
+            public Obj40[] Obj40s { get; set; }
 
             [ReferenceArray(48)]
             public Obj48[] Obj48s { get; set; }
+
+            [FixedLength(32)]
+            public class Obj40
+            {
+                [PrimitiveValue(0)]
+                public Vector3 Floats { get; set; }
+
+
+                [PrimitiveValue(20)]
+                public Vector3 Floats { get; set; }
+            }
 
             [FixedLength(136)]
             [DebuggerDisplay("{Description}")]
