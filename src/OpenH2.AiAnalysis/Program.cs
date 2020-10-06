@@ -43,7 +43,13 @@ namespace OpenH2.AiAnalysis
 
             Write();
 
-            for(var i = 0; i < map.Scenario.VehicleDefinitions.Length; i++)
+            for (var i = 0; i < map.Scenario.VehicleDefinitions.Length; i++)
+            {
+                map.TryGetTag(map.Scenario.WeaponDefinitions[i].Weapon, out var weap);
+                Write($"WEAP {i}: {weap?.Name ?? "INVALID"}");
+            }
+
+            for (var i = 0; i < map.Scenario.VehicleDefinitions.Length; i++)
             {
                 var tag = map.GetTag(map.Scenario.VehicleDefinitions[i].Vehicle);
                 Write($"VEHI {i}: {tag.Name}");
@@ -55,13 +61,25 @@ namespace OpenH2.AiAnalysis
                 Write($"CHAR {i}: {tag.Name}");
             }
 
-            var slProps = typeof(ScenarioTag.AiSquadDefinition.StartingLocation).GetProperties();
+            var slProps = typeof(ScenarioTag.AiSquadDefinition.StartingLocation).GetProperties()
+                .Where(p => p.PropertyType.IsPrimitive && p.PropertyType != typeof(float));
+            var sqProps = typeof(ScenarioTag.AiSquadDefinition).GetProperties()
+                .Where(p => p.PropertyType.IsPrimitive && p.PropertyType != typeof(float));
 
-            foreach(var squad in map.Scenario.AiSquadDefinitions)
+            foreach (var squad in map.Scenario.AiSquadDefinitions)
             {
-                Write($"Squad: {squad.Description}, A:{squad.ValueA}, B:{squad.ValueB}, C:{squad.ValueC}, D:{squad.ValueD}, D2:{squad.ValueD2}, Vehi:{squad.VehicleIndex}, F:{squad.ValueF}, G:{squad.ValueG}");
+                var sqsb = new StringBuilder();
 
-                foreach(var sl in squad.StartingLocations)
+                sqsb.Append($"Squad: {squad.Description}");
+
+                foreach (var p in sqProps)
+                {
+                    sqsb.Append($", {p.Name}:{p.GetValue(squad)}");
+                }
+
+                Write(sqsb.ToString());
+
+                foreach (var sl in squad.StartingLocations)
                 {
                     var sb = new StringBuilder();
 
@@ -69,7 +87,7 @@ namespace OpenH2.AiAnalysis
 
                     foreach (var p in slProps)
                     {
-                        sb.Append($",{p.Name}:{p.GetValue(sl)}");
+                        sb.Append($", {p.Name}:{p.GetValue(sl)}");
                     }
 
                     Write(sb.ToString());
@@ -79,20 +97,23 @@ namespace OpenH2.AiAnalysis
             WriteInfo(map, s => s.ValueA);
             WriteInfo(map, s => s.ValueB);
             WriteInfo(map, s => s.ValueC);
-            WriteInfo(map, s => s.ValueD);
-            WriteInfo(map, s => s.ValueD2);
-            WriteInfo(map, s => s.VehicleIndex);
+            WriteInfo(map, s => s.ValueC2);
+            WriteInfo(map, s => s.ValueC3);
+            WriteInfo(map, s => s.SpawnMin);
+            WriteInfo(map, s => s.SpawnMax);
+            WriteInfo(map, s => s.ValueD3);
+            WriteInfo(map, s => s.ValueD4);
             WriteInfo(map, s => s.ValueF);
             WriteInfo(map, s => s.ValueG);
+            WriteInfo(map, s => s.ValueI);
+            WriteInfo(map, s => s.ValueJ);
 
             var locs = map.Scenario.AiSquadDefinitions.SelectMany(d => d.StartingLocations);
             WriteInfo(locs, l => l.ZeroOrMax);
             WriteInfo(locs, l => l.Zero);
-            WriteInfo(locs, l => l.Index0);
-            WriteInfo(locs, l => l.Index1);
             WriteInfo(locs, l => l.Flags);
             WriteInfo(locs, l => l.Zero2);
-            WriteInfo(locs, l => l.Index4);
+            WriteInfo(locs, l => l.CharacterIndex);
             WriteInfo(locs, l => l.Index5);
             WriteInfo(locs, l => l.Index6);
             WriteInfo(locs, l => l.Zero3);
@@ -100,12 +121,8 @@ namespace OpenH2.AiAnalysis
             WriteInfo(locs, l => l.State);
             WriteInfo(locs, l => l.Zero4Sometimes);
             WriteInfo(locs, l => l.Zero5Sometimes);
-            WriteInfo(locs, l => l.Index12);
-            WriteInfo(locs, l => l.Index13);
             WriteInfo(locs, l => l.Index14);
             WriteInfo(locs, l => l.Index15);
-            WriteInfo(locs, l => l.Zero6);
-            WriteInfo(locs, l => l.Index17);
             WriteInfo(locs, l => l.MaxValue);
             WriteInfo(locs, l => l.Zero7Sometimes);
 

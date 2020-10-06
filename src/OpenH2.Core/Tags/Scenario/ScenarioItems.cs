@@ -40,7 +40,7 @@ namespace OpenH2.Core.Tags.Scenario
         public class WeaponDefinition
         {
             [PrimitiveValue(4)]
-            public TagRef<WeaponTag> WeaponId { get; set; }
+            public TagRef<WeaponTag> Weapon { get; set; }
         }
 
         [FixedLength(144)]

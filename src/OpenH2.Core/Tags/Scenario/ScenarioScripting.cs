@@ -41,20 +41,44 @@ namespace OpenH2.Core.Tags.Scenario
             [PrimitiveValue(38)]
             public ushort SquadGroupIndex { get; set; }
 
+            [PrimitiveValue(40)]
+            public ushort ValueC2 { get; set; }
+
+            [PrimitiveValue(42)]
+            public ushort ValueC3 { get; set; }
+
             [PrimitiveValue(44)]
-            public ushort ValueD { get; set; }
+            public ushort SpawnMin { get; set; }
 
             [PrimitiveValue(46)]
-            public ushort ValueD2 { get; set; }
+            public ushort SpawnMax { get; set; }
+
+            [PrimitiveValue(48)]
+            public ushort ValueD3{ get; set; }
+
+            [PrimitiveValue(50)]
+            public ushort ValueD4 { get; set; }
 
             [PrimitiveValue(52)]
             public ushort VehicleIndex { get; set; }
 
-            [PrimitiveValue(60)]
+            [PrimitiveValue(54)]
+            public ushort CharacterIndex { get; set; }
+
+            [PrimitiveValue(56)]
             public ushort ValueF { get; set; }
 
-            [PrimitiveValue(64)]
+            [PrimitiveValue(58)]
             public ushort ValueG { get; set; }
+
+            [PrimitiveValue(60)]
+            public ushort WeaponIndex { get; set; }
+
+            [PrimitiveValue(62)]
+            public ushort ValueI { get; set; }
+
+            [PrimitiveValue(64)]
+            public ushort ValueJ { get; set; }
 
             [PrimitiveValue(66)]
             public ushort AiOrderIndex { get; set; }
@@ -87,10 +111,7 @@ namespace OpenH2.Core.Tags.Scenario
                 public float Rotation { get; set; }
 
                 [PrimitiveValue(24)]
-                public ushort Index0 { get; set; }
-
-                [PrimitiveValue(26)]
-                public ushort Index1 { get; set; }
+                public float Float1 { get; set; }
 
                 [PrimitiveValue(28)]
                 public ushort Flags { get; set; }
@@ -99,7 +120,7 @@ namespace OpenH2.Core.Tags.Scenario
                 public ushort Zero2 { get; set; }
 
                 [PrimitiveValue(32)]
-                public ushort Index4 { get; set; }
+                public ushort CharacterIndex { get; set; }
 
                 [PrimitiveValue(34)]
                 public ushort Index5 { get; set; }
@@ -122,11 +143,8 @@ namespace OpenH2.Core.Tags.Scenario
                 [PrimitiveValue(46)]
                 public ushort Zero5Sometimes { get; set; }
 
-                [PrimitiveValue(48)]
-                public ushort Index12 { get; set; }
-
-                [PrimitiveValue(50)]
-                public ushort Index13 { get; set; }
+                [InternedString(48)]
+                public string Variant { get; set; }
 
                 [PrimitiveValue(52)]
                 public ushort Index14 { get; set; }
@@ -135,10 +153,7 @@ namespace OpenH2.Core.Tags.Scenario
                 public ushort Index15 { get; set; }
 
                 [PrimitiveValue(56)]
-                public ushort Zero6 { get; set; }
-
-                [PrimitiveValue(58)]
-                public ushort Index17 { get; set; }
+                public float Float2 { get; set; }
 
                 [PrimitiveValue(60)]
                 public ushort MaxValue { get; set; }
@@ -177,11 +192,28 @@ namespace OpenH2.Core.Tags.Scenario
             public class Obj40
             {
                 [PrimitiveValue(0)]
-                public Vector3 Floats { get; set; }
+                public Vector3 FloatsA { get; set; }
 
+                [PrimitiveValue(12)]
+                public ushort ValueA { get; set; }
+
+                [PrimitiveValue(14)]
+                public ushort ValueB { get; set; }
+
+                [PrimitiveValue(16)]
+                public ushort ValueC { get; set; }
+
+                [PrimitiveValue(18)]
+                public ushort ValueD { get; set; }
 
                 [PrimitiveValue(20)]
-                public Vector3 Floats { get; set; }
+                public ushort ValueE { get; set; }
+
+                [PrimitiveValue(22)]
+                public ushort ValueF { get; set; }
+
+                [PrimitiveValue(24)]
+                public Vector2 FloatsB { get; set; }
             }
 
             [FixedLength(136)]
