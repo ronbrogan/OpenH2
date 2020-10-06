@@ -123,7 +123,7 @@ namespace OpenH2.Core.Tags.Scenario
                 public ushort CharacterIndex { get; set; }
 
                 [PrimitiveValue(34)]
-                public ushort Index5 { get; set; }
+                public ushort WeaponIndex { get; set; }
 
                 [PrimitiveValue(36)]
                 public ushort Index6 { get; set; }

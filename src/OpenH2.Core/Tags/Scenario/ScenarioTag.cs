@@ -86,12 +86,29 @@ namespace OpenH2.Core.Tags.Scenario
         [ReferenceArray(816)] public BlocDefinition[] BlocDefinitions { get; set; }
         [ReferenceArray(832)] public AtmosphericFogDefinition[] AtmosphericFogDefinitions { get; set; }
         [ReferenceArray(840)] public FogDefinition[] FogDefinitions { get; set; }
+        [ReferenceArray(848)] public CreatureDefinition[] CreatureDefinitions { get; set; }
         [ReferenceArray(888)] public DecrDefinition[] DecrDefinitions { get; set; }
         [ReferenceArray(904)] public BspLightingInfo[] BspLightingInfos { get; set; }
         [ReferenceArray(920)] public LevelInfo[] LevelInfos { get; set; }
         [ReferenceArray(944)] public MdlgDefinition[] MdlgDefinitions { get; set; }
         //[ReferenceArray(984)] public uint[] FreeSpace { get; set; }
 
+        [FixedLength(132)]
+        public class CreatureDefinition
+        {
+            [ReferenceArray(12)]
+            public Obj12[] Obj12s { get; set; }
+
+            [PrimitiveValue(44)]
+            public TagRef Creature { get; set; }
+
+            [FixedLength(28)]
+            public class Obj12
+            {
+                [PrimitiveArray(0, 7)]
+                public float[] Floats { get; set; }
+            }
+        }
 
         [FixedLength(36)]
         public class WellKnownItem

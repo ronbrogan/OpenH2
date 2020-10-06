@@ -1,6 +1,7 @@
 ﻿using Microsoft.VisualBasic.CompilerServices;
 using OpenH2.Core.Factories;
 using OpenH2.Core.Representations;
+using OpenH2.Core.Tags;
 using OpenH2.Core.Tags.Scenario;
 using System;
 using System.Collections.Generic;
@@ -22,7 +23,7 @@ namespace OpenH2.AiAnalysis
 
         static void Main(string[] args)
         {
-            var mapPath = @"D:\H2vMaps\03a_oldmombasa.map";
+            var mapPath = @"D:\H2vMaps\08b_deltacontrol.map";
 
             var factory = new MapFactory(Path.GetDirectoryName(mapPath), NullMaterialFactory.Instance);
 
@@ -43,7 +44,13 @@ namespace OpenH2.AiAnalysis
 
             Write();
 
-            for (var i = 0; i < map.Scenario.VehicleDefinitions.Length; i++)
+            for (var i = 0; i < map.Scenario.CreatureDefinitions.Length; i++)
+            {
+                map.TryGetTag<BaseTag>(map.Scenario.CreatureDefinitions[i].Creature, out var crea);
+                Write($"CREA {i}: {crea?.Name ?? "INVALID"}");
+            }
+
+            for (var i = 0; i < map.Scenario.WeaponDefinitions.Length; i++)
             {
                 map.TryGetTag(map.Scenario.WeaponDefinitions[i].Weapon, out var weap);
                 Write($"WEAP {i}: {weap?.Name ?? "INVALID"}");
@@ -57,8 +64,8 @@ namespace OpenH2.AiAnalysis
 
             for (var i = 0; i < map.Scenario.CharacterDefinitions.Length; i++)
             {
-                var tag = map.GetTag(map.Scenario.CharacterDefinitions[i].CharacterReference);
-                Write($"CHAR {i}: {tag.Name}");
+                map.TryGetTag(map.Scenario.CharacterDefinitions[i].CharacterReference, out var tag);
+                Write($"CHAR {i}: {tag?.Name ?? "INVALID" }");
             }
 
             var slProps = typeof(ScenarioTag.AiSquadDefinition.StartingLocation).GetProperties()
@@ -99,8 +106,6 @@ namespace OpenH2.AiAnalysis
             WriteInfo(map, s => s.ValueC);
             WriteInfo(map, s => s.ValueC2);
             WriteInfo(map, s => s.ValueC3);
-            WriteInfo(map, s => s.SpawnMin);
-            WriteInfo(map, s => s.SpawnMax);
             WriteInfo(map, s => s.ValueD3);
             WriteInfo(map, s => s.ValueD4);
             WriteInfo(map, s => s.ValueF);
@@ -113,8 +118,7 @@ namespace OpenH2.AiAnalysis
             WriteInfo(locs, l => l.Zero);
             WriteInfo(locs, l => l.Flags);
             WriteInfo(locs, l => l.Zero2);
-            WriteInfo(locs, l => l.CharacterIndex);
-            WriteInfo(locs, l => l.Index5);
+            WriteInfo(locs, l => l.WeaponIndex);
             WriteInfo(locs, l => l.Index6);
             WriteInfo(locs, l => l.Zero3);
             WriteInfo(locs, l => l.Index8);
