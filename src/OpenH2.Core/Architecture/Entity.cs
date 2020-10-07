@@ -7,6 +7,7 @@ namespace OpenH2.Core.Architecture
     public abstract class Entity
     {
         public Guid Id { get; private set; }
+        public string? FriendlyName { get; set; }
         protected Component[] Components;
 
         public Entity()

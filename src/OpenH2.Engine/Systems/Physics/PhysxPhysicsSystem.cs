@@ -312,7 +312,7 @@ namespace OpenH2.Engine.Systems
             }
 
             dynamic.UserData = component;
-            dynamic.Name = component.Parent.Id.ToString();
+            dynamic.Name = component.Parent.FriendlyName ?? component.Parent.Id.ToString();
 
             AddCollider(dynamic, component.Collider);
 

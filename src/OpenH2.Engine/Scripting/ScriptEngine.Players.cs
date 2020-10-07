@@ -1,5 +1,7 @@
 ﻿using OpenH2.Core.GameObjects;
 using OpenH2.Core.Scripting;
+using OpenH2.Engine.Entities;
+using System.Linq;
 
 namespace OpenH2.Engine.Scripting
 {
@@ -139,7 +141,9 @@ namespace OpenH2.Engine.Scripting
         /// <summary>returns a list of the players</summary>
         public GameObjectList players()
         {
-            return new GameObjectList(new IGameObject[] { null });
+            var players = this.scene.Entities.Values.Where(e => e is Player).Cast<IGameObject>();
+
+            return new GameObjectList(players.ToArray());
         }
     }
 }

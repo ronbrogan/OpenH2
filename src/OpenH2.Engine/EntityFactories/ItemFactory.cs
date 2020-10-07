@@ -59,6 +59,8 @@ namespace OpenH2.Engine.EntityFactories
                     continue;
 
                 var entity = new Item();
+                entity.FriendlyName = tag.Name;
+
                 var components = new List<Component>();
 
                 components.Add(new RenderModelComponent(entity, new Model<BitmapTag>
@@ -95,6 +97,7 @@ namespace OpenH2.Engine.EntityFactories
                 }
 
                 var entity = new Vehicle();
+                entity.FriendlyName = vehi.Name;
                 var xform = new TransformComponent(entity, instance.Position, QuaternionExtensions.FromH2vOrientation(instance.Orientation));
                 entities.Add(CreateFromVehicleTag(entity, map, xform, vehi));
             }
@@ -120,6 +123,7 @@ namespace OpenH2.Engine.EntityFactories
 
         private static Entity CreateFromVehicleTag(Vehicle item, H2vMap map, TransformComponent xform, VehicleTag vehi)
         {
+            item.FriendlyName = vehi.Name;
             item.SetComponents(xform,
                 PhysicsComponentFactory.CreateDynamicRigidBody(item, xform, map, vehi.Hlmt),
                 new RenderModelComponent(item, new Model<BitmapTag>

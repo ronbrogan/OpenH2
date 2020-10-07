@@ -274,15 +274,19 @@ namespace OpenH2.Engine.Scripting
                 return false;
 
             var entityForward = Vector3.Transform(EngineGlobals.Forward, entity.Orientation);
-            var entityHeading = MathF.Atan2(entityForward.Z, entityForward.X);
+            var flagForward = point - entity.Position;
 
-            var flagForward = entity.Position - point;
-            var flagHeading = MathF.Atan2(flagForward.Z, flagForward.X);
+            var entityHeading = MathF.Atan2(entityForward.Y, entityForward.X);
+            var flagHeading = MathF.Atan2(flagForward.Y, flagForward.X);
+
+            var entityPitch = MathF.Atan2(entityForward.Z, entityForward.X);
+            var flagPitch = MathF.Atan2(flagForward.Z, flagForward.X);
 
             var toleranceRadians = (degrees * MathF.PI) / 180f;
-            var delta = MathF.Abs(flagHeading - entityHeading);
+            var headingDelta = MathF.Abs(flagHeading - entityHeading);
+            var pitchDelta = MathF.Abs(flagPitch - entityPitch);
 
-            return delta < toleranceRadians;
+            return headingDelta < toleranceRadians && pitchDelta < toleranceRadians;
         }
 
         /// <summary>returns true if any of the specified units are looking within the specified number of degrees of the flag.</summary>

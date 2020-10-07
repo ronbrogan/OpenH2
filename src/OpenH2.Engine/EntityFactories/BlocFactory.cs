@@ -18,7 +18,9 @@ namespace OpenH2.Engine.EntityFactories
             var scenery = new Bloc();
 
             var bloc = scenario.BlocDefinitions[instance.BlocDefinitionIndex].Bloc;
-            map.TryGetTag(bloc, out var tag);
+            var tag = map.GetTag(bloc);
+
+            scenery.FriendlyName = tag.Name;
 
             var comp = new RenderModelComponent(scenery, new Model<BitmapTag>
             {

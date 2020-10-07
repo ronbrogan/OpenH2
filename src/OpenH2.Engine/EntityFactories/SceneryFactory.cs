@@ -77,7 +77,9 @@ namespace OpenH2.Engine.EntityFactories
             var scenery = new Scenery();
 
             var id = scenario.SceneryDefinitions[instance.SceneryDefinitionIndex].Scenery;
-            map.TryGetTag(id, out var tag);
+            var tag = map.GetTag(id);
+
+            scenery.FriendlyName = tag.Name;
 
             var comp = new RenderModelComponent(scenery, new Model<BitmapTag>
             {

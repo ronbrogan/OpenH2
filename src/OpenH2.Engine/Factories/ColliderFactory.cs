@@ -12,7 +12,7 @@ namespace OpenH2.Engine.Factories
 {
     public static class ColliderFactory
     {
-        private static ICollider DefaultCollider = new BoxCollider(IdentityTransform.Instance(), new Vector3(0.5f));
+        private static ICollider DefaultCollider = new BoxCollider(IdentityTransform.Instance(), new Vector3(0.1f));
 
         public static ICollider GetConvexColliderForHlmt(H2vMap map, HaloModelTag hlmt, int damageLevel = 0)
         {

@@ -17,6 +17,7 @@ namespace OpenH2.Engine.EntityFactories
         public static Terrain FromBspData(H2vMap map, BspTag tag)
         {
             var terrain = new Terrain();
+            terrain.FriendlyName = tag.Name;
 
             var meshes = new List<ModelMesh>();
 

@@ -15,6 +15,7 @@ namespace OpenH2.Engine.EntityFactories
         public static TriggerVolume FromScenarioTriggerVolume(ScenarioTag tag, ScenarioTag.TriggerVolume tvDefinition)
         {
             var ent = new TriggerVolume();
+            ent.FriendlyName = tvDefinition.Description;
 
             var orient = QuaternionExtensions.FromH2vOrientation(tvDefinition.Orientation);
 

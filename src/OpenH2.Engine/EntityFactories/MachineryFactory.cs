@@ -27,6 +27,8 @@ namespace OpenH2.Engine.EntityFactories
             var id = scenario.MachineryDefinitions[instance.MachineryDefinitionIndex].Machinery;
             var tag = map.GetTag(id);
 
+            scenery.FriendlyName = tag.Name;
+
             var orientation = QuaternionExtensions.FromH2vOrientation(instance.Orientation);
             var xform = new TransformComponent(scenery, instance.Position, orientation);
 

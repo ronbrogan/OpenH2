@@ -1,4 +1,5 @@
 ﻿using OpenH2.Core.Architecture;
+using OpenH2.Core.GameObjects;
 using OpenH2.Engine.Components;
 using OpenH2.Engine.Systems.Movement;
 using OpenH2.Foundation.Physics;
@@ -7,10 +8,8 @@ using System.Numerics;
 
 namespace OpenH2.Engine.Entities
 {
-    public class Player : Entity
+    public class Player : GameObjectEntity
     {
-        public ITransform Transform { get; }
-
         public Player(bool useDynamicController)
         {
             var xform = new TransformComponent(this, Quaternion.Identity);
