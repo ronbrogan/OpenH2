@@ -158,7 +158,7 @@ namespace OpenH2.ModelDumper
                     continue;
                 }
 
-                if (!scene.TryGetTag(mach.PhysicalModel, out var hlmt))
+                if (!scene.TryGetTag(mach.Model, out var hlmt))
                 {
                     continue;
                 }

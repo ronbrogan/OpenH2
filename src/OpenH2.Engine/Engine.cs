@@ -2,19 +2,12 @@
 using OpenH2.Core.Configuration;
 using OpenH2.Core.Extensions;
 using OpenH2.Core.Factories;
-using OpenH2.Core.Representations;
-using OpenH2.Core.Tags.Scenario;
 using OpenH2.Engine.Components;
-using OpenH2.Engine.Components.Globals;
 using OpenH2.Engine.Entities;
-using OpenH2.Engine.EntityFactories;
-using OpenH2.Engine.Systems;
 using OpenH2.Foundation;
 using OpenH2.Foundation.Engine;
-using OpenH2.Physics.Core;
 using OpenH2.Rendering.Abstractions;
 using OpenH2.Rendering.OpenGL;
-using OpenTK.Graphics.ES30;
 using OpenTK.Windowing.Desktop;
 using System;
 using System.Diagnostics;
@@ -97,13 +90,13 @@ namespace OpenH2.Engine
             watch.Stop();
             Console.WriteLine($"Loading map took {watch.ElapsedMilliseconds / 1000f} seconds");
 
-            scene.AddEntity(camera);
+            //scene.AddEntity(camera);
 
-            //var player = new Player(true);
-            //player.Transform.Position = map.Scenario.PlayerSpawnMarkers[0].Position;
-            //player.Transform.UpdateDerivedData();
-            //
-            //scene.AddEntity(player);
+            var player = new Player(true);
+            player.Transform.Position = map.Scenario.PlayerSpawnMarkers[0].Position;
+            player.Transform.UpdateDerivedData();
+            
+            scene.AddEntity(player);
 
             world.LoadScene(scene);
         }

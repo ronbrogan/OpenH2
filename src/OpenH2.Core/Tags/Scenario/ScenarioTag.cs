@@ -90,7 +90,7 @@ namespace OpenH2.Core.Tags.Scenario
         [ReferenceArray(888)] public DecrDefinition[] DecrDefinitions { get; set; }
         [ReferenceArray(904)] public BspLightingInfo[] BspLightingInfos { get; set; }
         [ReferenceArray(920)] public LevelInfo[] LevelInfos { get; set; }
-        [ReferenceArray(944)] public MdlgDefinition[] MdlgDefinitions { get; set; }
+        [ReferenceArray(944)] public MissionDialogMap[] MissionDialogMapping { get; set; }
         //[ReferenceArray(984)] public uint[] FreeSpace { get; set; }
 
         [FixedLength(132)]
@@ -627,10 +627,10 @@ namespace OpenH2.Core.Tags.Scenario
         }
 
         [FixedLength(8)]
-        public class MdlgDefinition
+        public class MissionDialogMap
         {
             [PrimitiveValue(4)]
-            public TagRef MdlgRef { get; set; }
+            public TagRef<DialogMapTag> MdlgRef { get; set; }
         }
     }
 }

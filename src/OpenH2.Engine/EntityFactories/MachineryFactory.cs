@@ -25,33 +25,30 @@ namespace OpenH2.Engine.EntityFactories
             }
 
             var id = scenario.MachineryDefinitions[instance.MachineryDefinitionIndex].Machinery;
-            map.TryGetTag(id, out var tag);
-
-            if(tag.PhysicalModel == uint.MaxValue)
-            {
-                Console.WriteLine($"No HLMT specified in MACH:{tag.Name}");
-                return scenery;
-            }
-
-            var comp = new RenderModelComponent(scenery, new Model<BitmapTag>
-            {
-                Note = $"[{tag.Id}] {tag.Name}",
-                Meshes = MeshFactory.GetRenderModel(map, tag.PhysicalModel),
-                Flags = ModelFlags.Diffuse | ModelFlags.CastsShadows | ModelFlags.ReceivesShadows
-            });
+            var tag = map.GetTag(id);
 
             var orientation = QuaternionExtensions.FromH2vOrientation(instance.Orientation);
             var xform = new TransformComponent(scenery, instance.Position, orientation);
 
-            var components = new List<Component>() { comp, xform };
+            var components = new List<Component>();
 
-            var body = PhysicsComponentFactory.CreateKinematicRigidBody(scenery, xform, map, tag.PhysicalModel);
-            if(body != null)
+            if (tag.Model != uint.MaxValue)
             {
-                components.Add(body);
+                components.Add(new RenderModelComponent(scenery, new Model<BitmapTag>
+                {
+                    Note = $"[{tag.Id}] {tag.Name}",
+                    Meshes = MeshFactory.GetRenderModel(map, tag.Model),
+                    Flags = ModelFlags.Diffuse | ModelFlags.CastsShadows | ModelFlags.ReceivesShadows
+                }));
+
+                var body = PhysicsComponentFactory.CreateKinematicRigidBody(scenery, xform, map, tag.Model);
+                if (body != null)
+                {
+                    components.Add(body);
+                }
             }
 
-            scenery.SetComponents(components);
+            scenery.SetComponents(xform, components.ToArray());
 
             return scenery;
         }
