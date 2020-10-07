@@ -9,7 +9,7 @@ using OpenH2.Rendering.OpenGL;
 using OpenH2.Rendering.Shaders;
 using System.Numerics;
 using OpenH2.Foundation;
-using PixelFormat = OpenToolkit.Graphics.OpenGL.PixelFormat;
+using PixelFormat = OpenTK.Graphics.OpenGL.PixelFormat;
 using System.Runtime.InteropServices;
 using Avalonia.Media.Imaging;
 using Avalonia;
@@ -60,7 +60,7 @@ namespace OpenH2.ScenarioExplorer
                 {
                     API = ContextAPI.OpenGL,
                     AutoLoadBindings = true,
-                    Size = new OpenToolkit.Mathematics.Vector2i(bitm.TextureInfos[0].Width, bitm.TextureInfos[0].Height),
+                    Size = new OpenTK.Mathematics.Vector2i(bitm.TextureInfos[0].Width, bitm.TextureInfos[0].Height),
                     Title = "OpenH2",
                     Flags = ContextFlags.Debug | ContextFlags.Offscreen,
                     APIVersion = new Version(4, 0)

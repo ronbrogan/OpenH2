@@ -50,9 +50,9 @@ namespace OpenH2.TextureDumper
                 Console.WriteLine($"Writing {writeName} to {writePath}");
 
                 // Decompress and synthesize texture headers
-                for (var i = 0; i < bitmap.LevelsOfDetail.Length; i++)
+                for (var i = 0; i < bitmap.TextureInfos[0].LevelsOfDetail.Length; i++)
                 {
-                    var lod = bitmap.LevelsOfDetail[i];
+                    var lod = bitmap.TextureInfos[0].LevelsOfDetail[i];
 
                     if (lod.Data.IsEmpty)
                         continue;
@@ -73,11 +73,11 @@ namespace OpenH2.TextureDumper
         public static void WriteTextureHeader(BitmapTag bitm, Stream destination)
         {
             var ddsHeader = new DdsHeader(
-                bitm.Format,
+                bitm.TextureInfos[0].Format,
                 bitm.TextureType,
-                bitm.Width,
-                bitm.Height,
-                bitm.Depth,
+                bitm.TextureInfos[0].Width,
+                bitm.TextureInfos[0].Height,
+                bitm.TextureInfos[0].Depth,
                 bitm.MipMapCount,
                 null,
                 null);

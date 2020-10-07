@@ -7,6 +7,7 @@ using OpenH2.Rendering.Shaders;
 using OpenTK.Graphics.OpenGL;
 using OpenTK.Windowing.Common.Input;
 using OpenTK.Windowing.Desktop;
+using OpenTK.Windowing.GraphicsLibraryFramework;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -51,7 +52,7 @@ namespace OpenH2.TextureViewer
 
             using (var map = new FileStream(mapPath, FileMode.Open, FileAccess.Read, FileShare.Read))
             {
-                var factory = new MapFactory(Path.GetDirectoryName(mapPath), new MaterialFactory(Environment.CurrentDirectory));
+                var factory = new MapFactory(Path.GetDirectoryName(mapPath), new MaterialFactory(Path.Combine(Environment.CurrentDirectory, "Configs")));
                 scene = factory.FromFile(map);
             }
 
@@ -92,12 +93,12 @@ namespace OpenH2.TextureViewer
         private static void Update(double time)
         {
             // read button down, increment CurrentBitmap
-            keyboardState = window.KeyboardState;
-            if (KeyPress(Key.Left))
+            keyboardState = window.KeyboardState.GetSnapshot();
+            if (KeyPress(Keys.Left))
             {
                 SetNextBitmap(-1);
             }
-            if (KeyPress(Key.Right))
+            if (KeyPress(Keys.Right))
             {
                 SetNextBitmap(1);
             }
@@ -115,7 +116,7 @@ namespace OpenH2.TextureViewer
             GL.BindTexture(TextureTarget.Texture2D, handle);
         }
 
-        public static bool KeyPress(Key key)
+        public static bool KeyPress(Keys key)
         {
             return (keyboardState[key] && (keyboardState[key] != lastKeyboardState[key]));
         }
@@ -140,9 +141,9 @@ namespace OpenH2.TextureViewer
 
                 candidate = Bitmaps[CurrentBitmap];
             }
-            while (candidate.LevelsOfDetail[0].Data.Length == 0);
+            while (candidate.TextureInfos[0].LevelsOfDetail[0].Data.Length == 0);
 
-            Console.WriteLine("[" + CurrentBitmap + "] @ " + candidate.ID + ", " + candidate.Name);
+            Console.WriteLine("[" + CurrentBitmap + "] @ " + candidate.TextureInfos[0].ID + ", " + candidate.Name);
         }
 
         private static void Render(double time)
