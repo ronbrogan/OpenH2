@@ -4,7 +4,7 @@ using System;
 using System.Diagnostics;
 using System.IO;
 using System.Text;
-using OpenToolkit.Graphics.OpenGL;
+using OpenTK.Graphics.OpenGL;
 using OpenH2.Rendering.OpenGL;
 using OpenH2.Rendering.Shaders;
 using System.Numerics;
@@ -13,8 +13,8 @@ using PixelFormat = OpenToolkit.Graphics.OpenGL.PixelFormat;
 using System.Runtime.InteropServices;
 using Avalonia.Media.Imaging;
 using Avalonia;
-using OpenToolkit.Windowing.Common;
-using OpenToolkit.Windowing.Desktop;
+using OpenTK.Windowing.Common;
+using OpenTK.Windowing.Desktop;
 
 namespace OpenH2.ScenarioExplorer
 {

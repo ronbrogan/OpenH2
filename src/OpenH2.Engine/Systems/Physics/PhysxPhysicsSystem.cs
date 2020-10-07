@@ -10,7 +10,7 @@ using OpenH2.Physics.Core;
 using OpenH2.Physics.Proxying;
 using OpenH2.Physx.Extensions;
 using OpenH2.Physx.Proxies;
-using OpenToolkit.Windowing.Common.Input;
+using OpenTK.Windowing.GraphicsLibraryFramework;
 using PhysX;
 using PhysX.VisualDebugger;
 using System;
@@ -18,6 +18,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Numerics;
+using ErrorCode = PhysX.ErrorCode;
 using PxFoundation = PhysX.Foundation;
 using PxPhysics = PhysX.Physics;
 using PxScene = PhysX.Scene;
@@ -447,12 +448,12 @@ namespace OpenH2.Engine.Systems
             if (input == null)
                 input = this.world.GetGlobalResource<InputStore>();
 
-            if (input.DownKeys.IsKeyDown(Key.P) && input.DownKeys.IsKeyDown(Key.ShiftRight))
+            if (input.IsDown(Keys.P) && input.IsDown(Keys.RightShift))
                 StepMode = !StepMode;
 
             if (StepMode)
             {
-                ShouldStep = input.DownKeys.IsKeyDown(Key.P);
+                ShouldStep = input.IsDown(Keys.P);
 
                 return ShouldStep;
             }

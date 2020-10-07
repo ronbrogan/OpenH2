@@ -1,7 +1,7 @@
 ﻿using OpenH2.Core.Architecture;
 using OpenH2.Engine.Stores;
-using OpenToolkit.Windowing.Common.Input;
-using OpenToolkit.Windowing.Desktop;
+using OpenTK.Windowing.Common.Input;
+using OpenTK.Windowing.Desktop;
 
 namespace OpenH2.Engine.Systems
 {

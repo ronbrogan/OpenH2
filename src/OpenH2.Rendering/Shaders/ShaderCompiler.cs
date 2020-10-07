@@ -1,6 +1,6 @@
 ﻿using System;
 using System.IO;
-using OpenToolkit.Graphics.OpenGL;
+using OpenTK.Graphics.OpenGL;
 
 namespace OpenH2.Rendering.Shaders
 {

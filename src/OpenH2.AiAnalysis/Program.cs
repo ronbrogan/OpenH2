@@ -23,7 +23,7 @@ namespace OpenH2.AiAnalysis
 
         static void Main(string[] args)
         {
-            var mapPath = @"D:\H2vMaps\08b_deltacontrol.map";
+            var mapPath = @"D:\H2vMaps\07a_highcharity.map";
 
             var factory = new MapFactory(Path.GetDirectoryName(mapPath), NullMaterialFactory.Instance);
 
@@ -44,10 +44,10 @@ namespace OpenH2.AiAnalysis
 
             Write();
 
-            for (var i = 0; i < map.Scenario.CreatureDefinitions.Length; i++)
+            for (var i = 0; i < map.Scenario.EquipmentDefinitions.Length; i++)
             {
-                map.TryGetTag<BaseTag>(map.Scenario.CreatureDefinitions[i].Creature, out var crea);
-                Write($"CREA {i}: {crea?.Name ?? "INVALID"}");
+                map.TryGetTag<BaseTag>(map.Scenario.EquipmentDefinitions[i].Equipment, out var equip);
+                Write($"EQIP {i}: {equip?.Name ?? "INVALID"}");
             }
 
             for (var i = 0; i < map.Scenario.WeaponDefinitions.Length; i++)

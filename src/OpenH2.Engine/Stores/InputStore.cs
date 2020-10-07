@@ -1,4 +1,4 @@
-﻿using OpenToolkit.Windowing.Common.Input;
+﻿using OpenTK.Windowing.GraphicsLibraryFramework;
 using System;
 using System.Linq;
 using System.Numerics;
@@ -11,14 +11,8 @@ namespace OpenH2.Engine.Stores
         public Vector2 MousePos { get; set; }
         public Vector2 MouseDiff { get; set; }
 
-        public KeyboardState DownKeys { get; private set; }
-
-        /// <summary>
-        /// Keys that weren't down last frame, but now are
-        /// </summary>
-        public KeyboardState PressedKeys { get; private set; }
-
-
+        private KeyboardState PreviousKeyState { get; set; }
+        private KeyboardState KeyState { get; set; }
 
         public void SetMouse(MouseState mouse)
         {
@@ -28,28 +22,34 @@ namespace OpenH2.Engine.Stores
             MousePos = currPos;
         }
 
-        private Key[] allKeys = Enum.GetValues(typeof(Key)).Cast<Key>().ToArray();
-
         public void SetKeys(KeyboardState currentDown)
         {
-            var previousDown = this.DownKeys;
-            var pressed = this.PressedKeys;
+            this.PreviousKeyState = this.KeyState;
+            this.KeyState = currentDown.GetSnapshot();
+        }
 
-            foreach(var key in allKeys)
-            {
-                if (key == Key.Unknown)
-                    continue;
+        /// <summary>
+        /// Returns true if the key is down now, but wasn't last frame
+        /// </summary>
+        public bool WasPressed(Keys key)
+        {
+            return this.KeyState.IsKeyDown(key) && !this.PreviousKeyState.IsKeyDown(key);
+        }
 
-                var curr = currentDown.IsKeyDown(key);
-                var prev = previousDown.IsKeyDown(key);
+        /// <summary>
+        /// Returns if the key is currently down
+        /// </summary>
+        public bool IsDown(Keys key)
+        {
+            return this.KeyState.IsKeyDown(key);
+        }
 
-                // TODO: held keys curr && prev
-                
-                pressed.SetKeyState(key, curr && prev == false);
-            }
-
-            this.PressedKeys = pressed;
-            this.DownKeys = currentDown;
+        /// <summary>
+        /// Returns true if the key is down now, and was last frame as well
+        /// </summary>
+        public bool Held(Keys key)
+        {
+            return this.KeyState.IsKeyDown(key) && this.PreviousKeyState.IsKeyDown(key);
         }
     }
 }

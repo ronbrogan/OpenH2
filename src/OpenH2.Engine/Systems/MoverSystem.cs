@@ -4,7 +4,8 @@ using OpenH2.Engine.Components;
 using OpenH2.Engine.Stores;
 using OpenH2.Engine.Systems.Movement;
 using OpenH2.Foundation.Extensions;
-using OpenToolkit.Windowing.Common.Input;
+using OpenTK.Windowing.Common.Input;
+using OpenTK.Windowing.GraphicsLibraryFramework;
 using System;
 using System.Collections.Generic;
 using System.Numerics;
@@ -44,35 +45,33 @@ namespace OpenH2.Engine.Systems
         {
             var speed = 1f;
 
-            var kb = input.DownKeys;
-
-            if (kb[Key.LControl])
+            if (input.IsDown(Keys.LeftControl))
             {
                 speed = 10.0f;
             }
 
             var delta = Vector3.Zero;
 
-            var keyMap = new Dictionary<Key, Action>
+            var keyMap = new Dictionary<Keys, Action>
             {
-                { Key.W, () => delta += new Vector3(speed, 0, 0) },
-                { Key.S, () => delta += new Vector3(-speed, 0, 0) },
-                { Key.A, () => delta += new Vector3(0, -speed, 0) },
-                { Key.D, () => delta += new Vector3(0, speed, 0) },
+                { Keys.W, () => delta += new Vector3(speed, 0, 0) },
+                { Keys.S, () => delta += new Vector3(-speed, 0, 0) },
+                { Keys.A, () => delta += new Vector3(0, -speed, 0) },
+                { Keys.D, () => delta += new Vector3(0, speed, 0) },
                 //{ Key.Space, () => delta += new Vector3(0, 0, speed) },
-                { Key.LShift, () => delta += new Vector3(0, 0, -speed) },
+                { Keys.LeftShift, () => delta += new Vector3(0, 0, -speed) },
             };
 
             // handle down keys
             foreach (var key in keyMap.Keys)
             {
-                if (kb[key])
+                if (input.IsDown(key))
                 {
                     keyMap[key]();
                 }
             }
 
-            if(input.PressedKeys[Key.Space])
+            if(input.WasPressed(Keys.Space))
             {
                 delta += new Vector3(0, 0, speed);
             }

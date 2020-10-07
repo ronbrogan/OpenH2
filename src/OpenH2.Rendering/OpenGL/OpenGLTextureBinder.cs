@@ -1,12 +1,12 @@
 ﻿using OpenH2.Core.Enums.Texture;
 using OpenH2.Rendering.Abstractions;
-using OpenToolkit.Graphics.OpenGL;
+using OpenTK.Graphics.OpenGL;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Drawing.Imaging;
 using System.IO;
-using PixelFormat = OpenToolkit.Graphics.OpenGL.PixelFormat;
+using PixelFormat = OpenTK.Graphics.OpenGL.PixelFormat;
 
 namespace OpenH2.Rendering.OpenGL
 {

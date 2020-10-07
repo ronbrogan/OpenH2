@@ -1,9 +1,9 @@
 ﻿using OpenH2.Foundation.Engine;
 using OpenH2.Rendering.Abstractions;
-using OpenToolkit.Graphics.OpenGL;
-using OpenToolkit.Mathematics;
-using OpenToolkit.Windowing.Common;
-using OpenToolkit.Windowing.Desktop;
+using OpenTK.Graphics.OpenGL;
+using OpenTK.Mathematics;
+using OpenTK.Windowing.Common;
+using OpenTK.Windowing.Desktop;
 using System;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
