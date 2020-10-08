@@ -1,4 +1,4 @@
-﻿using OpenH2.Core.Representations;
+﻿using OpenH2.Core.Maps;
 using OpenH2.Core.Tags;
 using OpenH2.Foundation;
 using OpenH2.Foundation.Physics;

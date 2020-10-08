@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Diagnostics;
 
-namespace OpenH2.Core.Representations
+namespace OpenH2.Core.Maps
 {
     [DebuggerDisplay("{Tag}")]
     public class TagListEntry

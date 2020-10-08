@@ -1,5 +1,5 @@
 ﻿using OpenH2.Core.Offsets;
-using OpenH2.Core.Representations;
+using OpenH2.Core.Maps;
 using OpenH2.Core.Tags;
 using OpenH2.Serialization.Materialization;
 using System;
@@ -104,6 +104,9 @@ namespace OpenH2.Core.Extensions
             while (true)
             {
                 var actualRead = data.Read(stringBytes);
+
+                if (actualRead == 0)
+                    break;
 
                 int foundNull = -1;
 

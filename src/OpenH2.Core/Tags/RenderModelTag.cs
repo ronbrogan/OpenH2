@@ -46,7 +46,7 @@ namespace OpenH2.Core.Tags
         [ReferenceArray(96)]
         public ModelShaderReference[] ModelShaderReferences { get; set; }
 
-        public override void PopulateExternalData(H2vReader sceneReader)
+        public override void PopulateExternalData(H2MapReader sceneReader)
         {
             foreach (var part in Parts)
             {

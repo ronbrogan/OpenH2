@@ -1,7 +1,7 @@
 ﻿using OpenH2.Core.Configuration;
 using OpenH2.Core.Enums.Texture;
 using OpenH2.Core.Extensions;
-using OpenH2.Core.Representations;
+using OpenH2.Core.Maps;
 using OpenH2.Core.Tags;
 using OpenH2.Core.Tags.Common.Models;
 using OpenH2.Foundation;

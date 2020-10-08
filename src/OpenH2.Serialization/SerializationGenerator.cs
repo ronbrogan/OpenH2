@@ -126,6 +126,11 @@ namespace OpenH2.Serialization
 
                 foreach (var attr in attrs)
                 {
+                    if (SymbolEqualityComparer.Default.Equals(attr.AttributeClass, this.SerializableTypeAttribute))
+                    {
+                        return true;
+                    }
+
                     if (SymbolEqualityComparer.Default.Equals(attr.AttributeClass.BaseType, this.SerializableTypeAttribute))
                     {
                         return true;

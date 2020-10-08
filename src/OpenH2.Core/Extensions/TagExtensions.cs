@@ -1,4 +1,4 @@
-﻿using OpenH2.Core.Representations;
+﻿using OpenH2.Core.Maps;
 using OpenH2.Core.Tags;
 using System.Numerics;
 

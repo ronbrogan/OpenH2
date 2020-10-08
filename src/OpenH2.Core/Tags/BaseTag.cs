@@ -1,6 +1,6 @@
 ﻿using OpenH2.Core.Enums;
 using OpenH2.Core.Parsing;
-using OpenH2.Core.Representations;
+using OpenH2.Core.Maps;
 using OpenH2.Serialization.Layout;
 
 namespace OpenH2.Core.Tags
@@ -27,6 +27,6 @@ namespace OpenH2.Core.Tags
             this.Id = id;
         }
 
-        public virtual void PopulateExternalData(H2vReader reader) { }
+        public virtual void PopulateExternalData(H2MapReader reader) { }
     }
 }

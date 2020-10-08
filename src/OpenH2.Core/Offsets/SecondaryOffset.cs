@@ -1,13 +1,13 @@
-﻿using OpenH2.Core.Representations;
+﻿using OpenH2.Core.Maps;
 
 namespace OpenH2.Core.Offsets
 {
     public class SecondaryOffset : IOffset
     {
-        private H2vBaseMap scene;
+        private H2BaseMap scene;
         private int offset;
 
-        public SecondaryOffset(H2vBaseMap scene, int offsetValue)
+        public SecondaryOffset(H2BaseMap scene, int offsetValue)
         {
             this.offset = offsetValue;
             this.scene = scene;

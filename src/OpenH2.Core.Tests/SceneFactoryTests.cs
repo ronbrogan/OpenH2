@@ -5,7 +5,7 @@ using System.Linq;
 using OpenH2.Core.Extensions;
 using Xunit;
 using Xunit.Abstractions;
-using OpenH2.Core.Representations;
+using OpenH2.Core.Maps;
 using System;
 using OpenH2.Core.Tags.Scenario;
 
@@ -39,7 +39,6 @@ namespace OpenH2.Core.Tests
             Assert.NotNull(scene);
             Assert.Equal("ascension", scene.Name);
             Assert.Equal(8, scene.Header.Version);
-            Assert.Equal(16059904, scene.Header.TotalBytes);
             Assert.Equal(14503424, scene.Header.IndexOffset.Value);
             Assert.Equal(245760, scene.Header.SecondaryOffset.OriginalValue);
             Assert.Equal(14503424, scene.PrimaryMagic);

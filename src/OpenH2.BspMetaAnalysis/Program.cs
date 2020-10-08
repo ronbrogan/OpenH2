@@ -6,7 +6,7 @@ using System.Drawing;
 using System;
 using System.Collections.Generic;
 using OpenH2.Core.Tags;
-using OpenH2.Core.Representations;
+using OpenH2.Core.Maps;
 using System.Numerics;
 
 namespace OpenH2.BspMetaAnalysis

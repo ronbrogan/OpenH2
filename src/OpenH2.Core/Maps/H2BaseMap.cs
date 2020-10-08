@@ -1,9 +1,9 @@
 ﻿using OpenH2.Serialization.Materialization;
 using System.Collections.Generic;
 
-namespace OpenH2.Core.Representations
+namespace OpenH2.Core.Maps
 {
-    public abstract class H2vBaseMap : IInternedStringProvider
+    public abstract class H2BaseMap : IInternedStringProvider
     {
         public string Name => this.Header.Name;
 
@@ -11,7 +11,7 @@ namespace OpenH2.Core.Representations
 
         public int SecondaryMagic { get; set; }
 
-        public H2vMapHeader Header { get; set; }
+        public IH2MapHeader Header { get; set; }
 
         public IndexHeader IndexHeader { get; set; }
 

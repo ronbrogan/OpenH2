@@ -4,21 +4,21 @@ using System;
 
 namespace OpenH2.Core.Parsing
 {
-    public class H2vReader : IDisposable
+    public class H2MapReader : IDisposable
     {
         public TrackingReader MapReader { get; }
         public TrackingReader MainMenu { get; }
         public TrackingReader MpShared { get; }
         public TrackingReader SpShared { get; }
 
-        public H2vReader(TrackingReader mainMenu, TrackingReader mpShared, TrackingReader spShared)
+        public H2MapReader(TrackingReader mainMenu, TrackingReader mpShared, TrackingReader spShared)
         {
             this.MainMenu = mainMenu;
             this.MpShared = mpShared;
             this.SpShared = spShared;
         }
 
-        public H2vReader(TrackingReader mapReader, H2vReader baseReader)
+        public H2MapReader(TrackingReader mapReader, H2MapReader baseReader)
         {
             this.MapReader = mapReader;
             this.MainMenu = baseReader.MainMenu;

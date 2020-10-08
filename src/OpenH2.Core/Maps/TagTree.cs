@@ -3,7 +3,7 @@ using OpenH2.Core.Extensions;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace OpenH2.Core.Representations
+namespace OpenH2.Core.Maps
 {
     public class TagTree
     {

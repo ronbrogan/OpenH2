@@ -1,6 +1,6 @@
 ﻿using OpenH2.Core.Offsets;
 using OpenH2.Core.Parsing;
-using OpenH2.Core.Representations;
+using OpenH2.Core.Maps;
 using OpenH2.Core.Tags.Common.Collision;
 using OpenH2.Core.Tags.Common.Models;
 using OpenH2.Core.Tags.Layout;
@@ -130,7 +130,7 @@ namespace OpenH2.Core.Tags
         //public object[] MiscObject23Cao { get; set; }
 
 
-        public override void PopulateExternalData(H2vReader sceneReader)
+        public override void PopulateExternalData(H2MapReader sceneReader)
         {
             foreach (var part in RenderChunks)
             {

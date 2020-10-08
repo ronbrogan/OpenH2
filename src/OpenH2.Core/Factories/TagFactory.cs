@@ -1,5 +1,5 @@
 ﻿using OpenH2.Core.Parsing;
-using OpenH2.Core.Representations;
+using OpenH2.Core.Maps;
 using OpenH2.Core.Tags;
 using OpenH2.Core.Tags.Layout;
 using OpenH2.Serialization;
@@ -8,12 +8,13 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.Serialization;
+using System.IO;
 
 namespace OpenH2.Core.Factories
 {
     public static class TagFactory
     {
-        public static BaseTag CreateTag(uint id, string name, TagIndexEntry index, H2vBaseMap map, H2vReader reader)
+        public static BaseTag CreateTag(uint id, string name, TagIndexEntry index, H2BaseMap map, H2MapReader reader)
         {
             var tagType = GetTypeForTag(index.Tag);
 

@@ -1,5 +1,5 @@
 ﻿using OpenH2.Core.Parsing;
-using OpenH2.Core.Representations;
+using OpenH2.Core.Maps;
 using OpenH2.Core.Tags.Layout;
 using OpenH2.Serialization.Layout;
 
@@ -41,7 +41,7 @@ namespace OpenH2.Core.Tags
         //[InternalReferenceValue(12)]
         //public ShaderInfo[] Shaders { get; set; }
 
-        public override void PopulateExternalData(H2vReader sceneReader)
+        public override void PopulateExternalData(H2MapReader sceneReader)
         {
         }
     }

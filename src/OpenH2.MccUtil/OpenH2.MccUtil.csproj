@@ -1,0 +1,19 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net5.0</TargetFramework>
+    <NoWarn>CS1998</NoWarn>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="CommandLineParser" Version="2.9.0-preview1" />
+    <PackageReference Include="Microsoft.Extensions.FileSystemGlobbing" Version="5.0.0-rc.1.20451.14" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\OpenH2.Core\OpenH2.Core.csproj" />
+    <ProjectReference Include="..\OpenH2.ScriptAnalysis\OpenH2.ScriptAnalysis.csproj" />
+  </ItemGroup>
+
+</Project>

@@ -1,6 +1,6 @@
 ﻿using OpenH2.Core.Factories;
 using OpenH2.Core.ExternalFormats;
-using OpenH2.Core.Representations;
+using OpenH2.Core.Maps;
 using OpenH2.Core.Tags;
 using OpenH2.Core.Tags.Common.Collision;
 using OpenH2.Core.Tags.Common.Models;

@@ -1,4 +1,5 @@
-﻿using OpenH2.Serialization.Materialization;
+﻿using OpenH2.Serialization.Layout;
+using OpenH2.Serialization.Materialization;
 using OpenH2.Serialization.Metadata;
 using System;
 using System.Collections.Concurrent;
@@ -275,6 +276,18 @@ namespace OpenH2.Serialization
             }
 
             throw new NotSupportedException($"Type '{typeof(T).Name}' was not found in the deserializer collection");
+        }
+
+        public static int SizeOf<T>()
+        {
+            var fixedLengthAttr = typeof(T).GetCustomAttribute<FixedLengthAttribute>();
+
+            if (fixedLengthAttr == null)
+            {
+                throw new Exception("Can't take the size of a non-fixed length serializable type");
+            }
+
+            return fixedLengthAttr.Length;
         }
 
         private struct Deserializers

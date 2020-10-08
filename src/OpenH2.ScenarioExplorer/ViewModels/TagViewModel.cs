@@ -2,7 +2,7 @@
 using OpenH2.AvaloniaControls.HexViewerImpl;
 using OpenH2.Core.Extensions;
 using OpenH2.Core.Offsets;
-using OpenH2.Core.Representations;
+using OpenH2.Core.Maps;
 using OpenH2.Core.Tags;
 using OpenH2.Core.Tags.Common;
 using OpenH2.Core.Types;

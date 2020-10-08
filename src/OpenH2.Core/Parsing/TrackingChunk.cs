@@ -1,5 +1,5 @@
 ﻿using OpenH2.Core.Offsets;
-using OpenH2.Core.Representations;
+using OpenH2.Core.Maps;
 using System.Numerics;
 using System.Runtime.CompilerServices;
 

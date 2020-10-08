@@ -2,7 +2,7 @@
 using OpenH2.Core.Offsets;
 using OpenH2.Core.Tags;
 
-namespace OpenH2.Core.Representations
+namespace OpenH2.Core.Maps
 {
     public struct TagIndexEntry
     {

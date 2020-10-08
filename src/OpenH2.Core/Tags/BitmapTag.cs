@@ -134,7 +134,7 @@ namespace OpenH2.Core.Tags
             public Memory<byte> Data { get; set; } = Memory<byte>.Empty;
         }
 
-        public override void PopulateExternalData(H2vReader sceneReader)
+        public override void PopulateExternalData(H2MapReader sceneReader)
         {
             foreach(var info in this.TextureInfos)
             {
@@ -150,24 +150,30 @@ namespace OpenH2.Core.Tags
 
                     if (lod.Offset.Value != 0 && lod.Offset.Value != int.MaxValue && lod.Size != 0)
                     {
-                        var inputStream = sceneReader.GetReader(lod.Offset).Data;
-                        inputStream.Position = lod.Offset.Value + 2;
+                        var reader = sceneReader.GetReader(lod.Offset);
 
-                        using (var decompress = new DeflateStream(inputStream, CompressionMode.Decompress, true))
-                        using (var outputStream = new MemoryStream())
+                        // Can be null if non-local readers aren't setup
+                        if(reader != null)
                         {
-                            var buffer = new byte[81920];
-                            var read = -1;
+                            var inputStream = reader.Data;
+                            inputStream.Position = lod.Offset.Value + 2;
 
-                            var endOfInput = lod.Offset.Value + lod.Size;
-
-                            while (read != 0)
+                            using (var decompress = new DeflateStream(inputStream, CompressionMode.Decompress, true))
+                            using (var outputStream = new MemoryStream())
                             {
-                                read = decompress.Read(buffer, 0, 81920);
-                                outputStream.Write(buffer, 0, read);
-                            }
+                                var buffer = new byte[81920];
+                                var read = -1;
 
-                            lod.Data = new Memory<byte>(outputStream.GetBuffer(), 0, (int)outputStream.Length);
+                                var endOfInput = lod.Offset.Value + lod.Size;
+
+                                while (read != 0)
+                                {
+                                    read = decompress.Read(buffer, 0, 81920);
+                                    outputStream.Write(buffer, 0, read);
+                                }
+
+                                lod.Data = new Memory<byte>(outputStream.GetBuffer(), 0, (int)outputStream.Length);
+                            }
                         }
                     }
 

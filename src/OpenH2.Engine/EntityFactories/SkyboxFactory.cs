@@ -1,6 +1,6 @@
 ﻿using OpenH2.Core.Architecture;
 using OpenH2.Core.Extensions;
-using OpenH2.Core.Representations;
+using OpenH2.Core.Maps;
 using OpenH2.Core.Tags;
 using OpenH2.Core.Tags.Common.Models;
 using OpenH2.Core.Tags.Scenario;

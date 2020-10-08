@@ -3,7 +3,7 @@ using OpenH2.Core.Tags;
 using OpenH2.Core.Tags.Scenario;
 using OpenH2.Serialization.Layout;
 
-namespace OpenH2.Core.Representations
+namespace OpenH2.Core.Maps
 {
     [FixedLength(32)]
     public class IndexHeader

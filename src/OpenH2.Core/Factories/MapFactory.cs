@@ -1,7 +1,7 @@
 using OpenH2.Core.Extensions;
 using OpenH2.Core.Offsets;
 using OpenH2.Core.Parsing;
-using OpenH2.Core.Representations;
+using OpenH2.Core.Maps;
 using OpenH2.Core.Tags;
 using OpenH2.Serialization;
 using System.Collections.Generic;
@@ -16,7 +16,7 @@ namespace OpenH2.Core.Factories
         private const string MultiPlayerSharedName = "shared.map";
         private const string SinglePlayerSharedName = "single_player_shared.map";
         private readonly IMaterialFactory materialFactory;
-        private H2vReader baseReader;
+        private H2MapReader baseReader;
         private H2vLazyLoadingMap mainMenu;
         private H2vLazyLoadingMap spShared;
         private H2vLazyLoadingMap mpShared;
@@ -27,13 +27,13 @@ namespace OpenH2.Core.Factories
         {
             baseReader = GetBaseReader(mapRoot);
 
-            mainMenu = LazyLoadingMapFromReader(new H2vReader(baseReader.MainMenu, baseReader));
-            spShared = LazyLoadingMapFromReader(new H2vReader(baseReader.SpShared, baseReader));
-            mpShared = LazyLoadingMapFromReader(new H2vReader(baseReader.MpShared, baseReader));
+            mainMenu = LazyLoadingMapFromReader(new H2MapReader(baseReader.MainMenu, baseReader));
+            spShared = LazyLoadingMapFromReader(new H2MapReader(baseReader.SpShared, baseReader));
+            mpShared = LazyLoadingMapFromReader(new H2MapReader(baseReader.MpShared, baseReader));
             this.materialFactory = materialFactory;
         }
 
-        private H2vReader GetBaseReader(string mapRoot)
+        private H2MapReader GetBaseReader(string mapRoot)
         {
             var bufferSize = 81000;
             var mm = new FileStream(Path.Combine(mapRoot, MainMenuName), FileMode.Open, FileAccess.Read, FileShare.Read, bufferSize);
@@ -44,7 +44,7 @@ namespace OpenH2.Core.Factories
             var mpReader = new TrackingReader(mp);
             var spReader = new TrackingReader(sp);
 
-            return new H2vReader(mmReader, mpReader, spReader);
+            return new H2MapReader(mmReader, mpReader, spReader);
         }
 
         public H2vMap FromFile(FileStream fileStream)
@@ -63,7 +63,7 @@ namespace OpenH2.Core.Factories
             return scene;
         }
 
-        private H2vReader FromFileStream(FileStream fileStream)
+        private H2MapReader FromFileStream(FileStream fileStream)
         {
             var ms = new MemoryStream();
 
@@ -74,10 +74,10 @@ namespace OpenH2.Core.Factories
 
             var mapReader = new TrackingReader(ms);
 
-            return new H2vReader(mapReader, baseReader);
+            return new H2MapReader(mapReader, baseReader);
         }
 
-        private H2vMap InternalFromFile(H2vReader reader, bool lazyLoadTags = false)
+        private H2vMap InternalFromFile(H2MapReader reader, bool lazyLoadTags = false)
         {
             var scene = new H2vMap(reader, mainMenu, mpShared, spShared);
             scene.UseMaterialFactory(this.materialFactory);
@@ -92,7 +92,7 @@ namespace OpenH2.Core.Factories
             return scene;
         }
 
-        private H2vLazyLoadingMap LazyLoadingMapFromReader(H2vReader reader)
+        private H2vLazyLoadingMap LazyLoadingMapFromReader(H2MapReader reader)
         {
             var scene = new H2vLazyLoadingMap(reader);
 
@@ -101,7 +101,7 @@ namespace OpenH2.Core.Factories
             return scene;
         }
 
-        private void LoadMetadata(H2vBaseMap scene, H2vReader reader)
+        private void LoadMetadata(H2BaseMap scene, H2MapReader reader)
         {
             scene.Header = GetSceneHeader(scene, reader.MapReader);
             scene.IndexHeader = GetIndexHeader(scene, reader.MapReader);
@@ -113,7 +113,7 @@ namespace OpenH2.Core.Factories
         }
 
 
-        private Dictionary<int, string> GetAllStrings(H2vBaseMap scene, H2vReader reader)
+        private Dictionary<int, string> GetAllStrings(H2BaseMap scene, H2MapReader reader)
         {
             var dict = new Dictionary<int, string>();
 
@@ -130,7 +130,7 @@ namespace OpenH2.Core.Factories
             return dict;
         }
 
-        private Dictionary<uint, string> GetTagNames(H2vBaseMap scene, H2vReader reader)
+        private Dictionary<uint, string> GetTagNames(H2BaseMap scene, H2MapReader reader)
         {
             var dict = new Dictionary<uint, string>();
             var index = scene.TagIndex.Values.OrderBy(i => i.Offset.Value);
@@ -152,12 +152,12 @@ namespace OpenH2.Core.Factories
             return dict;
         }
 
-        private void LoadAllTags(H2vMap scene, H2vReader reader)
+        private void LoadAllTags(H2vMap scene, H2MapReader reader)
         {
             scene.SetTags(GetTags(scene, reader));
         }
 
-        private Dictionary<uint, BaseTag> GetTags(H2vMap scene, H2vReader reader)
+        private Dictionary<uint, BaseTag> GetTags(H2vMap scene, H2MapReader reader)
         {
             var dict = new Dictionary<uint, BaseTag>();
             var index = scene.TagIndex.Values.OrderBy(i => i.Offset.Value);
@@ -173,14 +173,14 @@ namespace OpenH2.Core.Factories
             return dict;
         }
 
-        public static BaseTag GetTag(H2vBaseMap scene, TagIndexEntry entry, H2vReader reader)
+        public static BaseTag GetTag(H2BaseMap scene, TagIndexEntry entry, H2MapReader reader)
         {
             var name = scene.TagNames[entry.ID];
 
             return TagFactory.CreateTag(entry.ID, name, entry, scene, reader);
         }
 
-        private H2vMapHeader GetSceneHeader(H2vBaseMap scene, TrackingReader reader)
+        private H2vMapHeader GetSceneHeader(H2BaseMap scene, TrackingReader reader)
         {
             var head = BlamSerializer.Deserialize<H2vMapHeader>(reader.Data, instanceStart: 0);
 
@@ -189,7 +189,7 @@ namespace OpenH2.Core.Factories
             return head;
         }
 
-        public IndexHeader GetIndexHeader(H2vBaseMap scene, TrackingReader reader)
+        public IndexHeader GetIndexHeader(H2BaseMap scene, TrackingReader reader)
         {
             var header = scene.Header;
 
@@ -200,7 +200,7 @@ namespace OpenH2.Core.Factories
             return index;
         }
 
-        public Dictionary<uint, TagIndexEntry> GetTagIndex(H2vBaseMap scene, TrackingReader reader, out int firstEntryOffset)
+        public Dictionary<uint, TagIndexEntry> GetTagIndex(H2BaseMap scene, TrackingReader reader, out int firstEntryOffset)
         {
             firstEntryOffset = -1;
             var index = scene.IndexHeader;
@@ -242,7 +242,7 @@ namespace OpenH2.Core.Factories
             return index.FileRawOffset.Value - index.PrimaryMagicConstant + IndexHeader.Length;
         }
 
-        public int CalculateSecondaryMagic(H2vMapHeader header, int firstObjOffset)
+        public int CalculateSecondaryMagic(IH2MapHeader header, int firstObjOffset)
         {
             return firstObjOffset - header.SecondaryOffset.Value;
         }

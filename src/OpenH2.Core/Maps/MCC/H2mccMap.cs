@@ -1,38 +1,25 @@
-using OpenH2.Core.Enums;
-using OpenH2.Core.Extensions;
-using OpenH2.Core.Factories;
-using OpenH2.Core.Offsets;
+﻿using OpenH2.Core.Extensions;
 using OpenH2.Core.Parsing;
 using OpenH2.Core.Tags;
-using OpenH2.Core.Tags.Common.Models;
 using OpenH2.Core.Tags.Scenario;
-using OpenH2.Foundation;
+using OpenH2.Serialization;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace OpenH2.Core.Representations
+namespace OpenH2.Core.Maps.MCC
 {
-    /// This class is the in-memory representation of a .map file
-    public class H2vMap : H2vBaseMap
+    public class H2mccMap : H2BaseMap
     {
-        private readonly H2vReader reader;
-        private readonly H2vLazyLoadingMap mainMenu;
-        private readonly H2vLazyLoadingMap mpShared;
-        private readonly H2vLazyLoadingMap spShared;
         private Dictionary<uint, BaseTag> Tags = new Dictionary<uint, BaseTag>();
-        private IMaterialFactory materialFactory;
+        private readonly H2MapReader reader;
+        public ScenarioTag Scenario { get; internal set; }
+        public SoundMappingTag LocalSounds { get; internal set; }
+        public GlobalsTag Globals { get; internal set; }
 
-        public ScenarioTag Scenario { get; private set; }
-        public SoundMappingTag LocalSounds { get; set; }
-        public GlobalsTag Globals { get; private set; }
-
-        internal H2vMap(H2vReader reader, H2vLazyLoadingMap mainMenu, H2vLazyLoadingMap mpShared, H2vLazyLoadingMap spShared)
+        public H2mccMap(H2MapReader reader)
         {
             this.reader = reader;
-            this.mainMenu = mainMenu;
-            this.mpShared = mpShared;
-            this.spShared = spShared;
         }
 
         internal void SetTags(Dictionary<uint, BaseTag> tags)
@@ -56,32 +43,21 @@ namespace OpenH2.Core.Representations
             }
         }
 
-        // TODO: consider if material construction belongs here
-        internal void UseMaterialFactory(IMaterialFactory materialFactory)
-        {
-            this.materialFactory = materialFactory;
-        }
-
-        public Material<BitmapTag> CreateMaterial(ModelMesh mesh)
-        {
-            return this.materialFactory.CreateMaterial(this, mesh);
-        }
-
         public IEnumerable<T> GetLocalTagsOfType<T>() where T : BaseTag
         {
             return Tags.Select(t => t.Value as T).Where(t => t != null);
         }
 
-        public T GetTag<T>(uint id) where T: BaseTag
+        public T GetTag<T>(uint id) where T : BaseTag
         {
-            if(TryGetTag<T>(id, out var t))
+            if (TryGetTag<T>(id, out var t))
             {
                 return t;
             }
 
             throw new Exception($"Unable to find tag {id}");
         }
-        
+
         public T GetTag<T>(TagRef<T> tagref) where T : BaseTag
         {
             if (TryGetTag(tagref, out var t))
@@ -106,23 +82,23 @@ namespace OpenH2.Core.Representations
                 return true;
             }
 
-            if (mpShared.TryGetTag(id, out t))
-            {
-                tag = (T)t;
-                return true;
-            }
+            //if (mpShared.TryGetTag(id, out t))
+            //{
+            //    tag = (T)t;
+            //    return true;
+            //}
 
-            if (spShared.TryGetTag(id, out t))
-            {
-                tag = (T)t;
-                return true;
-            }
+            //if (spShared.TryGetTag(id, out t))
+            //{
+            //    tag = (T)t;
+            //    return true;
+            //}
 
-            if (mainMenu.TryGetTag(id, out t))
-            {
-                tag = (T)t;
-                return true;
-            }
+            //if (mainMenu.TryGetTag(id, out t))
+            //{
+            //    tag = (T)t;
+            //    return true;
+            //}
 
             Console.WriteLine($"TryGetTag miss [{id}]");
 
@@ -138,7 +114,7 @@ namespace OpenH2.Core.Representations
                 return false;
             }
 
-            if(TryGetTag(tagref.Id, out tag))
+            if (TryGetTag(tagref.Id, out tag))
             {
                 return true;
             }
@@ -147,21 +123,12 @@ namespace OpenH2.Core.Representations
             return false;
         }
 
-        public Memory<byte> ReadData(DataFile source, IOffset offset, int length)
-        {
-            var reader = this.reader.GetReader(source);
-
-            var chunk = reader.Chunk(offset.Value, length);
-
-            return chunk.ReadArray(0, length);
-        }
-
         public static int CalculateSignature(Memory<byte> sceneData)
         {
             var sig = 0;
             var span = sceneData.Span;
 
-            for (var i = 2048; i < sceneData.Length; i += 4)
+            for (var i = BlamSerializer.SizeOf<H2mccMapHeader>(); i < sceneData.Length; i += 4)
             {
                 sig ^= span.ReadInt32At(i);
             }

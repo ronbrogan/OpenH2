@@ -3,14 +3,14 @@ using OpenH2.Core.Parsing;
 using OpenH2.Core.Tags;
 using System.Collections.Generic;
 
-namespace OpenH2.Core.Representations
+namespace OpenH2.Core.Maps
 {
-    public class H2vLazyLoadingMap : H2vBaseMap
+    public class H2vLazyLoadingMap : H2BaseMap
     {
-        private H2vReader reader;
+        private H2MapReader reader;
         private Dictionary<uint, BaseTag> Tags = new Dictionary<uint, BaseTag>();
 
-        internal H2vLazyLoadingMap(H2vReader reader)
+        internal H2vLazyLoadingMap(H2MapReader reader)
         {
             this.reader = reader;
         }

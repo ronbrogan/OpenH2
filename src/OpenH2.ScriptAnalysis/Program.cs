@@ -14,7 +14,7 @@ using System.Text.RegularExpressions;
 
 namespace OpenH2.ScriptAnalysis
 {
-    class Program
+    public class Program
     {
         static void Main(string[] args)
         {
@@ -54,7 +54,7 @@ namespace OpenH2.ScriptAnalysis
         }
 
         // TODO: Using adhoc ScriptTreeNode until we're in a good state to build a CSharpSyntaxTree directly
-        private static ScriptTreeNode GetScriptTree(ScenarioTag tag, ScenarioTag.ScriptMethodDefinition method)
+        public static ScriptTreeNode GetScriptTree(ScenarioTag tag, ScenarioTag.ScriptMethodDefinition method)
         {
             var strings = (Span<byte>)tag.ScriptStrings;
 
