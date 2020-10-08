@@ -124,7 +124,7 @@ namespace OpenH2.Core.Representations
                 return true;
             }
 
-            Console.WriteLine("TryGetTag miss");
+            Console.WriteLine($"TryGetTag miss [{id}]");
 
             tag = null;
             return false;

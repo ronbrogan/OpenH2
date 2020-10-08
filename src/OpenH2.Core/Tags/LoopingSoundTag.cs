@@ -19,7 +19,7 @@ namespace OpenH2.Core.Tags
         [PrimitiveValue(16)]
         public float Value2 { get; set; }
 
-        [PrimitiveValue(20)]
+        [PrimitiveValue(24)]
         public TagRef CdmgTag { get; set; }
 
         [ReferenceArray(36)]
