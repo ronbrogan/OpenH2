@@ -11,16 +11,18 @@ namespace OpenH2.MccUtil
         {
             await Parser.Default
                 .ParseArguments<
-                    UnpackCommandLineArguments, 
+                    UnpackCommandLineArguments,
                     PackCommandLineArguments,
                     LoadMapCommandLineArguments,
-                    DumpScriptsCommandLineArguments
+                    DumpScriptsCommandLineArguments,
+                    PatchScriptsCommandLineArguments
                     >(args)
                 .MapResult(
                     async (UnpackCommandLineArguments a) => await UnpackTask.Run(a),
-                    (PackCommandLineArguments a) => Task.CompletedTask,
+                    async (PackCommandLineArguments a) => await PackTask.Run(a),
                     async (LoadMapCommandLineArguments a) => await LoadMapTask.Run(a),
                     async (DumpScriptsCommandLineArguments a) => await DumpScriptsTask.Run(a),
+                    async (PatchScriptsCommandLineArguments a) => await PatchScriptsTask.Run(a),
                     errs => WriteErrors(errs));
         }
 

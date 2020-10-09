@@ -13,6 +13,9 @@ namespace OpenH2.MccUtil
     [Verb("unpack")]
     public class UnpackCommandLineArguments
     {
+        [Option('d', "directory", HelpText = "Working directory to search for files under")]
+        public string WorkingDirectory { get; set; }
+
         [Option('f', "files", Required = true, HelpText = "File glob")]
         public string Files { get; set; }
 
@@ -44,7 +47,7 @@ namespace OpenH2.MccUtil
 
             matcher.AddInclude(args.Files);
 
-            var root = new DirectoryInfoWrapper(new DirectoryInfo(Environment.CurrentDirectory));
+            var root = new DirectoryInfoWrapper(new DirectoryInfo(this.args.WorkingDirectory ?? Environment.CurrentDirectory));
 
             Console.WriteLine($"Looking for files matching '{args.Files}' in '{root.FullName}'");
 
@@ -65,7 +68,7 @@ namespace OpenH2.MccUtil
             {
                 Console.WriteLine($"Found '{result.Path}', unpacking...");
 
-                Unpack(result.Path);
+                Unpack(Path.Combine(root.FullName, result.Path));
             }
         }
 
@@ -89,9 +92,13 @@ namespace OpenH2.MccUtil
                 if (section.Offset == 0 || section.Count == 0)
                     continue;
 
+                var start = mapOut.Position;
+
                 mapIn.Seek(section.Offset+2, SeekOrigin.Begin);
                 using var deflate = new DeflateStream(mapIn, CompressionMode.Decompress, leaveOpen: true);
                 deflate.CopyTo(mapOut);
+
+                Console.WriteLine($"Decompressed {mapOut.Position - start}b chunk");
             }
         }
     }

@@ -5,6 +5,7 @@ using OpenH2.Core.Tags.Scenario;
 using OpenH2.Serialization;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 
 namespace OpenH2.Core.Maps.MCC

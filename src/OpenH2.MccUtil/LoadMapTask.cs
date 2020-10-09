@@ -49,7 +49,7 @@ namespace OpenH2.MccUtil
             var mem = new MemoryStream();
             File.OpenRead(path).CopyTo(mem);
             mem.Seek(0, SeekOrigin.Begin);
-            var sig = H2mccMap.CalculateSignature(mem.ToArray().AsMemory<byte>());
+            var sig = H2mccMap.CalculateSignature(mem.ToArray());
 
             var factory = new MccMapFactory();
             var map = factory.FromFile(File.OpenRead(path));

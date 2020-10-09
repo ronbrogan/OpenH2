@@ -191,6 +191,18 @@ namespace OpenH2.Core.Extensions
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static void WriteUInt16At(this Stream data, int offset, ushort value)
+        {
+            if (offset + 2 > data.Length)
+            {
+                return;
+            }
+
+            data.Position = offset;
+            data.Write(BitConverter.GetBytes(value));
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static uint ReadUInt32At(this Stream data, int offset)
         {
             if (offset + 4 > data.Length)
@@ -203,6 +215,18 @@ namespace OpenH2.Core.Extensions
             data.Read(bytes);
 
             return BitConverter.ToUInt32(bytes);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static void WriteUInt32At(this Stream data, int offset, uint value)
+        {
+            if (offset + 4 > data.Length)
+            {
+                return;
+            }
+
+            data.Position = offset;
+            data.Write(BitConverter.GetBytes(value));
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
