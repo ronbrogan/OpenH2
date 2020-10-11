@@ -7,7 +7,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\OpenH2.Core\OpenH2.Core.csproj" />
-    <ProjectReference Include="..\OpenH2.Engine\OpenH2.Engine.csproj" />
   </ItemGroup>
 
 </Project>

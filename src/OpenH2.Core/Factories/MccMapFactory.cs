@@ -15,23 +15,24 @@ namespace OpenH2.Core.Factories
     // TODO: merge with Map factory, auto detect version
     public class MccMapFactory
     {
-        public H2mccMap FromFile(FileStream fileStream)
+        public H2mccMap FromStream(Stream stream)
         {
-            var reader = FromFileStream(fileStream);
+            var fourCC = stream.ReadUInt32At(0);
+            if(fourCC != H2mccCompression.DecompressedFourCC)
+            {
+                throw new System.Exception("Cannot load a map that hasn't been decompressed first");
+            }
+
+            var reader = ReaderFromStream(stream);
 
             return this.InternalFromFile(reader);
         }
 
-        private H2MapReader FromFileStream(FileStream fileStream)
+        private H2MapReader ReaderFromStream(Stream stream)
         {
-            var ms = new MemoryStream();
+            stream.Position = 0;
 
-            fileStream.CopyTo(ms);
-            ms.Position = 0;
-
-            fileStream.Dispose();
-
-            var mapReader = new TrackingReader(ms);
+            var mapReader = new TrackingReader(stream);
 
             return new H2MapReader(mapReader, new H2MapReader(null, null, null));
         }

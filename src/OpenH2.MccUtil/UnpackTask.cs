@@ -13,11 +13,11 @@ namespace OpenH2.MccUtil
     [Verb("unpack")]
     public class UnpackCommandLineArguments
     {
-        [Option('d', "directory", HelpText = "Working directory to search for files under")]
+        [Option('d', "directory", Required = true, HelpText = "Working directory to search for files under")]
         public string WorkingDirectory { get; set; }
 
-        [Option('f', "files", Required = true, HelpText = "File glob")]
-        public string Files { get; set; }
+        [Option('f', "filter", HelpText = "File glob, defaults to *")]
+        public string FileFilter { get; set; } = "*";
 
         [Option('o', "output", HelpText = "Specify output directory of unpacked map")]
         public string OutputDirectory { get; set; } = @"D:\h2scratch\mcc";
@@ -45,11 +45,11 @@ namespace OpenH2.MccUtil
         {
             var matcher = new Matcher();
 
-            matcher.AddInclude(args.Files);
+            matcher.AddInclude(args.FileFilter);
 
             var root = new DirectoryInfoWrapper(new DirectoryInfo(this.args.WorkingDirectory ?? Environment.CurrentDirectory));
 
-            Console.WriteLine($"Looking for files matching '{args.Files}' in '{root.FullName}'");
+            Console.WriteLine($"Looking for files matching '{args.FileFilter}' in '{root.FullName}'");
 
             var results = matcher.Execute(root);
 
@@ -79,27 +79,7 @@ namespace OpenH2.MccUtil
                 $"{Path.GetFileNameWithoutExtension(path)}-{this.args.CopySuffix}.map");
             using var mapOut = new FileStream(mapOutPath, FileMode.Create);
 
-            var info = BlamSerializer.Deserialize<H2mccCompressionSections>(mapIn);
-
-            var header = new Span<byte>(new byte[4096]);
-
-            mapIn.Seek(0, SeekOrigin.Begin);
-            mapIn.Read(header);
-            mapOut.Write(header);
-
-            foreach(var section in info.Sections)
-            {
-                if (section.Offset == 0 || section.Count == 0)
-                    continue;
-
-                var start = mapOut.Position;
-
-                mapIn.Seek(section.Offset+2, SeekOrigin.Begin);
-                using var deflate = new DeflateStream(mapIn, CompressionMode.Decompress, leaveOpen: true);
-                deflate.CopyTo(mapOut);
-
-                Console.WriteLine($"Decompressed {mapOut.Position - start}b chunk");
-            }
+            H2mccCompression.Decompress(mapIn, mapOut);
         }
     }
 }

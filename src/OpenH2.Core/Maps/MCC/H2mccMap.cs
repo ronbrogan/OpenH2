@@ -124,14 +124,15 @@ namespace OpenH2.Core.Maps.MCC
             return false;
         }
 
-        public static int CalculateSignature(Memory<byte> sceneData)
+        public static int CalculateSignature(Stream sceneData)
         {
+            var streamLength = sceneData.Length;
             var sig = 0;
-            var span = sceneData.Span;
+            //var span = sceneData.Span;
 
-            for (var i = BlamSerializer.SizeOf<H2mccMapHeader>(); i < sceneData.Length; i += 4)
+            for (var i = BlamSerializer.SizeOf<H2mccMapHeader>(); i < streamLength; i += 4)
             {
-                sig ^= span.ReadInt32At(i);
+                sig ^= sceneData.ReadInt32At(i);
             }
 
             return sig;

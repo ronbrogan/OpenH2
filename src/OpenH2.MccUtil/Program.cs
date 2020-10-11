@@ -15,14 +15,14 @@ namespace OpenH2.MccUtil
                     PackCommandLineArguments,
                     LoadMapCommandLineArguments,
                     DumpScriptsCommandLineArguments,
-                    PatchScriptsCommandLineArguments
+                    PatchScriptCommandLineArguments
                     >(args)
                 .MapResult(
                     async (UnpackCommandLineArguments a) => await UnpackTask.Run(a),
                     async (PackCommandLineArguments a) => await PackTask.Run(a),
                     async (LoadMapCommandLineArguments a) => await LoadMapTask.Run(a),
                     async (DumpScriptsCommandLineArguments a) => await DumpScriptsTask.Run(a),
-                    async (PatchScriptsCommandLineArguments a) => await PatchScriptsTask.Run(a),
+                    async (PatchScriptCommandLineArguments a) => await PatchScriptTask.Run(a),
                     errs => WriteErrors(errs));
         }
 

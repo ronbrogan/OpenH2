@@ -66,7 +66,9 @@ namespace OpenH2.Core.Extensions
                 stringBytes = new byte[length];
             }
 
-            data.Position = offset;
+            if (data.Position != offset)
+                data.Position = offset;
+
             var actualRead = data.Read(stringBytes);
 
             if (actualRead < 512)
@@ -100,7 +102,9 @@ namespace OpenH2.Core.Extensions
             Span<byte> stringBytes = stackalloc byte[512];
             Span<char> stringChars = stackalloc char[512];
 
-            data.Position = offset;
+            if (data.Position != offset)
+                data.Position = offset;
+
             while (true)
             {
                 var actualRead = data.Read(stringBytes);
@@ -140,20 +144,20 @@ namespace OpenH2.Core.Extensions
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static byte ReadByteAt(this Stream data, int offset)
         {
-            data.Seek(offset, SeekOrigin.Begin);
+            if (data.Position != offset)
+                data.Position = offset;
+
             return (byte)data.ReadByte();
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static short ReadInt16At(this Stream data, int offset)
         {
-            if (offset + 2 > data.Length)
-            {
-                return 0;
-            }
-
             Span<byte> bytes = stackalloc byte[2];
-            data.Position = offset;
+
+            if (data.Position != offset)
+                data.Position = offset;
+
             data.Read(bytes);
 
             return BitConverter.ToInt16(bytes);
@@ -163,13 +167,11 @@ namespace OpenH2.Core.Extensions
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static int ReadInt32At(this Stream data, int offset)
         {
-            if (offset + 4 > data.Length)
-            {
-                return 0;
-            }
-
             Span<byte> bytes = stackalloc byte[4];
-            data.Position = offset;
+            
+            if(data.Position != offset)
+                data.Position = offset;
+
             data.Read(bytes);
 
             return BitConverter.ToInt32(bytes);
@@ -178,13 +180,11 @@ namespace OpenH2.Core.Extensions
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static ushort ReadUInt16At(this Stream data, int offset)
         {
-            if (offset + 2 > data.Length)
-            {
-                return 0;
-            }
-
             Span<byte> bytes = stackalloc byte[2];
-            data.Position = offset;
+
+            if (data.Position != offset)
+                data.Position = offset;
+
             data.Read(bytes);
 
             return BitConverter.ToUInt16(bytes);
@@ -198,20 +198,20 @@ namespace OpenH2.Core.Extensions
                 return;
             }
 
-            data.Position = offset;
+            if (data.Position != offset)
+                data.Position = offset;
+
             data.Write(BitConverter.GetBytes(value));
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static uint ReadUInt32At(this Stream data, int offset)
         {
-            if (offset + 4 > data.Length)
-            {
-                return 0;
-            }
-
             Span<byte> bytes = stackalloc byte[4];
-            data.Position = offset;
+
+            if (data.Position != offset)
+                data.Position = offset;
+
             data.Read(bytes);
 
             return BitConverter.ToUInt32(bytes);
@@ -225,7 +225,9 @@ namespace OpenH2.Core.Extensions
                 return;
             }
 
-            data.Position = offset;
+            if (data.Position != offset)
+                data.Position = offset;
+
             data.Write(BitConverter.GetBytes(value));
         }
 
@@ -233,7 +235,10 @@ namespace OpenH2.Core.Extensions
         public static Vector2 ReadVec2At(this Stream data, int offset)
         {
             Span<byte> bytes = stackalloc byte[8];
-            data.Position = offset;
+
+            if (data.Position != offset)
+                data.Position = offset;
+
             data.Read(bytes);
 
             return new Vector2(
@@ -246,7 +251,10 @@ namespace OpenH2.Core.Extensions
         public static Vector3 ReadVec3At(this Stream data, int offset)
         {
             Span<byte> bytes = stackalloc byte[12];
-            data.Position = offset;
+
+            if (data.Position != offset)
+                data.Position = offset;
+
             data.Read(bytes);
 
             return new Vector3(
@@ -260,7 +268,10 @@ namespace OpenH2.Core.Extensions
         public static Vector4 ReadVec4At(this Stream data, int offset)
         {
             Span<byte> bytes = stackalloc byte[16];
-            data.Position = offset;
+
+            if (data.Position != offset)
+                data.Position = offset;
+
             data.Read(bytes);
 
             return new Vector4(
@@ -275,7 +286,10 @@ namespace OpenH2.Core.Extensions
         public static Quaternion ReadQuaternionAt(this Stream data, int offset)
         {
             Span<byte> bytes = stackalloc byte[16];
-            data.Position = offset;
+
+            if (data.Position != offset)
+                data.Position = offset;
+
             data.Read(bytes);
 
             return new Quaternion(
@@ -290,7 +304,10 @@ namespace OpenH2.Core.Extensions
         public static Matrix4x4 ReadMatrix4x4At(this Stream data, int offset)
         {
             Span<byte> bytes = stackalloc byte[64];
-            data.Position = offset;
+
+            if (data.Position != offset)
+                data.Position = offset;
+
             data.Read(bytes);
 
             return new Matrix4x4(
@@ -316,7 +333,9 @@ namespace OpenH2.Core.Extensions
         public static byte[] ReadArray(this Stream data, int offset, int length)
         {
             var bytes = new byte[length];
-            data.Position = offset;
+
+            if (data.Position != offset)
+                data.Position = offset;
 
             var totalRead = 0;
             var lastRead = -1;
@@ -333,7 +352,10 @@ namespace OpenH2.Core.Extensions
         public static float ReadFloatAt(this Stream data, int offset)
         {
             Span<byte> bytes = stackalloc byte[4];
-            data.Position = offset;
+
+            if (data.Position != offset)
+                data.Position = offset;
+
             data.Read(bytes);
 
             return BitConverter.ToSingle(bytes);

@@ -14,12 +14,12 @@ namespace OpenH2.Core.Maps.MCC
         public readonly struct CompressionSection
         {
             //[PrimitiveValue(0)]
-            public readonly uint Count { get; }
+            public readonly int Count { get; }
 
             //[PrimitiveValue(4)]
             public readonly uint Offset { get; }
 
-            public CompressionSection(uint count, uint offset)
+            public CompressionSection(int count, uint offset)
             {
                 this.Count = count;
                 this.Offset = offset;
@@ -29,7 +29,7 @@ namespace OpenH2.Core.Maps.MCC
             [PrimitiveValueMaterializer]
             public static CompressionSection ReadCompressionSection(Stream s, int offset)
             {
-                return new CompressionSection(s.ReadUInt32At(offset), s.ReadUInt32At(offset + 4));
+                return new CompressionSection(s.ReadInt32At(offset), s.ReadUInt32At(offset + 4));
             }
         }
     }

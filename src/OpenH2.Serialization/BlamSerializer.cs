@@ -290,6 +290,32 @@ namespace OpenH2.Serialization
             return fixedLengthAttr.Length;
         }
 
+        public static int StartsAt<T>(Expression<Func<T, object>> property)
+        {
+            SerializableMemberAttribute memberAttr = null;
+
+            Expression body = property.Body;
+
+            // Since we're using Func<T, object> value types will have a Convert expression wrapping the access
+            if(body.NodeType == ExpressionType.Convert)
+            {
+                body = (body as UnaryExpression).Operand;
+            }
+
+            if (body.NodeType == ExpressionType.MemberAccess)
+            {
+                memberAttr = (body as MemberExpression).Member
+                    .GetCustomAttribute<SerializableMemberAttribute>();
+            }
+
+            if (memberAttr == null)
+            {
+                throw new Exception("Can't find the start of the specified member");
+            }
+
+            return memberAttr.Offset;
+        }
+
         private struct Deserializers
         {
             public Delegate deserializeGeneric;

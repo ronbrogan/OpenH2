@@ -20,12 +20,12 @@ namespace OpenH2.Serialization
         private INamedTypeSymbol SerializableTypeAttribute = null;
         private HashSet<string> generatedFilenames = new HashSet<string>();
 
-        public void Initialize(InitializationContext context)
+        public void Initialize(GeneratorInitializationContext context)
         {
             context.RegisterForSyntaxNotifications(() => new TypeDiscoverer());
         }
 
-        public void Execute(SourceGeneratorContext context)
+        public void Execute(GeneratorExecutionContext context)
         {
             if (context.AnalyzerConfigOptions.GlobalOptions.TryGetValue("build_property.DebugSerializerGeneration", out var debug)
                 && bool.TryParse(debug, out var bDebug) && bDebug)

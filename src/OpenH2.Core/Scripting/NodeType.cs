@@ -6,6 +6,8 @@
         Scope = 8,
         Expression = 9,
         ScriptInvocation = 10,
-        VariableAccess = 13
+        VariableAccess = 13,
+
+        MethodDecl = ushort.MaxValue
     }
 }

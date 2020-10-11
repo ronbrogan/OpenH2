@@ -58,9 +58,11 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Scripts", "D:\h2scratch\scr
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OpenH2.AudioAnalysis", "OpenH2.AudioAnalysis\OpenH2.AudioAnalysis.csproj", "{A3DE8B96-4640-4322-91B6-C09A98897C21}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OpenH2.AiAnalysis", "OpenH2.AiAnalysis\OpenH2.AiAnalysis.csproj", "{9AF077C4-4323-4BFF-865A-1522C845FA11}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OpenH2.AiAnalysis", "OpenH2.AiAnalysis\OpenH2.AiAnalysis.csproj", "{9AF077C4-4323-4BFF-865A-1522C845FA11}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OpenH2.MccUtil", "OpenH2.MccUtil\OpenH2.MccUtil.csproj", "{CDC4F130-320B-474C-9F33-DD14252B8AE6}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OpenH2.MccUtil", "OpenH2.MccUtil\OpenH2.MccUtil.csproj", "{CDC4F130-320B-474C-9F33-DD14252B8AE6}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OpenH2.MccBulkPatcher", "OpenH2.MccBulkPatcher\OpenH2.MccBulkPatcher.csproj", "{D47BFE0A-FA34-4F7B-9557-ACEBAE868564}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -246,6 +248,14 @@ Global
 		{CDC4F130-320B-474C-9F33-DD14252B8AE6}.Release|Any CPU.Build.0 = Release|Any CPU
 		{CDC4F130-320B-474C-9F33-DD14252B8AE6}.Release|x64.ActiveCfg = Release|Any CPU
 		{CDC4F130-320B-474C-9F33-DD14252B8AE6}.Release|x64.Build.0 = Release|Any CPU
+		{D47BFE0A-FA34-4F7B-9557-ACEBAE868564}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D47BFE0A-FA34-4F7B-9557-ACEBAE868564}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D47BFE0A-FA34-4F7B-9557-ACEBAE868564}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{D47BFE0A-FA34-4F7B-9557-ACEBAE868564}.Debug|x64.Build.0 = Debug|Any CPU
+		{D47BFE0A-FA34-4F7B-9557-ACEBAE868564}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D47BFE0A-FA34-4F7B-9557-ACEBAE868564}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D47BFE0A-FA34-4F7B-9557-ACEBAE868564}.Release|x64.ActiveCfg = Release|Any CPU
+		{D47BFE0A-FA34-4F7B-9557-ACEBAE868564}.Release|x64.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -273,6 +283,7 @@ Global
 		{A3DE8B96-4640-4322-91B6-C09A98897C21} = {D955C66F-CF2B-4A63-A95F-F8D3F98253DF}
 		{9AF077C4-4323-4BFF-865A-1522C845FA11} = {D955C66F-CF2B-4A63-A95F-F8D3F98253DF}
 		{CDC4F130-320B-474C-9F33-DD14252B8AE6} = {D955C66F-CF2B-4A63-A95F-F8D3F98253DF}
+		{D47BFE0A-FA34-4F7B-9557-ACEBAE868564} = {D955C66F-CF2B-4A63-A95F-F8D3F98253DF}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {D941C8C9-2B2C-47A1-82CB-B045206BA267}

@@ -2,10 +2,7 @@
 using OpenH2.Core.Factories;
 using OpenH2.Core.Maps.MCC;
 using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace OpenH2.MccUtil
@@ -49,15 +46,12 @@ namespace OpenH2.MccUtil
             var mem = new MemoryStream();
             File.OpenRead(path).CopyTo(mem);
             mem.Seek(0, SeekOrigin.Begin);
-            var sig = H2mccMap.CalculateSignature(mem.ToArray());
+            var sig = H2mccMap.CalculateSignature(mem);
 
             var factory = new MccMapFactory();
-            var map = factory.FromFile(File.OpenRead(path));
+            var map = factory.FromStream(File.OpenRead(path));
 
             Console.WriteLine("Loaded map");
-            
-            
-
         }
     }
 }

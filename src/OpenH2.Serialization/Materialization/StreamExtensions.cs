@@ -26,7 +26,9 @@ namespace OpenH2.Serialization.Materialization
                 stringBytes = new byte[length];
             }
 
-            data.Position = offset;
+            if (data.Position != offset)
+                data.Position = offset;
+
             var actualRead = data.Read(stringBytes);
 
             if(actualRead < 512)
@@ -61,7 +63,9 @@ namespace OpenH2.Serialization.Materialization
             Span<byte> stringBytes = stackalloc byte[512];
             Span<char> stringChars = stackalloc char[512];
 
-            data.Position = offset;
+            if (data.Position != offset)
+                data.Position = offset;
+
             while (true)
             {
                 var actualRead = data.Read(stringBytes);
@@ -98,7 +102,9 @@ namespace OpenH2.Serialization.Materialization
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static byte ReadByteAt(this Stream data, int offset)
         {
-            data.Seek(offset, SeekOrigin.Begin);
+            if (data.Position != offset)
+                data.Position = offset;
+
             return (byte)data.ReadByte();
         }
 
@@ -111,7 +117,10 @@ namespace OpenH2.Serialization.Materialization
             }
 
             Span<byte> bytes = stackalloc byte[2];
-            data.Position = offset;
+
+            if (data.Position != offset)
+                data.Position = offset;
+
             data.Read(bytes);
 
             return PBitConverter.ToInt16(bytes);
@@ -127,7 +136,10 @@ namespace OpenH2.Serialization.Materialization
             }
 
             Span<byte> bytes = stackalloc byte[4];
-            data.Position = offset;
+
+            if (data.Position != offset)
+                data.Position = offset;
+
             data.Read(bytes);
 
             return PBitConverter.ToInt32(bytes);
@@ -142,7 +154,10 @@ namespace OpenH2.Serialization.Materialization
             }
 
             Span<byte> bytes = stackalloc byte[2];
-            data.Position = offset;
+
+            if (data.Position != offset)
+                data.Position = offset;
+
             data.Read(bytes);
 
             return PBitConverter.ToUInt16(bytes);
@@ -157,7 +172,10 @@ namespace OpenH2.Serialization.Materialization
             }
 
             Span<byte> bytes = stackalloc byte[4];
-            data.Position = offset;
+
+            if (data.Position != offset)
+                data.Position = offset;
+
             data.Read(bytes);
 
             return PBitConverter.ToUInt32(bytes);
@@ -167,7 +185,10 @@ namespace OpenH2.Serialization.Materialization
         public static Vector2 ReadVec2At(this Stream data, int offset)
         {
             Span<byte> bytes = stackalloc byte[8];
-            data.Position = offset;
+
+            if (data.Position != offset)
+                data.Position = offset;
+
             data.Read(bytes);
 
             return new Vector2(
@@ -180,7 +201,10 @@ namespace OpenH2.Serialization.Materialization
         public static Vector3 ReadVec3At(this Stream data, int offset)
         {
             Span<byte> bytes = stackalloc byte[12];
-            data.Position = offset;
+
+            if (data.Position != offset)
+                data.Position = offset;
+
             data.Read(bytes);
 
             return new Vector3(
@@ -194,7 +218,10 @@ namespace OpenH2.Serialization.Materialization
         public static Vector4 ReadVec4At(this Stream data, int offset)
         {
             Span<byte> bytes = stackalloc byte[16];
-            data.Position = offset;
+
+            if (data.Position != offset)
+                data.Position = offset;
+
             data.Read(bytes);
 
             return new Vector4(
@@ -209,7 +236,10 @@ namespace OpenH2.Serialization.Materialization
         public static Quaternion ReadQuaternionAt(this Stream data, int offset)
         {
             Span<byte> bytes = stackalloc byte[16];
-            data.Position = offset;
+
+            if (data.Position != offset)
+                data.Position = offset;
+
             data.Read(bytes);
 
             return new Quaternion(
@@ -224,7 +254,10 @@ namespace OpenH2.Serialization.Materialization
         public static Matrix4x4 ReadMatrix4x4At(this Stream data, int offset)
         {
             Span<byte> bytes = stackalloc byte[64];
-            data.Position = offset;
+
+            if (data.Position != offset)
+                data.Position = offset;
+
             data.Read(bytes);
 
             return new Matrix4x4(
@@ -250,7 +283,9 @@ namespace OpenH2.Serialization.Materialization
         public static byte[] ReadArray(this Stream data, int offset, int length)
         {
             var bytes = new byte[length];
-            data.Position = offset;
+
+            if (data.Position != offset)
+                data.Position = offset;
 
             var totalRead = 0;
             var lastRead = -1;
@@ -266,7 +301,10 @@ namespace OpenH2.Serialization.Materialization
         public static float ReadFloatAt(this Stream data, int offset)
         {
             Span<byte> bytes = stackalloc byte[4];
-            data.Position = offset;
+
+            if (data.Position != offset)
+                data.Position = offset;
+
             data.Read(bytes);
 
             return PBitConverter.ToSingle(bytes);
