@@ -17,7 +17,6 @@
     <PackageReference Include="Avalonia" Version="0.10.999-cibuild0010986-beta" />
     <PackageReference Include="Avalonia.ReactiveUI" Version="0.10.999-cibuild0010986-beta" />
     <PackageReference Include="PropertyChanged.Fody" Version="3.2.9" />
-    <PackageReference Include="ReactiveUI" Version="11.5.35" />
   </ItemGroup>
 
 </Project>
