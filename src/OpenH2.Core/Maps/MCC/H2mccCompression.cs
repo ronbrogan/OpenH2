@@ -18,7 +18,12 @@ namespace OpenH2.Core.Maps.MCC
 
         private static ArrayPool<byte> copyPool = ArrayPool<byte>.Create();
 
-        public static void Decompress(Stream compressed, Stream decompressTo)
+        /// <summary>
+        /// Decompresses the provided stream into the other stream, if the map has not already been decompressed.
+        /// If the provided stream has already been decompressed, it will simply copy and return false
+        /// </summary>
+        /// <returns>A boolean indicating if decompression was performed</returns>
+        public static bool Decompress(Stream compressed, Stream decompressTo)
         {
             if (compressed.CanSeek == false) throw new NotSupportedException("Must be able to seek on compressed");
             
@@ -28,7 +33,7 @@ namespace OpenH2.Core.Maps.MCC
             {
                 compressed.Position = 0;
                 compressed.CopyTo(decompressTo);
-                return;
+                return false;
             }
 
             if(fourCC != RealFourCC)
@@ -74,9 +79,16 @@ namespace OpenH2.Core.Maps.MCC
                     deflate.CopyTo(decompressTo);
                 }
             }
+
+            return true;
         }
 
-        public static void Compress(Stream decompressed, Stream compressTo)
+        /// <summary>
+        /// Compresses the provided stream into the other stream, if the map was previously decompressed.
+        /// If the provided stream was not previously decompressed, it will simply copy and return false
+        /// </summary>
+        /// <returns>A boolean indicating if compression was performed</returns>
+        public static bool Compress(Stream decompressed, Stream compressTo)
         {
             if (decompressed.CanSeek == false) throw new NotSupportedException("Must be able to seek on decompressed");
             if (compressTo.CanSeek == false) throw new NotSupportedException("Must be able to seek on compressTo");
@@ -87,7 +99,7 @@ namespace OpenH2.Core.Maps.MCC
             {
                 decompressed.Position = 0;
                 decompressed.CopyTo(compressTo);
-                return;
+                return false;
             }
 
             if (fourCC != DecompressedFourCC)
@@ -145,6 +157,8 @@ namespace OpenH2.Core.Maps.MCC
                 compressTo.WriteInt32(section.Count);
                 compressTo.WriteUInt32(section.Offset);
             }
+
+            return true;
         }
     }
 }

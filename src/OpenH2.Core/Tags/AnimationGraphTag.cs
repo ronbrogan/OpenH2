@@ -19,7 +19,7 @@ namespace OpenH2.Core.Tags
         public Obj172[] Obj172s { get; set; }
 
         [ReferenceArray(44)]
-        public Obj588[] Obj588s { get; set; }
+        public PositionTrack[] Tracks { get; set; }
 
         [ReferenceArray(52)]
         public Obj1556[] Obj1556s { get; set; }
@@ -56,23 +56,18 @@ namespace OpenH2.Core.Tags
             public float[] Params { get; set; }
         }
 
-        [FixedLength(100)]
-        public class Obj588
+        [FixedLength(96)]
+        public class PositionTrack
         {
-            [PrimitiveValue(0)]
-            public ushort IndexA { get; set; }
+            [InternedString(0)]
+            public string IndexA { get; set; }
 
-            [PrimitiveValue(2)]
-            public ushort IndexB { get; set; }
 
-            [PrimitiveValue(4)]
-            public float ValueA { get; set; }
-
-            [PrimitiveArray(6, 16)]
+            [PrimitiveArray(4, 18)]
             public ushort[] Values { get; set; }
 
-            //[InternalReferenceValue(40)]
-            //public byte[] Data { get; set; }
+            [ReferenceArray(40)]
+            public byte[] Data { get; set; }
 
         }
 

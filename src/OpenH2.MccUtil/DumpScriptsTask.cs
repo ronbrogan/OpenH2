@@ -22,7 +22,10 @@ namespace OpenH2.MccUtil
         public string FileFilter { get; set; } = "*";
 
         [Option('o', "output", HelpText = "Specify output directory of the script data")]
-        public string OutputDirectory { get; set; } = $@"D:\h2scratch\scripts\mcc";
+        public string OutputDirectory { get; set; } = $@"D:\h2scratch\mcc\scripts";
+
+        [Option('v', "verbose-trees", HelpText = "Create verbose script tree text")]
+        public bool CreateVerboseTrees { get; set; }
     }
 
 
@@ -100,7 +103,7 @@ namespace OpenH2.MccUtil
             {
                 var script = scnr.ScriptMethods[i];
                 var text = ScriptProcessor.GetScriptTree(scnr, script, i);
-                var debugTree = text.ToString();
+                var debugTree = text.ToString(Args.CreateVerboseTrees);
                 File.WriteAllText(Path.Combine(debugRoot, script.Description + ".tree"), debugTree);
             }
         }

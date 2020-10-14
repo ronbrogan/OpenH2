@@ -35,10 +35,10 @@ namespace OpenH2.Core.Tags
             public Unknown5[] Unknown5s { get; set; }
         }
 
-        [FixedLength(12)]
+        [FixedLength(10)]
         public class Unknown1
         {
-            [PrimitiveArray(0, 6)]
+            [PrimitiveArray(0, 5)]
             public ushort[] Data { get; set; }
         }
 

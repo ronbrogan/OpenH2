@@ -32,18 +32,28 @@ namespace OpenH2.Core.Scripting.LowLevel
 
                     // Fixup next node's check value. We never change check values, so we can
                     // re-use the 'old' nodes here to get that info
-                    if(patch.NodeData.NextIndex != ushort.MaxValue)
+                    if (patch.NodeData.NextIndex == ushort.MaxValue)
+                    {
+                        patch.NodeData.NextCheckval = ushort.MaxValue;
+                    }
+                    else
                     {
                         var nextNode = scene.Scenario.ScriptSyntaxNodes[patch.NodeData.NextIndex];
                         patch.NodeData.NextCheckval = nextNode.Checkval;
                     }
 
                     // Fixup next node's check value for scope/invocation nodes
-                    if((patch.NodeData.NodeType == NodeType.Scope || patch.NodeData.NodeType == NodeType.ScriptInvocation)
-                        && patch.NodeData.NodeData_H16 != ushort.MaxValue)
+                    if ((patch.NodeData.NodeType == NodeType.Scope || patch.NodeData.NodeType == NodeType.ScriptInvocation))
                     {
-                        var nextNode = scene.Scenario.ScriptSyntaxNodes[patch.NodeData.NodeData_H16];
-                        patch.NodeData.NodeData_32 = patch.NodeData.NodeData_H16 | ((uint)nextNode.Checkval) << 16;
+                        if(patch.NodeData.NodeData_H16 == ushort.MaxValue)
+                        {
+                            patch.NodeData.NodeData_32 = patch.NodeData.NodeData_H16 | ((uint)ushort.MaxValue) << 16;
+                        }
+                        else
+                        {
+                            var nextNode = scene.Scenario.ScriptSyntaxNodes[patch.NodeData.NodeData_H16];
+                            patch.NodeData.NodeData_32 = patch.NodeData.NodeData_H16 | ((uint)nextNode.Checkval) << 16;
+                        }
                     }
 
                     //map.WriteUInt16At(patchStart + 0, patch.NodeData.Checkval);

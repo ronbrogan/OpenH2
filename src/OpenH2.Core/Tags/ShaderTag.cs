@@ -20,6 +20,9 @@ namespace OpenH2.Core.Tags
         [PrimitiveValue(4)]
         public TagRef<ShaderTemplateTag> ShaderTemplate { get; set; }
 
+        [InternedString(8)]
+        public string MaterialName { get; set; }
+
         [ReferenceArray(12)]
         public BitmapInfo[] BitmapInfos { get; set; }
 
@@ -61,7 +64,7 @@ namespace OpenH2.Core.Tags
             public TagRef<ShaderTemplateTag> ShaderTemplate { get; set; }
 
             [ReferenceArray(4)]
-            public ShaderMaps[] ShaderMaps { get; set; }
+            public ShaderMap[] ShaderMaps { get; set; }
 
             [ReferenceArray(12)]
             public BitmapParameter2[] BitmapParamter2s { get; set; }
@@ -71,37 +74,49 @@ namespace OpenH2.Core.Tags
 
             [ReferenceArray(28)]
             public BitmapParameter4[] BitmapParamter4s { get; set; }
+
+            [ReferenceArray(100)]
+            public Obj100[] Obj100s { get; set; }
+
+            [FixedLength(12)]
+            public class ShaderMap
+            {
+                [PrimitiveValue(0)]
+                public TagRef<BitmapTag> Bitmap { get; set; }
+
+                [PrimitiveValue(4)]
+                public Vector2 Something { get; set; }
+            }
+
+            [FixedLength(4)]
+            public class BitmapParameter2
+            {
+                [PrimitiveValue(0)]
+                public ushort ValueA { get; set; }
+
+                [PrimitiveValue(0)]
+                public ushort ValueB { get; set; }
+            }
+
+            [FixedLength(6)]
+            public class BitmapParameter4
+            {
+                [PrimitiveValue(0)]
+                public ushort ValueA { get; set; }
+
+                [PrimitiveValue(0)]
+                public ushort ValueB { get; set; }
+            }
+
+            [FixedLength(24)]
+            public class Obj100
+            {
+                [PrimitiveArray(0, 24)]
+                public byte[] Data { get; set; }
+            }
         }
 
-        [FixedLength(12)]
-        public class ShaderMaps
-        {
-            [PrimitiveValue(0)]
-            public TagRef<BitmapTag> Bitmap { get; set; }
-
-            [PrimitiveValue(4)]
-            public Vector2 Something { get; set; }
-        }
-
-        [FixedLength(4)]
-        public class BitmapParameter2
-        {
-            [PrimitiveValue(0)]
-            public ushort ValueA { get; set; }
-
-            [PrimitiveValue(0)]
-            public ushort ValueB { get; set; }
-        }
-
-        [FixedLength(6)]
-        public class BitmapParameter4
-        {
-            [PrimitiveValue(0)]
-            public ushort ValueA { get; set; }
-
-            [PrimitiveValue(0)]
-            public ushort ValueB { get; set; }
-        }
+        
 
         [FixedLength(8)]
         public class BitmapReferenceSetting
