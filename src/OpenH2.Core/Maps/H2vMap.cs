@@ -147,6 +147,17 @@ namespace OpenH2.Core.Maps
             return false;
         }
 
+        public SecondaryOffset GetSecondaryOffset(DataFile source, int rawOffset)
+        {
+            return source switch {
+                DataFile.Local => new SecondaryOffset(this, rawOffset),
+                DataFile.MainMenu => new SecondaryOffset(this.mainMenu, rawOffset),
+                DataFile.Shared => new SecondaryOffset(this.mpShared, rawOffset),
+                DataFile.SinglePlayerShared => new SecondaryOffset(this.spShared, rawOffset),
+                _ => throw new NotSupportedException()
+            };
+        }
+
         public Memory<byte> ReadData(DataFile source, IOffset offset, int length)
         {
             var reader = this.reader.GetReader(source);

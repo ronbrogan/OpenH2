@@ -98,6 +98,10 @@
                                 <Button Click="CopyData" DoubleTapped="GotoAddress" Content="{Binding InternalOffset}" Padding="0" Background="Transparent" Foreground="Blue"></Button>
                             </StackPanel>
                             <StackPanel Orientation="Horizontal" VerticalAlignment="Center" >
+                                <TextBlock Text="File Offset: "></TextBlock>
+                                <Button Command="{Binding CopyData}" CommandParameter="{Binding FileOffset}"  Content="{Binding FileOffset}" Padding="0" Background="Transparent" Foreground="Blue"></Button>
+                            </StackPanel>
+                            <StackPanel Orientation="Horizontal" VerticalAlignment="Center" >
                                 <TextBlock Text="Byte: "></TextBlock>
                                 <Button Command="{Binding CopyData}" CommandParameter="{Binding Byte}" Content="{Binding Byte}" Padding="0" Background="Transparent" Foreground="Blue"></Button>
                             </StackPanel>
@@ -120,6 +124,10 @@
                             <StackPanel Orientation="Horizontal" VerticalAlignment="Center" >
                                 <TextBlock Text="Float: "></TextBlock>
                                 <Button Command="{Binding CopyData}" CommandParameter="{Binding Float}" Content="{Binding Float}" Padding="0" Background="Transparent" Foreground="Blue"></Button>
+                            </StackPanel>
+                            <StackPanel Orientation="Horizontal" VerticalAlignment="Center" >
+                                <TextBlock Text="Tag: "></TextBlock>
+                                <Button Command="{Binding CopyData}" CommandParameter="{Binding TagName}" Content="{Binding TagName}" Padding="0" Background="Transparent" Foreground="Blue"></Button>
                             </StackPanel>
                             <StackPanel Orientation="Horizontal" VerticalAlignment="Center" >
                                 <TextBlock Text="String: "></TextBlock>

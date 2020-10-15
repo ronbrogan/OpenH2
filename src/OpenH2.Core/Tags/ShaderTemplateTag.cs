@@ -26,7 +26,7 @@ namespace OpenH2.Core.Tags
             public short[] Unknown2s { get; set; }
 
             [ReferenceArray(16)]
-            public ShaderPassReference[] ShaderPassReferences { get; set; }
+            public ShaderLod[] Lods { get; set; }
 
             [ReferenceArray(24)]
             public Unknown4[] Unknown4s { get; set; }
@@ -43,7 +43,7 @@ namespace OpenH2.Core.Tags
         }
 
         [FixedLength(12)]
-        public class ShaderPassReference
+        public class ShaderLod
         {
             [PrimitiveValue(4)]
             public TagRef<ShaderPassTag> ShaderPass { get; set; }
@@ -56,7 +56,7 @@ namespace OpenH2.Core.Tags
             public ushort[] Data { get; set; }
         }
 
-        [FixedLength(12)]
+        [FixedLength(4)]
         public class Unknown5
         {
             [PrimitiveValue(0)]
