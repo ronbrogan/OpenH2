@@ -24,16 +24,17 @@ namespace OpenH2.Core.Tags
         public string MaterialName { get; set; }
 
         [ReferenceArray(12)]
-        public BitmapInfo[] BitmapInfos { get; set; }
+        public LegacyBitmapInfo[] BitmapInfos { get; set; }
 
         [ReferenceArray(32)]
-        public ShaderArguments[] Arguments { get; set; }
+        public ShaderTemplateArguments[] Arguments { get; set; }
 
-        [ReferenceArray(44)]
-        public BitmapReferenceSetting[] BitmapReferenceSettings { get; set; }
+        // Predicted resources?
+        //[ReferenceArray(44)]
+        //public BitmapReferenceSetting[] BitmapReferenceSettings { get; set; }
 
         [FixedLength(80)]
-        public class BitmapInfo
+        public class LegacyBitmapInfo
         {
             [PrimitiveValue(4)]
             public TagRef<BitmapTag> DiffuseBitmap { get; set; }
@@ -58,13 +59,13 @@ namespace OpenH2.Core.Tags
         }
 
         [FixedLength(124)]
-        public class ShaderArguments
+        public class ShaderTemplateArguments
         {
             [PrimitiveValue(0)]
             public TagRef<ShaderTemplateTag> ShaderTemplate { get; set; }
 
             [ReferenceArray(4)]
-            public ShaderMap[] ShaderMaps { get; set; }
+            public ShaderMap[] BitmapArguments { get; set; }
 
             [ReferenceArray(12)]
             public BitmapParameter2[] BitmapParamter2s { get; set; }
@@ -75,8 +76,25 @@ namespace OpenH2.Core.Tags
             [ReferenceArray(28)]
             public BitmapParameter4[] BitmapParamter4s { get; set; }
 
+            [ReferenceArray(36)]
+            public Obj36[] Obj36s { get; set; }
+
+            [ReferenceArray(44)]
+            public Obj44[] Obj44s { get; set; }
+
+            // Obj52 is ~10 bytes long and only observed as 0s thus far
+
+            [ReferenceArray(60)]
+            public Obj60[] FunctionArguments { get; set; }
+
+            [ReferenceArray(92)]
+            public Obj92[] Obj92s { get; set; }
+
             [ReferenceArray(100)]
-            public Obj100[] Obj100s { get; set; }
+            public Vector3[] ConstantColorArguments { get; set; }
+
+            [ReferenceArray(108)]
+            public float[] ConstantValueArguments { get; set; }
 
             [FixedLength(12)]
             public class ShaderMap
@@ -108,27 +126,62 @@ namespace OpenH2.Core.Tags
                 public ushort ValueB { get; set; }
             }
 
-            [FixedLength(24)]
-            public class Obj100
+            [FixedLength(2)]
+            public class Obj36
             {
-                [PrimitiveArray(0, 24)]
+                [PrimitiveValue(0)]
+                public byte Obj44Index { get; set; }
+
+                [PrimitiveValue(1)]
+                public byte B { get; set; }
+            }
+
+            [FixedLength(2)]
+            public class Obj44
+            {
+                [PrimitiveValue(0)]
+                public byte A { get; set; }
+
+                [PrimitiveValue(1)]
+                public byte B { get; set; }
+            }
+
+            [FixedLength(20)]
+            public class Obj60
+            {
+                [PrimitiveValue(0)]
+                public Vector3 Values { get; set; }
+
+                [ReferenceArray(12)]
                 public byte[] Data { get; set; }
+            }
+
+
+            [FixedLength(4)]
+            public class Obj92
+            {
+                [PrimitiveValue(0)]
+                public ushort A { get; set; }
+
+                [PrimitiveValue(2)]
+                public ushort B { get; set; }
             }
         }
 
-        
 
-        [FixedLength(8)]
-        public class BitmapReferenceSetting
-        {
-            [PrimitiveValue(0)]
-            public short ValueA { get; set; }
 
-            [PrimitiveValue(2)]
-            public short ValueB { get; set; }
-
-            [PrimitiveValue(4)]
-            public uint BitmapId { get; set; }
-        }
+        // Predicted resources?
+        //[FixedLength(8)]
+        //public class BitmapReferenceSetting
+        //{
+        //    [PrimitiveValue(0)]
+        //    public short ValueA { get; set; }
+        //
+        //    [PrimitiveValue(2)]
+        //    public short ValueB { get; set; }
+        //
+        //    [PrimitiveValue(4)]
+        //    public uint BitmapId { get; set; }
+        //}
     }
 }

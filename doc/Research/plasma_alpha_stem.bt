@@ -1,0 +1,55 @@
+//------------------------------------------------
+//--- 010 Editor v11.0 Binary Template
+//
+//      File: 
+//   Authors: 
+//   Version: 
+//   Purpose: 
+//  Category: 
+// File Mask: 
+//  ID Bytes: 
+//   History: 
+//------------------------------------------------
+
+
+enum <ushort> ArgType { Bitmap, Value, Color, Switch };
+
+struct Section 
+{
+    ubyte A;
+    ubyte B;
+
+    uint C;
+    uint D;
+    uint E;
+    uint F;
+    uint G;
+    ushort H;
+    ArgType Type;
+    ushort ParamFlags;
+
+    char bitm[4];
+    uint bitmId;
+
+    float J;
+    float K;
+    float ConstValue;
+    float Color[3];
+    float P;
+    ushort AnimationFlags;
+    ushort Q;
+    float R;
+};
+
+struct Category
+{
+    uint sectionCount;
+    uint sectionSize;
+    Section sections[sectionCount];
+};
+
+FSeek(378);
+Category cat;
+
+FSeek(1274);
+Category cat2;

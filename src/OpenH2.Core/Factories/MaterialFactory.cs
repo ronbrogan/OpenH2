@@ -90,7 +90,7 @@ namespace OpenH2.Core.Factories
         private void PopulateFromMapping(
             H2vMap map,
             Material<BitmapTag> mat,
-            ShaderTag.ShaderArguments args,
+            ShaderTag.ShaderTemplateArguments args,
             MaterialMapping mapping)
         {
             mat.NormalMap = args.GetBitmap(map, mapping.NormalMapIndex);
@@ -140,7 +140,7 @@ namespace OpenH2.Core.Factories
             }
 
             var args = shader.Arguments[0];
-            var bitmRefs = args.ShaderMaps;
+            var bitmRefs = args.BitmapArguments;
 
             for (int i = 0; i < bitmRefs.Length; i++)
             {

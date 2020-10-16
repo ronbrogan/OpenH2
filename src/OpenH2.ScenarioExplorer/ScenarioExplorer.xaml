@@ -137,6 +137,10 @@
                                 <TextBlock Text="Interned String: "></TextBlock>
                                 <Button Command="{Binding CopyData}" CommandParameter="{Binding InternedString}" Content="{Binding InternedString}" Padding="0" Background="Transparent" Foreground="Blue"></Button>
                             </StackPanel>
+                            <StackPanel Orientation="Horizontal" VerticalAlignment="Center" >
+                                <TextBlock Text="Color: "></TextBlock>
+                                <TextBlock Text="      " Padding="0" Background="{Binding ColorBrush}"></TextBlock>
+                            </StackPanel>
                         </StackPanel>
                     </TabItem>
                     <TabItem Header="Object">

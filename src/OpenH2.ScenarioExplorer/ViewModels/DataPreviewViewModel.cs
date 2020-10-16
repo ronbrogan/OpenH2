@@ -1,5 +1,8 @@
-﻿using OpenH2.Core.Extensions;
+﻿using Avalonia.Media;
+using OpenH2.Core.Extensions;
 using PropertyChanged;
+using System;
+using System.Numerics;
 
 namespace OpenH2.ScenarioExplorer.ViewModels
 {
@@ -23,9 +26,23 @@ namespace OpenH2.ScenarioExplorer.ViewModels
             this.UInt = data.ReadUInt32At(offset);
             this.Float = data.ReadFloatAt(offset);
             this.String = data.ReadStringFrom(offset, 32);
+            this.Vec3 = data.ReadVec3At(offset);
+
+            try
+            {
+                var colorHex = $"#{ColorHex(Vec3.X)}{ColorHex(Vec3.Y)}{ColorHex(Vec3.Z)}";
+                this.ColorBrush = (ISolidColorBrush)new BrushConverter().ConvertFromString(colorHex);
+            }
+            catch { }
+            
 
             this.InternalOffset = (long)this.UInt - tag.InternalOffsetStart;
             this.SelectedOffset = tag.RawOffset + offset;
+
+            string ColorHex(float component)
+            {
+                return Convert.ToString((int)(Math.Clamp(component, 0f, 1f) * 255f), 16).PadLeft(2, '0');
+            }
         }
 
         public byte Byte { get; set; }
@@ -40,6 +57,8 @@ namespace OpenH2.ScenarioExplorer.ViewModels
 
         public float Float { get; set; }
 
+        public Vector3 Vec3 { get; set; }
+        public ISolidColorBrush ColorBrush { get; private set; }
         public string String { get; set; }
 
         public string InternedString { get; set; }
