@@ -6,8 +6,12 @@ using OpenH2.Core.Maps.MCC;
 using OpenH2.Core.Scripting.Generation;
 using OpenH2.Core.Scripting.LowLevel;
 using System;
+using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 
 namespace OpenH2.MccUtil
@@ -32,6 +36,7 @@ namespace OpenH2.MccUtil
     public class DumpScriptsTask
     {
         public DumpScriptsCommandLineArguments Args { get; }
+        private ConcurrentDictionary<string, HashSet<ushort>> MethodInfos = new ConcurrentDictionary<string, HashSet<ushort>>();
 
         public static async Task Run(DumpScriptsCommandLineArguments args)
         {
@@ -75,6 +80,8 @@ namespace OpenH2.MccUtil
 
                 DumpScriptsTo(Path.Combine(root.FullName, result.Path), outRoot);
             }
+
+            File.WriteAllText(Path.Combine(outRoot, "MethodInfo.txt"), GenerateBuiltinInfo());
         }
 
         public void DumpScriptsTo(string path, string destination)
@@ -103,9 +110,44 @@ namespace OpenH2.MccUtil
             {
                 var script = scnr.ScriptMethods[i];
                 var text = ScriptProcessor.GetScriptTree(scnr, script, i);
+                CollectBuiltins(text);
                 var debugTree = text.ToString(Args.CreateVerboseTrees);
                 File.WriteAllText(Path.Combine(debugRoot, script.Description + ".tree"), debugTree);
             }
+        }
+
+        private void CollectBuiltins(ScriptTreeNode root)
+        {
+            var nodes = new Stack<ScriptTreeNode>();
+
+            nodes.Push(root);
+
+            while(nodes.TryPop(out var node))
+            {
+                // Ignore per-scenario script method invocations
+                if(node.Original.NodeType == Core.Scripting.NodeType.ScriptInvocation)
+                {
+                    continue;
+                }
+
+                if(node.Original.NodeType == Core.Scripting.NodeType.Expression &&
+                    node.Original.DataType == Core.Scripting.ScriptDataType.MethodOrOperator)
+                {
+                    MethodInfos.AddOrUpdate(node.Value as string, k => new HashSet<ushort>() { node.Original.ScriptIndex }, (k, h) =>
+                    {
+                        h.Add(node.Original.ScriptIndex);
+                        return h;
+                    });
+                }
+
+                foreach(var grandChild in node.Children)
+                    nodes.Push(grandChild);
+            }
+        }
+
+        private string GenerateBuiltinInfo()
+        {
+            return string.Join("\r\n", this.MethodInfos.OrderBy(i => i.Value.First()).Select(i => JsonSerializer.Serialize(i.Value) + ": " + i.Key));
         }
     }
 }

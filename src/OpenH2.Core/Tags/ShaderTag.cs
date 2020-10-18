@@ -85,10 +85,10 @@ namespace OpenH2.Core.Tags
             // Obj52 is ~10 bytes long and only observed as 0s thus far
 
             [ReferenceArray(60)]
-            public Obj60[] FunctionArguments { get; set; }
+            public FunctionArgumentData[] FunctionArguments { get; set; }
 
             [ReferenceArray(92)]
-            public Obj92[] Obj92s { get; set; }
+            public WellKnownMapProperty[] WellKnownMapProperties { get; set; }
 
             [ReferenceArray(100)]
             public Vector3[] ConstantColorArguments { get; set; }
@@ -104,16 +104,34 @@ namespace OpenH2.Core.Tags
 
                 [PrimitiveValue(4)]
                 public Vector2 Something { get; set; }
+
+                [PrimitiveValue(8)]
+                public byte A { get; set; }
+
+                [PrimitiveValue(9)]
+                public byte B { get; set; }
+
+                [PrimitiveValue(10)]
+                public byte C { get; set; }
+
+                [PrimitiveValue(11)]
+                public byte D { get; set; }
             }
 
             [FixedLength(4)]
             public class BitmapParameter2
             {
                 [PrimitiveValue(0)]
-                public ushort ValueA { get; set; }
+                public byte A { get; set; }
 
-                [PrimitiveValue(0)]
-                public ushort ValueB { get; set; }
+                [PrimitiveValue(1)]
+                public byte B { get; set; }
+
+                [PrimitiveValue(2)]
+                public byte C { get; set; }
+
+                [PrimitiveValue(3)]
+                public byte D { get; set; }
             }
 
             [FixedLength(6)]
@@ -122,8 +140,14 @@ namespace OpenH2.Core.Tags
                 [PrimitiveValue(0)]
                 public ushort ValueA { get; set; }
 
-                [PrimitiveValue(0)]
+                [PrimitiveValue(2)]
                 public ushort ValueB { get; set; }
+
+                [PrimitiveValue(4)]
+                public byte ValueC { get; set; }
+
+                [PrimitiveValue(5)]
+                public byte ValueD { get; set; }
             }
 
             [FixedLength(2)]
@@ -147,7 +171,7 @@ namespace OpenH2.Core.Tags
             }
 
             [FixedLength(20)]
-            public class Obj60
+            public class FunctionArgumentData
             {
                 [PrimitiveValue(0)]
                 public Vector3 Values { get; set; }
@@ -156,12 +180,17 @@ namespace OpenH2.Core.Tags
                 public byte[] Data { get; set; }
             }
 
-
+            // These seem to line up with the 'Properties' in the shader template
+            // 0 Diffuse
+            // 1 Emissive
+            // 2 LightmapAlpha
+            // 3 LightmapTranslucent
+            // 4 ActiveCamo
             [FixedLength(4)]
-            public class Obj92
+            public class WellKnownMapProperty
             {
                 [PrimitiveValue(0)]
-                public ushort A { get; set; }
+                public ushort MapIndex { get; set; }
 
                 [PrimitiveValue(2)]
                 public ushort B { get; set; }

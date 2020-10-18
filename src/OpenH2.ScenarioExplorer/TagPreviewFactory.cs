@@ -174,6 +174,7 @@ namespace OpenH2.ScenarioExplorer
         {
             var output = new StringBuilder();
 
+            // Install from https://archive.org/details/dxsdk_nov08
             var utilsPath = Path.Combine(Environment.GetEnvironmentVariable("DXSDK_DIR", EnvironmentVariableTarget.Machine), "Utilities\\bin\\x64");
 
             var path = Path.Combine(utilsPath, "psa.exe");
