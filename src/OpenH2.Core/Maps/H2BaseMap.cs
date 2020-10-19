@@ -1,4 +1,5 @@
-﻿using OpenH2.Serialization.Materialization;
+﻿using OpenH2.Core.Tags;
+using OpenH2.Serialization.Materialization;
 using System.Collections.Generic;
 
 namespace OpenH2.Core.Maps
@@ -19,6 +20,7 @@ namespace OpenH2.Core.Maps
 
         public Dictionary<int, string> InternedStrings { get; set; }
         public Dictionary<uint, string> TagNames { get; set; }
+        public Dictionary<(TagName, string), uint> TagNameLookup { get; set; }
 
         public int IndexOffset => Header.InternedStringIndexOffset;
 

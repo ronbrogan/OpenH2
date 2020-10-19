@@ -280,7 +280,12 @@ namespace OpenH2.Serialization
 
         public static int SizeOf<T>()
         {
-            var fixedLengthAttr = typeof(T).GetCustomAttribute<FixedLengthAttribute>();
+            return SizeOf(typeof(T));
+        }
+
+        public static int SizeOf(Type t)
+        {
+            var fixedLengthAttr = t.GetCustomAttribute<FixedLengthAttribute>();
 
             if (fixedLengthAttr == null)
             {
@@ -288,6 +293,25 @@ namespace OpenH2.Serialization
             }
 
             return fixedLengthAttr.Length;
+        }
+
+        public static int StartsAt(Type t, string propertyName)
+        {
+            SerializableMemberAttribute memberAttr = null;
+
+            var member = t.GetMember(propertyName);
+
+            if(member.Length > 0)
+            {
+                memberAttr = member[0].GetCustomAttribute<SerializableMemberAttribute>();
+            }
+
+            if (memberAttr == null)
+            {
+                throw new Exception("Can't find the start of the specified member");
+            }
+
+            return memberAttr.Offset;
         }
 
         public static int StartsAt<T>(Expression<Func<T, object>> property)

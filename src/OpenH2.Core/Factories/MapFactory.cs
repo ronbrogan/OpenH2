@@ -110,6 +110,7 @@ namespace OpenH2.Core.Factories
             scene.SecondaryMagic = CalculateSecondaryMagic(scene.Header, firstOffset);
             scene.InternedStrings = GetAllStrings(scene, reader);
             scene.TagNames = GetTagNames(scene, reader);
+            scene.TagNameLookup = scene.TagNames.ToDictionary(kv => (scene.TagIndex[kv.Key].Tag, kv.Value), kv => kv.Key);
         }
 
 

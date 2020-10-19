@@ -151,6 +151,15 @@ namespace OpenH2.Core.Extensions
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static void WriteByteAt(this Stream data, int offset, byte value)
+        {
+            if (data.Position != offset)
+                data.Position = offset;
+
+            data.WriteByte(value);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static short ReadInt16At(this Stream data, int offset)
         {
             Span<byte> bytes = stackalloc byte[2];
@@ -161,7 +170,20 @@ namespace OpenH2.Core.Extensions
             data.Read(bytes);
 
             return BitConverter.ToInt16(bytes);
+        }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static void WriteInt16At(this Stream data, int offset, short value)
+        {
+            if (offset + 2 > data.Length)
+            {
+                return;
+            }
+
+            if (data.Position != offset)
+                data.Position = offset;
+
+            data.Write(BitConverter.GetBytes(value));
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -175,6 +197,20 @@ namespace OpenH2.Core.Extensions
             data.Read(bytes);
 
             return BitConverter.ToInt32(bytes);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static void WriteInt32At(this Stream data, int offset, int value)
+        {
+            if (offset + 4 > data.Length)
+            {
+                return;
+            }
+
+            if (data.Position != offset)
+                data.Position = offset;
+
+            data.Write(BitConverter.GetBytes(value));
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

@@ -69,7 +69,7 @@ namespace OpenH2.Core.Factories
 
         private static Dictionary<TagName, Type> cachedTagTypes = null;
 
-        private static Type GetTypeForTag(TagName tag)
+        public static Type GetTypeForTag(TagName tag)
         {
             if(cachedTagTypes == null)
             {
