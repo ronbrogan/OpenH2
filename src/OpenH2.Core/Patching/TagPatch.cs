@@ -5,7 +5,7 @@ namespace OpenH2.Core.Patching
 {
     public class TagPatch
     {
-        public string Name { get; set; }
+        public string TagName { get; set; }
 
         public TagPropertyPatch[] PropertyPatches { get; set; } = Array.Empty<TagPropertyPatch>();
         public TagBinaryPatch[] BinaryPatches { get; set; } = Array.Empty<TagBinaryPatch>();

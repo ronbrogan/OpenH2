@@ -16,7 +16,7 @@ namespace OpenH2.Core.Tags
 
 
         [ReferenceArray(12)]
-        public Obj172[] Obj172s { get; set; }
+        public Obj12[] Obj12s { get; set; }
 
         [ReferenceArray(44)]
         public PositionTrack[] Tracks { get; set; }
@@ -32,13 +32,10 @@ namespace OpenH2.Core.Tags
 
 
         [FixedLength(32)]
-        public class Obj172
+        public class Obj12
         {
-            [PrimitiveValue(0)]
-            public ushort IndexA { get; set; }
-
-            [PrimitiveValue(2)]
-            public ushort IndexB { get; set; }
+            [InternedString(0)]
+            public string Description { get; set; }
 
             [PrimitiveValue(4)]
             public ushort ValueA { get; set; }
@@ -60,7 +57,7 @@ namespace OpenH2.Core.Tags
         public class PositionTrack
         {
             [InternedString(0)]
-            public string IndexA { get; set; }
+            public string Description { get; set; }
 
 
             [PrimitiveArray(4, 18)]

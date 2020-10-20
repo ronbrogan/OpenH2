@@ -2,10 +2,12 @@
 using OpenH2.Core.Extensions;
 using OpenH2.Core.Factories;
 using OpenH2.Core.Maps.MCC;
+using OpenH2.Core.Patching;
 using OpenH2.Core.Scripting.LowLevel;
 using OpenH2.Serialization;
 using System;
 using System.IO;
+using System.Text.Json;
 using System.Threading.Tasks;
 
 namespace OpenH2.MccBulkPatcher
@@ -73,6 +75,20 @@ namespace OpenH2.MccBulkPatcher
                 {
                     Console.WriteLine($"Patching '{scene.Header.Name}' with '{patchFile.Substring(patchDir.Length)}'");
                     ScriptTreePatcher.PatchMap(scene, patchedMap, patchFile);
+                }
+
+                var tagPatches = Directory.GetFiles(patchDir, "*.tagpatch", SearchOption.AllDirectories);
+
+                var tagPatcher = new TagPatcher(scene, patchedMap);
+
+                foreach (var tagPatchPath in tagPatches)
+                {
+                    Console.WriteLine($"TagPatching '{scene.Header.Name}' with '{tagPatchPath.Substring(patchDir.Length)}'");
+
+                    var settings = new JsonSerializerOptions() { ReadCommentHandling = JsonCommentHandling.Skip };
+                    var patches = JsonSerializer.Deserialize<TagPatch[]>(File.ReadAllText(tagPatchPath), settings);
+                    foreach (var patch in patches)
+                        tagPatcher.Apply(patch);
                 }
 
                 var sig = H2mccMap.CalculateSignature(patchedMap);

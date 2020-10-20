@@ -8,6 +8,7 @@ using System.IO;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
+using System.Runtime.InteropServices;
 
 namespace OpenH2.Serialization
 {
@@ -287,12 +288,14 @@ namespace OpenH2.Serialization
         {
             var fixedLengthAttr = t.GetCustomAttribute<FixedLengthAttribute>();
 
-            if (fixedLengthAttr == null)
+            if (fixedLengthAttr != null)
             {
-                throw new Exception("Can't take the size of a non-fixed length serializable type");
+                return fixedLengthAttr.Length;
             }
 
-            return fixedLengthAttr.Length;
+            // TODO: check if SizeOf will work, and throw a more sane exception?
+
+            return Marshal.SizeOf(t);
         }
 
         public static int StartsAt(Type t, string propertyName)

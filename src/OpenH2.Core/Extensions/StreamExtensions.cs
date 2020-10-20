@@ -398,6 +398,20 @@ namespace OpenH2.Core.Extensions
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static void WriteFloatAt(this Stream data, int offset, float value)
+        {
+            if (offset + 4 > data.Length)
+            {
+                return;
+            }
+
+            if (data.Position != offset)
+                data.Position = offset;
+
+            data.Write(BitConverter.GetBytes(value));
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static string ToStringFromNullTerminated(this byte[] data)
         {
             var builder = new StringBuilder(data.Length);

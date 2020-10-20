@@ -2,17 +2,9 @@
 using OpenH2.Core.Extensions;
 using OpenH2.Core.Factories;
 using OpenH2.Core.Maps;
-using OpenH2.Core.Maps.MCC;
 using OpenH2.Core.Patching;
-using OpenH2.Core.Scripting;
-using OpenH2.Core.Scripting.LowLevel;
-using OpenH2.Core.Tags.Scenario;
 using OpenH2.Serialization;
-using OpenH2.Serialization.Layout;
-using System;
 using System.IO;
-using System.Reflection;
-using System.Text.Encodings.Web;
 using System.Text.Json;
 using System.Threading.Tasks;
 
@@ -47,24 +39,23 @@ namespace OpenH2.MccUtil
 
         public async Task Run()
         {
-            // Load to determine where to write patches to
-            // TODO: use mcc factory again
-            //var factory = new MccMapFactory();
-            //this.scene = factory.FromStream(map);
-
-            var factory = new MapFactory(Path.GetDirectoryName(this.Args.MapPath), NullMaterialFactory.Instance);
-            this.scene = factory.FromFile(new FileStream(this.Args.MapPath, FileMode.Open));
 
             using var inmemMap = new MemoryStream();
             using (var map = File.Open(this.Args.MapPath, FileMode.Open))
             {
                 map.CopyTo(inmemMap);
                 inmemMap.Position = 0;
+
+                // Load to determine where to write patches to
+                var factory = new MccMapFactory();
+                this.scene = factory.FromStream(map);
             }
 
             var tagPatcher = new TagPatcher(scene, inmemMap);
-            var patch = JsonSerializer.Deserialize<TagPatch>(File.ReadAllText(this.Args.TagPatchPath));
-            tagPatcher.Apply(patch);
+            var settings = new JsonSerializerOptions() { ReadCommentHandling = JsonCommentHandling.Skip };
+            var patches = JsonSerializer.Deserialize<TagPatch[]>(File.ReadAllText(this.Args.TagPatchPath), settings);
+            foreach(var patch in patches)
+                tagPatcher.Apply(patch);
 
             inmemMap.Position = 0;
             var sig = H2vMap.CalculateSignature(inmemMap.ToArray());

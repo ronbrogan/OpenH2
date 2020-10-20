@@ -27,7 +27,7 @@ namespace OpenH2.Core.Tags.Scenario
             public ushort PrimaryWeaponLoadedAmmo { get; set; }
 
             [PrimitiveValue(50)]
-            public ushort PrimaryWeaponReserveAmmo { get; set; }
+            public ushort PrimaryWeaponTotalAmmo { get; set; }
 
             [PrimitiveValue(56)]
             public TagRef<WeaponTag> SecondaryWeapon { get; set; }
@@ -36,7 +36,7 @@ namespace OpenH2.Core.Tags.Scenario
             public ushort SecondaryWeaponLoadedAmmo { get; set; }
 
             [PrimitiveValue(62)]
-            public ushort SecondaryWeaponReserveAmmo { get; set; }
+            public ushort SecondaryWeaponTotalAmmo { get; set; }
 
             [PrimitiveValue(64)]
             public ushort PrimaryGrenadeCount { get; set; }

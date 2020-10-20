@@ -17,6 +17,9 @@ namespace OpenH2.Core.Tags
         [PrimitiveValue(4)]
         public Vector3 Params { get; set; }
 
+        [ReferenceArray(40)]
+        public MoverParameter[] MoverParameters { get; set; }
+
         [ReferenceArray(48)]
         public Obj48[] Obj48s { get; set; }
 
@@ -65,6 +68,30 @@ namespace OpenH2.Core.Tags
 
         [ReferenceArray(232)]
         public Obj232[] Obj232s { get; set; }
+
+
+        [FixedLength(112)]
+        public class MoverParameter
+        {
+            [PrimitiveValue(4)]
+            public ushort Flags { get; set; }
+
+            [InternedString(8)]
+            public string Description { get; set; }
+
+            [PrimitiveValue(40)]
+            public float ValueA { get; set; }
+
+            [PrimitiveValue(44)]
+            public float ValueB { get; set; }
+
+            [PrimitiveValue(48)]
+            public float DeltaVelocity { get; set; }
+
+            [PrimitiveValue(52)]
+            public float MaxVelocity { get; set; }
+        }
+
 
         [FixedLength(24)]
         public class Obj48

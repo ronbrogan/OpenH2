@@ -5,10 +5,12 @@ using OpenH2.Core.Offsets;
 using OpenH2.Core.Parsing;
 using OpenH2.Core.Tags;
 using OpenH2.Serialization;
+using OpenH2.Serialization.Layout;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
-using System.Numerics;
+using System.Reflection;
 using System.Text.Json;
 
 namespace OpenH2.Core.Patching
@@ -25,6 +27,7 @@ namespace OpenH2.Core.Patching
             { typeof(ushort), (s,o,e) => s.WriteUInt16At(o, e.GetUInt16()) },
             { typeof(int), (s,o,e) => s.WriteInt32At(o, e.GetInt32()) },
             { typeof(uint), (s,o,e) => s.WriteUInt32At(o, e.GetUInt32()) },
+            { typeof(float), (s,o,e) => s.WriteFloatAt(o, e.GetSingle()) },
         };
 
         public TagPatcher(H2BaseMap originalMap, Stream mapToPatch)
@@ -39,7 +42,7 @@ namespace OpenH2.Core.Patching
 
         public void Apply(TagPatch patchSet)
         {
-            var tagId = GetTagIdFromString(patchSet.Name);
+            var tagId = GetTagIdFromString(patchSet.TagName);
 
             var tagInfo = originalMap.TagIndex[tagId];
 
@@ -99,20 +102,30 @@ namespace OpenH2.Core.Patching
                 {
                     if(prop.PropertyType.IsArray == false || step.ElementArgument is not int)
                     {
-                        throw new NotSupportedException("Only arrays are current supported for element access");
+                        throw new NotSupportedException("Only arrays are currently supported for element access");
                     }
 
-                    var referenceInfoOffset = BlamSerializer.StartsAt(stepType, step.PropertyName);
-
-                    // Read element array base offset
-                    var baseOffset = new SecondaryOffset(this.originalMap, this.mapToPatch.ReadInt32At(tagInfo.Offset.Value + offset + referenceInfoOffset + 4));
-
                     var elementSize = BlamSerializer.SizeOf(prop.PropertyType.GetElementType());
-
                     var elementOffset = (elementSize * ((int)step.ElementArgument));
 
-                    // baseOffset is the absolute offset, need to subtract tag offset and prior property offsets to get relative
-                    offset += baseOffset.Value - tagInfo.Offset.Value - offset + elementOffset;
+                    if (prop.GetCustomAttribute<ReferenceArrayAttribute>() != null)
+                    {
+                        var startsAt = BlamSerializer.StartsAt(stepType, step.PropertyName);
+
+                        // Read element array base offset
+                        var baseOffset = new SecondaryOffset(this.originalMap, this.mapToPatch.ReadInt32At(tagInfo.Offset.Value + offset + startsAt + 4));
+
+                        // baseOffset is the absolute offset, need to subtract tag offset and prior property offsets to get relative
+                        offset += baseOffset.Value - tagInfo.Offset.Value - offset + elementOffset;
+                    }
+                    else if(prop.GetCustomAttribute<PrimitiveArrayAttribute>() != null)
+                    {
+                        offset += elementOffset;
+                    }
+                    else
+                    {
+                        throw new Exception("Only primitive and reference arrays are supported");
+                    }
 
                     stepType = prop.PropertyType.GetElementType();
                 }
@@ -127,6 +140,11 @@ namespace OpenH2.Core.Patching
 
         private void WritePropertyValue(TagIndexEntry tagInfo, ResolvedTagPropertyInfo info, TagPropertyPatch patch)
         {
+            if(info.RelativeOffset < 0)
+            {
+                Debugger.Break();
+            }
+
             if(this.DataWriters.TryGetValue(info.PropertyType, out var writer)
                 || (info.PropertyType.IsGenericType && this.DataWriters.TryGetValue(info.PropertyType.GetGenericTypeDefinition(), out writer)))
             {
