@@ -17,6 +17,7 @@ namespace OpenH2.Foundation.Logging
             public static readonly Color White = new Color(ConsoleColor.White);
             public static readonly Color Red = new Color(ConsoleColor.Red);
             public static readonly Color Magenta = new Color(ConsoleColor.Magenta);
+            public static readonly Color Cyan = new Color(ConsoleColor.Cyan);
         }
 
         public static void LogInfo(string message)

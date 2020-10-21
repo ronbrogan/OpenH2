@@ -4,6 +4,7 @@ using OpenH2.Core.Maps;
 using OpenH2.Core.Offsets;
 using OpenH2.Core.Parsing;
 using OpenH2.Core.Tags;
+using OpenH2.Foundation.Logging;
 using OpenH2.Serialization;
 using OpenH2.Serialization.Layout;
 using System;
@@ -61,6 +62,8 @@ namespace OpenH2.Core.Patching
         {
             var patchOffset = tagInfo.Offset.Value + bin.RelativeOffset;
 
+            Logger.Log(bin.Data.Length + "bytes @ " + bin.RelativeOffset, Logger.Color.Cyan);
+
             this.mapToPatch.Position = patchOffset;
             this.mapToPatch.Write(bin.Data);
         }
@@ -69,7 +72,7 @@ namespace OpenH2.Core.Patching
         {
             var propertyInfo = ResolvePropertyInfo(tagInfo, patch.PropertySelector);
 
-            Console.WriteLine(propertyInfo.PropertyType.ToString() + " @ " + propertyInfo.RelativeOffset);
+            Logger.Log(propertyInfo.PropertyType.ToString() + " @ " + propertyInfo.RelativeOffset, Logger.Color.Magenta);
 
             WritePropertyValue(tagInfo, propertyInfo, patch);
         }

@@ -1,4 +1,6 @@
 ﻿using CommandLine;
+using Microsoft.Extensions.FileSystemGlobbing;
+using Microsoft.Extensions.FileSystemGlobbing.Abstractions;
 using OpenH2.Core.Extensions;
 using OpenH2.Core.Factories;
 using OpenH2.Core.Maps.MCC;
@@ -7,7 +9,9 @@ using OpenH2.Core.Scripting.LowLevel;
 using OpenH2.Serialization;
 using System;
 using System.IO;
+using System.Linq;
 using System.Text.Json;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
 namespace OpenH2.MccBulkPatcher
@@ -16,6 +20,9 @@ namespace OpenH2.MccBulkPatcher
     {
         [Option("patches", HelpText = "The directory to pull patches from, defaults to 'patches'")]
         public string PatchesDirectory { get; set; } = "patches";
+
+        [Option("filter", HelpText = "A filter to select which maps to apply patches to")]
+        public string PatchFilter { get; set; } = "*";
 
         [Option("maps", HelpText = "Source of clean maps, will auto detect windows store MCC installation folder")]
         public string RawMapsDirectory { get; set; } = null;
@@ -48,7 +55,11 @@ namespace OpenH2.MccBulkPatcher
 
             Directory.CreateDirectory(args.PatchedMapsDirectory);
 
-            var patchDirs = Directory.GetDirectories(patches);
+            var folderFilter = GetRegexForFilter(args.PatchFilter);
+
+            var patchDirs = Directory.GetDirectories(patches)
+                .Where(d => folderFilter.IsMatch(Path.GetFileName(d)))
+                .ToArray();
 
             Parallel.ForEach(patchDirs, patchDir =>
             {
@@ -99,6 +110,13 @@ namespace OpenH2.MccBulkPatcher
             });
 
             Console.WriteLine("Done!");
+        }
+
+        private static Regex GetRegexForFilter(string filter)
+        {
+            return new Regex("^" + Regex.Escape(filter)
+              .Replace("\\*", ".*")
+              .Replace("\\?", ".") + "$", RegexOptions.Compiled);
         }
 
         private static string FindDirectory(string search)

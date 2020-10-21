@@ -22,6 +22,13 @@ namespace OpenH2.Core.Tags
         [ReferenceArray(260)]
         public BitmapWrapper[] Bitmaps { get; set; }
 
+        [PrimitiveValue(520)]
+        // When set to zero, sword reticle never changed to red
+        public float ReticleRange { get; set; }
+
+        [PrimitiveValue(528)]
+        public float AutoAimAmount { get; set; }
+
         [ReferenceArray(680)]
         public FirstPersonAnimation[] FirstPersonAnimations { get; set; }
 

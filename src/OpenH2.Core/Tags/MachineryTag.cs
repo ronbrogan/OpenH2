@@ -32,5 +32,20 @@ namespace OpenH2.Core.Tags
 
         [PrimitiveValue(88)]
         public uint FootId { get; set; }
+
+        [PrimitiveValue(196)]
+        public float ValueA { get; set; }
+
+        [PrimitiveValue(200)]
+        public float PositionChangeRate { get; set; }
+
+        [PrimitiveValue(204)]
+        public float UnknownChangeRate { get; set; }
+
+        [PrimitiveValue(212)]
+        public float ValueD { get; set; }
+
+        [PrimitiveValue(280)]
+        public float ActivationRange { get; set; }
     }
 }
