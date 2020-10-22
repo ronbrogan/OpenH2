@@ -56,11 +56,7 @@ namespace OpenH2.ScenarioExplorer.Processors
             }
 
             tagEntry.Children = addedChildren
-                .Select(c => new TagTreeEntryViewModel()
-                {
-                    Id = c.Id,
-                    TagName = c.TagIndexEntry.Tag + (c.Name != null ? " - " + c.Name : string.Empty)
-                })
+                .Select(c => new TagTreeEntryViewModel(c))
                 .ToArray();
         }
     }

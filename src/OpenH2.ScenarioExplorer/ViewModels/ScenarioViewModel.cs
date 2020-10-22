@@ -42,18 +42,10 @@ namespace OpenH2.ScenarioExplorer.ViewModels
             this.GenerateCaoCode = ReactiveCommand.Create(GenerateCaoCodeM);
 
             var scenarioVm = GetTagViewModel(scene.IndexHeader.Scenario);
-            var scenarioEntry = new TagTreeEntryViewModel()
-            {
-                Id = scene.IndexHeader.Scenario,
-                TagName = "scnr - " + scene.TagNames[scene.IndexHeader.Scenario]
-            };
+            var scenarioEntry = new TagTreeEntryViewModel(scenarioVm.OriginalTag);
 
             var globalsVm = GetTagViewModel(scene.IndexHeader.Globals);
-            var globalsEntry = new TagTreeEntryViewModel()
-            {
-                Id = scene.IndexHeader.Globals,
-                TagName = globalsVm.Name
-            };
+            var globalsEntry = new TagTreeEntryViewModel(globalsVm.OriginalTag);
 
             if (discoveryMode)
             {
@@ -73,11 +65,7 @@ namespace OpenH2.ScenarioExplorer.ViewModels
             if(scene.Header.LocalSounds.IsInvalid == false)
             {
                 var soundsVm = GetTagViewModel(scene.Header.LocalSounds);
-                var soundsEntry = new TagTreeEntryViewModel()
-                {
-                    Id = scene.Header.LocalSounds,
-                    TagName = soundsVm.Name
-                };
+                var soundsEntry = new TagTreeEntryViewModel(soundsVm.OriginalTag);
 
                 roots.Insert(1, soundsEntry);
                 treeProcessor.PopulateChildren(scenarioVm, soundsEntry);

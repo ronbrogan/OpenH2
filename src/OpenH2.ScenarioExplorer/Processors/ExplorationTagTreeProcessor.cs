@@ -52,11 +52,7 @@ namespace OpenH2.ScenarioExplorer.Processors
                     Console.WriteLine($"Found null tag for [{indexEntry.Tag}] tag");
 
                     addedChildren.Add(child.Id);
-                    childrenVms.Add(new TagTreeEntryViewModel()
-                    {
-                        Id = child.Id,
-                        TagName = indexEntry.Tag.ToString()
-                    });
+                    childrenVms.Add(new TagTreeEntryViewModel(childTag));
 
                     continue;
                 }
@@ -76,14 +72,9 @@ namespace OpenH2.ScenarioExplorer.Processors
                     }
                 }
 
-                var tagName = tagLabel + (childTag.Name != null ? " - " + childTag.Name : string.Empty);
 
                 addedChildren.Add(child.Id);
-                childrenVms.Add(new TagTreeEntryViewModel()
-                {
-                    Id = child.Id,
-                    TagName = tagName
-                });
+                childrenVms.Add(new TagTreeEntryViewModel(childTag));
             }
 
             entry.Children = childrenVms.ToArray();

@@ -148,8 +148,19 @@ namespace OpenH2.Core.Patching
                 Debugger.Break();
             }
 
-            if(this.DataWriters.TryGetValue(info.PropertyType, out var writer)
-                || (info.PropertyType.IsGenericType && this.DataWriters.TryGetValue(info.PropertyType.GetGenericTypeDefinition(), out writer)))
+            var propType = info.PropertyType;
+
+            if(propType.IsGenericType)
+            {
+                propType = propType.GetGenericTypeDefinition();
+            }
+
+            if(propType.IsEnum)
+            {
+                propType = propType.GetEnumUnderlyingType();
+            }
+
+            if(this.DataWriters.TryGetValue(propType, out var writer))
             {
                 writer(this.mapToPatch, tagInfo.Offset.Value + info.RelativeOffset, patch.Value);
             }

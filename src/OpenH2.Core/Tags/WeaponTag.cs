@@ -22,6 +22,9 @@ namespace OpenH2.Core.Tags
         [ReferenceArray(260)]
         public BitmapWrapper[] Bitmaps { get; set; }
 
+        [PrimitiveValue(300)]
+        public WeaponFlags Flags { get; set; }
+
         [PrimitiveValue(520)]
         // When set to zero, sword reticle never changed to red
         public float ReticleRange { get; set; }
@@ -47,6 +50,11 @@ namespace OpenH2.Core.Tags
 
             [PrimitiveValue(12)]
             public TagRef<AnimationGraphTag> Animation { get; set; }
+        }
+
+        public enum WeaponFlags : uint
+        {
+            KillConsumesDurability = 1 << 26
         }
     }
 }

@@ -1,4 +1,5 @@
-﻿using PropertyChanged;
+﻿using OpenH2.Core.Tags;
+using PropertyChanged;
 using System;
 
 namespace OpenH2.ScenarioExplorer.ViewModels
@@ -8,6 +9,8 @@ namespace OpenH2.ScenarioExplorer.ViewModels
     [AddINotifyPropertyChangedInterface]
     public class TagTreeEntryViewModel
     {
+        public string TagFourCC { get; set; }
+
         public string TagName { get; set; }
 
         public uint Id { get; set; }
@@ -18,9 +21,19 @@ namespace OpenH2.ScenarioExplorer.ViewModels
 
         public bool NullChildren => Children == null;
 
-        public TagTreeEntryViewModel()
-        {
+        public string Name { get; }
 
+        public TagTreeEntryViewModel(BaseTag tag) : this(tag.Id, tag.TagIndexEntry.Tag.ToString(), tag.Name)
+        {
+        }
+
+        public TagTreeEntryViewModel(uint id, string tagFourCC, string name)
+        {
+            this.Id = id;
+            this.TagFourCC = tagFourCC;
+            this.Name = name;
+
+            this.TagName = tagFourCC + "-" + name;
         }
 
         public void GenerateCaoCode()
@@ -30,7 +43,7 @@ namespace OpenH2.ScenarioExplorer.ViewModels
 
         public void CopyTagName()
         {
-            TextCopy.ClipboardService.SetText(TagName);
+            TextCopy.ClipboardService.SetText(this.Name.Replace("\\", "\\\\") + "." + this.TagFourCC);
         }
 
         public void CopyTagId()
