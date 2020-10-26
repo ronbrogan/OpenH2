@@ -1,4 +1,6 @@
-﻿using OpenH2.Core.Maps;
+﻿using OpenH2.Core.GameObjects;
+using OpenH2.Core.Maps;
+using OpenH2.Core.Scripting;
 using OpenH2.Core.Tags.Layout;
 using OpenH2.Serialization.Layout;
 using System.Numerics;
@@ -15,7 +17,7 @@ namespace OpenH2.Core.Tags.Scenario
         }
 
         [FixedLength(68)]
-        public class StartingProfileDefinition
+        public class StartingProfileDefinition : IGameObjectDefinition<IStartingProfile>
         {
             [StringValue(0, 40)]
             public string Description { get; set; }
@@ -43,6 +45,8 @@ namespace OpenH2.Core.Tags.Scenario
 
             [PrimitiveValue(66)]
             public ushort SecondaryGrenadeCount { get; set; }
+
+            public IStartingProfile GameObject { get; set; }
         }
 
         [FixedLength(52)]

@@ -77,32 +77,32 @@ namespace OpenH2.Core.Scripting.Generation
             }
             else
             {
-                // iteratively find correct name via type and index 
-                var typeNames = nameSlot.Where(n => n.TypeInfo == type);
+                // Fallback to just look for same index. This supports using EntityIdentifier -> Typed vars
+                var indexOnlyMatch = nameSlot.FirstOrDefault(n => n.Index == index);
 
-                if(typeNames.Count() == 1)
+                if (indexOnlyMatch != null)
                 {
-                    result = typeNames.First().UniqueName;
+                    result = indexOnlyMatch.UniqueName;
                     return true;
                 }
                 else
                 {
+                    // iteratively find correct name via type and index 
+                    var typeNames = nameSlot.Where(n => n.TypeInfo == type);
 
-                    var typeIndexMatch = typeNames.FirstOrDefault(n => n.Index == index);
-
-                    if(typeIndexMatch != null)
+                    if (typeNames.Count() == 1)
                     {
-                        result = typeIndexMatch.UniqueName;
+                        result = typeNames.First().UniqueName;
                         return true;
                     }
                     else
                     {
-                        // Fallback to just look for same index. This supports using EntityIdentifier -> Typed vars
-                        var indexOnlyMatch = nameSlot.FirstOrDefault(n => n.Index == index);
 
-                        if (indexOnlyMatch != null)
+                        var typeIndexMatch = typeNames.FirstOrDefault(n => n.Index == index);
+
+                        if (typeIndexMatch != null)
                         {
-                            result = indexOnlyMatch.UniqueName;
+                            result = typeIndexMatch.UniqueName;
                             return true;
                         }
                         else

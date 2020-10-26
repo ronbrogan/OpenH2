@@ -752,10 +752,10 @@ namespace OpenH2.Core.Scripting
         bool objects_can_see_object(IGameObject entity, IGameObject target, float degrees);
 
         /// <summary>returns true if any of the specified units are looking within the specified number of degrees of the object.</summary>
-        bool objects_can_see_object(IGameObject entity, EntityIdentifier target, float degrees);
+        bool objects_can_see_object(IGameObject entity, IEntityIdentifier target, float degrees);
 
         /// <summary>returns true if any of the specified units are looking within the specified number of degrees of the object.</summary>
-        bool objects_can_see_object(GameObjectList list, EntityIdentifier target, float degrees);
+        bool objects_can_see_object(GameObjectList list, IEntityIdentifier target, float degrees);
         
         /// <summary>returns true if any of the specified units are looking within the specified number of degrees of the object.</summary>
         bool objects_can_see_object(GameObjectList list, IGameObject target, float degrees);
@@ -814,19 +814,19 @@ namespace OpenH2.Core.Scripting
         void object_create(IGameObject object_name);
 
         /// <summary>creates an object from the scenario.</summary>
-        void object_create(EntityIdentifier object_name);
+        void object_create(IEntityIdentifier object_name);
 
         /// <summary>creates an object, destroying it first if it already exists.</summary>
         void object_create_anew(IGameObject entity);
 
         /// <summary>creates an object, destroying it first if it already exists.</summary>
-        void object_create_anew(EntityIdentifier object_name);
+        void object_create_anew(IEntityIdentifier object_name);
 
         /// <summary>creates anew all objects from the scenario whose names contain the given substring.</summary>
         void object_create_anew_containing(string value);
 
         /// <summary>creates an object, potentially resulting in multiple objects if it already exists.</summary>
-        void object_create_clone(EntityIdentifier object_name);
+        void object_create_clone(IEntityIdentifier object_name);
 
         /// <summary>creates an object, potentially resulting in multiple objects if it already exists.</summary>
         void object_create_clone(IGameObject entity);

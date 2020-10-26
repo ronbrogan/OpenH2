@@ -1,6 +1,6 @@
 ﻿namespace OpenH2.Core.GameObjects
 {
-    public interface ICinematicTitle : IGameObject
+    public interface ICinematicTitle
     {
     }
 }

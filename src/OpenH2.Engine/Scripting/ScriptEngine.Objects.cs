@@ -65,7 +65,7 @@ namespace OpenH2.Engine.Scripting
         }
 
         /// <summary>creates an object from the scenario.</summary>
-        public void object_create(EntityIdentifier object_name)
+        public void object_create(IEntityIdentifier object_name)
         {
         }
 
@@ -75,7 +75,7 @@ namespace OpenH2.Engine.Scripting
         }
 
         /// <summary>creates an object, destroying it first if it already exists.</summary>
-        public void object_create_anew(EntityIdentifier object_name)
+        public void object_create_anew(IEntityIdentifier object_name)
         {
         }
 
@@ -90,7 +90,7 @@ namespace OpenH2.Engine.Scripting
         }
 
         /// <summary>creates an object, potentially resulting in multiple objects if it already exists.</summary>
-        public void object_create_clone(EntityIdentifier object_name)
+        public void object_create_clone(IEntityIdentifier object_name)
         {
         }
 
@@ -316,7 +316,7 @@ namespace OpenH2.Engine.Scripting
         }
 
         /// <summary>returns true if any of the specified units are looking within the specified number of degrees of the object.</summary>
-        public bool objects_can_see_object(IGameObject entity, EntityIdentifier target, float degrees)
+        public bool objects_can_see_object(IGameObject entity, IEntityIdentifier target, float degrees)
         {
             return default(bool);
         }
@@ -328,7 +328,7 @@ namespace OpenH2.Engine.Scripting
         }
 
         /// <summary>returns true if any of the specified units are looking within the specified number of degrees of the object.</summary>
-        public bool objects_can_see_object(GameObjectList list, EntityIdentifier obj, float degrees)
+        public bool objects_can_see_object(GameObjectList list, IEntityIdentifier obj, float degrees)
         {
             return default(bool);
         }

@@ -3,6 +3,7 @@ using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using OpenH2.Core.Architecture;
 using OpenH2.Core.Extensions;
+using OpenH2.Core.GameObjects;
 using OpenH2.Core.Scripting.GenerationState;
 using OpenH2.Core.Tags.Scenario;
 using OpenH2.Foundation.Collections;
@@ -171,78 +172,19 @@ namespace OpenH2.Core.Scripting.Generation
 
             var statements = new List<StatementSyntax>();
 
+            statements.Add(ExpressionStatement(AssignmentExpression(SyntaxKind.SimpleAssignmentExpression,
+                MemberAccessExpression(SyntaxKind.SimpleMemberAccessExpression, ThisExpression(), IdentifierName(nameof(ScenarioScriptBase.Scenario))),
+                IdentifierName(scenarioParam))));
+
             for (int i = 0; i < scnr.WellKnownItems.Length; i++)
             {
                 var externalRef = scnr.WellKnownItems[i];
 
-                var scnrPropName = externalRef.ItemType switch
-                {
-                    ScenarioTag.WellKnownVarType.Biped => nameof(scnr.BipedInstances),
-                    ScenarioTag.WellKnownVarType.Vehicle => nameof(scnr.VehicleInstances),
-                    ScenarioTag.WellKnownVarType.Weapon => nameof(scnr.WeaponPlacements),
-                    ScenarioTag.WellKnownVarType.Equipment => nameof(scnr.EquipmentPlacements),
-                    ScenarioTag.WellKnownVarType.Scenery => nameof(scnr.SceneryInstances),
-                    ScenarioTag.WellKnownVarType.Machinery => nameof(scnr.MachineryInstances),
-                    ScenarioTag.WellKnownVarType.Controller => nameof(scnr.ControllerInstances),
-                    ScenarioTag.WellKnownVarType.Sound => nameof(scnr.SoundSceneryInstances),
-                    ScenarioTag.WellKnownVarType.Bloc => nameof(scnr.BlocInstances),
-                    ScenarioTag.WellKnownVarType.Undef => null,
-                    _ => "unknown"
-                };
-
-                if (scnrPropName != null && externalRef.Index != ushort.MaxValue)
+                if (externalRef.ItemType != ScenarioTag.WellKnownVarType.Undef && externalRef.Index != ushort.MaxValue)
                 {
                     var varType = SyntaxUtil.ToScriptDataType(externalRef.ItemType);
-                    statements.Add(CreateAssignment(scnrPropName, varType, externalRef.Description, externalRef.Index));
+                    statements.Add(CreateAssignment(nameof(scnr.WellKnownItems), varType, externalRef.Identifier, i));
                 }
-            }
-
-            for (int i = 0; i < scnr.CameraPathTargets.Length; i++)
-            {
-                var cam = scnr.CameraPathTargets[i];
-                statements.Add(CreateAssignment(nameof(scnr.CameraPathTargets), ScriptDataType.CameraPathTarget, cam.Description, i));
-            }
-
-            for (int i = 0; i < scnr.LocationFlagDefinitions.Length; i++)
-            {
-                var flag = scnr.LocationFlagDefinitions[i];
-                statements.Add(CreateAssignment(nameof(scnr.LocationFlagDefinitions), ScriptDataType.LocationFlag, flag.Description, i));
-            }
-
-            for (int i = 0; i < scnr.CinematicTitleDefinitions.Length; i++)
-            {
-                var title = scnr.CinematicTitleDefinitions[i];
-                statements.Add(CreateAssignment(nameof(scnr.CinematicTitleDefinitions), ScriptDataType.CinematicTitle, title.Title, i));
-            }
-
-            for (int i = 0; i < scnr.TriggerVolumes.Length; i++)
-            {
-                var tv = scnr.TriggerVolumes[i];
-                statements.Add(CreateAssignment(nameof(scnr.TriggerVolumes), ScriptDataType.Trigger, tv.Description, i));
-            }
-
-            for (int i = 0; i < scnr.StartingProfileDefinitions.Length; i++)
-            {
-                var profile = scnr.StartingProfileDefinitions[i];
-                statements.Add(CreateAssignment(nameof(scnr.StartingProfileDefinitions), ScriptDataType.Equipment, profile.Description, i));
-            }
-
-            for (int i = 0; i < scnr.DeviceGroupDefinitions.Length; i++)
-            {
-                var group = scnr.DeviceGroupDefinitions[i];
-                statements.Add(CreateAssignment(nameof(scnr.DeviceGroupDefinitions), ScriptDataType.DeviceGroup, group.Description, i));
-            }
-
-            for (int i = 0; i < scnr.AiSquadGroupDefinitions.Length; i++)
-            {
-                var ai = scnr.AiSquadGroupDefinitions[i];
-                statements.Add(CreateAssignment(nameof(scnr.AiSquadGroupDefinitions), ScriptDataType.AI, ai.Description, i));
-            }
-
-            for (int i = 0; i < scnr.AiOrderDefinitions.Length; i++)
-            {
-                var order = scnr.AiOrderDefinitions[i];
-                statements.Add(CreateAssignment(nameof(scnr.AiOrderDefinitions), ScriptDataType.AIOrders, order.Description, i));
             }
 
             AddSquadInitialization(statements, scnr);
@@ -367,7 +309,7 @@ namespace OpenH2.Core.Scripting.Generation
         {
             var varType = SyntaxUtil.ToScriptDataType(externalRef.ItemType);
 
-            AddPublicProperty(varType, externalRef.Description, itemIndex);
+            AddPublicProperty(varType, externalRef.Identifier, itemIndex, isReference: true);
         }
 
         public void AddPublicProperty(ScenarioTag.StartingProfileDefinition profile, int itemIndex)
@@ -380,11 +322,48 @@ namespace OpenH2.Core.Scripting.Generation
             AddPublicProperty(ScriptDataType.DeviceGroup, group.Description, itemIndex);
         }
 
-        public void AddPublicProperty(ScriptDataType type, string name, int itemIndex)
+        public void AddPublicProperty(ScriptDataType type, string name, int itemIndex, bool isReference = false)
         {
             var propName = nameRepo.RegisterName(name, type, itemIndex);
 
-            properties.Add(SyntaxUtil.CreateProperty(type, propName));
+            PropertyDeclarationSyntax prop;
+
+            if (isReference)
+            {
+                var propType = GenericName(nameof(ScenarioEntity<object>))
+                    .AddTypeArgumentListArguments(SyntaxUtil.ScriptTypeSyntax(type));
+
+                prop = PropertyDeclaration(propType, propName)
+                    .WithAccessorList(SyntaxUtil.AutoPropertyAccessorList());
+            }
+            else
+            {
+                var scnrPropName = type switch
+                {
+                    ScriptDataType.CameraPathTarget => nameof(ScenarioTag.CameraPathTargets),
+                    ScriptDataType.LocationFlag => nameof(ScenarioTag.LocationFlagDefinitions),
+                    ScriptDataType.CinematicTitle => nameof(ScenarioTag.CinematicTitleDefinitions),
+                    ScriptDataType.Trigger => nameof(ScenarioTag.TriggerVolumes),
+                    ScriptDataType.Equipment => nameof(ScenarioTag.StartingProfileDefinitions),
+                    ScriptDataType.DeviceGroup => nameof(ScenarioTag.DeviceGroupDefinitions),
+                    ScriptDataType.AI => nameof(ScenarioTag.AiSquadGroupDefinitions),
+                    ScriptDataType.AIOrders => nameof(ScenarioTag.AiOrderDefinitions),
+                    _ => throw new Exception("Not support!")
+                };
+
+                ExpressionSyntax access = MemberAccessExpression(SyntaxKind.SimpleMemberAccessExpression,
+                        ElementAccessExpression(MemberAccessExpression(SyntaxKind.SimpleMemberAccessExpression,
+                            IdentifierName(nameof(ScenarioScriptBase.Scenario)),
+                            IdentifierName(scnrPropName)))
+                        .AddArgumentListArguments(Argument(SyntaxUtil.LiteralExpression(itemIndex))),
+                        IdentifierName(nameof(IGameObjectDefinition<object>.GameObject)));
+
+                prop = PropertyDeclaration(SyntaxUtil.ScriptTypeSyntax(type), propName)
+                    .WithExpressionBody(ArrowExpressionClause(access))
+                    .WithSemicolonToken(Token(SyntaxKind.SemicolonToken));
+            }
+
+            properties.Add(prop.WithModifiers(TokenList(Token(SyntaxKind.PublicKeyword))));
         }
 
         public StatementSyntax CreateAssignment(string originCollectionname,
@@ -394,21 +373,14 @@ namespace OpenH2.Core.Scripting.Generation
         {
             if (nameRepo.TryGetName(desiredName, type, itemIndex, out var name))
             {
-                var access = ElementAccessExpression(MemberAccessExpression(SyntaxKind.SimpleMemberAccessExpression,
+                ExpressionSyntax access = ElementAccessExpression(MemberAccessExpression(SyntaxKind.SimpleMemberAccessExpression,
                             IdentifierName("scenarioTag"),
                             IdentifierName(originCollectionname)))
                         .AddArgumentListArguments(Argument(SyntaxUtil.LiteralExpression(itemIndex)));
 
-                var entityGet = InvocationExpression(
-                    MemberAccessExpression(SyntaxKind.SimpleMemberAccessExpression,
-                        IdentifierName("scene"),
-                        GenericName(Identifier(nameof(Scene.GetScenarioEntity)))
-                                .AddTypeArgumentListArguments(SyntaxUtil.ScriptTypeSyntax(type))))
-                    .AddArgumentListArguments(Argument(access));
-
                 var exp = AssignmentExpression(SyntaxKind.SimpleAssignmentExpression,
                     IdentifierName(name),
-                    entityGet);
+                    access);
 
                 return ExpressionStatement(exp);
             }
@@ -597,21 +569,22 @@ namespace OpenH2.Core.Scripting.Generation
                     return new ReferenceGetContext(scenario, node);
                 case ScriptDataType.AI:
                     return new AiGetContext(scenario, node, nameRepo);
-                case ScriptDataType.AIScript:
-                case ScriptDataType.Device:
                 case ScriptDataType.EntityIdentifier:
                 case ScriptDataType.Entity:
-                case ScriptDataType.Trigger:
-                case ScriptDataType.LocationFlag:
-                case ScriptDataType.List:
-                case ScriptDataType.ScriptReference:
-                case ScriptDataType.DeviceGroup:
-                case ScriptDataType.AIOrders:
                 case ScriptDataType.Unit:
                 case ScriptDataType.Scenery:
+                case ScriptDataType.Device:
+                case ScriptDataType.Vehicle:
+                case ScriptDataType.List:
+                    return new EntityGetContext(scenario, node, nameRepo);
+                case ScriptDataType.AIScript:
+                case ScriptDataType.ScriptReference:
+                case ScriptDataType.Trigger:
+                case ScriptDataType.LocationFlag:
+                case ScriptDataType.DeviceGroup:
+                case ScriptDataType.AIOrders:
                 case ScriptDataType.Equipment:
                 case ScriptDataType.Team:
-                case ScriptDataType.Vehicle:
                 case ScriptDataType.CameraPathTarget:
                 case ScriptDataType.CinematicTitle:
                 case ScriptDataType.AIBehavior:

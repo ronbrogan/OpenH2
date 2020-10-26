@@ -35,7 +35,7 @@ namespace OpenH2.Core.Tags.Scenario
         }
 
         [FixedLength(92)]
-        public class SceneryInstance
+        public class SceneryInstance : IGameObjectDefinition<IScenery>
         {
             [PrimitiveValue(0)]
             public ushort SceneryDefinitionIndex { get; set; }
@@ -48,6 +48,8 @@ namespace OpenH2.Core.Tags.Scenario
 
             [PrimitiveValue(20)]
             public Vector3 Orientation { get; set; }
+
+            public IScenery GameObject { get; set; }
         }
 
         [FixedLength(40)]
@@ -75,13 +77,15 @@ namespace OpenH2.Core.Tags.Scenario
         }
 
         [FixedLength(40)]
-        public class DeviceGroupDefinition
+        public class DeviceGroupDefinition : IGameObjectDefinition<IDeviceGroup>
         {
             [StringValue(0, 32)]
             public string Description { get; set; }
 
             [PrimitiveValue(32)]
             public float Value { get; set; }
+
+            public IDeviceGroup GameObject { get; set; }
         }
 
         [FixedLength(68)]

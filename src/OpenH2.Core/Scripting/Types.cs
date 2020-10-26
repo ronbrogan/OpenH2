@@ -9,7 +9,10 @@
     public delegate Task ScriptReference();
     public delegate Task AIScript();
 
-    public class EntityIdentifier { }
+    public interface IEntityIdentifier 
+    {
+        int Identifier { get; }
+    }
 
     public class GameObjectList : IEnumerable<IGameObject>
     {
@@ -47,4 +50,36 @@
     public interface IDamageState { }
     public interface ISpatialPoint { }
     public interface ISound : IGameObject { }
+
+    public interface IGameObjectDefinition<T>
+    {
+        T GameObject { get; set; }
+    }
+
+    public interface IGameObjectReference : IEntityIdentifier
+    {
+        int Identifier { get; set; }
+        IGameObject GameObject { get; set; }
+    }
+
+    public struct ScenarioEntity<TItem> : IEntityIdentifier
+    {
+        public ScenarioEntity(int id, TItem item)
+        {
+            if (item == null) throw new ArgumentNullException(nameof(item));
+
+            this.Identifier = id;
+            this.Entity = item;
+        }
+
+        public int Identifier { get; }
+        public TItem Entity { get; }
+
+        public static implicit operator int(ScenarioEntity<TItem> scenarioItem) => scenarioItem.Identifier;
+        public static implicit operator TItem(ScenarioEntity<TItem> scenarioItem) => scenarioItem.Entity;
+
+        public override int GetHashCode() => HashCode.Combine(
+            this.Identifier.GetHashCode(), 
+            this.Entity.GetHashCode());
+    }
 }

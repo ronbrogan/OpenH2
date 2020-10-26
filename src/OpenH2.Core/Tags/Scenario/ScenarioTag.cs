@@ -114,13 +114,15 @@ namespace OpenH2.Core.Tags.Scenario
         public class WellKnownItem
         {
             [StringValue(0, 32)]
-            public string Description { get; set; }
+            public string Identifier { get; set; }
 
             [PrimitiveValue(32)]
             public WellKnownVarType ItemType { get; set; }
 
             [PrimitiveValue(34)]
             public ushort Index { get; set; }
+
+            public IGameObject GameObject { get; set; }
         }
 
         public enum WellKnownVarType : ushort
@@ -140,9 +142,8 @@ namespace OpenH2.Core.Tags.Scenario
             Undef = ushort.MaxValue
         }
 
-        // TODO: placement test
         [FixedLength(84)]
-        public class VehicleInstance
+        public class VehicleInstance : IGameObjectDefinition<IVehicle>
         {
             [PrimitiveValue(0)]
             public ushort Index { get; set; }
@@ -152,6 +153,8 @@ namespace OpenH2.Core.Tags.Scenario
 
             [PrimitiveValue(20)]
             public Vector3 Orientation { get; set; }
+
+            public IVehicle GameObject { get; set; }
         }
 
         [FixedLength(56)]
@@ -168,7 +171,7 @@ namespace OpenH2.Core.Tags.Scenario
         }
 
         [FixedLength(84)]
-        public class BipedInstance
+        public class BipedInstance : IGameObjectDefinition<IUnit>
         {
             [PrimitiveValue(0)]
             public ushort Index { get; set; }
@@ -187,10 +190,12 @@ namespace OpenH2.Core.Tags.Scenario
 
             [InternedString(52)]
             public string Description { get; set; }
+
+            public IUnit GameObject { get; set; }
         }
 
         [FixedLength(68)]
-        public class TriggerVolume
+        public class TriggerVolume : IGameObjectDefinition<ITriggerVolume>
         {
             [InternedString(0)]
             public string Description { get; set; }
@@ -223,6 +228,8 @@ namespace OpenH2.Core.Tags.Scenario
             // Non-max when it's a kill volume
             [PrimitiveValue(64)]
             public uint Unknown3 { get; set; }
+
+            public ITriggerVolume GameObject { get; set; }
         }
 
         [FixedLength(32)]
@@ -344,7 +351,7 @@ namespace OpenH2.Core.Tags.Scenario
         }
 
         [FixedLength(56)]
-        public class LocationFlagDefinition
+        public class LocationFlagDefinition : IGameObjectDefinition<ILocationFlag>
         {
             [PrimitiveValue(0)]
             public uint Value { get; set; }
@@ -357,10 +364,12 @@ namespace OpenH2.Core.Tags.Scenario
 
             [PrimitiveValue(48)]
             public float Param { get; set; }
+
+            public ILocationFlag GameObject { get; set; }
         }
 
         [FixedLength(64)]
-        public class CameraPathTarget
+        public class CameraPathTarget : IGameObjectDefinition<ICameraPathTarget>
         {
             [PrimitiveValue(0)]
             public uint Value { get; set; }
@@ -376,11 +385,13 @@ namespace OpenH2.Core.Tags.Scenario
 
             [PrimitiveValue(60)]
             public float FieldOfView { get; set; }
+
+            public ICameraPathTarget GameObject { get; set; }
         }
 
 
         [FixedLength(36)]
-        public class CinematicTitleDefinition
+        public class CinematicTitleDefinition : IGameObjectDefinition<ICinematicTitle>
         {
             [InternedString(0)]
             public string Title { get; set; }
@@ -405,6 +416,8 @@ namespace OpenH2.Core.Tags.Scenario
 
             [PrimitiveValue(24)]
             public Vector3 Floats { get; set; }
+
+            public ICinematicTitle GameObject { get; set; }
         }
 
 
@@ -428,7 +441,7 @@ namespace OpenH2.Core.Tags.Scenario
         
 
         [FixedLength(124)]
-        public class AiOrderDefinition
+        public class AiOrderDefinition : IGameObjectDefinition<IAiOrders>
         {
             [StringValue(0, 32)]
             public string Description { get; set; }
@@ -457,6 +470,8 @@ namespace OpenH2.Core.Tags.Scenario
             {
 
             }
+
+            public IAiOrders GameObject { get; set; }
         }
 
         [FixedLength(48)]

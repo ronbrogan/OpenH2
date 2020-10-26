@@ -6,6 +6,7 @@ namespace OpenH2.Core.Scripting
 {
     public abstract class ScenarioScriptBase
     {
+        public ScenarioTag Scenario { get; protected set; }
         protected IScriptEngine Engine;
         public ITeam player;
         public ITeam human;

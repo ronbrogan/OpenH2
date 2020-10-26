@@ -165,9 +165,9 @@ namespace OpenH2.Core.Scripting.Generation
                     .WithAdditionalAnnotations(ScriptGenAnnotations.TypeAnnotation(type));
         }
 
-        public static PropertyDeclarationSyntax CreateProperty(string type, string name)
+        public static PropertyDeclarationSyntax CreateProperty(TypeSyntax type, string name)
         {
-            return PropertyDeclaration(ParseTypeName(type), name)
+            return PropertyDeclaration(type, name)
                     .WithModifiers(TokenList(Token(SyntaxKind.PublicKeyword)))
                     .WithAccessorList(AutoPropertyAccessorList());
         }

@@ -1,4 +1,5 @@
-﻿using OpenH2.Core.Scripting;
+﻿using OpenH2.Core.GameObjects;
+using OpenH2.Core.Scripting;
 using OpenH2.Serialization.Layout;
 using System.Diagnostics;
 using System.Numerics;
@@ -9,7 +10,7 @@ namespace OpenH2.Core.Tags.Scenario
     {
         [FixedLength(36)]
         [DebuggerDisplay("{Description}")]
-        public class AiSquadGroupDefinition
+        public class AiSquadGroupDefinition : IGameObjectDefinition<IAiActor>
         {
             [StringValue(0, 32)]
             public string Description { get; set; }
@@ -19,6 +20,8 @@ namespace OpenH2.Core.Tags.Scenario
 
             [PrimitiveValue(34)]
             public ushort Index2 { get; set; }
+
+            public IAiActor GameObject { get; set; }
         }
 
         [FixedLength(116)]

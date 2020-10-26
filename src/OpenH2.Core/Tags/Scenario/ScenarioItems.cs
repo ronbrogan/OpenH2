@@ -24,7 +24,7 @@ namespace OpenH2.Core.Tags.Scenario
         }
 
         [FixedLength(84)]
-        public class WeaponPlacement
+        public class WeaponPlacement : IGameObjectDefinition<IWeapon>
         {
             [PrimitiveValue(0)]
             public ushort Index { get; set; }
@@ -34,6 +34,8 @@ namespace OpenH2.Core.Tags.Scenario
 
             [PrimitiveValue(20)]
             public Vector3 Orientation { get; set; }
+
+            public IWeapon GameObject { get; set; }
         }
 
         [FixedLength(40)]
@@ -57,7 +59,7 @@ namespace OpenH2.Core.Tags.Scenario
         }
 
         [FixedLength(76)]
-        public class BlocInstance
+        public class BlocInstance : IGameObjectDefinition<IBloc>
         {
             [PrimitiveValue(0)]
             public ushort BlocDefinitionIndex { get; set; }
@@ -68,6 +70,7 @@ namespace OpenH2.Core.Tags.Scenario
             [PrimitiveValue(20)]
             public Vector3 Orientation { get; set; }
 
+            public IBloc GameObject { get; set; }
         }
 
         [FixedLength(40)]
