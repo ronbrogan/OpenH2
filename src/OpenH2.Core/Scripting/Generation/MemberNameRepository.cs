@@ -59,6 +59,11 @@ namespace OpenH2.Core.Scripting.Generation
 
         public bool TryGetName(string desiredName, string dataType, int? index, out string result)
         {
+            if (string.IsNullOrWhiteSpace(desiredName))
+            {
+                desiredName = "Unnamed";
+            }
+
             var universalKey = SimplifiedKey(desiredName, dataType, index);
 
             if (originalNameLookup.TryGetValue(universalKey, out var nameSlot) && nameSlot.Count == 1)

@@ -743,19 +743,11 @@ namespace OpenH2.Core.Scripting
         void objects_attach(IGameObject entity, string string_id, IGameObject entity1, string string_id1);
 
         /// <summary>returns true if any of the specified units are looking within the specified number of degrees of the flag.</summary>
-        bool objects_can_see_flag(IGameObject entity, ILocationFlag locationFlag, float floatValue);
-
-        /// <summary>returns true if any of the specified units are looking within the specified number of degrees of the flag.</summary>
         bool objects_can_see_flag(GameObjectList list, ILocationFlag locationFlag, float floatValue);
 
+        // TODO: this overload shouldn't exist. Entities are supposed to be implicitly singleton lists
         /// <summary>returns true if any of the specified units are looking within the specified number of degrees of the object.</summary>
         bool objects_can_see_object(IGameObject entity, IGameObject target, float degrees);
-
-        /// <summary>returns true if any of the specified units are looking within the specified number of degrees of the object.</summary>
-        bool objects_can_see_object(IGameObject entity, IEntityIdentifier target, float degrees);
-
-        /// <summary>returns true if any of the specified units are looking within the specified number of degrees of the object.</summary>
-        bool objects_can_see_object(GameObjectList list, IEntityIdentifier target, float degrees);
         
         /// <summary>returns true if any of the specified units are looking within the specified number of degrees of the object.</summary>
         bool objects_can_see_object(GameObjectList list, IGameObject target, float degrees);
@@ -811,13 +803,7 @@ namespace OpenH2.Core.Scripting
         void object_clear_function_variable(IGameObject entity, string string_id);
 
         /// <summary>creates an object from the scenario.</summary>
-        void object_create(IGameObject object_name);
-
-        /// <summary>creates an object from the scenario.</summary>
         void object_create(IEntityIdentifier object_name);
-
-        /// <summary>creates an object, destroying it first if it already exists.</summary>
-        void object_create_anew(IGameObject entity);
 
         /// <summary>creates an object, destroying it first if it already exists.</summary>
         void object_create_anew(IEntityIdentifier object_name);
@@ -827,9 +813,6 @@ namespace OpenH2.Core.Scripting
 
         /// <summary>creates an object, potentially resulting in multiple objects if it already exists.</summary>
         void object_create_clone(IEntityIdentifier object_name);
-
-        /// <summary>creates an object, potentially resulting in multiple objects if it already exists.</summary>
-        void object_create_clone(IGameObject entity);
 
         /// <summary>creates all objects from the scenario whose names contain the given substring.</summary>
         void object_create_containing(string value);

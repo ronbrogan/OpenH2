@@ -183,7 +183,7 @@ namespace OpenH2.Core.Scripting.Generation
                 if (externalRef.ItemType != ScenarioTag.WellKnownVarType.Undef && externalRef.Index != ushort.MaxValue)
                 {
                     var varType = SyntaxUtil.ToScriptDataType(externalRef.ItemType);
-                    statements.Add(CreateAssignment(nameof(scnr.WellKnownItems), varType, externalRef.Identifier, i));
+                    statements.Add(CreateWellKnownAssignment(varType, externalRef.Identifier, i));
                 }
             }
 
@@ -305,7 +305,7 @@ namespace OpenH2.Core.Scripting.Generation
             AddPublicProperty(ScriptDataType.Trigger, tv.Description, itemIndex);
         }
 
-        public void AddPublicProperty(ScenarioTag.WellKnownItem externalRef, int itemIndex)
+        public void AddPublicProperty(ScenarioTag.EntityReference externalRef, int itemIndex)
         {
             var varType = SyntaxUtil.ToScriptDataType(externalRef.ItemType);
 
@@ -324,7 +324,7 @@ namespace OpenH2.Core.Scripting.Generation
 
         public void AddPublicProperty(ScriptDataType type, string name, int itemIndex, bool isReference = false)
         {
-            var propName = nameRepo.RegisterName(name, isReference ? nameof(ScenarioTag.WellKnownItem) : type.ToString(), itemIndex);
+            var propName = nameRepo.RegisterName(name, isReference ? nameof(ScenarioTag.EntityReference) : type.ToString(), itemIndex);
 
             PropertyDeclarationSyntax prop;
 
@@ -366,29 +366,32 @@ namespace OpenH2.Core.Scripting.Generation
             properties.Add(prop.WithModifiers(TokenList(Token(SyntaxKind.PublicKeyword))));
         }
 
-        public StatementSyntax CreateAssignment(string originCollectionname,
-            ScriptDataType type,
+        public StatementSyntax CreateWellKnownAssignment(ScriptDataType type,
             string desiredName,
             int itemIndex)
         {
-            if (nameRepo.TryGetName(desiredName, nameof(ScenarioTag.WellKnownItem), itemIndex, out var name))
+            if (nameRepo.TryGetName(desiredName, nameof(ScenarioTag.EntityReference), itemIndex, out var name) == false)
             {
-                ExpressionSyntax access = ElementAccessExpression(MemberAccessExpression(SyntaxKind.SimpleMemberAccessExpression,
+                throw new Exception("Unable to find property name");
+            }
+
+            ExpressionSyntax access = ElementAccessExpression(MemberAccessExpression(SyntaxKind.SimpleMemberAccessExpression,
                             IdentifierName("scenarioTag"),
-                            IdentifierName(originCollectionname)))
+                            IdentifierName(nameof(ScenarioTag.WellKnownItems))))
                         .AddArgumentListArguments(Argument(SyntaxUtil.LiteralExpression(itemIndex)));
 
-                var exp = AssignmentExpression(SyntaxKind.SimpleAssignmentExpression,
-                    IdentifierName(name),
-                    access);
+            access = ObjectCreationExpression(
+                GenericName(nameof(ScenarioEntity<object>))
+                    .AddTypeArgumentListArguments(SyntaxUtil.ScriptTypeSyntax(type)))
+                .AddArgumentListArguments(
+                    Argument(SyntaxUtil.LiteralExpression(itemIndex)),
+                    Argument(access));
 
-                return ExpressionStatement(exp);
-            }
-            else
-            {
-                return EmptyStatement(Identifier("")).WithTrailingTrivia(
-                    Comment($"// Couldn't generate assignment for <{type}>{desiredName}"));
-            }
+            var exp = AssignmentExpression(SyntaxKind.SimpleAssignmentExpression,
+                IdentifierName(name),
+                access);
+
+            return ExpressionStatement(exp);
         }
 
         public void AddGlobalVariable(ScenarioTag.ScriptVariableDefinition variable)

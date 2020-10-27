@@ -27,7 +27,7 @@ namespace OpenH2.ScriptAnalysis
             {
                 if (map.Contains("0") == false)
                 {
-                    continue;
+                    //continue;
                 }
 
                 var factory = new MapFactory(Path.GetDirectoryName(map), NullMaterialFactory.Instance);

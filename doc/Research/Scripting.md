@@ -1,4 +1,4 @@
-#Halo 2 Script Info
+# Halo 2 Script Info
 
 ## Bytecode description
 The compiled bytecode found in the map is arranged as a sequence of 'nodes'. These nodes essentially represent the parse tree of the original script, not linearized instructions.

@@ -1,5 +1,6 @@
 ﻿using OpenH2.Core.GameObjects;
 using OpenH2.Core.Maps;
+using OpenH2.Core.Parsing;
 using OpenH2.Core.Scripting;
 using OpenH2.Core.Tags.Layout;
 using OpenH2.Serialization.Layout;
@@ -26,13 +27,8 @@ namespace OpenH2.Core.Tags.Scenario
         [ReferenceArray(792)] public Obj792[] Obj792s { get; set; }
         [ReferenceArray(896)] public Obj896[] Obj896s { get; set; }
         
-        
-
-
-
-
         [ReferenceArray(8)] public SkyboxInstance[] SkyboxInstances { get; set; }
-        [ReferenceArray(72)] public WellKnownItem[] WellKnownItems { get; set; }
+        [ReferenceArray(72)] public EntityReference[] WellKnownItems { get; set; }
         [ReferenceArray(80)] public SceneryInstance[] SceneryInstances { get; set; }
         [ReferenceArray(88)] public SceneryDefinition[] SceneryDefinitions { get; set; }
         [ReferenceArray(96)] public BipedInstance[] BipedInstances { get; set; }
@@ -93,6 +89,14 @@ namespace OpenH2.Core.Tags.Scenario
         [ReferenceArray(944)] public MissionDialogMap[] MissionDialogMapping { get; set; }
         //[ReferenceArray(984)] public uint[] FreeSpace { get; set; }
 
+        public override void PopulateExternalData(H2MapReader reader)
+        {
+            foreach(var reference in this.WellKnownItems)
+            {
+                reference.Initialize(this);
+            }
+        }
+
         [FixedLength(132)]
         public class CreatureDefinition
         {
@@ -111,7 +115,7 @@ namespace OpenH2.Core.Tags.Scenario
         }
 
         [FixedLength(36)]
-        public class WellKnownItem
+        public class EntityReference : IGameObjectDefinition<object>
         {
             [StringValue(0, 32)]
             public string Identifier { get; set; }
@@ -122,7 +126,25 @@ namespace OpenH2.Core.Tags.Scenario
             [PrimitiveValue(34)]
             public ushort Index { get; set; }
 
-            public IGameObject GameObject { get; set; }
+            public object GameObject => this.ItemType switch
+            {
+                WellKnownVarType.Biped => scenario.BipedInstances[Index].GameObject,
+                WellKnownVarType.Vehicle => scenario.VehicleInstances[Index].GameObject,
+                WellKnownVarType.Weapon => scenario.WeaponPlacements[Index].GameObject,
+                WellKnownVarType.Equipment => scenario.EquipmentPlacements[Index].GameObject,
+                WellKnownVarType.Scenery => scenario.SceneryInstances[Index].GameObject,
+                WellKnownVarType.Machinery => scenario.MachineryInstances[Index].GameObject,
+                WellKnownVarType.Controller => scenario.ControllerInstances[Index].GameObject,
+                WellKnownVarType.Sound => scenario.SoundSceneryInstances[Index].GameObject,
+                WellKnownVarType.Bloc => scenario.BlocInstances[Index].GameObject,
+                _ => throw new System.NotImplementedException(),
+            };
+
+            private ScenarioTag scenario;
+            public void Initialize(ScenarioTag scenario)
+            {
+                this.scenario = scenario;
+            }
         }
 
         public enum WellKnownVarType : ushort
@@ -158,7 +180,7 @@ namespace OpenH2.Core.Tags.Scenario
         }
 
         [FixedLength(56)]
-        public class EquipmentPlacement
+        public class EquipmentPlacement : IGameObjectDefinition<IEquipment>
         {
             [PrimitiveValue(0)]
             public ushort Index { get; set; }
@@ -168,6 +190,8 @@ namespace OpenH2.Core.Tags.Scenario
 
             [PrimitiveValue(20)]
             public Vector3 Orientation { get; set; }
+
+            public IEquipment GameObject { get; set; }
         }
 
         [FixedLength(84)]

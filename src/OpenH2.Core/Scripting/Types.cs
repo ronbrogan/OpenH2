@@ -1,6 +1,7 @@
 ﻿namespace OpenH2.Core.Scripting
 {
     using OpenH2.Core.GameObjects;
+    using OpenH2.Core.Tags.Scenario;
     using System;
     using System.Collections;
     using System.Collections.Generic;
@@ -53,33 +54,30 @@
 
     public interface IGameObjectDefinition<T>
     {
-        T GameObject { get; set; }
+        T GameObject { get; }
     }
 
-    public interface IGameObjectReference : IEntityIdentifier
+    public struct ScenarioEntity<TItem> : IEntityIdentifier 
     {
-        int Identifier { get; set; }
-        IGameObject GameObject { get; set; }
-    }
-
-    public struct ScenarioEntity<TItem> : IEntityIdentifier
-    {
-        public ScenarioEntity(int id, TItem item)
+        public ScenarioEntity(int id, IGameObjectDefinition<object> item)
         {
             if (item == null) throw new ArgumentNullException(nameof(item));
 
             this.Identifier = id;
-            this.Entity = item;
+            this.reference = item;
         }
 
+        private IGameObjectDefinition<object> reference;
         public int Identifier { get; }
-        public TItem Entity { get; }
+        public TItem? Entity => reference.GameObject == null 
+            ? default(TItem)
+            : (TItem)reference.GameObject;
 
         public static implicit operator int(ScenarioEntity<TItem> scenarioItem) => scenarioItem.Identifier;
         public static implicit operator TItem(ScenarioEntity<TItem> scenarioItem) => scenarioItem.Entity;
 
         public override int GetHashCode() => HashCode.Combine(
             this.Identifier.GetHashCode(), 
-            this.Entity.GetHashCode());
+            this.reference.GetHashCode());
     }
 }
