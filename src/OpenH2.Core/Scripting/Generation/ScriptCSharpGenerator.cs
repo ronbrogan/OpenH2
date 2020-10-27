@@ -70,7 +70,7 @@ namespace OpenH2.Core.Scripting.Generation
             {
                 var squad = tag.AiSquadDefinitions[i];
 
-                var squadPropName = nameRepo.RegisterName(squad.Description, ScriptDataType.AI, i);
+                var squadPropName = nameRepo.RegisterName(squad.Description, ScriptDataType.AI.ToString(), i);
 
                 var dataClassProps = new List<PropertyDeclarationSyntax>();
 
@@ -79,7 +79,7 @@ namespace OpenH2.Core.Scripting.Generation
                 var m = 0;
                 foreach (var ai in squad.StartingLocations)
                 {
-                    var propName = nestedRepo.RegisterName(ai.Description, ScriptDataType.AI, m++);
+                    var propName = nestedRepo.RegisterName(ai.Description, ScriptDataType.AI.ToString(), m++);
 
                     dataClassProps.Add(SyntaxUtil.CreateProperty(ScriptDataType.AI, propName));
                 }
@@ -206,7 +206,7 @@ namespace OpenH2.Core.Scripting.Generation
             {
                 var squad = tag.AiSquadDefinitions[i];
 
-                if (nameRepo.TryGetName(squad.Description, ScriptDataType.AI, i, out var squadPropName) == false)
+                if (nameRepo.TryGetName(squad.Description, ScriptDataType.AI.ToString(), i, out var squadPropName) == false)
                 {
                     return;
                 }
@@ -218,7 +218,7 @@ namespace OpenH2.Core.Scripting.Generation
                 var m = 0;
                 foreach (var ai in squad.StartingLocations)
                 {
-                    if (nestedRepo.TryGetName(ai.Description, ScriptDataType.AI, m, out var propName) == false)
+                    if (nestedRepo.TryGetName(ai.Description, ScriptDataType.AI.ToString(), m, out var propName) == false)
                     {
                         continue;
                     }
@@ -324,7 +324,7 @@ namespace OpenH2.Core.Scripting.Generation
 
         public void AddPublicProperty(ScriptDataType type, string name, int itemIndex, bool isReference = false)
         {
-            var propName = nameRepo.RegisterName(name, type, itemIndex);
+            var propName = nameRepo.RegisterName(name, isReference ? nameof(ScenarioTag.WellKnownItem) : type.ToString(), itemIndex);
 
             PropertyDeclarationSyntax prop;
 
@@ -371,7 +371,7 @@ namespace OpenH2.Core.Scripting.Generation
             string desiredName,
             int itemIndex)
         {
-            if (nameRepo.TryGetName(desiredName, type, itemIndex, out var name))
+            if (nameRepo.TryGetName(desiredName, nameof(ScenarioTag.WellKnownItem), itemIndex, out var name))
             {
                 ExpressionSyntax access = ElementAccessExpression(MemberAccessExpression(SyntaxKind.SimpleMemberAccessExpression,
                             IdentifierName("scenarioTag"),

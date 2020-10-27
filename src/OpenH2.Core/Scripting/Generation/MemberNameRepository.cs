@@ -10,11 +10,8 @@ namespace OpenH2.Core.Scripting.Generation
 
         public Dictionary<string, MemberNameRepository> NestedRepos = new Dictionary<string, MemberNameRepository>();
 
-        public string RegisterName(string desiredName, ScriptDataType dataType, int? index = null)
+        public string RegisterName(string desiredName, string dataType, int? index = null)
         {
-            var type = SyntaxUtil.ScriptTypeSyntax(dataType).ToString();
-            var key = SimplifiedKey(desiredName);
-
             if(string.IsNullOrWhiteSpace(desiredName))
             {
                 desiredName = "Unnamed";
@@ -25,13 +22,14 @@ namespace OpenH2.Core.Scripting.Generation
             var name = new RegisteredName()
             {
                 OriginalName = desiredName,
-                TypeInfo = type,
+                TypeInfo = dataType,
                 Index = index,
             };
 
             var attempt = 0;
             var attemptName = sanitized;
 
+            var key = SimplifiedKey(desiredName, dataType, index);
             if (originalNameLookup.TryGetValue(key, out var nameSlot))
             {
                 while (nameSlot.Any(n => n.UniqueName == attemptName) || finalNames.Contains(attemptName))
@@ -59,65 +57,23 @@ namespace OpenH2.Core.Scripting.Generation
             return name.UniqueName;
         }
 
-        public bool TryGetName(string desiredName, ScriptDataType dataType, int? index, out string result)
+        public bool TryGetName(string desiredName, string dataType, int? index, out string result)
         {
-            var type = SyntaxUtil.ScriptTypeSyntax(dataType).ToString();
-            var universalKey = SimplifiedKey(desiredName);
+            var universalKey = SimplifiedKey(desiredName, dataType, index);
 
-            if (originalNameLookup.TryGetValue(universalKey, out var nameSlot) == false)
-            {
-                result = null;
-                return false;
-            }
-
-            if(nameSlot.Count == 1)
+            if (originalNameLookup.TryGetValue(universalKey, out var nameSlot) && nameSlot.Count == 1)
             {
                 result = nameSlot[0].UniqueName;
                 return true;
             }
-            else
-            {
-                // Fallback to just look for same index. This supports using EntityIdentifier -> Typed vars
-                var indexOnlyMatch = nameSlot.FirstOrDefault(n => n.Index == index);
 
-                if (indexOnlyMatch != null)
-                {
-                    result = indexOnlyMatch.UniqueName;
-                    return true;
-                }
-                else
-                {
-                    // iteratively find correct name via type and index 
-                    var typeNames = nameSlot.Where(n => n.TypeInfo == type);
-
-                    if (typeNames.Count() == 1)
-                    {
-                        result = typeNames.First().UniqueName;
-                        return true;
-                    }
-                    else
-                    {
-
-                        var typeIndexMatch = typeNames.FirstOrDefault(n => n.Index == index);
-
-                        if (typeIndexMatch != null)
-                        {
-                            result = typeIndexMatch.UniqueName;
-                            return true;
-                        }
-                        else
-                        {
-                            result = null;
-                            return false;
-                        }
-                    }
-                }
-            }
+            result = null;
+            return false;
         }
 
-        private string SimplifiedKey(string name)
+        private string SimplifiedKey(string name, string type, int? index = null)
         {
-            return name.Replace('/', '.').ToUpperInvariant();
+            return $"{name}<{type}>@{index}".Replace('/', '.').ToUpperInvariant();
         }
 
         private class RegisteredName

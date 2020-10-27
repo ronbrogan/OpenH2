@@ -32,7 +32,7 @@ namespace OpenH2.Core.Scripting.GenerationState
                 }
                 else
                 {
-                    if(nameRepo.TryGetName(stringVal, node.DataType, node.NodeData_H16, out var finalName))
+                    if(nameRepo.TryGetName(stringVal, node.DataType.ToString(), node.NodeData_H16, out var finalName))
                     {
                         accessor = SyntaxFactory.IdentifierName(finalName);
                     }
