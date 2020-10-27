@@ -37,7 +37,7 @@
         }
     }
 
-    public interface IStartingProfile { }
+    public interface IStartingProfile : IGameObject { }
     public interface IAnimation { }
     public interface IBsp { }
     public interface IEffect { }

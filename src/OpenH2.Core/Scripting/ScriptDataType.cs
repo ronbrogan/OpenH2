@@ -21,7 +21,7 @@
         AIScript = 21,
         AIBehavior = 22,
         AIOrders = 23,
-        Equipment = 24,
+        StartingProfile = 24,
         Bsp = 26,
         NavigationPoint = 27,
         SpatialPoint = 28,

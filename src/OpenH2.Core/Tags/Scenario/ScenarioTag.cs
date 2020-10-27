@@ -137,6 +137,7 @@ namespace OpenH2.Core.Tags.Scenario
                 WellKnownVarType.Controller => scenario.ControllerInstances[Index].GameObject,
                 WellKnownVarType.Sound => scenario.SoundSceneryInstances[Index].GameObject,
                 WellKnownVarType.Bloc => scenario.BlocInstances[Index].GameObject,
+                WellKnownVarType.Undef => null,
                 _ => throw new System.NotImplementedException(),
             };
 

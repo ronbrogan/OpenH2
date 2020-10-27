@@ -314,7 +314,7 @@ namespace OpenH2.Core.Scripting.Generation
 
         public void AddPublicProperty(ScenarioTag.StartingProfileDefinition profile, int itemIndex)
         {
-            AddPublicProperty(ScriptDataType.Equipment, profile.Description, itemIndex);
+            AddPublicProperty(ScriptDataType.StartingProfile, profile.Description, itemIndex);
         }
 
         public void AddPublicProperty(ScenarioTag.DeviceGroupDefinition group, int itemIndex)
@@ -344,7 +344,7 @@ namespace OpenH2.Core.Scripting.Generation
                     ScriptDataType.LocationFlag => nameof(ScenarioTag.LocationFlagDefinitions),
                     ScriptDataType.CinematicTitle => nameof(ScenarioTag.CinematicTitleDefinitions),
                     ScriptDataType.Trigger => nameof(ScenarioTag.TriggerVolumes),
-                    ScriptDataType.Equipment => nameof(ScenarioTag.StartingProfileDefinitions),
+                    ScriptDataType.StartingProfile => nameof(ScenarioTag.StartingProfileDefinitions),
                     ScriptDataType.DeviceGroup => nameof(ScenarioTag.DeviceGroupDefinitions),
                     ScriptDataType.AI => nameof(ScenarioTag.AiSquadGroupDefinitions),
                     ScriptDataType.AIOrders => nameof(ScenarioTag.AiOrderDefinitions),
@@ -586,7 +586,7 @@ namespace OpenH2.Core.Scripting.Generation
                 case ScriptDataType.LocationFlag:
                 case ScriptDataType.DeviceGroup:
                 case ScriptDataType.AIOrders:
-                case ScriptDataType.Equipment:
+                case ScriptDataType.StartingProfile:
                 case ScriptDataType.Team:
                 case ScriptDataType.CameraPathTarget:
                 case ScriptDataType.CinematicTitle:

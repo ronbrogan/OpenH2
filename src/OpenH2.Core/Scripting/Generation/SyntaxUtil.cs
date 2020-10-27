@@ -35,7 +35,7 @@ namespace OpenH2.Core.Scripting.Generation
                 ScriptDataType.DeviceGroup => ParseTypeName(nameof(IDeviceGroup)),
                 ScriptDataType.AIScript => ParseTypeName(nameof(IAiScript)),
                 ScriptDataType.AIOrders => ParseTypeName(nameof(IAiOrders)),
-                ScriptDataType.Equipment => ParseTypeName(nameof(IEquipment)),
+                ScriptDataType.StartingProfile => ParseTypeName(nameof(IStartingProfile)),
                 ScriptDataType.Weapon => ParseTypeName(nameof(IWeapon)),
                 ScriptDataType.Scenery => ParseTypeName(nameof(IScenery)),
 
@@ -58,7 +58,7 @@ namespace OpenH2.Core.Scripting.Generation
                 ScenarioTag.WellKnownVarType.Biped => ScriptDataType.Unit,
                 ScenarioTag.WellKnownVarType.Vehicle => ScriptDataType.Vehicle,
                 ScenarioTag.WellKnownVarType.Weapon => ScriptDataType.Weapon,
-                ScenarioTag.WellKnownVarType.Equipment => ScriptDataType.Equipment,
+                ScenarioTag.WellKnownVarType.Equipment => ScriptDataType.StartingProfile,
                 ScenarioTag.WellKnownVarType.Scenery => ScriptDataType.Scenery,
                 ScenarioTag.WellKnownVarType.Machinery => ScriptDataType.Device,
                 ScenarioTag.WellKnownVarType.Controller => ScriptDataType.Device,
