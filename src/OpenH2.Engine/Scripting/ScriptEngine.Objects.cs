@@ -1,4 +1,5 @@
-﻿using OpenH2.Core.GameObjects;
+﻿using OpenH2.Core.Architecture;
+using OpenH2.Core.GameObjects;
 using OpenH2.Core.Scripting;
 using System;
 using System.Numerics;
@@ -67,41 +68,44 @@ namespace OpenH2.Engine.Scripting
         /// <summary>creates an object from the scenario.</summary>
         public void object_create(IEntityIdentifier object_name)
         {
-        }
-
-        /// <summary>creates an object from the scenario.</summary>
-        public void object_create(IGameObject object_name)
-        {
+            var def = this.scene.Scenario.WellKnownItems[object_name.Identifier];
+            this.scene.CreateEntity(def);
         }
 
         /// <summary>creates an object, destroying it first if it already exists.</summary>
         public void object_create_anew(IEntityIdentifier object_name)
         {
-        }
-
-        /// <summary>creates an object, destroying it first if it already exists.</summary>
-        public void object_create_anew(IGameObject entity)
-        {
+            var def = this.scene.Scenario.WellKnownItems[object_name.Identifier];
+            this.scene.CreateEntity(def);
         }
 
         /// <summary>creates anew all objects from the scenario whose names contain the given substring.</summary>
         public void object_create_anew_containing(string value)
         {
+            var wellKnowns = this.scene.Scenario.WellKnownItems;
+            for (int i = 0; i < wellKnowns.Length; i++)
+            {
+                if (wellKnowns[i].Identifier.Contains(value))
+                    this.scene.CreateEntity(wellKnowns[i]);
+            }
         }
 
         /// <summary>creates an object, potentially resulting in multiple objects if it already exists.</summary>
         public void object_create_clone(IEntityIdentifier object_name)
         {
-        }
-
-        /// <summary>creates an object, potentially resulting in multiple objects if it already exists.</summary>
-        public void object_create_clone(IGameObject entity)
-        {
+            var def = this.scene.Scenario.WellKnownItems[object_name.Identifier];
+            this.scene.CreateEntity(def);
         }
 
         /// <summary>creates all objects from the scenario whose names contain the given substring.</summary>
         public void object_create_containing(string value)
         {
+            var wellKnowns = this.scene.Scenario.WellKnownItems;
+            for (int i = 0; i < wellKnowns.Length; i++)
+            {
+                if (wellKnowns[i].Identifier.Contains(value))
+                    this.scene.CreateEntity(wellKnowns[i]);
+            }
         }
 
         /// <summary>applies damage to a damage section, causing all manner of effects/constraint breakage to occur</summary>
@@ -112,11 +116,18 @@ namespace OpenH2.Engine.Scripting
         /// <summary>destroys an object.</summary>
         public void object_destroy(IGameObject entity)
         {
+            if(entity is Entity e)
+                this.scene.RemoveEntity(e);
         }
 
         /// <summary>destroys all objects from the scenario whose names contain the given substring.</summary>
         public void object_destroy_containing(string value)
         {
+            foreach(var entity in this.scene.Entities.Values)
+            {
+                if (entity.FriendlyName.Contains(value))
+                    this.scene.RemoveEntity(entity);
+            }
         }
 
         /// <summary>destroys all objects matching the type mask</summary>
@@ -316,21 +327,9 @@ namespace OpenH2.Engine.Scripting
         }
 
         /// <summary>returns true if any of the specified units are looking within the specified number of degrees of the object.</summary>
-        public bool objects_can_see_object(IGameObject entity, IEntityIdentifier target, float degrees)
-        {
-            return default(bool);
-        }
-
-        /// <summary>returns true if any of the specified units are looking within the specified number of degrees of the object.</summary>
         public bool objects_can_see_object(IGameObject entity, IGameObject target, float degrees)
         {
             return ObjectCanSeePoint(entity, target.Position, degrees);
-        }
-
-        /// <summary>returns true if any of the specified units are looking within the specified number of degrees of the object.</summary>
-        public bool objects_can_see_object(GameObjectList list, IEntityIdentifier obj, float degrees)
-        {
-            return default(bool);
         }
         
         /// <summary>returns true if any of the specified units are looking within the specified number of degrees of the object.</summary>

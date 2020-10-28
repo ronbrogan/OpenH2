@@ -1,5 +1,6 @@
 ﻿namespace OpenH2.Core.Scripting
 {
+    using OpenH2.Core.Enums;
     using OpenH2.Core.GameObjects;
     using OpenH2.Core.Tags.Scenario;
     using System;
@@ -55,6 +56,11 @@
     public interface IGameObjectDefinition<T>
     {
         T GameObject { get; }
+    }
+
+    public interface IPlaceable
+    {
+        PlacementFlags PlacementFlags { get; set; }
     }
 
     public struct ScenarioEntity<TItem> : IEntityIdentifier 

@@ -34,17 +34,23 @@ namespace OpenH2.Engine.Entities
 
         public Entity FromSceneryInstance(ScenarioTag.SceneryInstance scen)
         {
-            return SceneryFactory.FromTag(this.Map, this.Map.Scenario, scen);
+            var entity = SceneryFactory.FromTag(this.Map, this.Map.Scenario, scen);
+            scen.GameObject = entity;
+            return entity;
         }
 
         public Entity FromBlocInstance(ScenarioTag.BlocInstance bloc)
         {
-            return BlocFactory.FromTag(this.Map, this.Map.Scenario, bloc);
+            var entity = BlocFactory.FromTag(this.Map, this.Map.Scenario, bloc);
+            bloc.GameObject = entity;
+            return entity;
         }
 
         public Entity FromMachineryInstance(ScenarioTag.MachineryInstance mach)
         {
-            return MachineryFactory.FromTag(this.Map, this.Map.Scenario, mach);
+            var entity = MachineryFactory.FromTag(this.Map, this.Map.Scenario, mach);
+            mach.GameObject = entity;
+            return entity;
         }
 
         public Entity FromItemCollectionPlacement(ScenarioTag.ItemCollectionPlacement item)
@@ -54,12 +60,16 @@ namespace OpenH2.Engine.Entities
 
         public Entity FromVehicleInstance(ScenarioTag.VehicleInstance item)
         {
-            return ItemFactory.CreateFromVehicleInstance(this.Map, this.Map.Scenario, item);
+            var entity = ItemFactory.CreateFromVehicleInstance(this.Map, this.Map.Scenario, item);
+            item.GameObject = entity;
+            return entity;
         }
 
         public Entity FromTriggerVolume(ScenarioTag.TriggerVolume tv)
         {
-            return TriggerFactory.FromScenarioTriggerVolume(this.Map.Scenario, tv);
+            var entity = TriggerFactory.FromScenarioTriggerVolume(this.Map.Scenario, tv);
+            tv.GameObject = entity;
+            return entity;
         }
 
         public Entity FromGlobals()

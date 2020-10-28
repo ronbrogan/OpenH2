@@ -35,7 +35,7 @@ namespace OpenH2.Core.Tags.Scenario
         }
 
         [FixedLength(92)]
-        public class SceneryInstance : IGameObjectDefinition<IScenery>
+        public class SceneryInstance : IGameObjectDefinition<IScenery>, IPlaceable
         {
             [PrimitiveValue(0)]
             public ushort SceneryDefinitionIndex { get; set; }
@@ -89,7 +89,7 @@ namespace OpenH2.Core.Tags.Scenario
         }
 
         [FixedLength(68)]
-        public class ControllerInstance : IGameObjectDefinition<IController>
+        public class ControllerInstance : IGameObjectDefinition<IController>, IPlaceable
         {
             [PrimitiveValue(0)]
             public ushort Index { get; set; }
@@ -115,7 +115,7 @@ namespace OpenH2.Core.Tags.Scenario
 
 
         [FixedLength(72)]
-        public class MachineryInstance : IGameObjectDefinition<IMachine>
+        public class MachineryInstance : IGameObjectDefinition<IMachine>, IPlaceable
         {
             [PrimitiveValue(0)]
             public ushort MachineryDefinitionIndex { get; set; }
@@ -140,7 +140,7 @@ namespace OpenH2.Core.Tags.Scenario
         }
 
         [FixedLength(80)]
-        public class SoundSceneryInstance : IGameObjectDefinition<ISoundScenery>
+        public class SoundSceneryInstance : IGameObjectDefinition<ISoundScenery>, IPlaceable
         {
             [PrimitiveValue(0)]
             public ushort SoundSceneryDefinitionIndex { get; set; }
@@ -165,7 +165,7 @@ namespace OpenH2.Core.Tags.Scenario
         }
 
         [FixedLength(108)]
-        public class LightInstance
+        public class LightInstance : IPlaceable
         {
             [PrimitiveValue(0)]
             public ushort Index { get; set; }

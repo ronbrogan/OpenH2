@@ -1,4 +1,5 @@
-﻿using OpenH2.Core.GameObjects;
+﻿using OpenH2.Core.Enums;
+using OpenH2.Core.GameObjects;
 using OpenH2.Core.Maps;
 using OpenH2.Core.Scripting;
 using OpenH2.Core.Tags.Layout;
@@ -24,10 +25,13 @@ namespace OpenH2.Core.Tags.Scenario
         }
 
         [FixedLength(84)]
-        public class WeaponPlacement : IGameObjectDefinition<IWeapon>
+        public class WeaponPlacement : IGameObjectDefinition<IWeapon>, IPlaceable
         {
             [PrimitiveValue(0)]
             public ushort Index { get; set; }
+
+            [PrimitiveValue(4)]
+            public PlacementFlags PlacementFlags { get; set; }
 
             [PrimitiveValue(8)]
             public Vector3 Position { get; set; }
@@ -59,10 +63,13 @@ namespace OpenH2.Core.Tags.Scenario
         }
 
         [FixedLength(76)]
-        public class BlocInstance : IGameObjectDefinition<IBloc>
+        public class BlocInstance : IGameObjectDefinition<IBloc>, IPlaceable
         {
             [PrimitiveValue(0)]
             public ushort BlocDefinitionIndex { get; set; }
+
+            [PrimitiveValue(4)]
+            public PlacementFlags PlacementFlags { get; set; }
 
             [PrimitiveValue(8)]
             public Vector3 Position { get; set; }

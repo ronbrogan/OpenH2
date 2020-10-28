@@ -1,5 +1,6 @@
 ﻿using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Emit;
 using OpenH2.Core.Tags.Scenario;
 using System;
@@ -8,6 +9,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Text;
 
 namespace OpenH2.Core.Scripting.Generation
 {
@@ -16,7 +18,7 @@ namespace OpenH2.Core.Scripting.Generation
         private readonly string generatedScriptOutput;
         private CSharpCompilation compilation;
 
-        private const string AssemblyName = "OpenH2ScriptGen";
+        private const string AssemblyName = "OpenH2.ScriptGen";
 
         public ScriptLoader(string generatedScriptOutput = null)
         {
@@ -27,7 +29,9 @@ namespace OpenH2.Core.Scripting.Generation
 
 
             var compilationOptions = new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary,
-                specificDiagnosticOptions: suppressions);
+                specificDiagnosticOptions: suppressions,
+                optimizationLevel: OptimizationLevel.Debug,
+                platform: Platform.AnyCpu);
 
             var baseLibPath = Path.GetDirectoryName(typeof(object).Assembly.Location);
 
@@ -117,13 +121,31 @@ namespace OpenH2.Core.Scripting.Generation
                 classGen.AddMethod(script);
             }
 
-            var csharp = classGen.Generate();
-            var dataCsharp = dataGen.Generate();
+            var csharp = SyntaxFactory.CompilationUnit().AddMembers(classGen.Generate());
+            var dataCsharp = SyntaxFactory.CompilationUnit().AddMembers(dataGen.Generate());
 
-            var sourceUnit = SyntaxFactory.CompilationUnit().AddMembers(csharp);
-            var dataUnit = SyntaxFactory.CompilationUnit().AddMembers(dataCsharp);
+            var source = CSharpSyntaxTree.Create(csharp, null, $"{scenarioParts.Last()}.cs", Encoding.UTF8);
+            var data = CSharpSyntaxTree.Create(dataCsharp, null, $"{scenarioParts.Last()}.Data.cs", Encoding.UTF8);
 
-            this.compilation = this.compilation.AddSyntaxTrees(sourceUnit.SyntaxTree, dataUnit.SyntaxTree);
+            //var targetFrameworkTree = SyntaxFactory.CompilationUnit()
+            //    .AddAttributeLists(
+            //        SyntaxFactory.AttributeList(
+            //            SyntaxFactory.SingletonSeparatedList(
+            //                SyntaxFactory.Attribute(SyntaxFactory.QualifiedName(
+            //                    SyntaxFactory.QualifiedName(
+            //                        SyntaxFactory.QualifiedName(
+            //                            SyntaxFactory.IdentifierName("System"),
+            //                            SyntaxFactory.IdentifierName("Runtime")),
+            //                        SyntaxFactory.IdentifierName("Versioning")),
+            //                    SyntaxFactory.IdentifierName("TargetFrameworkAttribute")))
+            //                    .AddArgumentListArguments(
+            //                        SyntaxFactory.AttributeArgument(SyntaxUtil.LiteralExpression(".NETStandard,Version=v2.1")),
+            //                        SyntaxFactory.AttributeArgument(SyntaxUtil.LiteralExpression(""))
+            //                            .WithNameEquals(SyntaxFactory.NameEquals(SyntaxFactory.IdentifierName("FrameworkDisplayName"))))))
+            //        .WithTarget(SyntaxFactory.AttributeTargetSpecifier(SyntaxFactory.Token(SyntaxKind.AssemblyKeyword))));
+
+
+            this.compilation = this.compilation.AddSyntaxTrees(source, data);
 
             if (string.IsNullOrWhiteSpace(this.generatedScriptOutput) == false)
             {
@@ -141,7 +163,9 @@ namespace OpenH2.Core.Scripting.Generation
             using (var pe = new FileStream(dllPath, FileMode.Create))
             using (var pdb = new FileStream(pdbPath, FileMode.Create))
             {
-                var result = this.compilation.Emit(pe, pdb, options: new EmitOptions(false, DebugInformationFormat.Pdb));
+                var result = this.compilation.Emit(pe, pdb, options: new EmitOptions(
+                    debugInformationFormat: DebugInformationFormat.PortablePdb, 
+                    defaultSourceFileEncoding: Encoding.UTF8));
 
                 if (result.Success == false)
                 {

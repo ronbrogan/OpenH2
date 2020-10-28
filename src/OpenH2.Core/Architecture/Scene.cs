@@ -1,7 +1,11 @@
-﻿using OpenH2.Core.Maps;
+﻿using OpenH2.Core.Enums;
+using OpenH2.Core.Maps;
+using OpenH2.Core.Scripting;
+using OpenH2.Core.Tags.Scenario;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 
 namespace OpenH2.Core.Architecture
 {
@@ -12,6 +16,7 @@ namespace OpenH2.Core.Architecture
         public event EntityEventHandler OnEntityRemove = delegate { };
 
         public H2vMap Map { get; }
+        public ScenarioTag Scenario => Map.Scenario;
         public Dictionary<Guid, Entity> Entities { get; private set; } = new Dictionary<Guid, Entity>();
         public Dictionary<object, Entity> ScenarioSourcedEntities { get; } = new Dictionary<object, Entity>();
 
@@ -25,12 +30,6 @@ namespace OpenH2.Core.Architecture
         {
             Entities.Add(e.Id, e);
             OnEntityAdd.Invoke(e);
-        }
-
-        public void AddScenarioEntity(object entityDef, Entity e)
-        {
-            this.ScenarioSourcedEntities.Add(entityDef, e);
-            this.AddEntity(e);
         }
 
         public void RemoveEntity(Entity e)
@@ -55,17 +54,18 @@ namespace OpenH2.Core.Architecture
 
         public void Load()
         {
-            var terrains = this.Map.Scenario.Terrains;
+            Func<IPlaceable, bool> shouldPlace = (IPlaceable p) => p.PlacementFlags.HasFlag(PlacementFlags.NotAutomatically) == false;
+            var terrains = this.Scenario.Terrains;
 
             foreach (var terrain in terrains)
             {
                 this.Map.TryGetTag(terrain.Bsp, out var bsp);
 
-                this.AddScenarioEntity(bsp, entityCreator.FromBsp(bsp));
+                this.AddEntity(entityCreator.FromBsp(bsp));
 
                 foreach (var instance in bsp.InstancedGeometryInstances)
                 {
-                    this.AddScenarioEntity(instance, entityCreator.FromInstancedGeometry(bsp, instance));
+                    this.AddEntity(entityCreator.FromInstancedGeometry(bsp, instance));
                 }
             }
 
@@ -74,30 +74,30 @@ namespace OpenH2.Core.Architecture
                 if (sky.Skybox == uint.MaxValue)
                     continue;
 
-                this.AddScenarioEntity(sky, entityCreator.FromSkyboxInstance(sky));
+                this.AddEntity(entityCreator.FromSkyboxInstance(sky));
             }
 
-            foreach (var scen in this.Map.Scenario.SceneryInstances)
+            foreach (ScenarioTag.SceneryInstance scen in this.Map.Scenario.SceneryInstances.Where(shouldPlace))
             {
                 if (scen.SceneryDefinitionIndex == ushort.MaxValue)
                     continue;
 
-                this.AddScenarioEntity(scen, entityCreator.FromSceneryInstance(scen));
+                this.AddEntity(entityCreator.FromSceneryInstance(scen));
             }
 
-            foreach (var bloc in this.Map.Scenario.BlocInstances)
+            foreach (ScenarioTag.BlocInstance bloc in this.Map.Scenario.BlocInstances.Where(shouldPlace))
             {
-                this.AddScenarioEntity(bloc, entityCreator.FromBlocInstance(bloc));
+                this.AddEntity(entityCreator.FromBlocInstance(bloc));
             }
 
-            foreach (var mach in this.Map.Scenario.MachineryInstances)
+            foreach (ScenarioTag.MachineryInstance mach in this.Map.Scenario.MachineryInstances.Where(shouldPlace))
             {
-                this.AddScenarioEntity(mach, entityCreator.FromMachineryInstance(mach));
+                this.AddEntity(entityCreator.FromMachineryInstance(mach));
             }
 
             foreach (var item in this.Map.Scenario.ItemCollectionPlacements)
             {
-                this.AddScenarioEntity(item, entityCreator.FromItemCollectionPlacement(item));
+                this.AddEntity(entityCreator.FromItemCollectionPlacement(item));
             }
 
             foreach (var item in this.Map.Scenario.VehicleInstances)
@@ -106,15 +106,38 @@ namespace OpenH2.Core.Architecture
                 if (item.Index == ushort.MaxValue)
                     continue;
 
-                this.AddScenarioEntity(item, entityCreator.FromVehicleInstance(item));
+                this.AddEntity(entityCreator.FromVehicleInstance(item));
             }
 
             foreach (var tv in this.Map.Scenario.TriggerVolumes)
             {
-                this.AddScenarioEntity(tv, entityCreator.FromTriggerVolume(tv));
+                this.AddEntity(entityCreator.FromTriggerVolume(tv));
             }
 
             this.AddEntity(entityCreator.FromGlobals());
+        }
+
+        public void CreateEntity(ScenarioTag.EntityReference def)
+        {
+            Entity? newEntity = def.ItemType switch
+            {
+                ScenarioTag.WellKnownVarType.Biped => null,
+                ScenarioTag.WellKnownVarType.Vehicle => entityCreator.FromVehicleInstance(Scenario.VehicleInstances[def.Index]),
+                ScenarioTag.WellKnownVarType.Weapon => null,
+                ScenarioTag.WellKnownVarType.Equipment => null,
+                ScenarioTag.WellKnownVarType.Scenery => entityCreator.FromSceneryInstance(Scenario.SceneryInstances[def.Index]),
+                ScenarioTag.WellKnownVarType.Machinery => entityCreator.FromMachineryInstance(Scenario.MachineryInstances[def.Index]),
+                ScenarioTag.WellKnownVarType.Controller => null,
+                ScenarioTag.WellKnownVarType.Sound => null,
+                ScenarioTag.WellKnownVarType.Bloc => entityCreator.FromBlocInstance(Scenario.BlocInstances[def.Index]),
+                ScenarioTag.WellKnownVarType.Undef => null,
+                _ => throw new NotImplementedException(),
+            };
+
+            if(newEntity != null)
+            {
+                this.AddEntity(newEntity);
+            }
         }
     }
 }

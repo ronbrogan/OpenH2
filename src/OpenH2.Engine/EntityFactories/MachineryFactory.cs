@@ -14,7 +14,7 @@ namespace OpenH2.Engine.EntityFactories
 {
     public class MachineryFactory
     {
-        public static Entity FromTag(H2vMap map, ScenarioTag scenario,  ScenarioTag.MachineryInstance instance)
+        public static Machine FromTag(H2vMap map, ScenarioTag scenario,  ScenarioTag.MachineryInstance instance)
         {
             var scenery = new Machine();
 

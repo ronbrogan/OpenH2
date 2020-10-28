@@ -99,13 +99,14 @@ namespace OpenH2.Engine.EntityFactories
                 var entity = new Vehicle();
                 entity.FriendlyName = vehi.Name;
                 var xform = new TransformComponent(entity, instance.Position, QuaternionExtensions.FromH2vOrientation(instance.Orientation));
-                entities.Add(CreateFromVehicleTag(entity, map, xform, vehi));
+                PopulateVehicle(entity, map, xform, vehi);
+                entities.Add(entity);
             }
 
             return entities;
         }
 
-        public static Entity CreateFromVehicleInstance(H2vMap map, ScenarioTag scenario, ScenarioTag.VehicleInstance instance)
+        public static Vehicle CreateFromVehicleInstance(H2vMap map, ScenarioTag scenario, ScenarioTag.VehicleInstance instance)
         {
             var item = new Vehicle();
 
@@ -118,10 +119,12 @@ namespace OpenH2.Engine.EntityFactories
 
             var xform = new TransformComponent(item, instance.Position, QuaternionExtensions.FromH2vOrientation(instance.Orientation));
 
-            return CreateFromVehicleTag(item, map, xform, vehi);
+            PopulateVehicle(item, map, xform, vehi);
+
+            return item;
         }
 
-        private static Entity CreateFromVehicleTag(Vehicle item, H2vMap map, TransformComponent xform, VehicleTag vehi)
+        private static void PopulateVehicle(Vehicle item, H2vMap map, TransformComponent xform, VehicleTag vehi)
         {
             item.FriendlyName = vehi.Name;
             item.SetComponents(xform,
@@ -132,8 +135,6 @@ namespace OpenH2.Engine.EntityFactories
                     Flags = ModelFlags.Diffuse | ModelFlags.CastsShadows | ModelFlags.ReceivesShadows,
                     Meshes = MeshFactory.GetRenderModel(map, vehi.Hlmt)
                 }));
-
-            return item;
         }
     }
 }
