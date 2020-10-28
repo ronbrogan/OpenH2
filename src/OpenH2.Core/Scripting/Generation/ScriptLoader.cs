@@ -2,6 +2,7 @@
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Emit;
+using Microsoft.CodeAnalysis.Text;
 using OpenH2.Core.Tags.Scenario;
 using System;
 using System.Collections.Generic;
@@ -17,6 +18,7 @@ namespace OpenH2.Core.Scripting.Generation
     {
         private readonly string generatedScriptOutput;
         private CSharpCompilation compilation;
+        private List<EmbeddedText> embeddedSource = new List<EmbeddedText>();
 
         private const string AssemblyName = "OpenH2.ScriptGen";
 
@@ -57,6 +59,26 @@ namespace OpenH2.Core.Scripting.Generation
                     compilation = compilation.AddReferences(MetadataReference.CreateFromFile(reference.CodeBase));
                 }
             }
+
+            var targetFrameworkUnit = SyntaxFactory.CompilationUnit()
+                .AddAttributeLists(
+                    SyntaxFactory.AttributeList(
+                        SyntaxFactory.SingletonSeparatedList(
+                            SyntaxFactory.Attribute(SyntaxFactory.QualifiedName(
+                                SyntaxFactory.QualifiedName(
+                                    SyntaxFactory.QualifiedName(
+                                        SyntaxFactory.IdentifierName("System"),
+                                        SyntaxFactory.IdentifierName("Runtime")),
+                                    SyntaxFactory.IdentifierName("Versioning")),
+                                SyntaxFactory.IdentifierName("TargetFrameworkAttribute")))
+                                .AddArgumentListArguments(
+                                    SyntaxFactory.AttributeArgument(SyntaxUtil.LiteralExpression(".NETStandard,Version=v2.1")),
+                                    SyntaxFactory.AttributeArgument(SyntaxUtil.LiteralExpression(""))
+                                        .WithNameEquals(SyntaxFactory.NameEquals(SyntaxFactory.IdentifierName("FrameworkDisplayName"))))))
+                    .WithTarget(SyntaxFactory.AttributeTargetSpecifier(SyntaxFactory.Token(SyntaxKind.AssemblyKeyword))));
+
+            this.compilation = this.compilation.AddSyntaxTrees(targetFrameworkUnit.SyntaxTree);
+
         }
 
         public void Load(ScenarioTag scnr)
@@ -121,36 +143,25 @@ namespace OpenH2.Core.Scripting.Generation
                 classGen.AddMethod(script);
             }
 
-            var csharp = SyntaxFactory.CompilationUnit().AddMembers(classGen.Generate());
-            var dataCsharp = SyntaxFactory.CompilationUnit().AddMembers(dataGen.Generate());
+            this.AddCode($"{scenarioParts.Last()}.cs", classGen.Generate());
+            this.AddCode($"{scenarioParts.Last()}.Data.cs", dataGen.Generate());
+        }
 
-            var source = CSharpSyntaxTree.Create(csharp, null, $"{scenarioParts.Last()}.cs", Encoding.UTF8);
-            var data = CSharpSyntaxTree.Create(dataCsharp, null, $"{scenarioParts.Last()}.Data.cs", Encoding.UTF8);
+        private void AddCode(string desiredPath, MemberDeclarationSyntax member)
+        {
+            var compilationUnit = SyntaxFactory.CompilationUnit().AddMembers(member);
 
-            //var targetFrameworkTree = SyntaxFactory.CompilationUnit()
-            //    .AddAttributeLists(
-            //        SyntaxFactory.AttributeList(
-            //            SyntaxFactory.SingletonSeparatedList(
-            //                SyntaxFactory.Attribute(SyntaxFactory.QualifiedName(
-            //                    SyntaxFactory.QualifiedName(
-            //                        SyntaxFactory.QualifiedName(
-            //                            SyntaxFactory.IdentifierName("System"),
-            //                            SyntaxFactory.IdentifierName("Runtime")),
-            //                        SyntaxFactory.IdentifierName("Versioning")),
-            //                    SyntaxFactory.IdentifierName("TargetFrameworkAttribute")))
-            //                    .AddArgumentListArguments(
-            //                        SyntaxFactory.AttributeArgument(SyntaxUtil.LiteralExpression(".NETStandard,Version=v2.1")),
-            //                        SyntaxFactory.AttributeArgument(SyntaxUtil.LiteralExpression(""))
-            //                            .WithNameEquals(SyntaxFactory.NameEquals(SyntaxFactory.IdentifierName("FrameworkDisplayName"))))))
-            //        .WithTarget(SyntaxFactory.AttributeTargetSpecifier(SyntaxFactory.Token(SyntaxKind.AssemblyKeyword))));
+            var sourceText = compilationUnit.ToString();
+            var sourceBytes = Encoding.UTF8.GetBytes(sourceText);
+            var embeddableText = SourceText.From(sourceBytes, sourceBytes.Length, Encoding.UTF8, canBeEmbedded: true);
+            embeddedSource.Add(EmbeddedText.FromSource(desiredPath, embeddableText));
 
-
-            this.compilation = this.compilation.AddSyntaxTrees(source, data);
+            var tree = CSharpSyntaxTree.Create(compilationUnit, null, desiredPath, Encoding.UTF8);
+            this.compilation = this.compilation.AddSyntaxTrees(tree);
 
             if (string.IsNullOrWhiteSpace(this.generatedScriptOutput) == false)
             {
-                File.WriteAllText(this.generatedScriptOutput + $"\\{scenarioParts.Last()}.cs", csharp.ToString());
-                File.WriteAllText(this.generatedScriptOutput + $"\\{scenarioParts.Last()}.Data.cs", dataCsharp.ToString());
+                File.WriteAllText(Path.Combine(this.generatedScriptOutput, desiredPath), sourceText);
             }
         }
 
@@ -165,7 +176,8 @@ namespace OpenH2.Core.Scripting.Generation
             {
                 var result = this.compilation.Emit(pe, pdb, options: new EmitOptions(
                     debugInformationFormat: DebugInformationFormat.PortablePdb, 
-                    defaultSourceFileEncoding: Encoding.UTF8));
+                    defaultSourceFileEncoding: Encoding.UTF8),
+                    embeddedTexts: embeddedSource);
 
                 if (result.Success == false)
                 {
