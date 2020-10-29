@@ -30,7 +30,7 @@ namespace OpenH2.Core.Architecture
 
             var accum = new List<T>();
 
-            foreach(var entity in this.Scene.Entities.Values)
+            foreach (var entity in this.Scene.Entities.Values)
             {
                 if(entity.TryGetChild<T>(out var c))
                 {

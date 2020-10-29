@@ -11,6 +11,7 @@ namespace OpenH2.Core.Scripting.Execution
     public class ScriptTaskExecutor : IScriptExecutor
     {
         private delegate Task OrchestratedScript();
+        public ulong CurrentTick { get; private set; } = 0;
 
         private ExecutionState[] executionStates = Array.Empty<ExecutionState>();
 
@@ -73,7 +74,25 @@ namespace OpenH2.Core.Scripting.Execution
 
         public void Execute()
         {
-            for(var i = 0; i < executionStates.Length; i++)
+            CurrentTick++;
+
+            lock(tasks)
+            {
+                var currentTaskNode = tasks.First;
+                while (currentTaskNode != null)
+                {
+                    var tNode = currentTaskNode;
+                    var t = tNode.Value;
+                    currentTaskNode = currentTaskNode.Next;
+                    if (t.expiry < CurrentTick)
+                    {
+                        t.tcs.TrySetResult(null);
+                        tasks.Remove(tNode);
+                    }
+                }
+            }
+
+            for (var i = 0; i < executionStates.Length; i++)
             {
                 var state = executionStates[i];
 
@@ -150,5 +169,24 @@ namespace OpenH2.Core.Scripting.Execution
             public DateTimeOffset SleepUntil;
             public Task? Task;
         }
+
+        /// <summary>
+        /// Creates a task that will take the specified number of updates to complete
+        /// </summary>
+        public Task Delay(int ticks)
+        {
+            var t = new TaskCompletionSource<object>();
+
+            lock(tasks)
+            {
+                tasks.AddLast(new EngineTickTask { expiry = CurrentTick + (ulong)ticks, tcs = t });
+            }
+
+            return t.Task;
+        }
+
+        private LinkedList<EngineTickTask> tasks = new LinkedList<EngineTickTask>();
+
+        private struct EngineTickTask { public ulong expiry; public TaskCompletionSource<object> tcs; }
     }
 }

@@ -456,16 +456,14 @@ namespace OpenH2.Engine.Scripting
         public async Task sleep(int ticks)
         {
             if (ticks <= 0) ticks = 1;
-            var sleepTime = TimeSpan.FromSeconds(ticks / (double)TicksPerSecond);
-            await Task.Delay(sleepTime);
+            await this.executionOrchestrator.Delay(ticks);
         }
 
         /// <summary>pauses execution of this script (or, optionally, another script) for the specified number of ticks.</summary>
         public async Task sleep(short ticks)
         {
             if (ticks <= 0) ticks = 1;
-            var sleepTime = TimeSpan.FromSeconds(ticks / (double)TicksPerSecond);
-            await Task.Delay(sleepTime);
+            await this.executionOrchestrator.Delay(ticks);
         }
 
         /// <summary>pauses execution of this script (or, optionally, another script) forever.</summary>
@@ -492,8 +490,8 @@ namespace OpenH2.Engine.Scripting
             }
 
             while (await condition() == false && timeoutOffset > DateTimeOffset.Now)
-            {
-                await Task.Delay(TimeSpan.FromSeconds(ticks / (double)TicksPerSecond));
+            { 
+                await this.executionOrchestrator.Delay(ticks);
             }
         }
 

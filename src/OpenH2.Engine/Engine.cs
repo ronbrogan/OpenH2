@@ -10,10 +10,12 @@ using OpenH2.Rendering.Abstractions;
 using OpenH2.Rendering.OpenGL;
 using OpenTK.Windowing.Desktop;
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Numerics;
+using System.Threading.Tasks;
 
 namespace OpenH2.Engine
 {
@@ -90,12 +92,12 @@ namespace OpenH2.Engine
             watch.Stop();
             Console.WriteLine($"Loading map took {watch.ElapsedMilliseconds / 1000f} seconds");
 
-            scene.AddEntity(camera);
+            //scene.AddEntity(camera);
 
-            //var player = new Player(true);
-            //player.Transform.Position = map.Scenario.PlayerSpawnMarkers[0].Position;
-            //player.Transform.UpdateDerivedData();
-            //scene.AddEntity(player);
+            var player = new Player(true);
+            player.Transform.Position = map.Scenario.PlayerSpawnMarkers[0].Position;
+            player.Transform.UpdateDerivedData();
+            scene.AddEntity(player);
 
             world.LoadScene(scene);
         }

@@ -17,6 +17,7 @@ namespace OpenH2.Core.Architecture
 
         public H2vMap Map { get; }
         public ScenarioTag Scenario => Map.Scenario;
+
         public Dictionary<Guid, Entity> Entities { get; private set; } = new Dictionary<Guid, Entity>();
         public Dictionary<object, Entity> ScenarioSourcedEntities { get; } = new Dictionary<object, Entity>();
 
@@ -34,8 +35,6 @@ namespace OpenH2.Core.Architecture
 
         public void RemoveEntity(Entity e)
         {
-            Debug.Assert(Entities.ContainsKey(e.Id));
-
             Entities.Remove(e.Id);
             OnEntityRemove.Invoke(e);
         }
