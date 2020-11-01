@@ -61,9 +61,7 @@ namespace OpenH2.Engine.EntityFactories
                 var entity = new Item();
                 entity.FriendlyName = tag.Name;
 
-                var components = new List<Component>();
-
-                components.Add(new RenderModelComponent(entity, new Model<BitmapTag>
+                var renderModel = new RenderModelComponent(entity, new Model<BitmapTag>
                 {
                     Note = $"[{itmc.Id}] {itmc.Name}",
                     //Position = instance.Position,
@@ -71,13 +69,12 @@ namespace OpenH2.Engine.EntityFactories
                     //Scale = new Vector3(1.3f),
                     Flags = ModelFlags.Diffuse | ModelFlags.CastsShadows | ModelFlags.ReceivesShadows,
                     Meshes = MeshFactory.GetRenderModel(map, itemHlmt)
-                }));
+                });
 
                 var xform = new TransformComponent(entity, instance.Position, QuaternionExtensions.FromH2vOrientation(instance.Orientation));
-                components.Add(xform);
-                components.Add(PhysicsComponentFactory.CreateDynamicRigidBody(entity, xform, map, itemHlmt));
+                var body = PhysicsComponentFactory.CreateDynamicRigidBody(entity, xform, map, itemHlmt);
 
-                entity.SetComponents(components.ToArray());
+                entity.SetComponents(xform, renderModel, body);
                 entities.Add(entity);
             }
 

@@ -29,11 +29,11 @@ namespace OpenH2.Engine.Stores
         }
 
         /// <summary>
-        /// Returns true if the key is down now, but wasn't last frame
+        /// Returns true if the key is down now, but wasn't last frame 
         /// </summary>
         public bool WasPressed(Keys key)
         {
-            return this.KeyState.IsKeyDown(key) && !this.PreviousKeyState.IsKeyDown(key);
+            return this.KeyState.IsKeyDown(key) && (!this.PreviousKeyState?.IsKeyDown(key) ?? true);
         }
 
         /// <summary>

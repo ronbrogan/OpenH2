@@ -1,11 +1,8 @@
-﻿using Microsoft.CodeAnalysis;
-using OpenH2.Core.Architecture;
-using OpenH2.Core.Extensions;
+﻿using OpenH2.Core.Extensions;
 using OpenH2.Core.Factories;
 using OpenH2.Core.Tags.Scenario;
 using OpenH2.Engine.Components;
 using OpenH2.Engine.Entities;
-using System.Collections.Generic;
 using System.Numerics;
 
 namespace OpenH2.Engine.EntityFactories

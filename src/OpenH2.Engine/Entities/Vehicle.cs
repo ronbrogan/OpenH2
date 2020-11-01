@@ -14,14 +14,13 @@ namespace OpenH2.Engine.Entities
             RigidBodyComponent body,
             params Component[] rest)
         {
-            this.Transform = xform;
             this.Physics = body.PhysicsImplementation;
 
             var allComponents = new List<Component>();
             allComponents.Add(xform);
             allComponents.Add(body);
             allComponents.AddRange(rest);
-            this.SetComponents(allComponents);
+            this.SetComponents(xform, allComponents.ToArray());
         }
     }
 }

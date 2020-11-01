@@ -132,7 +132,7 @@ namespace OpenH2.Core.Scripting.Execution
                 {
                     if(state.Status == ScriptStatus.Terminated)
                     {
-                        Logger.Log("[SCRIPT] Trying to set terminated lifecycle", Logger.Color.Red);
+                        Logger.Log($"[SCRIPT] Trying to set terminated lifecycle to {desiredStatus}", Logger.Color.Red);
                         return;
                     }
 

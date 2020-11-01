@@ -3,6 +3,7 @@ using OpenH2.Core.GameObjects;
 using OpenH2.Engine.Components;
 using OpenH2.Physics.Proxying;
 using System;
+using System.Collections.Generic;
 using System.Numerics;
 
 namespace OpenH2.Engine.Entities
@@ -28,6 +29,17 @@ namespace OpenH2.Engine.Entities
         public GameObjectEntity()
         {
             this.Components = Array.Empty<Component>();
+        }
+
+        public void SetComponents(TransformComponent xform,
+            params Component[] rest)
+        {
+            this.Transform = xform;
+
+            var allComponents = new List<Component>();
+            allComponents.Add(xform);
+            allComponents.AddRange(rest);
+            this.SetComponents(allComponents);
         }
 
         public virtual void Hide()

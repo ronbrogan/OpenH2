@@ -190,10 +190,8 @@ namespace OpenH2.ModelDumper
 
 
                     var model = new MeshCollection(meshes.ToArray());
-                    writer.WriteModel(model, xform, "mach_" + machInstance.MachineryDefinitionIndex + "_coll");
+                    //writer.WriteModel(model, xform, "mach_" + machInstance.MachineryDefinitionIndex + "_coll");
                 }
-
-                
             }
 
             foreach (var itemPlacement in scenario.ItemCollectionPlacements)
@@ -228,6 +226,57 @@ namespace OpenH2.ModelDumper
                 var index = mode.Components[0].DamageLevels[0].HighestPieceIndex;
                 
                 //writer.WriteModel(mode.Parts[index].Model, xform, "itmc_" + itemPlacement.ItemCollectionReference);
+            }
+
+            var count = 0;
+            foreach (var character in scenario.CharacterDefinitions)
+            {
+                var charTag = scene.GetTag(character.CharacterReference);
+                Console.WriteLine("Dumping char " + character.CharacterReference.Id);
+
+                var xform = Matrix4x4.CreateScale(new Vector3(1))
+                    * Matrix4x4.CreateFromQuaternion(Quaternion.Identity)
+                    * Matrix4x4.CreateTranslation(new Vector3(1f * count++, 0, 0));
+
+                if (!scene.TryGetTag(charTag.Biped, out var biped))
+                {
+                    continue;
+                }
+
+                if (!scene.TryGetTag(biped.Model, out var hlmt))
+                {
+                    continue;
+                }
+
+                if (scene.TryGetTag(hlmt.RenderModel, out var mode))
+                {
+                    writer.WriteModel(mode.Parts[0].Model, xform, "char_" + character.CharacterReference.Id);
+                }
+
+                //if (scene.TryGetTag(hlmt.ColliderId, out var coll))
+                //{
+                //    var meshes = new List<ModelMesh>();
+
+                //    foreach (var comp in coll.ColliderComponents)
+                //    {
+                //        var level = comp.DamageLevels[0];
+                //        //foreach(var level in comp.DamageLevels)
+                //        {
+                //            var triMesh = GetTriangulatedCollisionMesh(level.Parts);
+
+                //            meshes.Add(new ModelMesh()
+                //            {
+                //                Indices = triMesh.Item2.ToArray(),
+                //                Verticies = triMesh.Item1.Select(v => new VertexFormat(v, Vector2.Zero, Vector3.Zero)).ToArray(),
+                //                ElementType = Foundation.MeshElementType.TriangleList
+                //            });
+                //        }
+                //    }
+
+
+                //    var model = new MeshCollection(meshes.ToArray());
+                //    writer.WriteModel(model, xform, "mach_" + machInstance.MachineryDefinitionIndex + "_coll");
+                //}
             }
 
             File.WriteAllText(outPath, writer.ToString());

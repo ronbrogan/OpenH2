@@ -50,7 +50,7 @@ namespace OpenH2.Engine.EntityFactories
 
             var originalTag = new OriginalTagComponent(scenery, instance);
 
-            scenery.SetComponents(new Component[] { comp, centerOfMass, origin, xform, body, originalTag });
+            scenery.SetComponents(xform, comp, centerOfMass, origin,  body, originalTag);
 
             return scenery;
         }

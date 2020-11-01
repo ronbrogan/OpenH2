@@ -172,7 +172,8 @@ namespace OpenH2.Engine.Scripting
                 for (int i = 0; i < squad.SpawnMin; i++)
                 {
                     var loc = squad.StartingLocations[i];
-                    this.scene.EntityCreator.FromSquadStartingLocation(loc);
+                    var entity = this.scene.EntityCreator.FromSquadStartingLocation(loc);
+                    this.scene.AddEntity(entity);
                 }
             }
             else if (ai is ScenarioTag.AiSquadDefinition.StartingLocation loc)

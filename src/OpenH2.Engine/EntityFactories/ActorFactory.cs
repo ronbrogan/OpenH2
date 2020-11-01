@@ -61,7 +61,7 @@ namespace OpenH2.Engine.EntityFactories
 
             var originalTag = new OriginalTagComponent(entity, loc);
 
-            entity.SetComponents(new Component[] { comp, centerOfMass, origin, xform, originalTag });
+            entity.SetComponents(xform, comp, centerOfMass, origin, originalTag);
 
             return entity;
         }

@@ -83,7 +83,7 @@ namespace OpenH2.Engine.EntityFactories
 
             scenery.FriendlyName = tag.Name;
 
-            var comp = new RenderModelComponent(scenery, new Model<BitmapTag>
+            var renderModel = new RenderModelComponent(scenery, new Model<BitmapTag>
             {
                 Note = $"[{tag.Id}] {tag.Name}",
                 Meshes = MeshFactory.GetRenderModel(map, tag.Model),
@@ -94,9 +94,9 @@ namespace OpenH2.Engine.EntityFactories
             var orientation = QuaternionExtensions.FromH2vOrientation(instance.Orientation);
             var xform = new TransformComponent(scenery, instance.Position, orientation);
 
-            var components = new List<Component>(3)
+            var components = new List<Component>(2)
             {
-                comp, xform
+                renderModel
             };
 
             var body = PhysicsComponentFactory.CreateStaticRigidBody(scenery, xform, map, tag.Model);
@@ -106,7 +106,7 @@ namespace OpenH2.Engine.EntityFactories
                 components.Add(body);
             }
 
-            scenery.SetComponents(components);
+            scenery.SetComponents(xform, components.ToArray());
 
             return scenery;
         }

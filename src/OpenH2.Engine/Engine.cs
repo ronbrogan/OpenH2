@@ -96,7 +96,8 @@ namespace OpenH2.Engine
 
             var player = new Player(true);
             player.FriendlyName = "player_0";
-            player.Transform.Position = map.Scenario.PlayerSpawnMarkers[0].Position;
+            player.Transform.Position = map.Scenario.PlayerSpawnMarkers[0].Position + new Vector3(0,0,0.3f);
+            player.Transform.Orientation = Quaternion.CreateFromAxisAngle(EngineGlobals.Up, map.Scenario.PlayerSpawnMarkers[0].Heading);
             player.Transform.UpdateDerivedData();
             scene.AddEntity(player);
 
