@@ -58,50 +58,6 @@ namespace OpenH2.Core.Scripting.Generation
             }
         }
 
-        public void AddPublicProperty(ScenarioTag.AiOrderDefinition order, int itemIndex)
-        {
-            AddPublicProperty(ScriptDataType.AIOrders, order.Description, itemIndex);
-        }
-
-        // Make squads into nested static classes
-        public void AddSquadData(ScenarioTag tag)
-        {
-            for (var i = 0; i < tag.AiSquadDefinitions.Length; i++)
-            {
-                var squad = tag.AiSquadDefinitions[i];
-
-                var squadPropName = nameRepo.RegisterName(squad.Description, ScriptDataType.AI.ToString(), i);
-
-                var dataClassProps = new List<PropertyDeclarationSyntax>();
-
-                var nestedRepo = new MemberNameRepository();
-
-                var m = 0;
-                foreach (var ai in squad.StartingLocations)
-                {
-                    var propName = nestedRepo.RegisterName(ai.Description, ScriptDataType.AI.ToString(), m++);
-
-                    dataClassProps.Add(SyntaxUtil.CreateProperty(ScriptDataType.AI, propName));
-                }
-
-                // This is so the script can reference the squad itself, need special init handling
-                dataClassProps.Add(SyntaxUtil.CreateProperty(ScriptDataType.AI, "Squad"));
-
-                var squadTypeName = "Squad_" + squadPropName;
-
-                var cls = ClassDeclaration(squadTypeName)
-                    .AddModifiers(Token(SyntaxKind.PublicKeyword))
-                    .WithMembers(new SyntaxList<MemberDeclarationSyntax>(dataClassProps));
-
-                nestedDataClasses.Add(cls);
-                nameRepo.NestedRepos.Add(squadPropName, nestedRepo);
-
-                properties.Add(PropertyDeclaration(ParseTypeName(squadTypeName), squadPropName)
-                    .AddModifiers(Token(SyntaxKind.PublicKeyword))
-                    .WithAccessorList(SyntaxUtil.AutoPropertyAccessorList()));
-            }
-        }
-
         public void AddProperties(ScenarioTag scnr)
         {
             for (int i = 0; i < scnr.WellKnownItems.Length; i++)
@@ -111,57 +67,142 @@ namespace OpenH2.Core.Scripting.Generation
                 if (externalRef.ItemType == ScenarioTag.WellKnownVarType.Undef)
                     continue;
 
-                AddPublicProperty(externalRef, i);
+                var varType = SyntaxUtil.ToScriptDataType(externalRef.ItemType);
+
+                AddPublicProperty(varType, externalRef.Identifier, i, isReference: true);
             }
 
             for (int i = 0; i < scnr.CameraPathTargets.Length; i++)
             {
                 var cam = scnr.CameraPathTargets[i];
-                AddPublicProperty(cam, i);
+                AddPublicProperty(ScriptDataType.CameraPathTarget, cam.Description, i);
             }
 
-            AddSquadData(scnr);
+            CreateNestedSquadClasses(scnr);
 
             for (int i = 0; i < scnr.AiSquadGroupDefinitions.Length; i++)
             {
                 var ai = scnr.AiSquadGroupDefinitions[i];
-                AddPublicProperty(ai, i);
+                AddPublicProperty(ScriptDataType.AI, ai.Description, i);
             }
 
             for (int i = 0; i < scnr.AiOrderDefinitions.Length; i++)
             {
                 var order = scnr.AiOrderDefinitions[i];
-                AddPublicProperty(order, i);
+                AddPublicProperty(ScriptDataType.AIOrders, order.Description, i);
             }
 
             for (int i = 0; i < scnr.LocationFlagDefinitions.Length; i++)
             {
                 var flag = scnr.LocationFlagDefinitions[i];
-                AddPublicProperty(flag, i);
+                AddPublicProperty(ScriptDataType.LocationFlag, flag.Description, i);
             }
 
             for (int i = 0; i < scnr.CinematicTitleDefinitions.Length; i++)
             {
                 var title = scnr.CinematicTitleDefinitions[i];
-                AddPublicProperty(title, i);
+                AddPublicProperty(ScriptDataType.CinematicTitle, title.Title, i);
             }
 
             for (int i = 0; i < scnr.TriggerVolumes.Length; i++)
             {
                 var tv = scnr.TriggerVolumes[i];
-                AddPublicProperty(tv, i);
+                AddPublicProperty(ScriptDataType.Trigger, tv.Description, i);
             }
 
             for (int i = 0; i < scnr.StartingProfileDefinitions.Length; i++)
             {
                 var profile = scnr.StartingProfileDefinitions[i];
-                AddPublicProperty(profile, i);
+                AddPublicProperty(ScriptDataType.StartingProfile, profile.Description, i);
             }
 
             for (int i = 0; i < scnr.DeviceGroupDefinitions.Length; i++)
             {
                 var group = scnr.DeviceGroupDefinitions[i];
-                AddPublicProperty(group, i);
+                AddPublicProperty(ScriptDataType.DeviceGroup, group.Description, i);
+            }
+        }
+
+        // Make squads into nested classes
+        public void CreateNestedSquadClasses(ScenarioTag tag)
+        {
+            for (var i = 0; i < tag.AiSquadDefinitions.Length; i++)
+            {
+                var squad = tag.AiSquadDefinitions[i];
+
+                var squadPropName = nameRepo.RegisterName(squad.Description, ScriptDataType.AI.ToString(), i);
+
+                var dataClassProps = new List<PropertyDeclarationSyntax>();
+                dataClassProps.Add(SyntaxUtil.CreateProperty(ParseTypeName(nameof(ScenarioTag)), nameof(ScenarioTag)));
+
+                var nestedRepo = new MemberNameRepository();
+
+                var m = 0;
+                foreach (var ai in squad.StartingLocations)
+                {
+                    var propName = nestedRepo.RegisterName(ai.Description, ScriptDataType.AI.ToString(), m++);
+
+                    ExpressionSyntax startingLocationAccess = ElementAccessExpression(
+                        MemberAccessExpression(SyntaxKind.SimpleMemberAccessExpression,
+                            ElementAccessExpression(
+                                MemberAccessExpression(SyntaxKind.SimpleMemberAccessExpression,
+                                    IdentifierName(nameof(ScenarioTag)),
+                                    IdentifierName(nameof(tag.AiSquadDefinitions))))
+                            .AddArgumentListArguments(Argument(SyntaxUtil.LiteralExpression(i))),
+                            IdentifierName(nameof(squad.StartingLocations))))
+                        .AddArgumentListArguments(Argument(SyntaxUtil.LiteralExpression(m)));
+
+                    startingLocationAccess = MemberAccessExpression(SyntaxKind.SimpleMemberAccessExpression,
+                        startingLocationAccess,
+                        IdentifierName(nameof(IGameObjectDefinition<object>.GameObject)));
+
+                    dataClassProps.Add(PropertyDeclaration(SyntaxUtil.ScriptTypeSyntax(ScriptDataType.AI), propName)
+                        .WithModifiers(TokenList(Token(SyntaxKind.PublicKeyword)))
+                        .WithExpressionBody(ArrowExpressionClause(startingLocationAccess))
+                        .WithSemicolonToken(Token(SyntaxKind.SemicolonToken)));
+                }
+
+                ExpressionSyntax squadAccess = ElementAccessExpression(
+                    MemberAccessExpression(SyntaxKind.SimpleMemberAccessExpression,
+                        IdentifierName(nameof(ScenarioTag)),
+                        IdentifierName(nameof(tag.AiSquadDefinitions))))
+                    .AddArgumentListArguments(Argument(SyntaxUtil.LiteralExpression(i)));
+
+                squadAccess = MemberAccessExpression(SyntaxKind.SimpleMemberAccessExpression,
+                        squadAccess,
+                        IdentifierName(nameof(IGameObjectDefinition<object>.GameObject)));
+
+                // This is so the script can reference the squad itself, need special init handling
+                dataClassProps.Add(PropertyDeclaration(SyntaxUtil.ScriptTypeSyntax(ScriptDataType.AI), "Squad")
+                    .WithModifiers(TokenList(Token(SyntaxKind.PublicKeyword)))
+                    .WithExpressionBody(ArrowExpressionClause(squadAccess))
+                    .WithSemicolonToken(Token(SyntaxKind.SemicolonToken)));
+
+                var squadTypeName = "Squad_" + squadPropName;
+
+                var cls = ClassDeclaration(squadTypeName)
+                    .AddModifiers(Token(SyntaxKind.PublicKeyword))
+                    .WithMembers(new SyntaxList<MemberDeclarationSyntax>(dataClassProps))
+                    .AddMembers(ConstructorDeclaration(squadTypeName)
+                        .AddModifiers(Token(SyntaxKind.PublicKeyword))
+                        .AddParameterListParameters(
+                            Parameter(Identifier(nameof(ScenarioTag)))
+                                .WithType(ParseTypeName(nameof(ScenarioTag))))
+                        .WithBody(Block(new List<StatementSyntax>()
+                        {
+                            ExpressionStatement(AssignmentExpression(SyntaxKind.SimpleAssignmentExpression,
+                                MemberAccessExpression(SyntaxKind.SimpleMemberAccessExpression,
+                                    ThisExpression(),
+                                    IdentifierName(nameof(ScenarioTag))),
+                                IdentifierName(nameof(ScenarioTag))))
+                        })));
+
+                nestedDataClasses.Add(cls);
+                nameRepo.NestedRepos.Add(squadPropName, nestedRepo);
+
+                properties.Add(PropertyDeclaration(ParseTypeName(squadTypeName), squadPropName)
+                    .AddModifiers(Token(SyntaxKind.PublicKeyword))
+                    .WithAccessorList(SyntaxUtil.AutoPropertyAccessorList()));
             }
         }
 
@@ -200,7 +241,7 @@ namespace OpenH2.Core.Scripting.Generation
                 .WithBody(Block(statements)));
         }
 
-        public void AddSquadInitialization(List<StatementSyntax> statements, ScenarioTag tag)
+        private void AddSquadInitialization(List<StatementSyntax> statements, ScenarioTag tag)
         {
             for (var i = 0; i < tag.AiSquadDefinitions.Length; i++)
             {
@@ -211,68 +252,10 @@ namespace OpenH2.Core.Scripting.Generation
                     return;
                 }
 
-                var initializerExpressions = new List<ExpressionSyntax>();
-
-                var nestedRepo = nameRepo.NestedRepos[squadPropName];
-
-                var m = 0;
-                foreach (var ai in squad.StartingLocations)
-                {
-                    if (nestedRepo.TryGetName(ai.Description, ScriptDataType.AI.ToString(), m, out var propName) == false)
-                    {
-                        continue;
-                    }
-
-                    var access = ElementAccessExpression(
-                        MemberAccessExpression(SyntaxKind.SimpleMemberAccessExpression,
-                            ElementAccessExpression(
-                                MemberAccessExpression(SyntaxKind.SimpleMemberAccessExpression,
-                                    IdentifierName("scenarioTag"),
-                                    IdentifierName(nameof(tag.AiSquadDefinitions))))
-                            .AddArgumentListArguments(Argument(SyntaxUtil.LiteralExpression(i))),
-                            IdentifierName(nameof(squad.StartingLocations))))
-                        .AddArgumentListArguments(Argument(SyntaxUtil.LiteralExpression(m)));
-
-                    var entityGet = InvocationExpression(
-                        MemberAccessExpression(SyntaxKind.SimpleMemberAccessExpression,
-                            IdentifierName("scene"),
-                            GenericName(Identifier(nameof(Scene.GetScenarioEntity)))
-                                .AddTypeArgumentListArguments(SyntaxUtil.ScriptTypeSyntax(ScriptDataType.AI))))
-                        .AddArgumentListArguments(Argument(access));
-
-                    var exp = AssignmentExpression(SyntaxKind.SimpleAssignmentExpression,
-                        IdentifierName(propName),
-                        entityGet);
-
-                    initializerExpressions.Add(exp);
-                    m++;
-                }
-
-                var squadAccess = ElementAccessExpression(
-                                MemberAccessExpression(SyntaxKind.SimpleMemberAccessExpression,
-                                    IdentifierName("scenarioTag"),
-                                    IdentifierName(nameof(tag.AiSquadDefinitions))))
-                            .AddArgumentListArguments(Argument(SyntaxUtil.LiteralExpression(i)));
-
-                var squadEntityGet = InvocationExpression(
-                        MemberAccessExpression(SyntaxKind.SimpleMemberAccessExpression,
-                            IdentifierName("scene"),
-                            GenericName(Identifier(nameof(Scene.GetScenarioEntity)))
-                                .AddTypeArgumentListArguments(SyntaxUtil.ScriptTypeSyntax(ScriptDataType.AI))))
-                        .AddArgumentListArguments(Argument(squadAccess));
-
-                var squadExp = AssignmentExpression(SyntaxKind.SimpleAssignmentExpression,
-                    IdentifierName("Squad"),
-                    squadEntityGet);
-
-                initializerExpressions.Add(squadExp);
-
                 var squadTypeName = "Squad_" + squadPropName;
 
-                var squadItem = ObjectCreationExpression(ParseTypeName(squadTypeName),
-                    ArgumentList(),
-                    InitializerExpression(SyntaxKind.ObjectInitializerExpression,
-                    SeparatedList(initializerExpressions)));
+                var squadItem = ObjectCreationExpression(ParseTypeName(squadTypeName))
+                    .AddArgumentListArguments(Argument(IdentifierName("scenarioTag")));
                 var squadItemAssignment = AssignmentExpression(SyntaxKind.SimpleAssignmentExpression,
                     IdentifierName(squadPropName),
                     squadItem);
@@ -280,49 +263,7 @@ namespace OpenH2.Core.Scripting.Generation
             }
         }
 
-        public void AddPublicProperty(ScenarioTag.AiSquadGroupDefinition ai, int itemIndex)
-        {
-            AddPublicProperty(ScriptDataType.AI, ai.Description, itemIndex);
-        }
-
-        public void AddPublicProperty(ScenarioTag.CameraPathTarget cam, int itemIndex)
-        {
-            AddPublicProperty(ScriptDataType.CameraPathTarget, cam.Description, itemIndex);
-        }
-
-        public void AddPublicProperty(ScenarioTag.LocationFlagDefinition flag, int itemIndex)
-        {
-            AddPublicProperty(ScriptDataType.LocationFlag, flag.Description, itemIndex);
-        }
-
-        public void AddPublicProperty(ScenarioTag.CinematicTitleDefinition title, int itemIndex)
-        {
-            AddPublicProperty(ScriptDataType.CinematicTitle, title.Title, itemIndex);
-        }
-
-        public void AddPublicProperty(ScenarioTag.TriggerVolume tv, int itemIndex)
-        {
-            AddPublicProperty(ScriptDataType.Trigger, tv.Description, itemIndex);
-        }
-
-        public void AddPublicProperty(ScenarioTag.EntityReference externalRef, int itemIndex)
-        {
-            var varType = SyntaxUtil.ToScriptDataType(externalRef.ItemType);
-
-            AddPublicProperty(varType, externalRef.Identifier, itemIndex, isReference: true);
-        }
-
-        public void AddPublicProperty(ScenarioTag.StartingProfileDefinition profile, int itemIndex)
-        {
-            AddPublicProperty(ScriptDataType.StartingProfile, profile.Description, itemIndex);
-        }
-
-        public void AddPublicProperty(ScenarioTag.DeviceGroupDefinition group, int itemIndex)
-        {
-            AddPublicProperty(ScriptDataType.DeviceGroup, group.Description, itemIndex);
-        }
-
-        public void AddPublicProperty(ScriptDataType type, string name, int itemIndex, bool isReference = false)
+        private void AddPublicProperty(ScriptDataType type, string name, int itemIndex, bool isReference = false)
         {
             var propName = nameRepo.RegisterName(name, isReference ? nameof(ScenarioTag.EntityReference) : type.ToString(), itemIndex);
 

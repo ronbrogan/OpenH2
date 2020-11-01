@@ -26,7 +26,7 @@ namespace OpenH2.Core.Tags.Scenario
 
         [FixedLength(116)]
         [DebuggerDisplay("{Description}")]
-        public class AiSquadDefinition
+        public class AiSquadDefinition : IGameObjectDefinition<IAiActor>
         {
             [StringValue(0, 32)]
             public string Description { get; set; }
@@ -92,9 +92,11 @@ namespace OpenH2.Core.Tags.Scenario
             [ReferenceArray(72)]
             public StartingLocation[] StartingLocations { get; set; }
 
+            public IAiActor GameObject { get; set; }
+
             [FixedLength(100)]
             [DebuggerDisplay("{Description}")]
-            public class StartingLocation
+            public class StartingLocation : IGameObjectDefinition<IAiActor>
             {
                 [InternedString(0)]
                 public string Description { get; set; }
@@ -169,6 +171,8 @@ namespace OpenH2.Core.Tags.Scenario
 
                 [PrimitiveValue(96)]
                 public uint ScriptIndex { get; set; }
+
+                public IAiActor GameObject { get; set; }
             }
         }
 
