@@ -594,6 +594,12 @@ namespace OpenH2.Engine.Scripting
         }
 
         /// <summary>returns true if any of the specified objects are within the specified volume. trigger volume must have been postprocessed</summary>
+        public bool volume_test_objects(ITriggerVolume trigger_volume, IAiActorDefinition actor)
+        {
+            return trigger_volume.Contains(actor.Actor);
+        }
+
+        /// <summary>returns true if any of the specified objects are within the specified volume. trigger volume must have been postprocessed</summary>
         public bool volume_test_objects(ITriggerVolume trigger_volume, GameObjectList object_list)
         {
             foreach(var o in object_list)
@@ -627,6 +633,13 @@ namespace OpenH2.Engine.Scripting
         public bool volume_test_objects_all(ITriggerVolume trigger, IGameObject entity)
         {
             return trigger.Contains(entity);
+        }
+
+
+        /// <summary>returns true if all of the specified objects are within the specified volume. trigger volume must have been postprocessed</summary>
+        public bool volume_test_objects_all(ITriggerVolume trigger, IAiActorDefinition actor)
+        {
+            return trigger.Contains(actor.Actor);
         }
 
         /// <summary>wakes a sleeping script in the next update.</summary>

@@ -68,6 +68,11 @@ namespace OpenH2.Engine.Scripting
         }
 
         /// <summary>prevents any of the given units from being knocked around or playing ping animations</summary>
+        public void unit_impervious(IAiActorDefinition actor, bool boolean)
+        {
+        }
+
+        /// <summary>prevents any of the given units from being knocked around or playing ping animations</summary>
         public void unit_impervious(GameObjectList object_list, bool boolean)
         {
         }

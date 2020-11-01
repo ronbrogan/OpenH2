@@ -40,6 +40,7 @@ namespace OpenH2.Engine.Entities
 
             var camera = new CameraComponent(this);
             camera.PositionOffset = moverConfig.EyeOffset;
+            this.EyeOffset = moverConfig.EyeOffset;
 
             this.Components = new Component[]
             {

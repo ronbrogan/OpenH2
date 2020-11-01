@@ -62,13 +62,13 @@ namespace OpenH2.Engine.Scripting
         }
 
         /// <summary>Returns true if the command script is in the ai's cs queue</summary>
-        public bool cs_command_script_queued(IAiActor ai, AIScript ai_command_script)
+        public bool cs_command_script_queued(IAiActorDefinition ai, AIScript ai_command_script)
         {
             return default(bool);
         }
 
         /// <summary>Returns true if the ai is running the command script in question</summary>
-        public bool cs_command_script_running(IAiActor ai, AIScript ai_command_script)
+        public bool cs_command_script_running(IAiActorDefinition ai, AIScript ai_command_script)
         {
             return default(bool);
         }
@@ -250,12 +250,12 @@ namespace OpenH2.Engine.Scripting
         }
 
         /// <summary>Add a command script onto the end of an actor's command script queue</summary>
-        public void cs_queue_command_script(IAiActor ai, AIScript ai_command_script)
+        public void cs_queue_command_script(IAiActorDefinition ai, AIScript ai_command_script)
         {
         }
 
         /// <summary>Causes the specified actor(s) to start executing a command script immediately (discarding any other command scripts in the queue)</summary>
-        public void cs_run_command_script(IAiActor ai, AIScript ai_command_script)
+        public void cs_run_command_script(IAiActorDefinition ai, AIScript ai_command_script)
         {
         }
 
@@ -280,7 +280,7 @@ namespace OpenH2.Engine.Scripting
         }
 
         /// <summary>Push a command script to the top of the actor's command script queue</summary>
-        public void cs_stack_command_script(IAiActor ai, AIScript ai_command_script)
+        public void cs_stack_command_script(IAiActorDefinition ai, AIScript ai_command_script)
         {
         }
 

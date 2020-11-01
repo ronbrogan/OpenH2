@@ -42,7 +42,7 @@ namespace OpenH2.Core.Scripting.Generation
                 ScriptDataType.Entity => ParseTypeName(nameof(IGameObject)),
                 ScriptDataType.Unit => ParseTypeName(nameof(IUnit)),
                 ScriptDataType.Vehicle => ParseTypeName(nameof(IVehicle)),
-                ScriptDataType.AI => ParseTypeName(nameof(IAiActor)),
+                ScriptDataType.AI => ParseTypeName(nameof(IAiActorDefinition)),
                 ScriptDataType.Device => ParseTypeName(nameof(IDevice)),
 
                 _ => Enum.IsDefined(typeof(ScriptDataType), dataType)
@@ -95,7 +95,7 @@ namespace OpenH2.Core.Scripting.Generation
             { typeof(string), ScriptDataType.String },
             { typeof(bool), ScriptDataType.Boolean },
             { typeof(ITeam), ScriptDataType.Team },
-            { typeof(IAiActor), ScriptDataType.AI },
+            { typeof(IAiActorDefinition), ScriptDataType.AI },
             { typeof(IAIBehavior), ScriptDataType.AIBehavior },
             { typeof(IDamageState), ScriptDataType.DamageState },
             { typeof(INavigationPoint), ScriptDataType.NavigationPoint }

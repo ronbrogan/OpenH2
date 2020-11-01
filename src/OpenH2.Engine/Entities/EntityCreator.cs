@@ -72,6 +72,13 @@ namespace OpenH2.Engine.Entities
             return entity;
         }
 
+        public Entity FromSquadStartingLocation(ScenarioTag.AiSquadDefinition.StartingLocation loc)
+        {
+            var entity = ActorFactory.FromStartingLocation(this.Map, loc);
+            loc.Actor = entity;
+            return entity;
+        }
+
         public Entity FromGlobals()
         {
             var globalEntity = new GlobalSettings();

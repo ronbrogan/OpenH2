@@ -15,8 +15,8 @@ namespace OpenH2.Core.Scripting
         public ITeam sentinel;
         public ITeam heretic;
         public short cinematic_letterbox_style;
-        public IAiActor ai_current_actor;
-        public IAiActor ai_current_squad;
+        public IAiActorDefinition ai_current_actor;
+        public IAiActorDefinition ai_current_squad;
         public IAIBehavior guard;
         public short ai_combat_status_active;
         public short ai_combat_status_alert;

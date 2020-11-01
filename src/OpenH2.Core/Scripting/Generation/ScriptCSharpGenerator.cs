@@ -11,6 +11,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Reflection;
 using static Microsoft.CodeAnalysis.CSharp.SyntaxFactory;
 
 namespace OpenH2.Core.Scripting.Generation
@@ -27,6 +28,8 @@ namespace OpenH2.Core.Scripting.Generation
         private readonly List<ClassDeclarationSyntax> nestedDataClasses = new List<ClassDeclarationSyntax>();
 
         private readonly MemberNameRepository nameRepo;
+        private static Dictionary<string, PropertyInfo> ScenarioTagProperties = typeof(ScenarioTag).GetProperties()
+            .ToDictionary(p => p.Name);
 
         private Scope currentScope => scopes.Peek();
         private Stack<Scope> scopes;
@@ -152,10 +155,6 @@ namespace OpenH2.Core.Scripting.Generation
                             IdentifierName(nameof(squad.StartingLocations))))
                         .AddArgumentListArguments(Argument(SyntaxUtil.LiteralExpression(m)));
 
-                    startingLocationAccess = MemberAccessExpression(SyntaxKind.SimpleMemberAccessExpression,
-                        startingLocationAccess,
-                        IdentifierName(nameof(IGameObjectDefinition<object>.GameObject)));
-
                     dataClassProps.Add(PropertyDeclaration(SyntaxUtil.ScriptTypeSyntax(ScriptDataType.AI), propName)
                         .WithModifiers(TokenList(Token(SyntaxKind.PublicKeyword)))
                         .WithExpressionBody(ArrowExpressionClause(startingLocationAccess))
@@ -167,10 +166,6 @@ namespace OpenH2.Core.Scripting.Generation
                         IdentifierName(nameof(ScenarioTag)),
                         IdentifierName(nameof(tag.AiSquadDefinitions))))
                     .AddArgumentListArguments(Argument(SyntaxUtil.LiteralExpression(i)));
-
-                squadAccess = MemberAccessExpression(SyntaxKind.SimpleMemberAccessExpression,
-                        squadAccess,
-                        IdentifierName(nameof(IGameObjectDefinition<object>.GameObject)));
 
                 // This is so the script can reference the squad itself, need special init handling
                 dataClassProps.Add(PropertyDeclaration(SyntaxUtil.ScriptTypeSyntax(ScriptDataType.AI), "Squad")
@@ -292,12 +287,20 @@ namespace OpenH2.Core.Scripting.Generation
                     _ => throw new Exception("Not support!")
                 };
 
-                ExpressionSyntax access = MemberAccessExpression(SyntaxKind.SimpleMemberAccessExpression,
-                        ElementAccessExpression(MemberAccessExpression(SyntaxKind.SimpleMemberAccessExpression,
+                ExpressionSyntax access = ElementAccessExpression(MemberAccessExpression(SyntaxKind.SimpleMemberAccessExpression,
                             IdentifierName(nameof(ScenarioScriptBase.Scenario)),
                             IdentifierName(scnrPropName)))
-                        .AddArgumentListArguments(Argument(SyntaxUtil.LiteralExpression(itemIndex))),
+                        .AddArgumentListArguments(Argument(SyntaxUtil.LiteralExpression(itemIndex)));
+
+                var scnrProp = ScenarioTagProperties[scnrPropName];
+                if (scnrProp.PropertyType.HasElementType &&
+                    scnrProp.PropertyType.GetElementType().GetInterfaces().Any(i => 
+                        i.IsGenericType && i.GetGenericTypeDefinition() == typeof(IGameObjectDefinition<>)))
+                {
+                    access = MemberAccessExpression(SyntaxKind.SimpleMemberAccessExpression,
+                        access,
                         IdentifierName(nameof(IGameObjectDefinition<object>.GameObject)));
+                }
 
                 prop = PropertyDeclaration(SyntaxUtil.ScriptTypeSyntax(type), propName)
                     .WithExpressionBody(ArrowExpressionClause(access))

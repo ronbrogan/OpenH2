@@ -13,6 +13,7 @@ namespace OpenH2.Engine.Entities
         public IPhysicsProxy Physics { get; protected set; }
 
         public Vector3 Position => Transform.Position;
+        public Vector3 EyeOffset { get; internal set; } = Vector3.Zero;
         public Quaternion Orientation => Transform.Orientation;
 
         public float Shield { get; set; }
@@ -20,7 +21,7 @@ namespace OpenH2.Engine.Entities
 
         public IGameObject Parent { get; }
 
-        public IAiActor Ai { get; }
+        public IAiActorDefinition Ai { get; }
 
         public bool IsAlive { get; }
 

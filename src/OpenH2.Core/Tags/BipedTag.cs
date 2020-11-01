@@ -21,7 +21,7 @@ namespace OpenH2.Core.Tags
 
 
         [PrimitiveValue(56)]
-        public TagRef<HaloModelTag> Hlmt { get; set; }
+        public TagRef<HaloModelTag> Model { get; set; }
 
 
         [ReferenceArray(92)]

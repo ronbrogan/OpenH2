@@ -150,7 +150,7 @@ namespace OpenH2.Engine.Scripting
         }
 
         /// <summary>returns the ai attached to this object, if any</summary>
-        public IAiActor object_get_ai(IGameObject entity)
+        public IAiActorDefinition object_get_ai(IGameObject entity)
         {
             if (entity == null)
                 return null;
@@ -284,8 +284,10 @@ namespace OpenH2.Engine.Scripting
             if (entity == null)
                 return false;
 
+            var eye = entity.Position + entity.EyeOffset;
+
             var entityForward = Vector3.Transform(EngineGlobals.Forward, entity.Orientation);
-            var flagForward = point - entity.Position;
+            var flagForward = point - eye;
 
             var entityHeading = MathF.Atan2(entityForward.Y, entityForward.X);
             var flagHeading = MathF.Atan2(flagForward.Y, flagForward.X);

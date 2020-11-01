@@ -16,103 +16,106 @@ namespace OpenH2.Core.Scripting
         void activate_team_nav_point_object(INavigationPoint navpoint, ITeam team, IGameObject entity, float real);
 
         /// <summary>converts an ai reference to an object list.</summary>
-        GameObjectList ai_actors(IAiActor ai);
+        GameObjectList ai_actors(IAiActorDefinition ai);
 
         /// <summary>creates an allegiance between two teams.</summary>
         void ai_allegiance(ITeam team, ITeam team1);
 
         /// <summary>attaches the specified list of units to the specified encounter.</summary>
-        void ai_attach_units(GameObjectList units, IAiActor ai);
+        void ai_attach_units(GameObjectList units, IAiActorDefinition ai);
 
         /// <summary>attaches the specified list of units to the specified encounter.</summary>
-        void ai_attach_units(IUnit unit, IAiActor ai);
+        void ai_attach_units(IUnit unit, IAiActorDefinition ai);
 
         /// <summary>forces a group of actors to start or stop berserking</summary>
-        void ai_berserk(IAiActor ai, bool boolean);
+        void ai_berserk(IAiActorDefinition ai, bool boolean);
 
         /// <summary>makes a group of actors braindead, or restores them to life (in their initial state)</summary>
-        void ai_braindead(IAiActor ai, bool boolean);
+        void ai_braindead(IAiActorDefinition ai, bool boolean);
 
         /// <summary>AI cannot die from damage (as opposed to by scripting)</summary>
-        void ai_cannot_die(IAiActor ai, bool boolean);
+        void ai_cannot_die(IAiActorDefinition ai, bool boolean);
 
         /// <summary>Returns the highest integer combat status in the given squad-group/squad/actor</summary>
-        short ai_combat_status(IAiActor ai);
+        short ai_combat_status(IAiActorDefinition ai);
 
         /// <summary>turn combat dialogue on/off</summary>
         void ai_dialogue_enable(bool boolean);
 
         /// <summary>enables or disables automatic garbage collection for actors in the specified encounter and/or squad.</summary>
-        void ai_disposable(IAiActor ai, bool boolean);
+        void ai_disposable(IAiActorDefinition ai, bool boolean);
+
+        // TODO: Instead of overloads for single objects (rather than a list) there should be
+        // a conversion of the single object to list
 
         /// <summary>if TRUE, forces all actors to completely disregard the specified units, otherwise lets them acknowledge the units again</summary>
         void ai_disregard(IGameObject unit, bool boolean);
 
         /// <summary>if TRUE, forces all actors to completely disregard the specified units, otherwise lets them acknowledge the units again</summary>
+        void ai_disregard(IAiActorDefinition actor, bool boolean);
+
+        /// <summary>if TRUE, forces all actors to completely disregard the specified units, otherwise lets them acknowledge the units again</summary>
         void ai_disregard(GameObjectList object_list, bool boolean);
 
         /// <summary>Instructs the ai in the given squad to get in all their vehicles</summary>
-        void ai_enter_squad_vehicles(IAiActor ai);
+        void ai_enter_squad_vehicles(IAiActorDefinition ai);
 
         /// <summary>erases the specified encounter and/or squad.</summary>
-        void ai_erase(IAiActor ai);
+        void ai_erase(IAiActorDefinition ai);
 
         /// <summary>erases all AI.</summary>
         void ai_erase_all();
 
         /// <summary>return the number of actors that are fighting in a squad or squad_group</summary>
-        short ai_fighting_count(IAiActor ai);
+        short ai_fighting_count(IAiActorDefinition ai);
 
         /// <summary>returns the unit/object corresponding to the given actor</summary>
-        IGameObject ai_get_object(IAiActor ai);
+        IGameObject ai_get_object(IAiActorDefinition ai);
 
         /// <summary>returns the unit/object corresponding to the given actor</summary>
-        IUnit ai_get_unit(IAiActor ai);
+        IUnit ai_get_unit(IAiActorDefinition ai);
 
         /// <summary>instantly kills the specified encounter and/or squad.</summary>
-        void ai_kill(IAiActor ai);
+        void ai_kill(IAiActorDefinition ai);
 
         /// <summary>instantly and silently (no animation or sound played) kills the specified encounter and/or squad.</summary>
-        void ai_kill_silent(IAiActor ai);
+        void ai_kill_silent(IAiActorDefinition ai);
 
         /// <summary>return the number of living actors in the specified encounter and/or squad.</summary>
-        short ai_living_count(IAiActor ai);
+        short ai_living_count(IAiActorDefinition ai);
 
         /// <summary>Make one squad magically aware of another.</summary>
-        void ai_magically_see(IAiActor ai, IAiActor ai1);
+        void ai_magically_see(IAiActorDefinition ai, IAiActorDefinition ai1);
 
         /// <summary>Make a squad magically aware of a particular object.</summary>
-        void ai_magically_see_object(IAiActor ai, IGameObject value);
+        void ai_magically_see_object(IAiActorDefinition ai, IGameObject value);
 
         /// <summary>makes all or part of an encounter move to another encounter.</summary>
-        void ai_migrate(IAiActor ai);
+        void ai_migrate(IAiActorDefinition ai);
 
         /// <summary>makes all or part of an encounter move to another encounter.</summary>
-        void ai_migrate(IAiActor ai, IAiActor ai1);
+        void ai_migrate(IAiActorDefinition ai, IAiActorDefinition ai1);
 
         /// <summary>return the number of non-swarm actors in the specified encounter and/or squad.</summary>
-        short ai_nonswarm_count(IAiActor ai);
+        short ai_nonswarm_count(IAiActorDefinition ai);
 
         /// <summary>Don't use this for anything other than bug 3926.  AI magically cancels vehicle oversteer.</summary>
-        void ai_overcomes_oversteer(IAiActor ai, bool boolean);
+        void ai_overcomes_oversteer(IAiActorDefinition ai, bool boolean);
 
         /// <summary>places the specified squad on the map.</summary>
-        void ai_place(IAiActor ai);
+        void ai_place(IAiActorDefinition ai);
 
         /// <summary>places the specified squad on the map.</summary>
-        void ai_place(IAiActor ai, float value);
-
-        /// <summary>places the specified squad on the map.</summary>
-        void ai_place(IAiActor ai, short value);
+        void ai_place(IAiActorDefinition ai, int value);
 
         /// <summary>places the specified squad (1st arg) on the map in the vehicles belonging to the specified vehicle squad (2nd arg).</summary>
-        void ai_place_in_vehicle(IAiActor ai, IAiActor ai1);
+        void ai_place_in_vehicle(IAiActorDefinition ai, IAiActorDefinition ai1);
 
         /// <summary>Play the given mission dialogue line on the given ai</summary>
-        short ai_play_line(IAiActor ai, string string_id);
+        short ai_play_line(IAiActorDefinition ai, string string_id);
 
         /// <summary>Play the given mission dialogue line on the given ai, directing the ai's gaze at the nearest visible player</summary>
-        short ai_play_line_at_player(IAiActor ai, string string_id);
+        short ai_play_line_at_player(IAiActorDefinition ai, string string_id);
 
         /// <summary>Play the given mission dialogue line on the given ai, directing the ai's gaze at the nearest visible player</summary>
         short ai_play_line_at_player(string emotion);
@@ -124,68 +127,68 @@ namespace OpenH2.Core.Scripting
         void ai_prefer_target(GameObjectList units, bool boolean);
 
         /// <summary>refreshes the health and grenade count of a group of actors, so they are as good as new</summary>
-        void ai_renew(IAiActor ai);
+        void ai_renew(IAiActorDefinition ai);
 
         /// <summary>Start the named scene, with the named command script on the named squad</summary>
         bool ai_scene(string emotion, AIScript aiScript);
 
         /// <summary>Start the named scene, with the named command script on the named squad</summary>
-        bool ai_scene(string string_id, AIScript ai_command_script, IAiActor ai);
+        bool ai_scene(string string_id, AIScript ai_command_script, IAiActorDefinition ai);
 
         /// <summary>Start the named scene, with the named command script on the named squad</summary>
-        bool ai_scene(string string_id, AIScript ai_command_script, IAiActor ai, IAiActor ai1);
+        bool ai_scene(string string_id, AIScript ai_command_script, IAiActorDefinition ai, IAiActorDefinition ai1);
 
         /// <summary>Turn on active camoflage on actor/squad/squad-group</summary>
-        void ai_set_active_camo(IAiActor ai, bool boolean);
+        void ai_set_active_camo(IAiActorDefinition ai, bool boolean);
 
         /// <summary>enables or disables sight for actors in the specified encounter.</summary>
-        void ai_set_blind(IAiActor ai, bool boolean);
+        void ai_set_blind(IAiActorDefinition ai, bool boolean);
 
         /// <summary>enables or disables hearing for actors in the specified encounter.</summary>
-        void ai_set_deaf(IAiActor ai, bool boolean);
+        void ai_set_deaf(IAiActorDefinition ai, bool boolean);
 
         /// <summary>Takes the squad or squad group (arg1) and gives it the order (arg3) in zone (arg2). Use the zone_name/order_name format</summary>
-        void ai_set_orders(IAiActor ai, IAiOrders ai_orders);
+        void ai_set_orders(IAiActorDefinition ai, IAiOrders ai_orders);
 
         /// <summary>returns the number of actors spawned in the given squad or squad group</summary>
-        short ai_spawn_count(IAiActor ai);
+        short ai_spawn_count(IAiActorDefinition ai);
 
         /// <summary>return the current strength (average body vitality from 0-1) of the specified encounter and/or squad.</summary>
-        float ai_strength(IAiActor ai);
+        float ai_strength(IAiActorDefinition ai);
 
         /// <summary>Turn on/off combat suppression on actor/squad/squad-group</summary>
-        void ai_suppress_combat(IAiActor ai, bool boolean);
+        void ai_suppress_combat(IAiActorDefinition ai, bool boolean);
 
         /// <summary>return the number of swarm actors in the specified encounter and/or squad.</summary>
-        short ai_swarm_count(IAiActor ai);
+        short ai_swarm_count(IAiActorDefinition ai);
 
         /// <summary>teleports a group of actors to the starting locations of their current squad(s) if they are currently outside the world.</summary>
-        void ai_teleport_to_starting_location_if_outside_bsp(IAiActor ai);
+        void ai_teleport_to_starting_location_if_outside_bsp(IAiActorDefinition ai);
 
         /// <summary>Tests the named trigger on the named squad</summary>
-        bool ai_trigger_test(string value, IAiActor ai);
+        bool ai_trigger_test(string value, IAiActorDefinition ai);
 
         /// <summary>tells a group of actors to get into a vehicle... does not interrupt any actors who are already going to vehicles</summary>
-        void ai_vehicle_enter(IAiActor ai);
+        void ai_vehicle_enter(IAiActorDefinition ai);
 
         /// <summary>tells a group of actors to get into a vehicle... does not interrupt any actors who are already going to vehicles</summary>
-        void ai_vehicle_enter(IAiActor ai, string unit);
+        void ai_vehicle_enter(IAiActorDefinition ai, string unit);
 
         /// <summary>tells a group of actors to get into a vehicle... does not interrupt any actors who are already going to vehicles</summary>
-        void ai_vehicle_enter(IAiActor ai, IUnit unit, string unit_seat_mapping = null);
+        void ai_vehicle_enter(IAiActorDefinition ai, IUnit unit, string unit_seat_mapping = null);
 
         /// <summary>the given group of actors is snapped into a vehicle, in the substring-specified seats (e.g. passenger for pelican)... does not interrupt any actors who are already going to vehicles</summary>
-        void ai_vehicle_enter_immediate(IAiActor ai, IUnit unit, string seat = null);
+        void ai_vehicle_enter_immediate(IAiActorDefinition ai, IUnit unit, string seat = null);
 
         /// <summary>tells a group of actors to get out of any vehicles that they are in</summary>
-        void ai_vehicle_exit(IAiActor ai);
+        void ai_vehicle_exit(IAiActorDefinition ai);
 
 
         /// <summary>Returns the vehicle that the given actor is in.</summary>
-        IVehicle ai_vehicle_get(IAiActor ai);
+        IVehicle ai_vehicle_get(IAiActorDefinition ai);
 
         /// <summary>Returns the vehicle that was spawned at the given starting location.</summary>
-        IVehicle ai_vehicle_get_from_starting_location(IAiActor ai);
+        IVehicle ai_vehicle_get_from_starting_location(IAiActorDefinition ai);
 
         /// <summary>Reserves the given vehicle (so that AI may not enter it</summary>
         void ai_vehicle_reserve(IVehicle vehicle, bool boolean);
@@ -197,7 +200,7 @@ namespace OpenH2.Core.Scripting
         void ai_vehicle_reserve_seat(IVehicle vehicle, string string_id, bool boolean);
 
         /// <summary>Returns true if the ai's units are ALL vitality pinned (see object_vitality_pinned)</summary>
-        bool ai_vitality_pinned(IAiActor ai);
+        bool ai_vitality_pinned(IAiActorDefinition ai);
 
         /// <summary>evaluates the sequence of expressions in random order and returns the last value evaluated.</summary>
         void begin_random(params Func<Task>[] expressions);
@@ -344,10 +347,10 @@ namespace OpenH2.Core.Scripting
         void cs_approach_stop();
 
         /// <summary>Returns true if the command script is in the ai's cs queue</summary>
-        bool cs_command_script_queued(IAiActor ai, AIScript ai_command_script);
+        bool cs_command_script_queued(IAiActorDefinition ai, AIScript ai_command_script);
 
         /// <summary>Returns true if the ai is running the command script in question</summary>
-        bool cs_command_script_running(IAiActor ai, AIScript ai_command_script);
+        bool cs_command_script_running(IAiActorDefinition ai, AIScript ai_command_script);
 
         /// <summary>Actor crouches for the remainder of the command script, or until overridden</summary>
         void cs_crouch(bool boolean);
@@ -455,10 +458,10 @@ namespace OpenH2.Core.Scripting
         void cs_play_line(string string_id);
 
         /// <summary>Add a command script onto the end of an actor's command script queue</summary>
-        void cs_queue_command_script(IAiActor ai, AIScript ai_command_script);
+        void cs_queue_command_script(IAiActorDefinition ai, AIScript ai_command_script);
 
         /// <summary>Causes the specified actor(s) to start executing a command script immediately (discarding any other command scripts in the queue)</summary>
-        void cs_run_command_script(IAiActor ai, AIScript ai_command_script);
+        void cs_run_command_script(IAiActorDefinition ai, AIScript ai_command_script);
 
         /// <summary>Actor performs the indicated behavior</summary>
         void cs_set_behavior(IAIBehavior ai_behavior);
@@ -473,7 +476,7 @@ namespace OpenH2.Core.Scripting
         void cs_shoot_point(bool boolean, ISpatialPoint point);
 
         /// <summary>Push a command script to the top of the actor's command script queue</summary>
-        void cs_stack_command_script(IAiActor ai, AIScript ai_command_script);
+        void cs_stack_command_script(IAiActorDefinition ai, AIScript ai_command_script);
 
         /// <summary></summary>
         void cs_start_approach(IGameObject entity, float real, float real1, float real12);
@@ -833,7 +836,7 @@ namespace OpenH2.Core.Scripting
         void object_dynamic_simulation_disable(IGameObject entity, bool boolean);
 
         /// <summary>returns the ai attached to this object, if any</summary>
-        IAiActor object_get_ai(IGameObject entity);
+        IAiActorDefinition object_get_ai(IGameObject entity);
 
         /// <summary>returns the health [0,1] of the object, returns -1 if the object does not exist</summary>
         float object_get_health(IGameObject entity);
@@ -1138,8 +1141,14 @@ namespace OpenH2.Core.Scripting
         /// <summary>returns TRUE if the <unit> has <object> as a weapon, FALSE otherwise</summary>
         bool unit_has_weapon(IUnit unit, IWeapon weapon);
 
+        // TODO: Instead of overloads for single objects (rather than a list) there should be
+        // a conversion of the single object to list
+
         /// <summary>prevents any of the given units from being knocked around or playing ping animations</summary>
         void unit_impervious(IGameObject unit, bool boolean);
+
+        /// <summary>prevents any of the given units from being knocked around or playing ping animations</summary>
+        void unit_impervious(IAiActorDefinition actor, bool boolean);
 
         /// <summary>prevents any of the given units from being knocked around or playing ping animations</summary>
         void unit_impervious(GameObjectList object_list, bool boolean);
@@ -1216,14 +1225,23 @@ namespace OpenH2.Core.Scripting
         /// <summary>returns true if the specified object is within the specified volume.</summary>
         bool volume_test_object(ITriggerVolume trigger_volume, IGameObject entity);
 
+        // TODO: Instead of overloads for single objects (rather than a list) there should be
+        // a conversion of the single object to list
+
         /// <summary>returns true if any of the specified objects are within the specified volume. trigger volume must have been postprocessed</summary>
         bool volume_test_objects(ITriggerVolume trigger, IGameObject entity);
+
+        /// <summary>returns true if any of the specified objects are within the specified volume. trigger volume must have been postprocessed</summary>
+        bool volume_test_objects(ITriggerVolume trigger, IAiActorDefinition actor);
 
         /// <summary>returns true if any of the specified objects are within the specified volume. trigger volume must have been postprocessed</summary>
         bool volume_test_objects(ITriggerVolume trigger_volume, GameObjectList object_list);
 
         /// <summary>returns true if any (rb: all?) of the specified objects are within the specified volume. trigger volume must have been postprocessed</summary>
         bool volume_test_objects_all(ITriggerVolume trigger, IGameObject entity);
+
+        /// <summary>returns true if any (rb: all?) of the specified objects are within the specified volume. trigger volume must have been postprocessed</summary>
+        bool volume_test_objects_all(ITriggerVolume trigger, IAiActorDefinition actor);
 
         /// <summary>returns true if any (rb: all?) of the specified objects are within the specified volume. trigger volume must have been postprocessed</summary>
         bool volume_test_objects_all(ITriggerVolume trigger, GameObjectList object_list);
