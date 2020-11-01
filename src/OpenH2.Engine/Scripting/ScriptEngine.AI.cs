@@ -172,23 +172,21 @@ namespace OpenH2.Engine.Scripting
                 for (int i = 0; i < squad.SpawnMin; i++)
                 {
                     var loc = squad.StartingLocations[i];
+                    this.scene.EntityCreator.FromSquadStartingLocation(loc);
                 }
             }
             else if (ai is ScenarioTag.AiSquadDefinition.StartingLocation loc)
             {
-
+                this.scene.EntityCreator.FromSquadStartingLocation(loc);
             }
             else if (ai is ScenarioTag.AiSquadGroupDefinition group)
             {
-
+                //?
             }
             else
             {
                 return;
             }
-            // should create the AI actor(s) specified (with accessories, such as vehicle)
-
-            // should place actor(s) in the proper location
         }
 
         /// <summary>places the specified squad (1st arg) on the map in the vehicles belonging to the specified vehicle squad (2nd arg).</summary>

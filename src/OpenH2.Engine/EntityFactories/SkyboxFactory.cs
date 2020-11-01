@@ -18,6 +18,7 @@ namespace OpenH2.Engine.EntityFactories
         public static Scenery FromTag(H2vMap map, ScenarioTag scenario,  ScenarioTag.SkyboxInstance instance)
         {
             var scenery = new Scenery();
+            scenery.FriendlyName = "Skybox_" + instance.Skybox.Id;
 
             map.TryGetTag(instance.Skybox, out var tag);
 

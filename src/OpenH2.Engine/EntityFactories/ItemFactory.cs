@@ -109,6 +109,7 @@ namespace OpenH2.Engine.EntityFactories
         public static Vehicle CreateFromVehicleInstance(H2vMap map, ScenarioTag scenario, ScenarioTag.VehicleInstance instance)
         {
             var item = new Vehicle();
+            item.FriendlyName = "Vehicle_" + instance.Index;
 
             var def = scenario.VehicleDefinitions[instance.Index];
  

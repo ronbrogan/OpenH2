@@ -17,8 +17,9 @@ namespace OpenH2.Engine.EntityFactories
         public static Machine FromTag(H2vMap map, ScenarioTag scenario,  ScenarioTag.MachineryInstance instance)
         {
             var scenery = new Machine();
+            scenery.FriendlyName = "Machine_" + instance.MachineryDefinitionIndex;
 
-            if(instance.MachineryDefinitionIndex == ushort.MaxValue)
+            if (instance.MachineryDefinitionIndex == ushort.MaxValue)
             {
                 Console.WriteLine($"MACH index out of range");
                 return scenery;

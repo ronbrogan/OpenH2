@@ -82,6 +82,7 @@ namespace OpenH2.Engine.Entities
         public Entity FromGlobals()
         {
             var globalEntity = new GlobalSettings();
+            globalEntity.FriendlyName = "Globals";
             var globalMaterials = new MaterialListComponent(globalEntity);
 
             for (var i = 0; i < this.Map.Globals.MaterialDefinitions.Length; i++)

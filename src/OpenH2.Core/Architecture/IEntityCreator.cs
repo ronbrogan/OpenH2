@@ -1,4 +1,5 @@
-﻿using OpenH2.Core.Tags;
+﻿using OpenH2.Core.GameObjects;
+using OpenH2.Core.Tags;
 using OpenH2.Core.Tags.Scenario;
 
 namespace OpenH2.Core.Architecture
@@ -14,6 +15,7 @@ namespace OpenH2.Core.Architecture
         Entity FromItemCollectionPlacement(ScenarioTag.ItemCollectionPlacement item);
         Entity FromVehicleInstance(ScenarioTag.VehicleInstance item);
         Entity FromTriggerVolume(ScenarioTag.TriggerVolume tv);
+        Entity FromSquadStartingLocation(ScenarioTag.AiSquadDefinition.StartingLocation loc);
         Entity FromGlobals();
     }
 }

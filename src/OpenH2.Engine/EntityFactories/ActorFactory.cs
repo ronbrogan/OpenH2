@@ -6,6 +6,7 @@ using OpenH2.Engine.Components;
 using OpenH2.Engine.Entities;
 using OpenH2.Engine.Factories;
 using OpenH2.Foundation;
+using System;
 using System.Numerics;
 
 namespace OpenH2.Engine.EntityFactories
@@ -18,15 +19,24 @@ namespace OpenH2.Engine.EntityFactories
             var entity = new Actor();
             entity.FriendlyName = loc.Description;
 
-            var character = map.GetTag(map.Scenario.CharacterDefinitions[loc.CharacterIndex].CharacterReference);
+            var charIndex = loc.CharacterIndex;
+
+            if(charIndex == ushort.MaxValue)
+            {
+                charIndex = map.Scenario.AiSquadDefinitions[loc.SquadIndex].CharacterIndex;
+            }
+
+            if (charIndex == ushort.MaxValue)
+            {
+                throw new Exception("Couldn't determine character to create");
+            }
+
+            var character = map.GetTag(map.Scenario.CharacterDefinitions[charIndex].CharacterReference);
             var biped = map.GetTag(character.Biped);
-            
 
             var comp = new RenderModelComponent(entity, new Model<BitmapTag>
             {
                 Note = $"[{biped.Id}] {biped.Name}",
-                //Position = instance.Position,
-                //Orientation = instance.Orientation.ToQuaternion(),
                 Flags = ModelFlags.Diffuse | ModelFlags.CastsShadows | ModelFlags.ReceivesShadows,
                 Meshes = MeshFactory.GetRenderModel(map, biped.Model)
             });
@@ -34,6 +44,7 @@ namespace OpenH2.Engine.EntityFactories
             var orientation = Quaternion.CreateFromAxisAngle(EngineGlobals.Up, loc.Rotation);
             var xform = new TransformComponent(entity, loc.Position, orientation);
 
+            // TODO: add back
             var body = PhysicsComponentFactory.CreateDynamicRigidBody(entity, xform, map, biped.Model);
 
             var comOffset = Vector3.Zero;
@@ -50,7 +61,7 @@ namespace OpenH2.Engine.EntityFactories
 
             var originalTag = new OriginalTagComponent(entity, loc);
 
-            entity.SetComponents(new Component[] { comp, centerOfMass, origin, xform, body, originalTag });
+            entity.SetComponents(new Component[] { comp, centerOfMass, origin, xform, originalTag });
 
             return entity;
         }

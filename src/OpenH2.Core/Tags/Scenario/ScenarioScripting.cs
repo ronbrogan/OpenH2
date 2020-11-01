@@ -172,6 +172,8 @@ namespace OpenH2.Core.Tags.Scenario
                 [PrimitiveValue(96)]
                 public uint ScriptIndex { get; set; }
 
+                public int SquadIndex { get; set; }
+
                 public IAiActor Actor { get; set; }
             }
         }

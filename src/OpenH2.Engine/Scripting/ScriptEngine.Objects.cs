@@ -125,6 +125,9 @@ namespace OpenH2.Engine.Scripting
         {
             foreach(var entity in this.scene.Entities.Values)
             {
+                if (entity == null)
+                    continue;
+
                 if (entity.FriendlyName.Contains(value))
                     this.scene.RemoveEntity(entity);
             }

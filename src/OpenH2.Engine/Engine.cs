@@ -95,6 +95,7 @@ namespace OpenH2.Engine
             //scene.AddEntity(camera);
 
             var player = new Player(true);
+            player.FriendlyName = "player_0";
             player.Transform.Position = map.Scenario.PlayerSpawnMarkers[0].Position;
             player.Transform.UpdateDerivedData();
             scene.AddEntity(player);

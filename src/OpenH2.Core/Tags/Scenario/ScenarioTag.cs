@@ -95,6 +95,15 @@ namespace OpenH2.Core.Tags.Scenario
             {
                 reference.Initialize(this);
             }
+
+            for (int i = 0; i < this.AiSquadDefinitions.Length; i++)
+            {
+                var squad = this.AiSquadDefinitions[i];
+                foreach(var loc in squad.StartingLocations)
+                {
+                    loc.SquadIndex = i;
+                }
+            }
         }
 
         [FixedLength(132)]

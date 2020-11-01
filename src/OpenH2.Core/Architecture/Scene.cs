@@ -11,7 +11,7 @@ namespace OpenH2.Core.Architecture
 {
     public class Scene
     {
-        private readonly IEntityCreator entityCreator;
+        public IEntityCreator EntityCreator { get; }
         public event EntityEventHandler OnEntityAdd = delegate { };
         public event EntityEventHandler OnEntityRemove = delegate { };
 
@@ -19,12 +19,11 @@ namespace OpenH2.Core.Architecture
         public ScenarioTag Scenario => Map.Scenario;
 
         public Dictionary<Guid, Entity> Entities { get; private set; } = new Dictionary<Guid, Entity>();
-        public Dictionary<object, Entity> ScenarioSourcedEntities { get; } = new Dictionary<object, Entity>();
 
         public Scene(H2vMap map, IEntityCreator entityCreator)
         {
             this.Map = map;
-            this.entityCreator = entityCreator;
+            this.EntityCreator = entityCreator;
         }
 
         public void AddEntity(Entity e)
@@ -41,16 +40,6 @@ namespace OpenH2.Core.Architecture
 
         public delegate void EntityEventHandler(Entity entity);
 
-        public T? GetScenarioEntity<T>(object o)
-        {
-            if(this.ScenarioSourcedEntities.TryGetValue(o, out var e))
-            {
-                return (T)(object)e;
-            }
-
-            return default;
-        }
-
         public void Load()
         {
             Func<IPlaceable, bool> shouldPlace = (IPlaceable p) => p.PlacementFlags.HasFlag(PlacementFlags.NotAutomatically) == false;
@@ -60,11 +49,11 @@ namespace OpenH2.Core.Architecture
             {
                 this.Map.TryGetTag(terrain.Bsp, out var bsp);
 
-                this.AddEntity(entityCreator.FromBsp(bsp));
+                this.AddEntity(EntityCreator.FromBsp(bsp));
 
                 foreach (var instance in bsp.InstancedGeometryInstances)
                 {
-                    this.AddEntity(entityCreator.FromInstancedGeometry(bsp, instance));
+                    this.AddEntity(EntityCreator.FromInstancedGeometry(bsp, instance));
                 }
             }
 
@@ -73,7 +62,7 @@ namespace OpenH2.Core.Architecture
                 if (sky.Skybox == uint.MaxValue)
                     continue;
 
-                this.AddEntity(entityCreator.FromSkyboxInstance(sky));
+                this.AddEntity(EntityCreator.FromSkyboxInstance(sky));
             }
 
             foreach (ScenarioTag.SceneryInstance scen in this.Map.Scenario.SceneryInstances.Where(shouldPlace))
@@ -81,22 +70,22 @@ namespace OpenH2.Core.Architecture
                 if (scen.SceneryDefinitionIndex == ushort.MaxValue)
                     continue;
 
-                this.AddEntity(entityCreator.FromSceneryInstance(scen));
+                this.AddEntity(EntityCreator.FromSceneryInstance(scen));
             }
 
             foreach (ScenarioTag.BlocInstance bloc in this.Map.Scenario.BlocInstances.Where(shouldPlace))
             {
-                this.AddEntity(entityCreator.FromBlocInstance(bloc));
+                this.AddEntity(EntityCreator.FromBlocInstance(bloc));
             }
 
             foreach (ScenarioTag.MachineryInstance mach in this.Map.Scenario.MachineryInstances.Where(shouldPlace))
             {
-                this.AddEntity(entityCreator.FromMachineryInstance(mach));
+                this.AddEntity(EntityCreator.FromMachineryInstance(mach));
             }
 
             foreach (var item in this.Map.Scenario.ItemCollectionPlacements)
             {
-                this.AddEntity(entityCreator.FromItemCollectionPlacement(item));
+                this.AddEntity(EntityCreator.FromItemCollectionPlacement(item));
             }
 
             foreach (var item in this.Map.Scenario.VehicleInstances)
@@ -105,15 +94,15 @@ namespace OpenH2.Core.Architecture
                 if (item.Index == ushort.MaxValue)
                     continue;
 
-                this.AddEntity(entityCreator.FromVehicleInstance(item));
+                this.AddEntity(EntityCreator.FromVehicleInstance(item));
             }
 
             foreach (var tv in this.Map.Scenario.TriggerVolumes)
             {
-                this.AddEntity(entityCreator.FromTriggerVolume(tv));
+                this.AddEntity(EntityCreator.FromTriggerVolume(tv));
             }
 
-            this.AddEntity(entityCreator.FromGlobals());
+            this.AddEntity(EntityCreator.FromGlobals());
         }
 
         public void CreateEntity(ScenarioTag.EntityReference def)
@@ -121,14 +110,14 @@ namespace OpenH2.Core.Architecture
             Entity? newEntity = def.ItemType switch
             {
                 ScenarioTag.WellKnownVarType.Biped => null,
-                ScenarioTag.WellKnownVarType.Vehicle => entityCreator.FromVehicleInstance(Scenario.VehicleInstances[def.Index]),
+                ScenarioTag.WellKnownVarType.Vehicle => EntityCreator.FromVehicleInstance(Scenario.VehicleInstances[def.Index]),
                 ScenarioTag.WellKnownVarType.Weapon => null,
                 ScenarioTag.WellKnownVarType.Equipment => null,
-                ScenarioTag.WellKnownVarType.Scenery => entityCreator.FromSceneryInstance(Scenario.SceneryInstances[def.Index]),
-                ScenarioTag.WellKnownVarType.Machinery => entityCreator.FromMachineryInstance(Scenario.MachineryInstances[def.Index]),
+                ScenarioTag.WellKnownVarType.Scenery => EntityCreator.FromSceneryInstance(Scenario.SceneryInstances[def.Index]),
+                ScenarioTag.WellKnownVarType.Machinery => EntityCreator.FromMachineryInstance(Scenario.MachineryInstances[def.Index]),
                 ScenarioTag.WellKnownVarType.Controller => null,
                 ScenarioTag.WellKnownVarType.Sound => null,
-                ScenarioTag.WellKnownVarType.Bloc => entityCreator.FromBlocInstance(Scenario.BlocInstances[def.Index]),
+                ScenarioTag.WellKnownVarType.Bloc => EntityCreator.FromBlocInstance(Scenario.BlocInstances[def.Index]),
                 ScenarioTag.WellKnownVarType.Undef => null,
                 _ => throw new NotImplementedException(),
             };

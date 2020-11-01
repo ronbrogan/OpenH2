@@ -20,6 +20,7 @@ namespace OpenH2.Engine.EntityFactories
         public static Scenery FromInstancedGeometry(H2vMap map, BspTag bsp, BspTag.InstancedGeometryInstance instance)
         {
             var scenery = new Scenery();
+            scenery.FriendlyName = "Geom";
 
             if (instance.Index >= bsp.InstancedGeometryDefinitions.Length)
                 return scenery;
@@ -75,6 +76,7 @@ namespace OpenH2.Engine.EntityFactories
         public static Scenery FromTag(H2vMap map, ScenarioTag scenario,  ScenarioTag.SceneryInstance instance)
         {
             var scenery = new Scenery();
+            scenery.FriendlyName = "Scenery_" + instance.SceneryDefinitionIndex;
 
             var id = scenario.SceneryDefinitions[instance.SceneryDefinitionIndex].Scenery;
             var tag = map.GetTag(id);
