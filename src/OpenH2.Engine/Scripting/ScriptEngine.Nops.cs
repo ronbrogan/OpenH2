@@ -1,5 +1,6 @@
 ﻿using OpenH2.Core.GameObjects;
 using OpenH2.Core.Scripting;
+using OpenH2.Core.Tags;
 using OpenH2.Core.Tags.Scenario;
 using System.Threading.Tasks;
 
@@ -15,7 +16,7 @@ namespace OpenH2.Engine.Scripting
         }
 
         /// <summary>predict resources at a frame in camera animation.</summary>
-        public void camera_predict_resources_at_frame(IAnimation animation, string /*id*/ emotion, IUnit unit, ILocationFlag locationFlag, int intValue)
+        public void camera_predict_resources_at_frame(AnimationGraphTag animation, string /*id*/ emotion, IUnit unit, ILocationFlag locationFlag, int intValue)
         {
         }
 
@@ -75,12 +76,12 @@ namespace OpenH2.Engine.Scripting
         }
 
         /// <summary>loads textures necessary to draw an object that's about to come on-screen.</summary>
-        public void object_type_predict(IGameObject entity)
+        public void object_type_predict(BaseTag entity)
         {
         }
 
         /// <summary>loads textures necessary to draw an object that's about to come on-screen.</summary>
-        public void object_type_predict_high(IGameObject entity)
+        public void object_type_predict_high(BaseTag entity)
         {
         }
 
@@ -100,7 +101,7 @@ namespace OpenH2.Engine.Scripting
         }
 
         /// <summary>predict a geometry block.</summary>
-        public void predict_model_section(IModel render_model, int value)
+        public void predict_model_section(HaloModelTag render_model, int value)
         {
         }
 
@@ -141,7 +142,7 @@ namespace OpenH2.Engine.Scripting
         }
 
         /// <summary>your mom part 2.</summary>
-        public void sound_impulse_predict(ISound soundRef)
+        public void sound_impulse_predict(SoundTag soundRef)
         {
         }
 

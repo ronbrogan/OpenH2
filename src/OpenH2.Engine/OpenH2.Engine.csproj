@@ -6,7 +6,9 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\OpenH2.Audio\OpenH2.Audio.csproj" />
     <ProjectReference Include="..\OpenH2.Core\OpenH2.Core.csproj" />
+    <ProjectReference Include="..\OpenH2.OpenAL\OpenH2.OpenAL.csproj" />
     <ProjectReference Include="..\OpenH2.Physics\OpenH2.Physics.csproj" />
     <ProjectReference Include="..\OpenH2.Physx\OpenH2.Physx.csproj" />
     <ProjectReference Include="..\OpenH2.Rendering\OpenH2.Rendering.csproj" />

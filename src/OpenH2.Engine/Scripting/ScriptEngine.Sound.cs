@@ -1,5 +1,6 @@
 ﻿using OpenH2.Core.GameObjects;
 using OpenH2.Core.Scripting;
+using OpenH2.Core.Tags;
 
 namespace OpenH2.Engine.Scripting
 {
@@ -11,48 +12,46 @@ namespace OpenH2.Engine.Scripting
         }
 
         /// <summary>returns the time remaining for the specified impulse sound. DO NOT CALL IN CUTSCENES.</summary>
-        public int sound_impulse_language_time(ISound soundRef)
+        public int sound_impulse_language_time(SoundTag soundRef)
         {
-            return TicksPerSecond;
+            return (int)(this.audioSystem.SecondsRemaining(soundRef) * TicksPerSecond);
         }
 
         /// <summary>plays an impulse sound from the specified source object (or "none"), with the specified scale.</summary>
-        public void sound_impulse_start(object sound, IGameObject entity, float floatValue)
+        public void sound_impulse_start(SoundTag sound, IGameObject entity, float floatValue)
         {
+            this.audioSystem.Start(sound, entity);
         }
 
         /// <summary>plays an impulse sound from the specified source object (or "none"), with the specified scale and effect.</summary>
-        public void sound_impulse_start_effect(ISound sound, IGameObject entity, float floatValue, string /*id*/ effect)
+        public void sound_impulse_start_effect(SoundTag sound, IGameObject entity, float floatValue, string /*id*/ effect)
         {
+            this.audioSystem.Start(sound, entity);
         }
 
         /// <summary>stops the specified impulse sound.</summary>
-        public void sound_impulse_stop(ISound sound)
+        public void sound_impulse_stop(SoundTag sound)
         {
         }
 
         /// <summary>plays an impulse sound from the specified source object (or "none"), with the specified scale.</summary>
-        public void sound_impulse_trigger(IGameObject sound, float floatValue, int intValue)
+        public void sound_impulse_trigger(SoundTag sound, IGameObject source, float floatValue, int intValue)
         {
-        }
-
-        /// <summary>plays an impulse sound from the specified source object (or "none"), with the specified scale.</summary>
-        public void sound_impulse_trigger(IGameObject sound, IGameObject source, float floatValue, int intValue)
-        {
+            this.audioSystem.Start(sound, source);
         }
 
         /// <summary>enables or disables the alternate loop/alternate end for a looping sound.</summary>
-        public void sound_looping_set_alternate(ILoopingSound looping_sound, bool boolean)
+        public void sound_looping_set_alternate(LoopingSoundTag looping_sound, bool boolean)
         {
         }
 
         /// <summary>plays a looping sound from the specified source object (or "none"), with the specified scale.</summary>
-        public void sound_looping_start(ILoopingSound looping_sound, IGameObject entity, float real)
+        public void sound_looping_start(LoopingSoundTag looping_sound, IGameObject entity, float real)
         {
         }
 
         /// <summary>stops the specified looping sound.</summary>
-        public void sound_looping_stop(ILoopingSound looping_sound)
+        public void sound_looping_stop(LoopingSoundTag looping_sound)
         {
         }
 

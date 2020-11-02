@@ -59,7 +59,7 @@ namespace OpenH2.Core.Architecture
                 }
             }
 
-            var sky = this.Scenario.SkyboxInstances[terrain.IndexB];
+            var sky = this.Scenario.SkyboxInstances[terrain.SkyIndex];
             //foreach (var sky in this.Map.Scenario.SkyboxInstances)
             {
                 //if (sky.Skybox == uint.MaxValue)

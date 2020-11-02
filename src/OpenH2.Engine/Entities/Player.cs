@@ -15,9 +15,7 @@ namespace OpenH2.Engine.Entities
             var xform = new TransformComponent(this, Quaternion.Identity);
             xform.Position = new Vector3(0, 0, 8);
             xform.UpdateDerivedData();
-            this.Transform = xform;
             
-
             var light = new PointLightEmitterComponent(this);
             light.Light = new Foundation.PointLight()
             {
@@ -42,12 +40,9 @@ namespace OpenH2.Engine.Entities
             camera.PositionOffset = moverConfig.EyeOffset;
             this.EyeOffset = moverConfig.EyeOffset;
 
-            this.Components = new Component[]
-            {
-                mover,
-                xform,
-                camera
-            };
+            var listener = new SoundListenerComponent(this, xform);
+
+            this.SetComponents(xform, listener, mover, camera);
         }
     }
 }

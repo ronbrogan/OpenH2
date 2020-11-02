@@ -1,5 +1,6 @@
 using OpenH2.Core.GameObjects;
 using OpenH2.Core.Scripting;
+using OpenH2.Core.Tags;
 using OpenH2.Core.Tags.Scenario;
 using System;
 using System.Threading.Tasks;
@@ -218,7 +219,7 @@ namespace OpenH2.Core.Scripting
         void camera_control(bool boolean);
 
         /// <summary>predict resources at a frame in camera animation.</summary>
-        void camera_predict_resources_at_frame(IAnimation animation, string emotion, IUnit unit, ILocationFlag locationFlag, int intValue);
+        void camera_predict_resources_at_frame(AnimationGraphTag animation, string emotion, IUnit unit, ILocationFlag locationFlag, int intValue);
 
         /// <summary>predict resources given a camera point</summary>
         void camera_predict_resources_at_point(ICameraPathTarget cutscene_camera_point);
@@ -227,7 +228,7 @@ namespace OpenH2.Core.Scripting
         void camera_set(ICameraPathTarget cutscene_camera_point, short value);
 
         /// <summary>begins a prerecorded camera animation synchronized to unit relative to cutscene flag.</summary>
-        void camera_set_animation_relative(IAnimation animation, string id, IUnit unit, ILocationFlag locationFlag);
+        void camera_set_animation_relative(AnimationGraphTag animation, string id, IUnit unit, ILocationFlag locationFlag);
 
         /// <summary>sets the field of view</summary>
         void camera_set_field_of_view(float degrees, short ticks);
@@ -356,7 +357,7 @@ namespace OpenH2.Core.Scripting
         void cs_crouch(bool boolean);
 
         /// <summary>starts a custom animation playing on the unit (interpolates into animation if last parameter is TRUE)</summary>
-        void cs_custom_animation(IAnimation animation, string emotion, float floatValue, bool interpolate);
+        void cs_custom_animation(AnimationGraphTag animation, string emotion, float floatValue, bool interpolate);
 
         /// <summary>Deploy a turret at the given script point</summary>
         void cs_deploy_turret(ISpatialPoint point);
@@ -508,7 +509,7 @@ namespace OpenH2.Core.Scripting
         void cs_vehicle_speed(float real);
 
         /// <summary>starts a custom animation playing on a unit (interpolates into animation if last parameter is TRUE)</summary>
-        void custom_animation(IUnit unit, IAnimation animation, string stringid, bool interpolate);
+        void custom_animation(IUnit unit, AnimationGraphTag animation, string stringid, bool interpolate);
 
         /// <summary>starts a custom animation playing on a unit (interpolates into animation if last parameter is TRUE)</summary>
         void custom_animation(IUnit unit, string emotion, bool interpolate);
@@ -517,25 +518,25 @@ namespace OpenH2.Core.Scripting
         void custom_animation_loop(string emotion, bool interpolate);
 
         /// <summary>starts a custom animation playing on a unit (interpolates into animation if last parameter is TRUE)</summary>
-        void custom_animation_loop(IUnit unit, IAnimation animation1, string emotion, bool interpolate);
+        void custom_animation_loop(IUnit unit, AnimationGraphTag animation1, string emotion, bool interpolate);
 
         /// <summary>starts a custom animation relative to some other object (interpolates into animation if last parameter is TRUE)</summary>
-        void custom_animation_relative(IUnit entity, IAnimation animation, string emotion, bool boolean, IGameObject other);
+        void custom_animation_relative(IUnit entity, AnimationGraphTag animation, string emotion, bool boolean, IGameObject other);
 
         /// <summary>starts a custom animation relative to some other object (interpolates into animation if last parameter is TRUE)</summary>
         void custom_animation_relative(IUnit unit, string emotion, bool interpolate, IGameObject entity);
 
         /// <summary>starts a custom animation relative to some other object (interpolates into animation if last parameter is TRUE)</summary>
-        void custom_animation_relative_loop(IUnit unit, IAnimation animation2, string emotion, bool boolean, IGameObject entity);
+        void custom_animation_relative_loop(IUnit unit, AnimationGraphTag animation2, string emotion, bool boolean, IGameObject entity);
 
         /// <summary>causes the specified damage at the specified flag.</summary>
-        void damage_new(IDamage damage, ILocationFlag cutscene_flag);
+        void damage_new(DamageEffectTag damage, ILocationFlag cutscene_flag);
 
         /// <summary>causes the specified damage at the specified object.</summary>
-        void damage_object(IDamage damage, IGameObject entity);
+        void damage_object(DamageEffectTag damage, IGameObject entity);
 
         /// <summary>damages all players with the given damage effect</summary>
-        void damage_players(IDamage damage);
+        void damage_players(DamageEffectTag damage);
 
         /// <summary>sets the mission segment for single player data mine events</summary>
         void data_mine_set_mission_segment(string value);
@@ -603,13 +604,13 @@ namespace OpenH2.Core.Scripting
         void drop(string value);
 
         /// <summary>starts the specified effect at the specified flag.</summary>
-        void effect_new(IEffect effect, ILocationFlag cutscene_flag);
+        void effect_new(EffectTag effect, ILocationFlag cutscene_flag);
 
         /// <summary>starts the specified effect on the specified object at the specified marker.</summary>
-        void effect_new_on_object_marker(IEffect effect, IGameObject entity, string string_id);
+        void effect_new_on_object_marker(EffectTag effect, IGameObject entity, string string_id);
 
         /// <summary>starts the specified effect on the specified object at the specified marker.</summary>
-        void effect_new_on_object_marker(IEffect effect, string emotion);
+        void effect_new_on_object_marker(EffectTag effect, string emotion);
 
         /// <summary>enables the code that constrains the max # active lights</summary>
         void enable_render_light_suppressor();
@@ -681,6 +682,8 @@ namespace OpenH2.Core.Scripting
         void geometry_cache_flush();
 
         T GetReference<T>(string reference);
+
+        T GetTag<T>(string name, uint id) where T: BaseTag;
 
         /// <summary>parameter 1 is how, parameter 2 is when</summary>
         void hud_cinematic_fade(float real, float real1);
@@ -887,10 +890,10 @@ namespace OpenH2.Core.Scripting
         void object_teleport(IGameObject entity, ILocationFlag cutscene_flag);
 
         /// <summary>loads textures necessary to draw an object that's about to come on-screen.</summary>
-        void object_type_predict(IGameObject entity);
+        void object_type_predict(BaseTag entity);
 
         /// <summary>loads textures necessary to draw an object that's about to come on-screen.</summary>
-        void object_type_predict_high(IGameObject entity);
+        void object_type_predict_high(BaseTag entity);
 
         /// <summary>makes an object use the cinematic directional and ambient lights instead of sampling the lightmap.</summary>
         void object_uses_cinematic_lighting(IGameObject entity, bool boolean);
@@ -986,7 +989,7 @@ namespace OpenH2.Core.Scripting
         void play_credits();
 
         /// <summary>predict a geometry block.</summary>
-        void predict_model_section(IModel render_model, int value);
+        void predict_model_section(HaloModelTag render_model, int value);
 
         /// <summary>predict a geometry block.</summary>
         void predict_structure_section(IBsp structure_bsp, int value, bool boolean);
@@ -1019,10 +1022,10 @@ namespace OpenH2.Core.Scripting
         void render_lights_enable_cinematic_shadow(bool boolean, IGameObject entity, string string_id, float real);
 
         /// <summary>starts a custom looping animation playing on a piece of scenery</summary>
-        void scenery_animation_start_loop(IScenery scenery, IAnimation animation, string emotion);
+        void scenery_animation_start_loop(IScenery scenery, AnimationGraphTag animation, string emotion);
 
         /// <summary>starts a custom animation playing on a piece of scenery relative to a parent object</summary>
-        void scenery_animation_start_relative(IScenery scenery, IAnimation animation, string emotion, IGameObject entity);
+        void scenery_animation_start_relative(IScenery scenery, AnimationGraphTag animation, string emotion, IGameObject entity);
 
         /// <summary>starts a custom animation playing on a piece of scenery relative to a parent object</summary>
         void scenery_animation_start_relative(IScenery scenery, string emotion, IGameObject entity);
@@ -1052,31 +1055,31 @@ namespace OpenH2.Core.Scripting
         void sound_class_set_gain(string value, float gain, int ticks);
 
         /// <summary>returns the time remaining for the specified impulse sound. DO NOT CALL IN CUTSCENES.</summary>
-        int sound_impulse_language_time(ISound soundRef);
+        int sound_impulse_language_time(SoundTag soundRef);
 
         /// <summary>your mom part 2.</summary>
-        void sound_impulse_predict(ISound soundRef);
+        void sound_impulse_predict(SoundTag soundRef);
 
         /// <summary>plays an impulse sound from the specified source object (or "none"), with the specified scale.</summary>
-        void sound_impulse_start(object sound, IGameObject entity, float floatValue);
+        void sound_impulse_start(SoundTag sound, IGameObject entity, float floatValue);
 
         /// <summary>plays an impulse sound from the specified source object (or "none"), with the specified scale and effect.</summary>
-        void sound_impulse_start_effect(ISound sound, IGameObject entity, float floatValue, string effect);
+        void sound_impulse_start_effect(SoundTag sound, IGameObject entity, float floatValue, string effect);
 
         /// <summary>stops the specified impulse sound.</summary>
-        void sound_impulse_stop(ISound sound);
+        void sound_impulse_stop(SoundTag sound);
 
         /// <summary>plays an impulse sound from the specified source object (or "none"), with the specified scale.</summary>
-        void sound_impulse_trigger(IGameObject sound, IGameObject source, float floatValue, int intValue);
+        void sound_impulse_trigger(SoundTag sound, IGameObject source, float floatValue, int intValue);
 
         /// <summary>enables or disables the alternate loop/alternate end for a looping sound.</summary>
-        void sound_looping_set_alternate(ILoopingSound looping_sound, bool boolean);
+        void sound_looping_set_alternate(LoopingSoundTag looping_sound, bool boolean);
 
         /// <summary>plays a looping sound from the specified source object (or "none"), with the specified scale.</summary>
-        void sound_looping_start(ILoopingSound looping_sound, IGameObject entity, float real);
+        void sound_looping_start(LoopingSoundTag looping_sound, IGameObject entity, float real);
 
         /// <summary>stops the specified looping sound.</summary>
-        void sound_looping_stop(ILoopingSound looping_sound);
+        void sound_looping_stop(LoopingSoundTag looping_sound);
 
         /// <summary>call this when transitioning between two cinematics so ambience won't fade in between the skips</summary>
         void sound_suppress_ambience_update_on_revert();
@@ -1139,7 +1142,7 @@ namespace OpenH2.Core.Scripting
         float unit_get_shield(IUnit unit);
 
         /// <summary>returns TRUE if the <unit> has <object> as a weapon, FALSE otherwise</summary>
-        bool unit_has_weapon(IUnit unit, IWeapon weapon);
+        bool unit_has_weapon(IUnit unit, BaseTag weapon);
 
         // TODO: Instead of overloads for single objects (rather than a list) there should be
         // a conversion of the single object to list

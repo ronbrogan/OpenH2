@@ -2,7 +2,6 @@
 using OpenH2.Core.GameObjects;
 using OpenH2.Core.Maps;
 using OpenH2.Core.Scripting;
-using OpenH2.Core.Tags.Layout;
 using OpenH2.Serialization.Layout;
 using System.Numerics;
 
@@ -28,10 +27,10 @@ namespace OpenH2.Core.Tags.Scenario
             public TagRef LightmapId { get; set; }
 
             [PrimitiveValue(60)]
-            public uint IndexA { get; set; }
+            public uint Flags { get; set; }
 
             [PrimitiveValue(64)]
-            public uint IndexB { get; set; }
+            public ushort SkyIndex { get; set; }
         }
 
         [FixedLength(92)]

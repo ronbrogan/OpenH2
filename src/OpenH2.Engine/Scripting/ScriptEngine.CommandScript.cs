@@ -1,5 +1,6 @@
 ﻿using OpenH2.Core.GameObjects;
 using OpenH2.Core.Scripting;
+using OpenH2.Core.Tags;
 
 namespace OpenH2.Engine.Scripting
 {
@@ -79,7 +80,7 @@ namespace OpenH2.Engine.Scripting
         }
 
         /// <summary>starts a custom animation playing on the unit (interpolates into animation if last parameter is TRUE)</summary>
-        public void cs_custom_animation(IAnimation animation, string /*id*/ emotion, float floatValue, bool interpolate)
+        public void cs_custom_animation(AnimationGraphTag animation, string /*id*/ emotion, float floatValue, bool interpolate)
         {
         }
 

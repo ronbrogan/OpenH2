@@ -1,5 +1,6 @@
 ﻿using OpenH2.Core.GameObjects;
 using OpenH2.Core.Scripting;
+using OpenH2.Core.Tags;
 using OpenH2.Core.Tags.Scenario;
 
 namespace OpenH2.Engine.Scripting
@@ -57,7 +58,7 @@ namespace OpenH2.Engine.Scripting
         }
 
         /// <summary>returns TRUE if the <unit> has <object> as a weapon, FALSE otherwise</summary>
-        public bool unit_has_weapon(IUnit unit, IWeapon weapon)
+        public bool unit_has_weapon(IUnit unit, BaseTag weapon)
         {
             return default(bool);
         }

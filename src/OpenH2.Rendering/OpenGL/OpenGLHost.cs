@@ -20,7 +20,7 @@ namespace OpenH2.Rendering.OpenGL
             this.adapter = new OpenGLGraphicsAdapter();
         }
 
-        public IGraphicsAdapter GetAdapter()
+        public IGraphicsAdapter GetGraphicsAdapter()
         {
             return adapter;
         }

@@ -4,10 +4,13 @@ namespace OpenH2.Engine.Scripting
     using OpenH2.Core.GameObjects;
     using OpenH2.Core.Scripting;
     using OpenH2.Core.Scripting.Execution;
+    using OpenH2.Core.Tags;
     using OpenH2.Core.Tags.Scenario;
+    using OpenH2.Engine.Systems;
     using OpenH2.Foundation.Extensions;
     using OpenH2.Foundation.Logging;
     using System;
+    using System.Collections.Generic;
     using System.Diagnostics;
     using System.Threading.Tasks;
 
@@ -16,18 +19,27 @@ namespace OpenH2.Engine.Scripting
         public const short TicksPerSecond = 60;
         private readonly Scene scene;
         private readonly IScriptExecutor executionOrchestrator;
+        private readonly AudioSystem audioSystem;
         private readonly Random rng;
 
-        public ScriptEngine(Scene scene, IScriptExecutor executionOrchestrator)
+        public ScriptEngine(Scene scene, 
+            IScriptExecutor executionOrchestrator,
+            AudioSystem audioSystem)
         {
             this.scene = scene;
             this.executionOrchestrator = executionOrchestrator;
+            this.audioSystem = audioSystem;
             this.rng = new Random(42);
         }
 
         public T GetReference<T>(string reference)
         {
             return default(T);
+        }
+
+        public T GetTag<T>(string name, uint id) where T: BaseTag
+        {
+            return scene.Map.GetTag<T>(id);
         }
 
         /// <summary>activates a nav point type <string> attached to a team anchored to a flag with a vertical offset <real>. If the player is not local to the machine, this will fail</summary>
@@ -67,7 +79,7 @@ namespace OpenH2.Engine.Scripting
         }
 
         /// <summary>begins a prerecorded camera animation synchronized to unit relative to cutscene flag.</summary>
-        public void camera_set_animation_relative(IAnimation animation, string /*id*/ id, IUnit unit, ILocationFlag locationFlag)
+        public void camera_set_animation_relative(AnimationGraphTag animation, string /*id*/ id, IUnit unit, ILocationFlag locationFlag)
         {
         }
 
@@ -104,7 +116,7 @@ namespace OpenH2.Engine.Scripting
         }
 
         /// <summary>starts a custom animation playing on a unit (interpolates into animation if last parameter is TRUE)</summary>
-        public void custom_animation(IUnit unit, IAnimation animation, string /*id*/ stringid, bool interpolate)
+        public void custom_animation(IUnit unit, AnimationGraphTag animation, string /*id*/ stringid, bool interpolate)
         {
         }
 
@@ -114,7 +126,7 @@ namespace OpenH2.Engine.Scripting
         }
 
         /// <summary>starts a custom animation playing on a unit (interpolates into animation if last parameter is TRUE)</summary>
-        public void custom_animation_loop(IUnit unit, IAnimation animation1, string /*id*/ emotion, bool interpolate)
+        public void custom_animation_loop(IUnit unit, AnimationGraphTag animation1, string /*id*/ emotion, bool interpolate)
         {
         }
 
@@ -129,27 +141,27 @@ namespace OpenH2.Engine.Scripting
         }
 
         /// <summary>starts a custom animation relative to some other object (interpolates into animation if last parameter is TRUE)</summary>
-        public void custom_animation_relative(IUnit entity, IAnimation animation, string /*id*/ emotion, bool boolean, IGameObject other)
+        public void custom_animation_relative(IUnit entity, AnimationGraphTag animation, string /*id*/ emotion, bool boolean, IGameObject other)
         {
         }
 
         /// <summary>starts a custom animation relative to some other object (interpolates into animation if last parameter is TRUE)</summary>
-        public void custom_animation_relative_loop(IUnit unit, IAnimation animation2, string /*id*/ emotion, bool boolean, IGameObject entity)
+        public void custom_animation_relative_loop(IUnit unit, AnimationGraphTag animation2, string /*id*/ emotion, bool boolean, IGameObject entity)
         {
         }
 
         /// <summary>causes the specified damage at the specified flag.</summary>
-        public void damage_new(IDamage damage, ILocationFlag cutscene_flag)
+        public void damage_new(DamageEffectTag damage, ILocationFlag cutscene_flag)
         {
         }
 
         /// <summary>causes the specified damage at the specified object.</summary>
-        public void damage_object(IDamage damage, IGameObject entity)
+        public void damage_object(DamageEffectTag damage, IGameObject entity)
         {
         }
 
         /// <summary>damages all players with the given damage effect</summary>
-        public void damage_players(IDamage damage)
+        public void damage_players(DamageEffectTag damage)
         {
         }
 
@@ -174,17 +186,17 @@ namespace OpenH2.Engine.Scripting
         }
 
         /// <summary>starts the specified effect at the specified flag.</summary>
-        public void effect_new(IEffect effect, ILocationFlag cutscene_flag)
+        public void effect_new(EffectTag effect, ILocationFlag cutscene_flag)
         {
         }
 
         /// <summary>starts the specified effect on the specified object at the specified marker.</summary>
-        public void effect_new_on_object_marker(IEffect effect, IGameObject entity, string /*id*/ string_id)
+        public void effect_new_on_object_marker(EffectTag effect, IGameObject entity, string /*id*/ string_id)
         {
         }
 
         /// <summary>starts the specified effect on the specified object at the specified marker.</summary>
-        public void effect_new_on_object_marker(IEffect effect, string /*id*/ emotion)
+        public void effect_new_on_object_marker(EffectTag effect, string /*id*/ emotion)
         {
         }
 
@@ -427,7 +439,7 @@ namespace OpenH2.Engine.Scripting
         }
 
         /// <summary>starts a custom looping animation playing on a piece of scenery</summary>
-        public void scenery_animation_start_loop(IScenery scenery, IAnimation animation, string /*id*/ emotion)
+        public void scenery_animation_start_loop(IScenery scenery, AnimationGraphTag animation, string /*id*/ emotion)
         {
         }
 
@@ -437,7 +449,7 @@ namespace OpenH2.Engine.Scripting
         }
 
         /// <summary>starts a custom animation playing on a piece of scenery relative to a parent object</summary>
-        public void scenery_animation_start_relative(IScenery scenery, IAnimation animation, string /*id*/ emotion, IGameObject entity)
+        public void scenery_animation_start_relative(IScenery scenery, AnimationGraphTag animation, string /*id*/ emotion, IGameObject entity)
         {
         }
 

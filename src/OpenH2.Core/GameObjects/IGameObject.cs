@@ -1,4 +1,5 @@
-﻿using System.Numerics;
+﻿using OpenH2.Core.Tags;
+using System.Numerics;
 
 namespace OpenH2.Core.GameObjects
 {

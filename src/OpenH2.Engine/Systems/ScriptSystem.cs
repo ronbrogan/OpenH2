@@ -14,14 +14,15 @@ namespace OpenH2.Engine.Systems
 {
     public class ScriptSystem : WorldSystem
     {
+        private readonly AudioSystem audioSystem;
         private ScriptTaskExecutor executor;
         private ScriptEngine engine;
         private ScenarioScriptBase scripts;
         private Stopwatch stopwatch;
 
-        public ScriptSystem(World world) : base(world)
+        public ScriptSystem(World world, AudioSystem audioSystem) : base(world)
         {
-            
+            this.audioSystem = audioSystem;
         }
 
         public override void Initialize(Scene scene)
@@ -42,7 +43,7 @@ namespace OpenH2.Engine.Systems
             .First(a => a.Attr.ScenarioId == scenario.Name).Type;
 
             this.executor = new ScriptTaskExecutor();
-            this.engine = new ScriptEngine(scene, this.executor);
+            this.engine = new ScriptEngine(scene, this.executor, this.audioSystem);
 
             this.scripts = (ScenarioScriptBase)Activator.CreateInstance(scriptType, new object[] { this.engine });
             scripts.InitializeData(scenario, scene);

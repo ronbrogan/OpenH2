@@ -1,4 +1,5 @@
-﻿using OpenH2.Core.Architecture;
+﻿using OpenH2.Audio.Abstractions;
+using OpenH2.Core.Architecture;
 using OpenH2.Core.Configuration;
 using OpenH2.Core.Extensions;
 using OpenH2.Core.Factories;
@@ -6,6 +7,7 @@ using OpenH2.Engine.Components;
 using OpenH2.Engine.Entities;
 using OpenH2.Foundation;
 using OpenH2.Foundation.Engine;
+using OpenH2.OpenAL.Audio;
 using OpenH2.Rendering.Abstractions;
 using OpenH2.Rendering.OpenGL;
 using OpenTK.Windowing.Desktop;
@@ -22,6 +24,7 @@ namespace OpenH2.Engine
     public class Engine
     {
         IGraphicsHost graphicsHost;
+        IAudioHost audioHost;
         IGameLoopSource gameLoop;
         Func<GameWindow> gameWindowGetter;
 
@@ -34,6 +37,8 @@ namespace OpenH2.Engine
 
             graphicsHost = host;
             gameLoop = host;
+
+            audioHost = OpenALHost.Open(EngineGlobals.Forward, EngineGlobals.Up);
         }
 
         public void Start(EngineStartParameters parameters)
@@ -61,8 +66,8 @@ namespace OpenH2.Engine
                 LoadMap(factory, mapPath);
             });
 
-            var rtWorld = new RealtimeWorld(this, gameWindowGetter());
-            rtWorld.UseGraphicsAdapter(graphicsHost.GetAdapter());
+            var rtWorld = new RealtimeWorld(this, gameWindowGetter(), audioHost.GetAudioAdapter());
+            rtWorld.UseGraphicsAdapter(graphicsHost.GetGraphicsAdapter());
 
             world = rtWorld;
 

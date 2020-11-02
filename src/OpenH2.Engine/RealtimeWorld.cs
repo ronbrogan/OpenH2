@@ -1,4 +1,5 @@
-﻿using OpenH2.Core.Architecture;
+﻿using OpenH2.Audio.Abstractions;
+using OpenH2.Core.Architecture;
 using OpenH2.Engine.Stores;
 using OpenH2.Engine.Systems;
 using OpenH2.Rendering.Abstractions;
@@ -11,14 +12,18 @@ namespace OpenH2.Engine
     {
         private List<object> globalResources = new List<object>();
 
-        public RealtimeWorld(Engine engine, GameWindow window)
+        public RealtimeWorld(Engine engine, 
+            GameWindow window, 
+            IAudioAdapter audioAdapter)
         {
+            var audioSystem = new AudioSystem(this, audioAdapter);
             // new up systems, order here will be order of update
             Systems.Add(new OpenTKInputSystem(this, window));
             Systems.Add(new PhysxPhysicsSystem(this));
             Systems.Add(new MoverSystem(this));
             Systems.Add(new CameraSystem(this));
-            Systems.Add(new ScriptSystem(this));
+            Systems.Add(audioSystem);
+            Systems.Add(new ScriptSystem(this, audioSystem));
 
             globalResources.Add(new RenderListStore());
             globalResources.Add(new InputStore());

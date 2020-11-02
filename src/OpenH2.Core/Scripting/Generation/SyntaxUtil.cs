@@ -3,6 +3,7 @@ using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using OpenH2.Core.Extensions;
 using OpenH2.Core.GameObjects;
+using OpenH2.Core.Tags;
 using OpenH2.Core.Tags.Scenario;
 using System;
 using System.Collections.Generic;
@@ -36,8 +37,8 @@ namespace OpenH2.Core.Scripting.Generation
                 ScriptDataType.AIScript => ParseTypeName(nameof(IAiScript)),
                 ScriptDataType.AIOrders => ParseTypeName(nameof(IAiOrders)),
                 ScriptDataType.StartingProfile => ParseTypeName(nameof(IStartingProfile)),
-                ScriptDataType.Weapon => ParseTypeName(nameof(IWeapon)),
                 ScriptDataType.Scenery => ParseTypeName(nameof(IScenery)),
+                ScriptDataType.Bsp => ParseTypeName(nameof(IBsp)),
 
                 ScriptDataType.Entity => ParseTypeName(nameof(IGameObject)),
                 ScriptDataType.Unit => ParseTypeName(nameof(IUnit)),
@@ -45,25 +46,34 @@ namespace OpenH2.Core.Scripting.Generation
                 ScriptDataType.AI => ParseTypeName(nameof(IAiActorDefinition)),
                 ScriptDataType.Device => ParseTypeName(nameof(IDevice)),
 
+                ScriptDataType.Sound => ParseTypeName(nameof(SoundTag)),
+                ScriptDataType.Model => ParseTypeName(nameof(HaloModelTag)),
+                ScriptDataType.Animation => ParseTypeName(nameof(AnimationGraphTag)),
+                ScriptDataType.TagReference => ParseTypeName(nameof(BaseTag)),
+                ScriptDataType.LoopingSound => ParseTypeName(nameof(LoopingSoundTag)),
+                ScriptDataType.Effect => ParseTypeName(nameof(EffectTag)),
+                ScriptDataType.DamageEffect => ParseTypeName(nameof(DamageEffectTag)),
+
+
                 _ => Enum.IsDefined(typeof(ScriptDataType), dataType)
                     ? ParseTypeName("I" + dataType.ToString())
                     : ParseTypeName(nameof(ScriptDataType) + dataType.ToString()),
             };
         }
 
-        public static ScriptDataType ToScriptDataType(ScenarioTag.WellKnownVarType type)
+        public static TypeSyntax WellKnownTypeSyntax(ScenarioTag.WellKnownVarType type)
         {
             return type switch
             {
-                ScenarioTag.WellKnownVarType.Biped => ScriptDataType.Unit,
-                ScenarioTag.WellKnownVarType.Vehicle => ScriptDataType.Vehicle,
-                ScenarioTag.WellKnownVarType.Weapon => ScriptDataType.Weapon,
-                ScenarioTag.WellKnownVarType.Equipment => ScriptDataType.StartingProfile,
-                ScenarioTag.WellKnownVarType.Scenery => ScriptDataType.Scenery,
-                ScenarioTag.WellKnownVarType.Machinery => ScriptDataType.Device,
-                ScenarioTag.WellKnownVarType.Controller => ScriptDataType.Device,
-                ScenarioTag.WellKnownVarType.Sound => ScriptDataType.LoopingSound,
-                ScenarioTag.WellKnownVarType.Bloc => ScriptDataType.Entity,
+                ScenarioTag.WellKnownVarType.Biped => ParseTypeName(nameof(IUnit)),
+                ScenarioTag.WellKnownVarType.Vehicle => ParseTypeName(nameof(IVehicle)),
+                ScenarioTag.WellKnownVarType.Weapon => ParseTypeName(nameof(IWeapon)),
+                ScenarioTag.WellKnownVarType.Equipment => ParseTypeName(nameof(IStartingProfile)),
+                ScenarioTag.WellKnownVarType.Scenery => ParseTypeName(nameof(IScenery)),
+                ScenarioTag.WellKnownVarType.Machinery => ParseTypeName(nameof(IDevice)),
+                ScenarioTag.WellKnownVarType.Controller => ParseTypeName(nameof(IDevice)),
+                ScenarioTag.WellKnownVarType.Sound => ParseTypeName(nameof(ISound)),
+                ScenarioTag.WellKnownVarType.Bloc => ParseTypeName(nameof(IBloc)),
                 _ => throw new NotSupportedException()
             };
         }
@@ -178,7 +188,7 @@ namespace OpenH2.Core.Scripting.Generation
             ScriptDataType.StringId,
             ScriptDataType.Sound,
             ScriptDataType.Animation,
-            ScriptDataType.Weapon,
+            ScriptDataType.TagReference,
             ScriptDataType.SpatialPoint,
             ScriptDataType.WeaponReference,
             ScriptDataType.GameDifficulty,
@@ -235,6 +245,7 @@ namespace OpenH2.Core.Scripting.Generation
             return value switch
             {
                 int i => SyntaxFactory.LiteralExpression(SyntaxKind.NumericLiteralExpression, Literal(i)),
+                uint i => SyntaxFactory.LiteralExpression(SyntaxKind.NumericLiteralExpression, Literal(i)),
                 short s => SyntaxFactory.LiteralExpression(SyntaxKind.NumericLiteralExpression, Literal(s)),
                 ushort s => SyntaxFactory.LiteralExpression(SyntaxKind.NumericLiteralExpression, Literal(s)),
                 float f => SyntaxFactory.LiteralExpression(SyntaxKind.NumericLiteralExpression, Literal(f)),
