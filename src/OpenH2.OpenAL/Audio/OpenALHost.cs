@@ -4,6 +4,14 @@ using System.Numerics;
 
 namespace OpenH2.OpenAL.Audio
 {
+    public static class AlSoft
+    {
+        public static int HRTF = 0x1992;
+        public static int Disable = 0;
+        public static int Enable = 1;
+        public static int Auto = 2;
+    }
+
     public class OpenALHost : IAudioHost
     {
         private readonly ALDevice device;
@@ -34,7 +42,9 @@ namespace OpenH2.OpenAL.Audio
             }
 
             var device = ALC.OpenDevice(deviceName);
-            var context = ALC.CreateContext(device, (int[])null);
+            var context = ALC.CreateContext(device, new int[] { 
+                AlSoft.HRTF, AlSoft.Enable
+            });
             ALC.MakeContextCurrent(context);
 
             return new OpenALHost(device, context, forward, up);

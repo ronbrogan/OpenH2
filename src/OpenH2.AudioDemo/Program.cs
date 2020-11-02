@@ -3,6 +3,10 @@ using OpenH2.Core.Factories;
 using OpenH2.Core.Tags;
 using OpenH2.OpenAL.Audio;
 using OpenTK.Audio.OpenAL;
+using OpenTK.Audio.OpenAL.Extensions.Creative.EFX;
+using OpenTK.Audio.OpenAL.Extensions.Creative.EnumerateAll;
+using OpenTK.Audio.OpenAL.Extensions.SOFT.DeviceClock;
+using OpenTK.Audio.OpenAL.Extensions.SOFT.SourceLatency;
 using System;
 using System.IO;
 using System.Linq;
@@ -15,73 +19,159 @@ namespace OpenH2.AudioDemo
     {
         static void Main(string[] args)
         {
-            var host = OpenALHost.Open(new Vector3(1, 0, 0), new Vector3(0, 0, 1));
-            var adapter = host.GetAudioAdapter();
-            var listener = adapter.CreateListener();
-            var emitter = adapter.CreateEmitter();
+            Console.WriteLine("Hello!");
+            var devices = ALC.GetStringList(GetEnumerationStringList.DeviceSpecifier);
+            Console.WriteLine($"Devices: {string.Join(", ", devices)}");
 
-            //Span<short> sine1 = new short[44100 * 1];
-            //FillSine(sine1, 640, 44100);
-            //emitter.SetGain(0.1f);
-            //emitter.PlayImmediate(AudioEncoding.Mono16, SampleRate._44k1, sine1);
-
-            var map = @"D:\H2vMaps\01a_tutorial.map";
-
-            var factory = new MapFactory(Path.GetDirectoryName(map), NullMaterialFactory.Instance);
-            var scene = factory.FromFile(File.OpenRead(map));
-
-            var soundMapping = scene.GetTag(scene.Globals.SoundInfos[0].SoundMap);
-
-            var soundTags = scene.GetLocalTagsOfType<SoundTag>().Skip(22);
-
-            var maxSoundId = soundTags.Max(s => s.SoundEntryIndex);
-
-            // TODO: multiplayer sounds are referencing the wrong ugh! tag
-
-            var i = 0;
-            foreach (var snd in soundTags)
+            // Get the default device, then go though all devices and select the AL soft device if it exists.
+            string deviceName = ALC.GetString(ALDevice.Null, AlcGetString.DefaultDeviceSpecifier);
+            foreach (var d in devices)
             {
-                var name = snd.Name.Substring(snd.Name.LastIndexOf("\\", snd.Name.LastIndexOf("\\") - 1) + 1).Replace('\\', '_');
-
-                Console.WriteLine($"[{i++}] {snd.Option1}-{snd.Option2}-{snd.Option3}-{snd.SampleRate}-{snd.Encoding}-{snd.Format2}-{snd.Unknown}-{snd.UsuallyMaxValue}-{snd.UsuallyZero} {name}");
-
-                var filenameFormat = $"{name}.{snd.SampleRate}-{snd.Encoding}-{snd.Format2}-{snd.Unknown}-{snd.UsuallyZero}-{snd.UsuallyMaxValue}.{{0}}.sound";
-
-                var soundEntry = soundMapping.SoundEntries[snd.SoundEntryIndex];
-
-                for (var s = 0; s < soundEntry.NamedSoundClipCount; s++)
+                if (d.Contains("OpenAL Soft"))
                 {
-                    var clipIndex = soundEntry.NamedSoundClipIndex + s;
-
-                    var clipInfo = soundMapping.NamedSoundClips[clipIndex];
-
-                    var clipFilename = string.Format(filenameFormat, s);
-
-                    using var clipData = new MemoryStream();
-
-                    for (var c = 0; c < clipInfo.SoundDataChunkCount; c++)
-                    {
-                        var chunk = soundMapping.SoundDataChunks[clipInfo.SoundDataChunkIndex + c];
-
-                        var chunkData = scene.ReadData(chunk.Offset.Location, chunk.Offset, (int)(chunk.Length & 0x3FFFFFFF));
-
-                        clipData.Write(chunkData.Span);
-                    }
-
-                    clipData.Position = 0;
-
-                    emitter.PlayImmediate<byte>(AudioEncoding.MonoImaAdpcm, Audio.SampleRate._44k1, clipData.ToArray());
-                    Thread.Sleep(1000);
-                    break;
+                    deviceName = d;
                 }
             }
 
-            
-            CheckALError("After playImmediate");
+            var allDevices = EnumerateAll.GetStringList(GetEnumerateAllContextStringList.AllDevicesSpecifier);
+            Console.WriteLine($"All Devices: {string.Join(", ", allDevices)}");
 
-            adapter.DestroyEmitter(emitter);
-            adapter.DestroyListener(listener);
-            host.Shutdown();
+            var device = ALC.OpenDevice(deviceName);
+            var context = ALC.CreateContext(device, (int[])null);
+            ALC.MakeContextCurrent(context);
+
+            CheckALError("Start");
+
+            ALC.GetInteger(device, AlcGetInteger.MajorVersion, 1, out int alcMajorVersion);
+            ALC.GetInteger(device, AlcGetInteger.MinorVersion, 1, out int alcMinorVersion);
+            string alcExts = ALC.GetString(device, AlcGetString.Extensions);
+
+            var attrs = ALC.GetContextAttributes(device);
+            Console.WriteLine($"Attributes: {attrs}");
+
+            string exts = AL.Get(ALGetString.Extensions);
+            string rend = AL.Get(ALGetString.Renderer);
+            string vend = AL.Get(ALGetString.Vendor);
+            string vers = AL.Get(ALGetString.Version);
+
+            Console.WriteLine($"Vendor: {vend}, \nVersion: {vers}, \nRenderer: {rend}, \nExtensions: {exts}, \nALC Version: {alcMajorVersion}.{alcMinorVersion}, \nALC Extensions: {alcExts}");
+
+            Console.WriteLine("Available devices: ");
+            var list = EnumerateAll.GetStringList(GetEnumerateAllContextStringList.AllDevicesSpecifier);
+            foreach (var item in list)
+            {
+                Console.WriteLine("  " + item);
+            }
+
+            Console.WriteLine("Available capture devices: ");
+            list = ALC.GetStringList(GetEnumerationStringList.CaptureDeviceSpecifier);
+            foreach (var item in list)
+            {
+                Console.WriteLine("  " + item);
+            }
+            int auxSlot = 0;
+            if (EFX.IsExtensionPresent(device))
+            {
+                Console.WriteLine("EFX extension is present!!");
+                EFX.GenEffect(out int effect);
+                EFX.Effect(effect, EffectInteger.EffectType, (int)EffectType.Reverb);
+                EFX.GenAuxiliaryEffectSlot(out auxSlot);
+                EFX.AuxiliaryEffectSlot(auxSlot, EffectSlotInteger.Effect, effect);
+            }
+
+            // Record a second of data
+            CheckALError("Before record");
+            short[] recording = new short[44100 * 4];
+            ALCaptureDevice captureDevice = ALC.CaptureOpenDevice(null, 44100, ALFormat.Mono16, 1024);
+            {
+                ALC.CaptureStart(captureDevice);
+
+                int current = 0;
+                while (current < recording.Length)
+                {
+                    int samplesAvailable = ALC.GetAvailableSamples(captureDevice);
+                    if (samplesAvailable > 512)
+                    {
+                        int samplesToRead = Math.Min(samplesAvailable, recording.Length - current);
+                        ALC.CaptureSamples(captureDevice, ref recording[current], samplesToRead);
+                        current += samplesToRead;
+                    }
+                    Thread.Yield();
+                }
+
+                ALC.CaptureStop(captureDevice);
+            }
+            CheckALError("After record");
+
+            // Playback the recorded data
+            CheckALError("Before data");
+            AL.GenBuffer(out int alBuffer);
+            // short[] sine = new short[44100 * 1];
+            // FillSine(sine, 4400, 44100);
+            // FillSine(recording, 440, 44100);
+            AL.BufferData(alBuffer, ALFormat.Mono16, ref recording[0], recording.Length * 2, 44100);
+            CheckALError("After data");
+
+            AL.Listener(ALListenerf.Gain, 0.1f);
+
+            AL.GenSource(out int alSource);
+            AL.Source(alSource, ALSourcef.Gain, 1f);
+            AL.Source(alSource, ALSourcei.Buffer, alBuffer);
+            if (EFX.IsExtensionPresent(device))
+            {
+                EFX.Source(alSource, EFXSourceInteger3.AuxiliarySendFilter, auxSlot, 0, 0);
+            }
+            AL.SourcePlay(alSource);
+
+            Console.WriteLine("Before Playing: " + AL.GetErrorString(AL.GetError()));
+
+            if (DeviceClock.IsExtensionPresent(device))
+            {
+                long[] clockLatency = new long[2];
+                DeviceClock.GetInteger(device, GetInteger64.DeviceClock, clockLatency);
+                Console.WriteLine("Clock: " + clockLatency[0] + ", Latency: " + clockLatency[1]);
+                CheckALError(" ");
+            }
+
+            if (SourceLatency.IsExtensionPresent())
+            {
+                SourceLatency.GetSource(alSource, SourceLatencyVector2d.SecOffsetLatency, out var values);
+                SourceLatency.GetSource(alSource, SourceLatencyVector2i.SampleOffsetLatency, out var values1, out var values2, out var values3);
+                Console.WriteLine("Source latency: " + values);
+                Console.WriteLine($"Source latency 2: {Convert.ToString(values1, 2)}, {values2}; {values3}");
+                CheckALError(" ");
+            }
+
+            while (AL.GetSourceState(alSource) == ALSourceState.Playing)
+            {
+                if (SourceLatency.IsExtensionPresent())
+                {
+                    SourceLatency.GetSource(alSource, SourceLatencyVector2d.SecOffsetLatency, out var values);
+                    SourceLatency.GetSource(alSource, SourceLatencyVector2i.SampleOffsetLatency, out var values1, out var values2, out var values3);
+                    Console.WriteLine("Source latency: " + values);
+                    Console.WriteLine($"Source latency 2: {Convert.ToString(values1, 2)}, {values2}; {values3}");
+                    CheckALError(" ");
+                }
+                if (DeviceClock.IsExtensionPresent(device))
+                {
+                    long[] clockLatency = new long[2];
+                    DeviceClock.GetInteger(device, GetInteger64.DeviceClock, 1, clockLatency);
+                    Console.WriteLine("Clock: " + clockLatency[0] + ", Latency: " + clockLatency[1]);
+                    CheckALError(" ");
+                }
+
+                Thread.Sleep(10);
+            }
+
+            AL.SourceStop(alSource);
+
+        
+
+            Console.WriteLine("Goodbye!");
+
+            ALC.MakeContextCurrent(ALContext.Null);
+            ALC.DestroyContext(context);
+            ALC.CloseDevice(device);
         }
 
         // You can define other methods, fields, classes and namespaces here
