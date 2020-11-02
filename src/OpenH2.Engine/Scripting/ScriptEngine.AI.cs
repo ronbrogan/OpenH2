@@ -102,12 +102,24 @@ namespace OpenH2.Engine.Scripting
         /// <summary>returns the unit/object corresponding to the given actor</summary>
         public IGameObject ai_get_object(IAiActorDefinition ai)
         {
-            return default(IGameObject);
+            return ai_get_unit(ai);
         }
 
         /// <summary>returns the unit/object corresponding to the given actor</summary>
         public IUnit ai_get_unit(IAiActorDefinition ai)
         {
+            if (ai is ScenarioTag.AiSquadDefinition squad)
+            {
+                if (squad.StartingLocations.Length == 1)
+                {
+                    return squad.StartingLocations[0].Actor;
+                }
+            }
+            else if (ai is ScenarioTag.AiSquadDefinition.StartingLocation loc)
+            {
+                return loc.Actor;
+            }
+
             return default(IUnit);
         }
 
