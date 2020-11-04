@@ -15,14 +15,18 @@ namespace OpenH2.Engine.Systems
     public class ScriptSystem : WorldSystem
     {
         private readonly AudioSystem audioSystem;
+        private readonly CameraSystem cameraSystem;
         private ScriptTaskExecutor executor;
         private ScriptEngine engine;
         private ScenarioScriptBase scripts;
         private Stopwatch stopwatch;
 
-        public ScriptSystem(World world, AudioSystem audioSystem) : base(world)
+        public ScriptSystem(World world, 
+            AudioSystem audioSystem,
+            CameraSystem cameraSystem) : base(world)
         {
             this.audioSystem = audioSystem;
+            this.cameraSystem = cameraSystem;
         }
 
         public override void Initialize(Scene scene)
@@ -43,22 +47,29 @@ namespace OpenH2.Engine.Systems
             .First(a => a.Attr.ScenarioId == scenario.Name).Type;
 
             this.executor = new ScriptTaskExecutor();
-            this.engine = new ScriptEngine(scene, this.executor, this.audioSystem);
+            this.engine = new ScriptEngine(scene, 
+                this.executor, 
+                this.audioSystem,
+                this.cameraSystem);
 
             this.scripts = (ScenarioScriptBase)Activator.CreateInstance(scriptType, new object[] { this.engine });
             scripts.InitializeData(scenario, scene);
             this.executor.Setup(scripts);
             this.stopwatch = new Stopwatch();
-
+            this.stopwatch.Start();
 
             base.Initialize(scene);
         }
 
         public override void Update(double timestep)
         {
-            this.stopwatch.Restart();
-            this.executor.Execute();
-            this.stopwatch.Stop();
+            if(this.stopwatch.ElapsedMilliseconds >= 33)
+            {
+                this.stopwatch.Restart();
+                this.executor.Execute();
+            }
+
+            //this.stopwatch.Stop();
             //Logger.LogInfo($"[SCRIPT-SYS] ExecutionTime: {this.stopwatch.ElapsedTicks}ticks");
         }
     }

@@ -16,19 +16,22 @@ namespace OpenH2.Engine.Scripting
 
     public partial class ScriptEngine : IScriptEngine
     {
-        public const short TicksPerSecond = 60;
+        public const short TicksPerSecond = 30;
         private readonly Scene scene;
         private readonly IScriptExecutor executionOrchestrator;
         private readonly AudioSystem audioSystem;
+        private readonly CameraSystem cameraSystem;
         private readonly Random rng;
 
         public ScriptEngine(Scene scene, 
             IScriptExecutor executionOrchestrator,
-            AudioSystem audioSystem)
+            AudioSystem audioSystem,
+            CameraSystem cameraSystem)
         {
             this.scene = scene;
             this.executionOrchestrator = executionOrchestrator;
             this.audioSystem = audioSystem;
+            this.cameraSystem = cameraSystem;
             this.rng = new Random(42);
         }
 
@@ -66,32 +69,6 @@ namespace OpenH2.Engine.Scripting
         /// <summary>given a dead biped, turns on ragdoll</summary>
         public void biped_ragdoll(IUnit unit)
         {
-        }
-
-        /// <summary>toggles script control of the camera.</summary>
-        public void camera_control(bool boolean)
-        {
-        }
-
-        /// <summary>moves the camera to the specified camera point over the specified number of ticks.</summary>
-        public void camera_set(ICameraPathTarget cutscene_camera_point, short value)
-        {
-        }
-
-        /// <summary>begins a prerecorded camera animation synchronized to unit relative to cutscene flag.</summary>
-        public void camera_set_animation_relative(AnimationGraphTag animation, string /*id*/ id, IUnit unit, ILocationFlag locationFlag)
-        {
-        }
-
-        /// <summary>sets the field of view</summary>
-        public void camera_set_field_of_view(float real, short value)
-        {
-        }
-
-        /// <summary>returns the number of ticks remaining in the current camera interpolation.</summary>
-        public short camera_time()
-        {
-            return default(short);
         }
 
         /// <summary>gives a specific player active camouflage</summary>

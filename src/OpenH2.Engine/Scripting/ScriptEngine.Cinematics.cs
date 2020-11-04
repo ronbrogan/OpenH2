@@ -1,13 +1,49 @@
 ﻿using OpenH2.Core.GameObjects;
 using OpenH2.Core.Scripting;
+using OpenH2.Core.Tags;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 
 namespace OpenH2.Engine.Scripting
 {
     public partial class ScriptEngine : IScriptEngine
     {
+        /// <summary>toggles script control of the camera.</summary>
+        public void camera_control(bool boolean)
+        {
+        }
+
+        /// <summary>moves the camera to the specified camera point over the specified number of ticks.</summary>
+        public void camera_set(ICameraPathTarget cutscene_camera_point, short value)
+        {
+            this.cameraSystem.PerformCameraMove(value);
+        }
+
+        /// <summary>begins a prerecorded camera animation synchronized to unit relative to cutscene flag.</summary>
+        public void camera_set_animation_relative(AnimationGraphTag animation, string trackName, IUnit unit, ILocationFlag locationFlag)
+        {
+            var track = animation.Tracks.FirstOrDefault(t => t.Description == trackName);
+
+            if(track != null)
+            {
+                this.cameraSystem.PerformCameraMove(track.Values[8]);
+            }
+
+        }
+
+        /// <summary>sets the field of view</summary>
+        public void camera_set_field_of_view(float real, short value)
+        {
+        }
+
+        /// <summary>returns the number of ticks remaining in the current camera interpolation.</summary>
+        public short camera_time()
+        {
+            return (short)this.cameraSystem.GetCameraMoveRemaining();
+        }
+
         /// <summary>clone the first player's most reasonable weapon and attach it to the specified object's marker</summary>
         public void cinematic_clone_players_weapon(IGameObject entity, string /*id*/ string_id, string /*id*/ string_id1)
         {

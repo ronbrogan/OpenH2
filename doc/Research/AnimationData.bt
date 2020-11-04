@@ -1,0 +1,46 @@
+//------------------------------------------------
+//--- 010 Editor v11.0 Binary Template
+//
+//      File: 
+//   Authors: 
+//   Version: 
+//   Purpose: 
+//  Category: 
+// File Mask: 
+//  ID Bytes: 
+//   History: 
+//------------------------------------------------
+
+// Same data until 36
+
+FSeek(36);
+
+struct Header {
+    float ParamA;
+    float ParamB;
+
+    uint OffsetA;
+    uint OffsetB;
+    uint OffsetC;
+    uint OffsetD;
+    uint OffsetE;
+} header;
+
+// nop seek for the first one
+FSeek(64);
+struct AVal {
+    ushort ValA;
+    ushort ValB;
+    ushort ValC;
+    ushort ValD;
+};
+
+AVal aVals[header.OffsetE/4];
+
+struct BVal {
+    float X;
+    float Y;
+    float Z;
+};
+
+BVal bVals[header.OffsetE/4];

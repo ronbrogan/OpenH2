@@ -6,12 +6,19 @@ namespace OpenH2.Engine.Systems
 {
     public class CameraSystem : WorldSystem
     {
+        private int currentCameraMoveTicksRemaining = 0;
+
         public CameraSystem(World world) : base(world)
         {
         }
 
         public override void Update(double timestep)
         {
+            if(currentCameraMoveTicksRemaining > 0)
+            {
+                currentCameraMoveTicksRemaining--;
+            }
+            
             var cameras = this.world.Components<CameraComponent>();
 
             foreach(var camera in cameras)
@@ -26,6 +33,16 @@ namespace OpenH2.Engine.Systems
                     UpdateProjectionMatrix(camera);
                 }
             }
+        }
+
+        public void PerformCameraMove(int tickDuration)
+        {
+            this.currentCameraMoveTicksRemaining = tickDuration;
+        }
+
+        public int GetCameraMoveRemaining()
+        {
+            return currentCameraMoveTicksRemaining;
         }
 
         private void UpdateViewMatrix(CameraComponent camera, TransformComponent xform)
