@@ -43,6 +43,9 @@ namespace OpenH2.Core.Tags
         [ReferenceArray(72)]
         public Marker[] Markers { get; set; }
 
+        [ReferenceArray(88)]
+        public NamedSection[] Sections { get; set; }
+
         [ReferenceArray(96)]
         public ModelShaderReference[] ModelShaderReferences { get; set; }
 
@@ -328,6 +331,25 @@ namespace OpenH2.Core.Tags
 
             [PrimitiveValue(56)]
             public float Roll { get; set; }
+        }
+
+        [FixedLength(12)]
+        public class NamedSection
+        {
+            [InternedString(0)]
+            public string Name { get; set; }
+
+            [ReferenceArray(4)]
+            public SectionInfo[] SectionInfos { get; set; }
+        }
+
+        [FixedLength(36)]
+        public class SectionInfo
+        {
+            [PrimitiveValue(4)]
+            public Vector3 Bounds { get; set; }
+
+            // More floats, stuff
         }
     }
 }

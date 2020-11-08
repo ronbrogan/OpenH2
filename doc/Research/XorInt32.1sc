@@ -1,0 +1,24 @@
+//------------------------------------------------
+//--- 010 Editor v11.0 Script File
+//
+//      File: 
+//   Authors: 
+//   Version: 
+//   Purpose: 
+//  Category: 
+//   History: 
+//------------------------------------------------
+local int value = 0;
+
+while(!FEof())
+{
+    
+    value ^= ReadInt();
+
+    FSkip(4);
+}
+
+ string s;
+ SPrintf(s, "%d", value);
+
+CopyStringToClipboard(s);

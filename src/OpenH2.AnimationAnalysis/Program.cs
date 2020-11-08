@@ -1,16 +1,26 @@
 ﻿using OpenH2.Core.Factories;
+using OpenH2.Core.Maps;
 using OpenH2.Core.Tags;
 using OpenH2.Serialization.Materialization;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Numerics;
+using System.Text;
 
 namespace OpenH2.AnimationAnalysis
 {
-    class Program
+    public static class Program
     {
+        static StringBuilder outb = new StringBuilder();
+        public static void Write(string s = null)
+        {
+            Console.WriteLine(s);
+            outb.AppendLine(s);
+        }
+
         static void Main(string[] args)
         {
             var mapPath = @"D:\H2vMaps\03a_oldmombasa.map";
@@ -18,49 +28,106 @@ namespace OpenH2.AnimationAnalysis
             var mapFactory = new MapFactory(Path.GetDirectoryName(mapPath), NullMaterialFactory.Instance);
             var map = mapFactory.FromFile(File.OpenRead(mapPath));
 
-            var animation = map.GetTag<AnimationGraphTag>(3834577689U);
+            var animation = map.GetTag<AnimationGraphTag>(4070576426);
+            var animations = map.GetLocalTagsOfType<AnimationGraphTag>();
 
-            foreach(var track in animation.Tracks)
+            //Write($"Animation Tags: {animations.Count}");
+            Write($"Animation Tracks: {animation.Animations.Count()}");
+
+            animations.WriteInfo(a => a.Bones.Length);
+            animations.WriteInfo(a => a.Animations.Length);
+            animations.WriteInfo(a => a.Sounds.Length);
+            animations.SelectMany(a => a.Animations).WriteInfo(t => t.FrameCount);
+            animations.SelectMany(a => a.Animations).WriteInfo(t => t.BoneCount);
+            
+
+            animations.SelectMany(a => a.Animations).WriteInfo(t => t.ValueC);
+            animations.SelectMany(a => a.Animations).WriteInfo(t => t.ValueD);
+            animations.SelectMany(a => a.Animations).WriteInfo(t => t.ValueE);
+            animations.SelectMany(a => a.Animations).WriteInfo(t => t.ValueF);
+            animations.SelectMany(a => a.Animations).WriteInfo(t => t.ValueH);
+            animations.SelectMany(a => a.Animations).WriteInfo(t => t.ValueO);
+
+            for (var i = 0; i < 32; i++)
             {
-                var frames = track.Values[8];
+                var trackType = typeof(AnimationGraphTag.Animation);
+                var arg = Expression.Parameter(trackType, "t");
+                var access = Expression.ArrayAccess(
+                    Expression.MakeMemberAccess(arg, trackType.GetProperty(nameof(AnimationGraphTag.Animation.Data))), Expression.Constant(i));
 
-                Span<byte> data = track.Data;
+                var lambda = Expression.Lambda<Func<AnimationGraphTag.Animation, byte>>(access, arg);
 
-                var rotStart = 64;
-                var posStart = 64 + data.ReadInt32At(52);
-
-                var frameData = new List<(Quaternion, Vector3)>();
-
-                for (int i = 0; i < frames; i++)
-                {
-                    var quatOffset = i * 8;
-                    var thisQuat = rotStart + quatOffset;
-
-                    var quat = new Quaternion(
-                        Decompress(data.ReadInt16At(thisQuat + 0)),
-                        Decompress(data.ReadInt16At(thisQuat + 2)),
-                        Decompress(data.ReadInt16At(thisQuat + 4)),
-                        Decompress(data.ReadInt16At(thisQuat + 6))
-                    );
-
-                    var posOffset = i * 12;
-                    var thisPos = posStart + posOffset;
-                    var pos = new Vector3(
-                        data.ReadFloatAt(thisPos + 0),
-                        data.ReadFloatAt(thisPos + 4),
-                        data.ReadFloatAt(thisPos + 8)
-                    );
-
-                    frameData.Add((quat, pos));
-                }
-
-                Console.WriteLine("All normal: ");
-                Console.WriteLine("\t" + frameData.All(d => d.Item1.Length() > 0.9999f && d.Item1.Length() < 1.0001f));
+                //animations.SelectMany(a => a.Tracks).WriteInfo(lambda);
             }
 
-            Console.ReadLine();
+            TextCopy.ClipboardService.SetText(outb.ToString());
+        }
 
-            float Decompress(short v) => v / 32768.0f;
+        private static void WriteInfo<TItem, TProp>(this TItem val, Expression<Func<TItem, TProp>> accessor)
+        {
+            var func = accessor.Compile();
+            
+            var accessorval = func(val);
+
+            Write($"{accessor}: {accessorval}");
+        }
+
+        private static void WriteInfo<TEnum, TProp>(this IEnumerable<TEnum> vals, Expression<Func<TEnum, TProp>> accessor)
+        {
+            var func = accessor.Compile();
+            var maxVal = vals.Max(func);
+            var withoutMax = vals.Where(v => func(v).Equals(maxVal) == false);
+            var nextMax = maxVal;
+            if (withoutMax.Any())
+            {
+                nextMax = withoutMax.Max(func);
+            }
+            var minVal = vals.Min(func);
+            var nextMin = minVal;
+            var withoutMin = vals.Where(v => func(v).Equals(minVal) == false);
+            if (withoutMin.Any())
+            {
+                nextMin = withoutMin.Min(func);
+            }
+            var avgVal = vals.Avg(accessor);
+
+            Write($"{accessor}: [{minVal}, {nextMin}, {nextMax}, {maxVal}] {avgVal}");
+
+            var distinct = vals.Select(func).Distinct().ToArray();
+
+            if(distinct.Length < 45)
+            {
+                Write($"\t\t{string.Join(",", distinct)}");
+            }
+            else
+            {
+                Write($"\t\tDistinct Count: {distinct.Length}");
+            }
+        }
+
+        public static object Avg<TEnum, TProp>(this IEnumerable<TEnum> source, Expression<Func<TEnum, TProp>> accessor)
+        {
+            var defVal = default(TProp);
+            double avg = defVal switch
+            {
+                float f => source.Average(Cast<Func<TEnum, float>>(typeof(float))),
+                double f => source.Average(Cast<Func<TEnum, double>>(typeof(double))),
+                int f => source.Average(Cast<Func<TEnum, int>>(typeof(int))),
+                uint f => source.Average(Cast<Func<TEnum, long>>(typeof(long))),
+                short f => source.Average(Cast<Func<TEnum, int>>(typeof(int))),
+                ushort f => source.Average(Cast<Func<TEnum, int>>(typeof(int))),
+                byte f => source.Average(Cast<Func<TEnum, int>>(typeof(int)))
+            };
+
+            return avg.ToString("n");
+
+            TDelegate Cast<TDelegate>(Type t)
+            {
+                var val = Expression.Convert(accessor.Body, t);
+
+                return Expression.Lambda<TDelegate>(val, accessor.Parameters).Compile();
+            }
         }
     }
 }
+

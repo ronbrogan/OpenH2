@@ -24,13 +24,12 @@ namespace OpenH2.Engine.Scripting
         /// <summary>begins a prerecorded camera animation synchronized to unit relative to cutscene flag.</summary>
         public void camera_set_animation_relative(AnimationGraphTag animation, string trackName, IUnit unit, ILocationFlag locationFlag)
         {
-            var track = animation.Tracks.FirstOrDefault(t => t.Description == trackName);
+            var track = animation.Animations.FirstOrDefault(t => t.Description == trackName);
 
             if(track != null)
             {
-                this.cameraSystem.PerformCameraMove(track.Values[8]);
+                this.cameraSystem.PerformCameraMove(track.FrameCount);
             }
-
         }
 
         /// <summary>sets the field of view</summary>
