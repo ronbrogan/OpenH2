@@ -47,7 +47,7 @@ namespace OpenH2.Core.Scripting.Generation
                 ScriptDataType.Device => ParseTypeName(nameof(IDevice)),
 
                 ScriptDataType.Sound => ParseTypeName(nameof(SoundTag)),
-                ScriptDataType.Model => ParseTypeName(nameof(HaloModelTag)),
+                ScriptDataType.Model => ParseTypeName(nameof(RenderModelTag)),
                 ScriptDataType.Animation => ParseTypeName(nameof(AnimationGraphTag)),
                 ScriptDataType.TagReference => ParseTypeName(nameof(BaseTag)),
                 ScriptDataType.LoopingSound => ParseTypeName(nameof(LoopingSoundTag)),

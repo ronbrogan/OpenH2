@@ -160,7 +160,11 @@ namespace OpenH2.ScenarioExplorer.Processors
 
                 foreach (var nested in tagRefObjectProps)
                 {
-                    CollectRecursiveTagRefs(nested.GetValue(current), props);
+                    try
+                    {
+                        CollectRecursiveTagRefs(nested.GetValue(current), props);
+                    }
+                    catch { }
                 }
             }
         }

@@ -989,7 +989,7 @@ namespace OpenH2.Core.Scripting
         void play_credits();
 
         /// <summary>predict a geometry block.</summary>
-        void predict_model_section(HaloModelTag render_model, int value);
+        void predict_model_section(RenderModelTag render_model, int value);
 
         /// <summary>predict a geometry block.</summary>
         void predict_structure_section(IBsp structure_bsp, int value, bool boolean);

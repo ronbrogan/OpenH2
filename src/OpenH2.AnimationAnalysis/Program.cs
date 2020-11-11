@@ -39,12 +39,14 @@ namespace OpenH2.AnimationAnalysis
             animations.WriteInfo(a => a.Sounds.Length);
             animations.SelectMany(a => a.Animations).WriteInfo(t => t.FrameCount);
             animations.SelectMany(a => a.Animations).WriteInfo(t => t.BoneCount);
-            
 
+
+            animations.SelectMany(a => a.Animations).WriteInfo(t => t.AnimationType);
             animations.SelectMany(a => a.Animations).WriteInfo(t => t.ValueC);
             animations.SelectMany(a => a.Animations).WriteInfo(t => t.ValueD);
             animations.SelectMany(a => a.Animations).WriteInfo(t => t.ValueE);
             animations.SelectMany(a => a.Animations).WriteInfo(t => t.ValueF);
+            animations.SelectMany(a => a.Animations).WriteInfo(t => t.ValueG);
             animations.SelectMany(a => a.Animations).WriteInfo(t => t.ValueH);
             animations.SelectMany(a => a.Animations).WriteInfo(t => t.ValueO);
 

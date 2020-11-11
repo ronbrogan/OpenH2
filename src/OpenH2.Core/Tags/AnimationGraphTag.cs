@@ -132,7 +132,10 @@ namespace OpenH2.Core.Tags
             public short ValueF { get; set; }
 
             [PrimitiveValue(16)]
-            public ushort FlagsA { get; set; }
+            public byte AnimationType { get; set; }
+
+            [PrimitiveValue(17)]
+            public byte ValueG { get; set; }
 
             [PrimitiveValue(18)]
             public byte ValueH { get; set; }

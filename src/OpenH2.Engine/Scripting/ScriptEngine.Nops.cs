@@ -101,7 +101,7 @@ namespace OpenH2.Engine.Scripting
         }
 
         /// <summary>predict a geometry block.</summary>
-        public void predict_model_section(HaloModelTag render_model, int value)
+        public void predict_model_section(RenderModelTag render_model, int value)
         {
         }
 

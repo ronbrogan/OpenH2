@@ -180,8 +180,8 @@ namespace OpenH2.Core.Tags
         [FixedLength(16)]
         public class Component
         {
-            [PrimitiveValue(0)]
-            public int PartNameId { get; set; }
+            [InternedString(0)]
+            public string PartName { get; set; }
 
             [ReferenceArray(8)]
             public DamageLevel[] DamageLevels { get; set; }
@@ -311,8 +311,8 @@ namespace OpenH2.Core.Tags
         [FixedLength(96)]
         public class Marker
         {
-            [PrimitiveValue(0)]
-            public int MarkerNameId { get; set; }
+            [InternedString(0)]
+            public string MarkerName { get; set; }
 
             [PrimitiveValue(36)]
             public float X { get; set; }
