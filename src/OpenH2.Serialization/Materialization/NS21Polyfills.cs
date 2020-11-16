@@ -11,6 +11,7 @@ namespace OpenH2.Serialization.Materialization
         public static uint ToUInt32(this Span<byte> data) => GetConverter(data, 4).UInt32;
         public static short ToInt16(this Span<byte> data) => GetConverter(data, 2).Int16;
         public static ushort ToUInt16(this Span<byte> data) => GetConverter(data, 2).UInt16;
+        public static char ToChar(this Span<byte> data) => GetConverter(data, 2).Char;
         public static float ToSingle(this Span<byte> data) => GetConverter(data, 4).Single;
 
         public static int Read(this Stream stream, Span<byte> data)
@@ -64,6 +65,9 @@ namespace OpenH2.Serialization.Materialization
 
             [FieldOffset(0)]
             public short Int16;
+
+            [FieldOffset(0)]
+            public char Char;
 
             [FieldOffset(0)]
             public ushort UInt16;

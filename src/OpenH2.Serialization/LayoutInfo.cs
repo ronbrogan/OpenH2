@@ -16,6 +16,7 @@ namespace OpenH2.Serialization
             typeof(PrimitiveArrayAttribute),
             typeof(ReferenceArrayAttribute),
             typeof(StringValueAttribute),
+            typeof(Utf16StringValueAttribute),
             typeof(InternedStringAttribute),
         };
 
@@ -77,6 +78,7 @@ namespace OpenH2.Serialization
             {typeof(PrimitiveArrayAttribute), a => new PrimitiveArrayAttribute((int)a.ConstructorArguments[0].Value, (int)a.ConstructorArguments[1].Value) },
             {typeof(ReferenceArrayAttribute), a => new ReferenceArrayAttribute((int)a.ConstructorArguments[0].Value) },
             {typeof(StringValueAttribute), a => new StringValueAttribute((int)a.ConstructorArguments[0].Value, (int)a.ConstructorArguments[1].Value) },
+            {typeof(Utf16StringValueAttribute), a => new Utf16StringValueAttribute((int)a.ConstructorArguments[0].Value, (int)a.ConstructorArguments[1].Value) },
             {typeof(InternedStringAttribute), a => new InternedStringAttribute((int)a.ConstructorArguments[0].Value) },
         };
 

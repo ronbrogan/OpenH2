@@ -1,9 +1,11 @@
 ﻿using OpenH2.Core.Scripting;
 using OpenH2.Core.Tags.Layout;
 using OpenH2.Serialization.Layout;
+using System.Text.Json.Serialization;
 
 namespace OpenH2.Core.Tags
 {
+    [JsonConverter(typeof(JsonStringEnumConverter))]
     public enum EncodingType : byte
     {
         ImaAdpcmMono = 0,
@@ -11,6 +13,7 @@ namespace OpenH2.Core.Tags
         UnknownCompression = 2
     }
 
+    [JsonConverter(typeof(JsonStringEnumConverter))]
     public enum SampleRate : byte
     {
         hz22k05 = 0,

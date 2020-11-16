@@ -1,16 +1,12 @@
 ﻿using OpenH2.Audio;
 using OpenH2.Core.Factories;
 using OpenH2.Core.Tags;
-using OpenH2.OpenAL.Audio;
 using OpenTK.Audio.OpenAL;
-using OpenTK.Audio.OpenAL.Extensions.Creative.EFX;
 using OpenTK.Audio.OpenAL.Extensions.Creative.EnumerateAll;
-using OpenTK.Audio.OpenAL.Extensions.SOFT.DeviceClock;
-using OpenTK.Audio.OpenAL.Extensions.SOFT.SourceLatency;
 using System;
 using System.IO;
 using System.Linq;
-using System.Numerics;
+using System.Runtime.InteropServices;
 using System.Threading;
 
 namespace OpenH2.AudioDemo
@@ -19,9 +15,8 @@ namespace OpenH2.AudioDemo
     {
         static void Main(string[] args)
         {
-            Console.WriteLine("Hello!");
+            Console.WriteLine("Starting OpenAL!");
             var devices = ALC.GetStringList(GetEnumerationStringList.DeviceSpecifier);
-            Console.WriteLine($"Devices: {string.Join(", ", devices)}");
 
             // Get the default device, then go though all devices and select the AL soft device if it exists.
             string deviceName = ALC.GetString(ALDevice.Null, AlcGetString.DefaultDeviceSpecifier);
@@ -33,145 +28,129 @@ namespace OpenH2.AudioDemo
                 }
             }
 
-            var allDevices = EnumerateAll.GetStringList(GetEnumerateAllContextStringList.AllDevicesSpecifier);
-            Console.WriteLine($"All Devices: {string.Join(", ", allDevices)}");
-
             var device = ALC.OpenDevice(deviceName);
             var context = ALC.CreateContext(device, (int[])null);
             ALC.MakeContextCurrent(context);
 
             CheckALError("Start");
 
-            ALC.GetInteger(device, AlcGetInteger.MajorVersion, 1, out int alcMajorVersion);
-            ALC.GetInteger(device, AlcGetInteger.MinorVersion, 1, out int alcMinorVersion);
-            string alcExts = ALC.GetString(device, AlcGetString.Extensions);
-
-            var attrs = ALC.GetContextAttributes(device);
-            Console.WriteLine($"Attributes: {attrs}");
-
-            string exts = AL.Get(ALGetString.Extensions);
-            string rend = AL.Get(ALGetString.Renderer);
-            string vend = AL.Get(ALGetString.Vendor);
-            string vers = AL.Get(ALGetString.Version);
-
-            Console.WriteLine($"Vendor: {vend}, \nVersion: {vers}, \nRenderer: {rend}, \nExtensions: {exts}, \nALC Version: {alcMajorVersion}.{alcMinorVersion}, \nALC Extensions: {alcExts}");
-
-            Console.WriteLine("Available devices: ");
-            var list = EnumerateAll.GetStringList(GetEnumerateAllContextStringList.AllDevicesSpecifier);
-            foreach (var item in list)
-            {
-                Console.WriteLine("  " + item);
-            }
-
-            Console.WriteLine("Available capture devices: ");
-            list = ALC.GetStringList(GetEnumerationStringList.CaptureDeviceSpecifier);
-            foreach (var item in list)
-            {
-                Console.WriteLine("  " + item);
-            }
-            int auxSlot = 0;
-            if (EFX.IsExtensionPresent(device))
-            {
-                Console.WriteLine("EFX extension is present!!");
-                EFX.GenEffect(out int effect);
-                EFX.Effect(effect, EffectInteger.EffectType, (int)EffectType.Reverb);
-                EFX.GenAuxiliaryEffectSlot(out auxSlot);
-                EFX.AuxiliaryEffectSlot(auxSlot, EffectSlotInteger.Effect, effect);
-            }
-
-            // Record a second of data
-            CheckALError("Before record");
-            short[] recording = new short[44100 * 4];
-            ALCaptureDevice captureDevice = ALC.CaptureOpenDevice(null, 44100, ALFormat.Mono16, 1024);
-            {
-                ALC.CaptureStart(captureDevice);
-
-                int current = 0;
-                while (current < recording.Length)
-                {
-                    int samplesAvailable = ALC.GetAvailableSamples(captureDevice);
-                    if (samplesAvailable > 512)
-                    {
-                        int samplesToRead = Math.Min(samplesAvailable, recording.Length - current);
-                        ALC.CaptureSamples(captureDevice, ref recording[current], samplesToRead);
-                        current += samplesToRead;
-                    }
-                    Thread.Yield();
-                }
-
-                ALC.CaptureStop(captureDevice);
-            }
-            CheckALError("After record");
-
             // Playback the recorded data
             CheckALError("Before data");
             AL.GenBuffer(out int alBuffer);
-            // short[] sine = new short[44100 * 1];
-            // FillSine(sine, 4400, 44100);
-            // FillSine(recording, 440, 44100);
-            AL.BufferData(alBuffer, ALFormat.Mono16, ref recording[0], recording.Length * 2, 44100);
-            CheckALError("After data");
-
+            AL.GenBuffer(out int backBuffer);
             AL.Listener(ALListenerf.Gain, 0.1f);
 
             AL.GenSource(out int alSource);
             AL.Source(alSource, ALSourcef.Gain, 1f);
-            AL.Source(alSource, ALSourcei.Buffer, alBuffer);
-            if (EFX.IsExtensionPresent(device))
-            {
-                EFX.Source(alSource, EFXSourceInteger3.AuxiliarySendFilter, auxSlot, 0, 0);
-            }
-            AL.SourcePlay(alSource);
 
-            Console.WriteLine("Before Playing: " + AL.GetErrorString(AL.GetError()));
+            // var get samples from map
+            var map = @"D:\H2vMaps\01a_tutorial.map";
+            var factory = new MapFactory(Path.GetDirectoryName(map), NullMaterialFactory.Instance);
+            var scene = factory.FromFile(File.OpenRead(map));
 
-            if (DeviceClock.IsExtensionPresent(device))
-            {
-                long[] clockLatency = new long[2];
-                DeviceClock.GetInteger(device, GetInteger64.DeviceClock, clockLatency);
-                Console.WriteLine("Clock: " + clockLatency[0] + ", Latency: " + clockLatency[1]);
-                CheckALError(" ");
-            }
+            var soundMapping = scene.GetTag(scene.Globals.SoundInfos[0].SoundMap);
 
-            if (SourceLatency.IsExtensionPresent())
-            {
-                SourceLatency.GetSource(alSource, SourceLatencyVector2d.SecOffsetLatency, out var values);
-                SourceLatency.GetSource(alSource, SourceLatencyVector2i.SampleOffsetLatency, out var values1, out var values2, out var values3);
-                Console.WriteLine("Source latency: " + values);
-                Console.WriteLine($"Source latency 2: {Convert.ToString(values1, 2)}, {values2}; {values3}");
-                CheckALError(" ");
-            }
+            var soundTags = scene.GetLocalTagsOfType<SoundTag>();
 
-            while (AL.GetSourceState(alSource) == ALSourceState.Playing)
+            var maxSoundId = soundTags.Max(s => s.SoundEntryIndex);
+
+            // TODO: multiplayer sounds are referencing the wrong ugh! tag
+
+            var i = 0;
+            foreach (var snd in soundTags)
             {
-                if (SourceLatency.IsExtensionPresent())
+                var enc = snd.Encoding switch
                 {
-                    SourceLatency.GetSource(alSource, SourceLatencyVector2d.SecOffsetLatency, out var values);
-                    SourceLatency.GetSource(alSource, SourceLatencyVector2i.SampleOffsetLatency, out var values1, out var values2, out var values3);
-                    Console.WriteLine("Source latency: " + values);
-                    Console.WriteLine($"Source latency 2: {Convert.ToString(values1, 2)}, {values2}; {values3}");
-                    CheckALError(" ");
-                }
-                if (DeviceClock.IsExtensionPresent(device))
+                    EncodingType.ImaAdpcmMono => AudioEncoding.MonoImaAdpcm,
+                    EncodingType.ImaAdpcmStereo => AudioEncoding.StereoImaAdpcm,
+                    _ => AudioEncoding.Mono16,
+                };
+
+                var sr = snd.SampleRate switch
                 {
-                    long[] clockLatency = new long[2];
-                    DeviceClock.GetInteger(device, GetInteger64.DeviceClock, 1, clockLatency);
-                    Console.WriteLine("Clock: " + clockLatency[0] + ", Latency: " + clockLatency[1]);
-                    CheckALError(" ");
+                    Core.Tags.SampleRate.hz22k05 => Audio.SampleRate._22k05,
+                    Core.Tags.SampleRate.hz44k1 => Audio.SampleRate._44k1,
+                    _ => Audio.SampleRate._44k1
+                };
+
+                if (enc != AudioEncoding.Mono16)
+                    continue;
+
+                var name = snd.Name.Substring(snd.Name.LastIndexOf("\\", snd.Name.LastIndexOf("\\") - 1) + 1).Replace('\\', '_');
+
+                Console.WriteLine($"[{i++}] {snd.Option1}-{snd.Option2}-{snd.Option3}-{snd.SampleRate}-{snd.Encoding}-{snd.Format2}-{snd.Unknown}-{snd.UsuallyMaxValue}-{snd.UsuallyZero} {name}");
+
+                var filenameFormat = $"{name}.{snd.SampleRate}-{snd.Encoding}-{snd.Format2}-{snd.Unknown}-{snd.UsuallyZero}-{snd.UsuallyMaxValue}.{{0}}.sound";
+
+                var soundEntry = soundMapping.SoundEntries[snd.SoundEntryIndex];
+
+                for (var s = 0; s < soundEntry.NamedSoundClipCount; s++)
+                {
+                    var clipIndex = soundEntry.NamedSoundClipIndex + s;
+
+                    var clipInfo = soundMapping.NamedSoundClips[clipIndex];
+
+                    var clipFilename = string.Format(filenameFormat, s);
+
+                    var clipSize = 0;
+                    for (var c = 0; c < clipInfo.SoundDataChunkCount; c++)
+                    {
+                        var chunk = soundMapping.SoundDataChunks[clipInfo.SoundDataChunkIndex + c];
+                        clipSize += (int)(chunk.Length & 0x3FFFFFFF);
+                    }
+
+                    Span<byte> clipData = new byte[clipSize];
+                    var clipDataCurrent = 0;
+
+                    for (var c = 0; c < clipInfo.SoundDataChunkCount; c++)
+                    {
+                        var chunk = soundMapping.SoundDataChunks[clipInfo.SoundDataChunkIndex + c];
+
+                        var len = (int)(chunk.Length & 0x3FFFFFFF);
+                        var chunkData = scene.ReadData(chunk.Offset.Location, chunk.Offset, len);
+
+                        chunkData.Span.CopyTo(clipData.Slice(clipDataCurrent));
+                        clipDataCurrent += len;
+                    }
+
+                    Interlocked.Exchange(ref backBuffer, Interlocked.Exchange(ref alBuffer, backBuffer));
+                    AL.SourceStop(alSource);
+                    BufferData(enc, sr, clipData.Slice(96), alBuffer);
+                    CheckALError("After buffer");
+                    AL.Source(alSource, ALSourcei.Buffer, alBuffer);
+                    AL.SourcePlay(alSource);
+                    
+                    while(AL.GetSourceState(alSource) == ALSourceState.Playing)
+                    {
+                        Thread.Sleep(100);
+                    }
+
+                    // Only play first variant
+                    break;
                 }
-
-                Thread.Sleep(10);
             }
-
-            AL.SourceStop(alSource);
-
-        
-
-            Console.WriteLine("Goodbye!");
 
             ALC.MakeContextCurrent(ALContext.Null);
             ALC.DestroyContext(context);
             ALC.CloseDevice(device);
+
+            Console.WriteLine("done");
+            Console.ReadLine();
+        }
+
+        private static int BufferData<TSample>(AudioEncoding encoding, Audio.SampleRate rate, Span<TSample> data, int buffer) where TSample : unmanaged
+        {
+            var dataBytes = data.Length * Marshal.SizeOf<TSample>();
+
+            var (format, samplesPerByte) = encoding switch
+            {
+                AudioEncoding.Mono16 => (ALFormat.Mp3Ext, 0.5f),
+                AudioEncoding.MonoImaAdpcm => (ALFormat.MonoIma4Ext, 2),
+                AudioEncoding.StereoImaAdpcm => (ALFormat.StereoIma4Ext, 1),
+            };
+
+            AL.BufferData(buffer, format, data, rate.Rate);
+            return (int)(dataBytes * samplesPerByte);
         }
 
         // You can define other methods, fields, classes and namespaces here
@@ -181,14 +160,6 @@ namespace OpenH2.AudioDemo
             if (error != ALError.NoError)
             {
                 Console.WriteLine($"ALError at '{str}': {AL.GetErrorString(error)}");
-            }
-        }
-
-        public static void FillSine(Span<short> buffer, float frequency, float sampleRate)
-        {
-            for (int i = 0; i < buffer.Length; i++)
-            {
-                buffer[i] = (short)(MathF.Sin((i * frequency * MathF.PI * 2) / sampleRate) * short.MaxValue);
             }
         }
     }

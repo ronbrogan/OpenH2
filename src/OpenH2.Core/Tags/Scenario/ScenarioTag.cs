@@ -659,7 +659,8 @@ namespace OpenH2.Core.Tags.Scenario
             [ReferenceArray(8)]
             public CampaignInfo[] CampaignInfos { get; set; }
 
-            // TODO: there should be multiplayer info here too
+            [ReferenceArray(16)]
+            public MultiplayerInfo[] MultiplayerInfos { get; set; }
 
             [FixedLength(16)]
             public class CampaignInfo
@@ -672,6 +673,28 @@ namespace OpenH2.Core.Tags.Scenario
 
                 [PrimitiveValue(12)]
                 public TagRef<BitmapTag> BitmapRef { get; set; }
+
+                [Utf16StringValue(16, 32)]
+                public string EnglishName { get; set; }
+
+                [Utf16StringValue(592, 128)]
+                public string EnglishDescription { get; set; }
+            }
+
+            [FixedLength(16)]
+            public class MultiplayerInfo
+            {
+                [PrimitiveValue(0)]
+                public uint MapId { get; set; }
+
+                [PrimitiveValue(8)]
+                public TagRef<BitmapTag> BitmapRef { get; set; }
+
+                [Utf16StringValue(12, 32)]
+                public string EnglishName { get; set; }
+
+                [Utf16StringValue(588, 128)]
+                public string EnglishDescription { get; set; }
             }
         }
 

@@ -124,6 +124,7 @@ namespace OpenH2.Serialization
                     PrimitiveArrayAttribute arr => GeneratePrimitiveArrayRead(member, arr, dataTypeSymbol),
                     ReferenceArrayAttribute reference => GenerateReferenceArrayRead(member, reference, dataTypeSymbol),
                     StringValueAttribute str => GenerateStringValueRead(member, str, dataTypeSymbol),
+                    Utf16StringValueAttribute str => GenerateStringValueRead(member, str, dataTypeSymbol),
 
                     _ => Array.Empty<StatementSyntax>(),
                 };
@@ -367,6 +368,32 @@ namespace OpenH2.Serialization
                 .WithTrailingTrivia(CarriageReturnLineFeed);
         }
 
+        // Utf16 is hard coded, materializer is not overridable
+        private IEnumerable<StatementSyntax> GenerateStringValueRead(LayoutInfo.MemberInfo member, Utf16StringValueAttribute str, ITypeSymbol dataTypeSymbol)
+        {
+            var type = member.Type;
+
+            Debug.Assert(type.ToDisplayString().Equals(typeof(string).Name, StringComparison.OrdinalIgnoreCase));
+
+            PrimitiveReader mi = (data, args) => SyntaxFactory.InvocationExpression(
+                            SyntaxFactory.MemberAccessExpression(SyntaxKind.SimpleMemberAccessExpression,
+                                data,
+                                SyntaxFactory.IdentifierName(nameof(SpanByteExtensions.ReadUtf16StringFrom))))
+                            .AddArgumentListArguments(args);
+
+            ExpressionSyntax getExp = mi(IdentifierName(dataParam),
+                    Argument(BinaryExpression(SyntaxKind.AddExpression,
+                        IdentifierName(startParam),
+                        LiteralExpression(SyntaxKind.NumericLiteralExpression, Literal(str.Offset)))),
+                    Argument(LiteralExpression(SyntaxKind.NumericLiteralExpression, Literal(str.MaxLength))));
+
+            yield return ExpressionStatement(AssignmentExpression(SyntaxKind.SimpleAssignmentExpression,
+                MemberAccessExpression(SyntaxKind.SimpleMemberAccessExpression,
+                    IdentifierName(instanceParam),
+                    IdentifierName(member.PropertySymbol.Name)),
+                getExp))
+                .WithTrailingTrivia(CarriageReturnLineFeed);
+        }
 
         private IEnumerable<StatementSyntax> GenerateStringValueRead(LayoutInfo.MemberInfo member, StringValueAttribute str, ITypeSymbol dataTypeSymbol)
         {

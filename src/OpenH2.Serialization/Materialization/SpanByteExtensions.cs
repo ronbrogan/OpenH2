@@ -29,11 +29,51 @@ namespace OpenH2.Serialization.Materialization
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static string ToUtf16StringFromNullTerminated(this Span<byte> data)
+        {
+            var possibleCharCount = data.Length / 2;
+
+            Span<char> stringChars = stackalloc char[0];
+
+            if (possibleCharCount < 512)
+            {
+                stringChars = stackalloc char[possibleCharCount];
+            }
+            else
+            {
+                stringChars = new char[possibleCharCount];
+            }
+
+            var i = 0;
+            for (; i < possibleCharCount; i ++)
+            {
+                var c = PBitConverter.ToChar(data.Slice(i*2));
+                if (c == 0b0)
+                {
+                    break;
+                }
+
+                stringChars[i] = c;
+            }
+
+            // TODO: remove .ToArray() once we're on netstandard2.1+
+            return new string(stringChars.Slice(0, i).ToArray());
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static string ReadStringFrom(this Span<byte> data, int offset, int length)
         {
             var len = Math.Min(length, data.Length - offset);
 
             return data.Slice(offset, len).ToStringFromNullTerminated();
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static string ReadUtf16StringFrom(this Span<byte> data, int offset, int length)
+        {
+            var len = Math.Min(length * 2, data.Length - offset);
+
+            return data.Slice(offset, len).ToUtf16StringFromNullTerminated();
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

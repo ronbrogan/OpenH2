@@ -56,6 +56,53 @@ namespace OpenH2.Serialization.Materialization
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static string ReadUtf16StringFrom(this Stream data, int offset, int length)
+        {
+            var byteLength = length * 2;
+
+            Span<byte> stringBytes = stackalloc byte[0];
+            Span<char> stringChars = stackalloc char[0];
+
+            if (byteLength < 512)
+            {
+                stringBytes = stackalloc byte[byteLength];
+            }
+            else
+            {
+                stringBytes = new byte[byteLength];
+            }
+
+            if (data.Position != offset)
+                data.Position = offset;
+
+            var possibleCharCount = data.Read(stringBytes) / 2;
+
+            if (possibleCharCount < 512)
+            {
+                stringChars = stackalloc char[possibleCharCount];
+            }
+            else
+            {
+                stringChars = new char[possibleCharCount];
+            }
+
+            var i = 0;
+            for (; i < possibleCharCount; i++)
+            {
+                var c = PBitConverter.ToChar(stringBytes.Slice(i*2));
+                if (c == 0b0)
+                {
+                    break;
+                }
+
+                stringChars[i] = c;
+            }
+
+            // TODO: remove .ToArray() once we're on netstandard2.1+
+            return new string(stringChars.Slice(0, i).ToArray());
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static string ReadStringStarting(this Stream data, int offset)
         {
             var builder = new StringBuilder(32);
