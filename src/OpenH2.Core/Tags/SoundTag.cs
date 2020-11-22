@@ -10,7 +10,7 @@ namespace OpenH2.Core.Tags
     {
         ImaAdpcmMono = 0,
         ImaAdpcmStereo = 1,
-        UnknownCompression = 2
+        WmaBytestream = 2
     }
 
     [JsonConverter(typeof(JsonStringEnumConverter))]

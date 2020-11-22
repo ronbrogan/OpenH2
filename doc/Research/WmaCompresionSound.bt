@@ -1,0 +1,27 @@
+//------------------------------------------------
+//--- 010 Editor v11.0 Binary Template
+//
+//      File: 
+//   Authors: 
+//   Version: 
+//   Purpose: 
+//  Category: 
+// File Mask: 
+//  ID Bytes: 
+//   History: 
+//------------------------------------------------
+GUID inputMajor;
+GUID inputMinor;
+
+uint a;
+uint b;
+uint c;
+
+GUID outputMajor;
+uint d;
+ushort e;
+ushort channels;
+uint sampleRate;
+uint f;
+uint g;
+GUID outputQ;
