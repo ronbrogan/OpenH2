@@ -27,6 +27,17 @@ There are a number of dumping and analysis tools also in the solution, but they'
 
 # Progress History
 
+## [Armory Demo - November 2020](https://www.youtube.com/watch?v=l8jZkum3AOk)
+Demo of the Armory (01a_tutorial) mission running in the OpenH2 engine
+This is the first demo of the following features: 
+ - Script Execution
+ - 3D Audio Subsystem
+ - AI Unit Bootstrapping
+
+[![Armory Demo - November 2020](doc/Assets/Armory-2020-11.gif)](https://www.youtube.com/watch?v=l8jZkum3AOk)
+
+[https://www.youtube.com/watch?v=l8jZkum3AOk](https://www.youtube.com/watch?v=l8jZkum3AOk)
+
 ## [July 2020](https://www.youtube.com/watch?v=nqIXdxn6a88)
 Attempted to implement an ad-hoc physics engine. After abandoning that work was done to integrate PhysX into the engine. Work on parsing game scripts is underway.
 

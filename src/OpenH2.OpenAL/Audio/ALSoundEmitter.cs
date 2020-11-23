@@ -43,6 +43,13 @@ namespace OpenH2.OpenAL.Audio
 
         public TimeSpan RemainingTime()
         {
+            var state = AL.GetSourceState(this.source);
+
+            if(state != ALSourceState.Playing)
+            {
+                return TimeSpan.Zero;
+            }
+
             AL.GetSource(this.source, ALGetSourcei.SampleOffset, out var currentSample);
 
             var remainingSeconds = (this.primarySamples - currentSample) / (float)this.primarySampleRate;
