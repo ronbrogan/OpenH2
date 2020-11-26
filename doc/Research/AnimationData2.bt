@@ -1,0 +1,120 @@
+//------------------------------------------------
+//--- 010 Editor v11.0 Binary Template
+//
+//      File: 
+//   Authors: 
+//   Version: 
+//   Purpose: 
+//  Category: 
+// File Mask: 
+//  ID Bytes: 
+//   History: 
+//------------------------------------------------
+
+
+// This is for fp_battle_rifle.first_person.ready.jmad
+//{
+//  "Description": "first_person:ready",
+//  "NodeSignature": 341439038,
+//  "ValueC": 1171,
+//  "ValueD": 67,
+//  "ValueE": 8907,
+//  "ValueF": 67,
+//  "AnimationType": 0,
+//  "ValueG": 0,
+//  "ValueH": 255,
+//  "BoneCount": 42,
+//  "FrameCount": 19,
+//  "FlagsB": 640,
+//  "FlagsC": 0,
+//  "FlagsD": 514,
+//  "ParamA": 0,
+//  "ValueO": 0,
+//  "ParentIndex": 65535,
+//  "ChildIndex": 65535,
+//  "Zero": 0,
+//  "Data": null,
+//  "SizeA": 24,
+//  "SizeB": 24,
+//  "SizeC": 0,
+//  "SizeD": 0,
+//  "SizeE": 200,
+//  "FrameDataSize": 3984,
+//  "Obj64s": [
+//    {
+//      "ValueA": 4,
+//      "ValueB": 15
+//    }
+//  ],
+//  "Obj72s": [
+//    {
+//      "MaybeSoundIndex": 1,
+//      "ValueB": 1,
+//      "ValueC": -388512028,
+//      "ValueD": 277972075
+//    }
+//  ]
+//}
+//
+
+local ushort frameCount = 19;
+
+FSeek(12);
+uint HeadOffset;
+uint Head2Offset;
+
+FSeek(HeadOffset);
+
+float A;
+float B;
+float C;
+float D;
+float E;
+float F;
+float G;
+float H;
+float I;
+
+FSeek(Head2Offset);
+float J;
+
+byte Unknown1;
+byte QuaternionFrameSets;
+byte Vec3FrameSets;
+byte Unknown4;
+
+float K;
+
+uint SizeLarge;
+uint SizeTotal;
+
+uint SizeA;
+uint QuatSetSize;
+uint PosSetSize;
+uint SizeD;
+
+
+struct PackedQuat {
+    short a;
+    short b;
+    short c;
+    short d;
+};
+
+struct QuatSet {
+    PackedQuat Quats[QuatSetSize/8];
+};
+
+QuatSet QuatSets[QuaternionFrameSets];
+
+struct Vec3 {
+    float X;
+    float Y;
+    float Z;
+};
+
+struct PosSet {
+    Vec3 Vector3s[PosSetSize/12];
+};
+
+PosSet PosSets[Vec3FrameSets];

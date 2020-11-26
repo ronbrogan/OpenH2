@@ -11,6 +11,37 @@
 //   History: 
 //------------------------------------------------
 
+//{
+//    "Description": "03_intro_02",
+//    "NodeSignature": 25429,
+//    "ValueC": -20875,
+//    "ValueD": 37,
+//    "ValueE": -8459,
+//    "ValueF": 37,
+//    "AnimationType": 0,
+//    "ValueG": 0,
+//    "ValueH": 255,
+//    "BoneCount": 1,
+//    "FrameCount": 440,
+//    "FlagsB": 128,
+//    "FlagsC": 0,
+//    "FlagsD": 514,
+//    "ParamA": 0,
+//    "ValueO": 0,
+//    "ParentIndex": 65535,
+//    "ChildIndex": 65535,
+//    "Zero": 0,
+//    "Data": null,
+//    "SizeA": 12,
+//    "SizeB": 12,
+//    "SizeC": 0,
+//    "SizeD": 0,
+//    "SizeE": 32,
+//    "FrameDataSize": 8832,
+//    "Obj64s": [],
+//    "Obj72s": []
+//}
+
 // Same data until 36
 
 FSeek(36);
