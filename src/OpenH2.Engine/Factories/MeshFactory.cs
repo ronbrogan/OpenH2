@@ -120,8 +120,14 @@ namespace OpenH2.Engine.Factories
                 while (hierarchyTransforms.TryPop(out var mat))
                     finalTransform = Matrix4x4.Multiply(mat, finalTransform);
 
+                var boneLength = 0.01f;
 
-                var end = Vector3.Transform(new Vector3(0.1f, 0, 0), finalTransform);
+                if(bone.FirstChildIndex != -1)
+                {
+                    boneLength = model.Bones[bone.FirstChildIndex].Translation.Length();
+                }
+
+                var end = Vector3.Transform(new Vector3(boneLength, 0, 0), finalTransform);
                 var base1 = Vector3.Transform(new Vector3(0, 0f, 0.01f), finalTransform);
                 var base2 = Vector3.Transform(new Vector3(0, -0.01f, -0.01f), finalTransform);
                 var base3 = Vector3.Transform(new Vector3(0, 0.01f, -0.01f), finalTransform);

@@ -22,6 +22,7 @@ using ErrorCode = PhysX.ErrorCode;
 using PxFoundation = PhysX.Foundation;
 using PxPhysics = PhysX.Physics;
 using PxScene = PhysX.Scene;
+using PxTolerancesScale = PhysX.TolerancesScale;
 
 namespace OpenH2.Engine.Systems
 {
@@ -30,6 +31,7 @@ namespace OpenH2.Engine.Systems
         private PxFoundation physxFoundation;
         private PxPhysics physxPhysics;
         private PxScene physxScene;
+        private PxTolerancesScale physxScale;
         private ControllerManager controllerManager;
         private Cooking cooker;
         private Pvd pvd;
@@ -55,13 +57,18 @@ namespace OpenH2.Engine.Systems
             // Setup PhysX infra here
 
             this.physxFoundation = new PxFoundation(new ConsoleErrorCallback());
+            this.physxScale = new PxTolerancesScale()
+            {
+                Length = 1f,
+                Speed = 9.81f
+            };
 
 #if DEBUG
             pvd = new Pvd(this.physxFoundation);
             pvd.Connect("localhost", 5425, TimeSpan.FromSeconds(2), InstrumentationFlag.Debug);
-            this.physxPhysics = new PxPhysics(this.physxFoundation, false, pvd);
+            this.physxPhysics = new PxPhysics(this.physxFoundation, this.physxScale, false, pvd);
 #else
-            this.physxPhysics = new PxPhysics(this.physxFoundation);
+            this.physxPhysics = new PxPhysics(this.physxFoundation, this.physxScale);
 #endif
             this.defaultMat = this.physxPhysics.CreateMaterial(0.5f, 0.5f, 0.1f);
 
@@ -72,13 +79,14 @@ namespace OpenH2.Engine.Systems
             this.frictionlessMat.RestitutionCombineMode = CombineMode.Minimum;
             this.frictionlessMat.Flags = MaterialFlags.DisableFriction;
 
-            var sceneDesc = new SceneDesc()
+            var sceneDesc = new SceneDesc(this.physxScale)
             {
                 BroadPhaseType = BroadPhaseType.SweepAndPrune,
                 Gravity = world.Gravity,
                 Flags = SceneFlag.EnableStabilization,
                 SolverType = SolverType.TGS,
-                FilterShader = new DefaultFilterShader()
+                FilterShader = new DefaultFilterShader(),
+                BounceThresholdVelocity = 0.2f * world.Gravity.Length()
             };
 
             this.physxScene = this.physxPhysics.CreateScene(sceneDesc);
@@ -93,21 +101,23 @@ namespace OpenH2.Engine.Systems
             pvdClient.SetScenePvdFlags(SceneVisualizationFlags.TransmitContacts | SceneVisualizationFlags.TransmitConstraints | SceneVisualizationFlags.TransmitSceneQueries);
 #endif
 
-            var scale = TolerancesScale.Default;
             var cookingParams = new CookingParams()
             {
-                Scale = scale,
-                AreaTestEpsilon = 0.06f * scale.Length * scale.Length,
+                Scale = this.physxScale,
+                AreaTestEpsilon = 0.001f,
                 MidphaseDesc = new MidphaseDesc()
                 {
                     Bvh33Desc = new Bvh33MidphaseDesc()
                     {
                         MeshCookingHint = MeshCookingHint.SimulationPerformance
                     }
-                }
+                },
+                BuildTriangleAdjacencies = true,
+                MeshCookingHint = MeshCookingHint.SimulationPerformance,
+                MeshWeldTolerance = 0.001f
             };
 
-            cooker = this.physxPhysics.CreateCooking(cookingParams);
+            this.cooker = this.physxPhysics.CreateCooking(cookingParams);
             this.controllerManager = this.physxScene.CreateControllerManager();
 
             var contactProv = new ContactModifyProxy();
@@ -179,18 +189,32 @@ namespace OpenH2.Engine.Systems
             scene.OnEntityRemove += this.RemoveEntity;
         }
 
+
+        private float stepSize = 1f / 100f;
+        private double totalTime = 0d;
+        private double simulatedTime = 0d;
         public override void Update(double timestep)
         {
-            if (TakeStep() == false)
-                return;
-            
+            totalTime += timestep;
+
+            // Take fixed-size steps until we've caught up with reality
+            while(totalTime - simulatedTime > stepSize)
+            {
+                simulatedTime += stepSize;
+
+                TakeStep(stepSize);
+            }
+        }
+
+        private void TakeStep(float step)
+        {
             // Split simulation to allow modification of current simulation step
-            this.physxScene.Collide((float)timestep);
+            this.physxScene.Collide(step);
             this.physxScene.FetchCollision(block: true);
 
             // Need to apply any forces here, between FetchCollision and Advance.
             // However, contacts aren't available here - we'll need to record contacts or something during ContactModify via the Collide phase
-            foreach(var (body,velocity) in this.queuedForces.VelocityChanges)
+            foreach (var (body, velocity) in this.queuedForces.VelocityChanges)
             {
                 body.AddVelocity(velocity);
             }
@@ -219,9 +243,9 @@ namespace OpenH2.Engine.Systems
                 }
             }
 
-            foreach(var controller in this.controllerManager.Controllers)
+            foreach (var controller in this.controllerManager.Controllers)
             {
-                if(controller.Actor.UserData is MoverComponent mover)
+                if (controller.Actor.UserData is MoverComponent mover)
                 {
                     mover.Transform.Position = controller.Position;
                     mover.Transform.UpdateDerivedData();
@@ -229,9 +253,9 @@ namespace OpenH2.Engine.Systems
             }
 
             // TODO: track touch found/lost somwhere
-            foreach(var triggerSet in this.simCallback.TriggerEventSets)
+            foreach (var triggerSet in this.simCallback.TriggerEventSets)
             {
-                foreach(var triggerEvent in triggerSet)
+                foreach (var triggerEvent in triggerSet)
                 {
                     var comp = triggerEvent.TriggerActor.UserData as TriggerGeometryComponent;
                     Debug.Assert(comp != null);
@@ -441,24 +465,6 @@ namespace OpenH2.Engine.Systems
         private void RemoveTrigger(TriggerGeometryComponent comp)
         {
             // TODO: implement cleaning up triggers
-        }
-
-        private bool TakeStep()
-        {
-            if (input == null)
-                input = this.world.GetGlobalResource<InputStore>();
-
-            if (input.IsDown(Keys.P) && input.IsDown(Keys.RightShift))
-                StepMode = !StepMode;
-
-            if (StepMode)
-            {
-                ShouldStep = input.IsDown(Keys.P);
-
-                return ShouldStep;
-            }
-
-            return true;
         }
 
         private void AddCollider(RigidActor actor, ICollider collider)

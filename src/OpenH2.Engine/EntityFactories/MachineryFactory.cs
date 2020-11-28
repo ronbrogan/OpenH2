@@ -44,6 +44,13 @@ namespace OpenH2.Engine.EntityFactories
                     Flags = ModelFlags.Diffuse | ModelFlags.CastsShadows | ModelFlags.ReceivesShadows
                 }));
 
+                components.Add(new RenderModelComponent(scenery, new Model<BitmapTag>
+                {
+                    Note = $"[{tag.Id}] {tag.Name} bones",
+                    Meshes = MeshFactory.GetBonesModel(map, tag.Model),
+                    Flags = ModelFlags.Wireframe
+                }));
+
                 var body = PhysicsComponentFactory.CreateKinematicRigidBody(scenery, xform, map, tag.Model);
                 if (body != null)
                 {
