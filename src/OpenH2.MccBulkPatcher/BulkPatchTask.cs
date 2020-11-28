@@ -6,7 +6,7 @@ using OpenH2.Core.Factories;
 using OpenH2.Core.Maps.MCC;
 using OpenH2.Core.Patching;
 using OpenH2.Core.Scripting.LowLevel;
-using OpenH2.Serialization;
+using OpenBlam.Serialization;
 using System;
 using System.IO;
 using System.Linq;

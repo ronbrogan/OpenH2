@@ -3,7 +3,7 @@ using OpenH2.Core.Extensions;
 using OpenH2.Core.Factories;
 using OpenH2.Core.Maps;
 using OpenH2.Core.Patching;
-using OpenH2.Serialization;
+using OpenBlam.Serialization;
 using System.IO;
 using System.Text.Json;
 using System.Threading.Tasks;

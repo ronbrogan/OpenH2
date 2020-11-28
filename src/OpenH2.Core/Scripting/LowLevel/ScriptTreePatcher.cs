@@ -1,7 +1,7 @@
 ﻿using OpenH2.Core.Extensions;
 using OpenH2.Core.Maps.MCC;
 using OpenH2.Core.Tags.Scenario;
-using OpenH2.Serialization;
+using OpenBlam.Serialization;
 using System;
 using System.IO;
 

@@ -1,4 +1,4 @@
-﻿using OpenH2.Serialization.Layout;
+﻿using OpenBlam.Serialization.Layout;
 
 namespace OpenH2.Core.Maps
 {

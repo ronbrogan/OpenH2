@@ -4,7 +4,7 @@ using OpenH2.Core.Maps;
 using OpenH2.Core.Tags.Common.Collision;
 using OpenH2.Core.Tags.Common.Models;
 using OpenH2.Core.Tags.Layout;
-using OpenH2.Serialization.Layout;
+using OpenBlam.Serialization.Layout;
 using System;
 using System.Numerics;
 using System.Text.Json.Serialization;

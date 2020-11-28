@@ -1,6 +1,6 @@
 ﻿using OpenH2.Core.GameObjects;
 using OpenH2.Core.Scripting;
-using OpenH2.Serialization.Layout;
+using OpenBlam.Serialization.Layout;
 using System.Diagnostics;
 using System.Numerics;
 

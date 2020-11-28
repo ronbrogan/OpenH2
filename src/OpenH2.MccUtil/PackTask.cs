@@ -1,8 +1,8 @@
 ﻿using CommandLine;
 using OpenH2.Core.Extensions;
 using OpenH2.Core.Maps.MCC;
-using OpenH2.Serialization;
-using OpenH2.Serialization.Layout;
+using OpenBlam.Serialization;
+using OpenBlam.Serialization.Layout;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;

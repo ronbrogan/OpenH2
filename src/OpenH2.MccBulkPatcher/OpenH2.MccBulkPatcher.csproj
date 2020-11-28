@@ -16,7 +16,7 @@
 
   <ItemGroup>
     <TrimmerRootAssembly Include="OpenH2.Core" />
-    <TrimmerRootAssembly Include="OpenH2.Serialization" />
+    <TrimmerRootAssembly Include="OpenBlam.Serialization" />
   </ItemGroup>
   
 </Project>

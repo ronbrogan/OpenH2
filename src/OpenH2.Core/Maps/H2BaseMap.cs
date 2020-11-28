@@ -1,5 +1,5 @@
 ﻿using OpenH2.Core.Tags;
-using OpenH2.Serialization.Materialization;
+using OpenBlam.Serialization.Materialization;
 using System.Collections.Generic;
 
 namespace OpenH2.Core.Maps

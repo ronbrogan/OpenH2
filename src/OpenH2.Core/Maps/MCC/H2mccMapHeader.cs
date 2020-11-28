@@ -1,6 +1,6 @@
 ﻿using OpenH2.Core.Offsets;
 using OpenH2.Core.Tags;
-using OpenH2.Serialization.Layout;
+using OpenBlam.Serialization.Layout;
 using System;
 using System.Collections.Generic;
 using System.Text;

@@ -9,6 +9,7 @@
   </PropertyGroup>
   
   <ItemGroup>
+    <PackageReference Include="OpenBlam.Serialization" Version="1.0.0" />
     <PackageReference Include="System.Text.Json" Version="5.0.0" />
     <PackageReference Include="System.Numerics.Vectors" Version="4.5.0" />
     <PackageReference Include="System.Runtime.Numerics" Version="4.3.0" />
@@ -17,9 +18,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\OpenH2.Foundation\OpenH2.Foundation.csproj" />
-    <ProjectReference Include="..\OpenH2.Serialization\OpenH2.Serialization.csproj" OutputItemType="Analyzer">
-      <PrivateAssets>none</PrivateAssets>
-    </ProjectReference>
   </ItemGroup>
 
   <ItemGroup>

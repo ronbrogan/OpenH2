@@ -2,7 +2,7 @@
 using OpenH2.Core.Parsing;
 using OpenH2.Core.Tags;
 using OpenH2.Core.Tags.Scenario;
-using OpenH2.Serialization;
+using OpenBlam.Serialization;
 using System;
 using System.Collections.Generic;
 using System.IO;

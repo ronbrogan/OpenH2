@@ -1,7 +1,7 @@
 ﻿using OpenH2.Core.Offsets;
 using OpenH2.Core.Tags;
 using OpenH2.Core.Tags.Scenario;
-using OpenH2.Serialization.Layout;
+using OpenBlam.Serialization.Layout;
 
 namespace OpenH2.Core.Maps
 {

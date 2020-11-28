@@ -1,5 +1,5 @@
-﻿using OpenH2.Serialization.Layout;
-using OpenH2.Serialization.Materialization;
+﻿using OpenBlam.Serialization.Layout;
+using OpenBlam.Serialization.Materialization;
 using System.IO;
 
 namespace OpenH2.Core.Maps.MCC

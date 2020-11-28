@@ -34,7 +34,7 @@ namespace OpenH2.Foundation
         Vector4 Detail2Scale { get; set; }
     }
 
-    public class Material<TTexture> : IMaterial<TTexture>
+    public record Material<TTexture> : IMaterial<TTexture>
     {
 
         public Vector4 DiffuseColor { get; set; }

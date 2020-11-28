@@ -1,5 +1,5 @@
 ﻿using OpenH2.Core.Extensions;
-using OpenH2.Serialization;
+using OpenBlam.Serialization;
 using System;
 using System.Buffers;
 using System.Collections.Generic;

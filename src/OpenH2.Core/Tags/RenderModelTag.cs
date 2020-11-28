@@ -2,7 +2,7 @@
 using OpenH2.Core.Parsing;
 using OpenH2.Core.Tags.Common.Models;
 using OpenH2.Core.Tags.Layout;
-using OpenH2.Serialization.Layout;
+using OpenBlam.Serialization.Layout;
 using OpenH2.Foundation;
 using System;
 using System.Numerics;

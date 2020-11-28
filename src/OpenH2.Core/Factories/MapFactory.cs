@@ -3,7 +3,7 @@ using OpenH2.Core.Offsets;
 using OpenH2.Core.Parsing;
 using OpenH2.Core.Maps;
 using OpenH2.Core.Tags;
-using OpenH2.Serialization;
+using OpenBlam.Serialization;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;

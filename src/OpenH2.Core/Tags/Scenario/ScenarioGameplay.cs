@@ -2,7 +2,7 @@
 using OpenH2.Core.Maps;
 using OpenH2.Core.Scripting;
 using OpenH2.Core.Tags.Layout;
-using OpenH2.Serialization.Layout;
+using OpenBlam.Serialization.Layout;
 using System.Numerics;
 
 namespace OpenH2.Core.Tags.Scenario

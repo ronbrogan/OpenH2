@@ -1,7 +1,7 @@
 ﻿using OpenH2.Core.Offsets;
 using OpenH2.Core.Maps;
 using OpenH2.Core.Tags;
-using OpenH2.Serialization.Materialization;
+using OpenBlam.Serialization.Materialization;
 using System;
 using System.IO;
 using System.Numerics;

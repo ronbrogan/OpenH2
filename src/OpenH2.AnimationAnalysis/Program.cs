@@ -1,7 +1,7 @@
 ﻿using OpenH2.Core.Factories;
 using OpenH2.Core.Maps;
 using OpenH2.Core.Tags;
-using OpenH2.Serialization.Materialization;
+using OpenBlam.Serialization.Materialization;
 using System;
 using System.Collections.Generic;
 using System.IO;

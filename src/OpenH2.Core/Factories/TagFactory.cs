@@ -2,7 +2,7 @@
 using OpenH2.Core.Maps;
 using OpenH2.Core.Tags;
 using OpenH2.Core.Tags.Layout;
-using OpenH2.Serialization;
+using OpenBlam.Serialization;
 using System;
 using System.Collections.Generic;
 using System.Linq;
