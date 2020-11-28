@@ -37,8 +37,13 @@ namespace OpenH2.Engine.Systems
 
         public override void Update(double timestep)
         {
-            var listenerComponent = this.world.Components<SoundListenerComponent>().First();
-            
+            var listenerComponents = this.world.Components<SoundListenerComponent>();
+
+            if (listenerComponents.Count == 0)
+                return;
+
+            var listenerComponent = listenerComponents[0];
+
             this.listener.SetPosition(listenerComponent.Transform.Position + listenerComponent.PositionOffset);
             this.listener.SetOrientation(listenerComponent.Transform.Orientation);
             this.globalEmitter.SetPosition(listenerComponent.Transform.Position);

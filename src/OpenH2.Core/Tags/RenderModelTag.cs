@@ -17,8 +17,6 @@ namespace OpenH2.Core.Tags
         {
         }
 
-        public override string Name { get; set; }
-
         [PrimitiveValue(0)]
         public int NameId { get; set; }
         
@@ -36,12 +34,8 @@ namespace OpenH2.Core.Tags
         [ReferenceArray(36)]
         public Part[] Parts { get; set; }
 
-        // TODO, bones are implict reference from parts...how to support?
-        // TODO: bones aren't in tag at all??
-        public Bone[] Bones { get; set; }
-
         [ReferenceArray(72)]
-        public Marker[] Markers { get; set; }
+        public Bone[] Bones { get; set; }
 
         [ReferenceArray(88)]
         public NamedSection[] Sections { get; set; }
@@ -260,13 +254,11 @@ namespace OpenH2.Core.Tags
             public MeshCollection Model { get; set; }
         }
 
-        // TODO, I think bones are just always after parts, without explicit reference...
-        // Serializer won't support that...
-        [FixedLength(128)]
+        [FixedLength(96)]
         public class Bone
         {
-            [PrimitiveValue(0)]
-            public int BoneNameId { get; set; }
+            [InternedString(0)]
+            public string Name { get; set; }
 
             [PrimitiveValue(4)]
             public short ParentIndex { get; set; }
@@ -278,59 +270,25 @@ namespace OpenH2.Core.Tags
             public short NextSiblingIndex { get; set; }
 
             [PrimitiveValue(12)]
-            public float X { get; set; }
-
-            [PrimitiveValue(16)]
-            public float Y { get; set; }
-
-            [PrimitiveValue(20)]
-            public float Z { get; set; }
+            public Vector3 Translation { get; set; }
 
             [PrimitiveValue(24)]
-            public float Yaw { get; set; }
-
-            [PrimitiveValue(28)]
-            public float Pitch { get; set; }
-
-            [PrimitiveValue(32)]
-            public float Roll { get; set; }
-
-            [PrimitiveValue(70)]
-            public float SingleBoneX { get; set; }
-
-            [PrimitiveValue(74)]
-            public float SingleBoneY { get; set; }
-
-            [PrimitiveValue(78)]
-            public float SingleBoneZ { get; set; }
-
-            [PrimitiveValue(82)]
-            public float DistanceFromParent { get; set; }
-        }
-
-        [FixedLength(96)]
-        public class Marker
-        {
-            [InternedString(0)]
-            public string MarkerName { get; set; }
+            public Quaternion Orientation { get; set; }
 
             [PrimitiveValue(36)]
-            public float X { get; set; }
-
-            [PrimitiveValue(40)]
-            public float Y { get; set; }
-
-            [PrimitiveValue(44)]
-            public float Z { get; set; }
+            public Vector2 Unknown1 { get; set; }
 
             [PrimitiveValue(48)]
-            public float Yaw { get; set; }
+            public Vector3 Unknown2 { get; set; }
 
-            [PrimitiveValue(52)]
-            public float Pitch { get; set; }
+            [PrimitiveValue(60)]
+            public Vector3 Unknown3 { get; set; }
 
-            [PrimitiveValue(56)]
-            public float Roll { get; set; }
+            [PrimitiveValue(72)]
+            public Vector3 Unknown4 { get; set; }
+
+            [PrimitiveValue(84)]
+            public Vector3 Unknown5 { get; set; }
         }
 
         [FixedLength(12)]

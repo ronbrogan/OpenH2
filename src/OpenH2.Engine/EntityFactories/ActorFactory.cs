@@ -7,6 +7,7 @@ using OpenH2.Engine.Entities;
 using OpenH2.Engine.Factories;
 using OpenH2.Foundation;
 using System;
+using System.Collections.Generic;
 using System.Numerics;
 
 namespace OpenH2.Engine.EntityFactories
@@ -41,6 +42,13 @@ namespace OpenH2.Engine.EntityFactories
                 Meshes = MeshFactory.GetRenderModel(map, biped.Model)
             });
 
+            var boneComp = new RenderModelComponent(entity, new Model<BitmapTag>
+            {
+                Note = $"[{biped.Id}] {biped.Name} Bones",
+                Flags = ModelFlags.Wireframe,
+                Meshes = MeshFactory.GetBonesModel(map, biped.Model)
+            });
+
             var orientation = Quaternion.CreateFromAxisAngle(EngineGlobals.Up, loc.Rotation);
             var xform = new TransformComponent(entity, loc.Position, orientation);
 
@@ -61,7 +69,7 @@ namespace OpenH2.Engine.EntityFactories
 
             var originalTag = new OriginalTagComponent(entity, loc);
 
-            entity.SetComponents(xform, comp, centerOfMass, origin, originalTag);
+            entity.SetComponents(xform, /*comp,*/ boneComp, centerOfMass, origin, originalTag);
 
             return entity;
         }
