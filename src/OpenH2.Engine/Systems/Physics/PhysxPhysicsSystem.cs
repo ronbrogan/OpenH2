@@ -59,8 +59,8 @@ namespace OpenH2.Engine.Systems
             this.physxFoundation = new PxFoundation(new ConsoleErrorCallback());
             this.physxScale = new PxTolerancesScale()
             {
-                Length = 1f,
-                Speed = 9.81f
+                Length = 0.1f,
+                Speed = 98.1f
             };
 
 #if DEBUG
