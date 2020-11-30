@@ -305,6 +305,9 @@ namespace OpenH2.Core.Scripting
         /// <summary>displays the named subtitle for <real> seconds</summary>
         void cinematic_subtitle(string string_id, float real);
 
+        /// <summary>Starts the pre-rendered cinematic movie. Introduced by MCC </summary>
+        void cinematic_start_movie(string name);
+
         /// <summary>returns TRUE if player0's look pitch is inverted</summary>
         bool controller_get_look_invert();
 
@@ -783,6 +786,12 @@ namespace OpenH2.Core.Scripting
 
         /// <summary>Set whether the object can die from damage or not (as opposed to by scripting)</summary>
         void object_cannot_die(IGameObject entity, bool boolean);
+
+        /// <summary>
+        /// Set whether the object can die from damage or not (as opposed to by scripting)
+        /// Overload introduced by MCC, used in 03b_newmombasa
+        /// </summary>
+        void object_cannot_die(IUnit entity, IGameObject vehicle, string seat);
 
         /// <summary>prevents an object from taking damage</summary>
         void object_cannot_take_damage(IGameObject entity);
