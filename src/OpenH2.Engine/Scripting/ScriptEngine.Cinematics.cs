@@ -143,6 +143,11 @@ namespace OpenH2.Engine.Scripting
         {
         }
 
+        /// <summary>Starts the pre-rendered cinematic movie. Introduced by MCC </summary>
+        public void cinematic_start_movie(string name)
+        {
+        }
+
         /// <summary>initializes the game to end a cinematic (interruptive) cutscene</summary>
         public void cinematic_stop()
         {

@@ -29,6 +29,14 @@ namespace OpenH2.Engine.Scripting
         {
         }
 
+        /// <summary>
+        /// Set whether the object can die from damage or not (as opposed to by scripting)
+        /// Overload introduced by MCC, used in 03b_newmombasa
+        /// </summary>
+        public void object_cannot_die(IUnit entity, IGameObject vehicle, string seat)
+        {
+        }
+
         /// <summary>prevents an object from taking damage</summary>
         public void object_cannot_take_damage(IGameObject entity) // Unit?
         {
