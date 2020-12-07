@@ -1,6 +1,7 @@
 ﻿using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
+using OpenBlam.Core.Extensions;
 using OpenH2.Core.Extensions;
 using OpenH2.Core.GameObjects;
 using OpenH2.Core.Tags;

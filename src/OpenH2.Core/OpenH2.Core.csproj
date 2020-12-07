@@ -7,9 +7,16 @@
     <GenerateSerializersInto>$(MSBuildProjectDirectory)\$(BaseIntermediateOutputPath)\GeneratedSerializers</GenerateSerializersInto>
     <Nullable>enable</Nullable>
   </PropertyGroup>
+
+  <ItemGroup>
+    <AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleTo">
+      <_Parameter1>OpenH2.Core.CodeGenTests</_Parameter1>
+    </AssemblyAttribute>
+  </ItemGroup>
   
   <ItemGroup>
-    <PackageReference Include="OpenBlam.Serialization" Version="1.0.0" />
+    <PackageReference Include="OpenBlam.Core" Version="1.0.1" />
+    <PackageReference Include="OpenBlam.Serialization" Version="1.1.0" />
     <PackageReference Include="System.Text.Json" Version="5.0.0" />
     <PackageReference Include="System.Numerics.Vectors" Version="4.5.0" />
     <PackageReference Include="System.Runtime.Numerics" Version="4.3.0" />

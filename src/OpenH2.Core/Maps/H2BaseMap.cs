@@ -22,8 +22,8 @@ namespace OpenH2.Core.Maps
         public Dictionary<uint, string> TagNames { get; set; }
         public Dictionary<(TagName, string), uint> TagNameLookup { get; set; }
 
-        public int IndexOffset => Header.InternedStringIndexOffset;
+        int IInternedStringProvider.IndexOffset => Header.InternedStringIndexOffset;
 
-        public int DataOffset => Header.InternedStringsOffset;
+        int IInternedStringProvider.DataOffset => Header.InternedStringsOffset;
     }
 }

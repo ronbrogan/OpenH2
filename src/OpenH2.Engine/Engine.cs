@@ -79,13 +79,6 @@ namespace OpenH2.Engine
 
         private void LoadMap(MapFactory factory, string mapPath)
         {
-            SpectatorCamera camera = new SpectatorCamera();
-
-            if(world.Scene != null)
-            {
-                camera = world.Scene.Entities.FirstOrDefault((v) => v.Value.GetType() == typeof(SpectatorCamera)).Value as SpectatorCamera;
-            }
-
             var watch = new Stopwatch();
             watch.Start();
 
@@ -97,14 +90,20 @@ namespace OpenH2.Engine
             watch.Stop();
             Console.WriteLine($"Loading map took {watch.ElapsedMilliseconds / 1000f} seconds");
 
-            //scene.AddEntity(camera);
-
-            var player = new Player(true);
-            player.FriendlyName = "player_0";
-            player.Transform.Position = map.Scenario.PlayerSpawnMarkers[0].Position + new Vector3(0,0,0.3f);
-            player.Transform.Orientation = Quaternion.CreateFromAxisAngle(EngineGlobals.Up, map.Scenario.PlayerSpawnMarkers[0].Heading);
-            player.Transform.UpdateDerivedData();
-            scene.AddEntity(player);
+            var useFreecam = true;
+            if(useFreecam)
+            {
+                scene.AddEntity(new SpectatorCamera());
+            }
+            else
+            {
+                var player = new Player(true);
+                player.FriendlyName = "player_0";
+                player.Transform.Position = map.Scenario.PlayerSpawnMarkers[0].Position + new Vector3(0, 0, 0.3f);
+                player.Transform.Orientation = Quaternion.CreateFromAxisAngle(EngineGlobals.Up, map.Scenario.PlayerSpawnMarkers[0].Heading);
+                player.Transform.UpdateDerivedData();
+                scene.AddEntity(player);
+            }
 
             world.LoadScene(scene);
         }

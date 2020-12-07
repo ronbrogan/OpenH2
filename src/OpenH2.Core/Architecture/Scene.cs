@@ -45,9 +45,7 @@ namespace OpenH2.Core.Architecture
             Func<IPlaceable, bool> shouldPlace = (IPlaceable p) => p.PlacementFlags.HasFlag(PlacementFlags.NotAutomatically) == false;
             var terrains = this.Scenario.Terrains;
 
-            var terrain = this.Scenario.Terrains[0];
-
-            //foreach (var terrain in terrains)
+            foreach (var terrain in terrains)
             {
                 this.Map.TryGetTag(terrain.Bsp, out var bsp);
 
@@ -59,11 +57,10 @@ namespace OpenH2.Core.Architecture
                 }
             }
 
-            var sky = this.Scenario.SkyboxInstances[terrain.SkyIndex];
-            //foreach (var sky in this.Map.Scenario.SkyboxInstances)
+            foreach (var sky in this.Map.Scenario.SkyboxInstances)
             {
-                //if (sky.Skybox == uint.MaxValue)
-                //    continue;
+                if (sky.Skybox == uint.MaxValue)
+                    continue;
 
                 this.AddEntity(EntityCreator.FromSkyboxInstance(sky));
             }

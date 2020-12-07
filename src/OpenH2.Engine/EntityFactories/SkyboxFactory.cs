@@ -20,7 +20,7 @@ namespace OpenH2.Engine.EntityFactories
             var scenery = new Scenery();
             scenery.FriendlyName = "Skybox_" + instance.Skybox.Id;
 
-            map.TryGetTag(instance.Skybox, out var tag);
+            var tag = map.GetTag(instance.Skybox);
 
             if (map.TryGetTag(tag.Model, out var model) == false)
             {

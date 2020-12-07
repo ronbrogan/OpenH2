@@ -1,4 +1,5 @@
 ﻿using Avalonia.Media;
+using OpenBlam.Core.Extensions;
 using OpenH2.Core.Extensions;
 using PropertyChanged;
 using System;

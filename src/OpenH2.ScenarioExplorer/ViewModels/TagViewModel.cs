@@ -1,11 +1,10 @@
 ﻿using Avalonia.Media;
+using OpenBlam.Core.Extensions;
 using OpenH2.AvaloniaControls.HexViewerImpl;
 using OpenH2.Core.Extensions;
-using OpenH2.Core.Offsets;
 using OpenH2.Core.Maps;
+using OpenH2.Core.Offsets;
 using OpenH2.Core.Tags;
-using OpenH2.Core.Tags.Common;
-using OpenH2.Core.Types;
 using OpenH2.Foundation;
 using PropertyChanged;
 using System;
@@ -200,7 +199,6 @@ namespace OpenH2.ScenarioExplorer.ViewModels
             public override bool CanConvert(Type type)
             {
                 return type == typeof(VertexFormat[])
-                || type == typeof(Vertex[])
                 || type == typeof(byte[]);
             }
 

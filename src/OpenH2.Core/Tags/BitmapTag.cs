@@ -8,6 +8,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
 using System.Text.Json.Serialization;
+using OpenBlam.Core.Texturing;
 
 namespace OpenH2.Core.Tags
 {

@@ -13,6 +13,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Reflection;
 using System.Text.Json;
+using System.Numerics;
 
 namespace OpenH2.Core.Patching
 {
@@ -39,6 +40,7 @@ namespace OpenH2.Core.Patching
             this.DataWriters.Add(typeof(ITagRef), WriteTagRef);
             this.DataWriters.Add(typeof(TagRef), WriteTagRef);
             this.DataWriters.Add(typeof(TagRef<>), WriteTagRef);
+            this.DataWriters.Add(typeof(Vector3), WriteVec3);
         }
 
         public void Apply(TagPatch patchSet)
@@ -188,6 +190,28 @@ namespace OpenH2.Core.Patching
             }
 
             data.WriteUInt32At(offset, tagId);
+        }
+
+        public void WriteVec3(Stream data, int offset, JsonElement value)
+        {
+            if(value.ValueKind != JsonValueKind.Array || value.GetArrayLength() != 3)
+            {
+                throw new Exception("Vector3 values must be a float array of three elements");
+            }
+
+            var i = 0;
+            Span<float> floats = stackalloc float[3];
+
+            foreach(var val in value.EnumerateArray())
+            {
+                if(val.ValueKind != JsonValueKind.Number)
+                {
+                    throw new Exception("Vector elements must be numeric");
+                }
+
+                data.WriteFloatAt(offset + (i * 4), val.GetSingle());
+                i++;
+            }
         }
 
         private uint GetTagIdFromString(string tagNameWithExtension)

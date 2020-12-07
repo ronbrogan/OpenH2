@@ -1,12 +1,12 @@
 ﻿using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
+using OpenBlam.Core.Collections;
+using OpenBlam.Core.Extensions;
 using OpenH2.Core.Architecture;
 using OpenH2.Core.Extensions;
-using OpenH2.Core.GameObjects;
 using OpenH2.Core.Scripting.GenerationState;
 using OpenH2.Core.Tags.Scenario;
-using OpenH2.Foundation.Collections;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;

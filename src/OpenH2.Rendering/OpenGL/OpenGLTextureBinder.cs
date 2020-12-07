@@ -1,4 +1,5 @@
-﻿using OpenH2.Core.Enums.Texture;
+﻿using OpenBlam.Core.Texturing;
+using OpenH2.Core.Enums.Texture;
 using OpenH2.Rendering.Abstractions;
 using OpenTK.Graphics.OpenGL;
 using System;

@@ -1,4 +1,5 @@
-﻿using OpenH2.Core.Extensions;
+﻿using OpenBlam.Core.Extensions;
+//using OpenH2.Core.Extensions;
 using OpenH2.Core.Tags.Scenario;
 using System;
 using System.Collections.Generic;
@@ -72,7 +73,7 @@ namespace OpenH2.Core.Scripting.LowLevel
                             if (node.NodeString > 0 && node.NodeString < tag.ScriptStrings.Length
                                 && tag.ScriptStrings[node.NodeString - 1] == 0)
                             {
-                                value = SpanByteExtensions.ReadStringStarting(tag.ScriptStrings, node.NodeString);
+                                value = OpenBlam.Core.Extensions.SpanByteExtensions.ReadStringStarting(tag.ScriptStrings, node.NodeString);
                             }
                             break;
                     }

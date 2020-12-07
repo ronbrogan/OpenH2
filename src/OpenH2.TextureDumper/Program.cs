@@ -1,13 +1,36 @@
-﻿using OpenH2.Core.Factories;
+﻿using OpenBlam.Core.ExternalFormats;
+using OpenH2.Core.Enums.Texture;
+using OpenH2.Core.Factories;
 using OpenH2.Core.Maps;
 using OpenH2.Core.Tags;
 using System;
+using System.Collections.Generic;
 using System.IO;
+using Caps = OpenBlam.Core.ExternalFormats.DdsHeader.Caps;
+using Caps2 = OpenBlam.Core.ExternalFormats.DdsHeader.Caps2;
 
 namespace OpenH2.TextureDumper
 {
     class Program
     {
+        private static Dictionary<TextureType, Caps> CapsLookup = new Dictionary<TextureType, Caps>
+        {
+            { TextureType.Cubemap, Caps.Texture | Caps.Complex },
+            { TextureType.Sprite, Caps.Texture },
+            { TextureType.ThreeDimensional, Caps.Texture | Caps.Complex },
+            { TextureType.TwoDimensional, Caps.Texture },
+            { TextureType.UI, Caps.Texture },
+        };
+
+        private static Dictionary<TextureType, Caps2> Caps2Lookup = new Dictionary<TextureType, Caps2>
+        {
+            { TextureType.Cubemap, Caps2.Cubemap },
+            { TextureType.Sprite, (Caps2)0 },
+            { TextureType.ThreeDimensional, Caps2.Volume },
+            { TextureType.TwoDimensional, (Caps2)0 },
+            { TextureType.UI, (Caps2)0 },
+        };
+
         static void Main(string[] args)
         {
             if(args.Length != 2)
@@ -72,9 +95,10 @@ namespace OpenH2.TextureDumper
 
         public static void WriteTextureHeader(BitmapTag bitm, Stream destination)
         {
-            var ddsHeader = new DdsHeader(
+            var ddsHeader = DdsHeader.Create(
                 bitm.TextureInfos[0].Format,
-                bitm.TextureType,
+                CapsLookup[bitm.TextureType],
+                Caps2Lookup[bitm.TextureType],
                 bitm.TextureInfos[0].Width,
                 bitm.TextureInfos[0].Height,
                 bitm.TextureInfos[0].Depth,
@@ -82,7 +106,7 @@ namespace OpenH2.TextureDumper
                 null,
                 null);
 
-            ddsHeader.HeaderData.CopyTo(destination);
+            destination.Write(ddsHeader);
         }
     }
 }
