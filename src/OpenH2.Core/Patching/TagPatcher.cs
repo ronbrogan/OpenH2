@@ -19,7 +19,7 @@ namespace OpenH2.Core.Patching
 {
     public class TagPatcher
     {
-        private readonly H2BaseMap originalMap;
+        private readonly IH2Map originalMap;
         private readonly Stream mapToPatch;
 
         private Dictionary<Type, Action<Stream, int, JsonElement>> DataWriters = new Dictionary<Type, Action<Stream, int, JsonElement>>
@@ -32,7 +32,7 @@ namespace OpenH2.Core.Patching
             { typeof(float), (s,o,e) => s.WriteFloatAt(o, e.GetSingle()) },
         };
 
-        public TagPatcher(H2BaseMap originalMap, Stream mapToPatch)
+        public TagPatcher(IH2Map originalMap, Stream mapToPatch)
         {
             this.originalMap = originalMap;
             this.mapToPatch = mapToPatch;
@@ -224,7 +224,7 @@ namespace OpenH2.Core.Patching
                 throw new Exception("Tag names in patch must end with a valid extension");
             }
 
-            if (originalMap.TagNameLookup.TryGetValue(((TagName)tagType, tagName), out var tagId) == false)
+            if (originalMap.TryFindTagId((TagName)tagType, tagName, out var tagId) == false)
             {
                 throw new Exception($"Tag '{tagNameWithExtension}' not found in map");
             }

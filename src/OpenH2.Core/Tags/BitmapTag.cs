@@ -9,6 +9,8 @@ using System.IO;
 using System.IO.Compression;
 using System.Text.Json.Serialization;
 using OpenBlam.Core.Texturing;
+using OpenBlam.Core.MapLoading;
+using OpenH2.Core.Extensions;
 
 namespace OpenH2.Core.Tags
 {
@@ -135,7 +137,7 @@ namespace OpenH2.Core.Tags
             public Memory<byte> Data { get; set; } = Memory<byte>.Empty;
         }
 
-        public override void PopulateExternalData(H2MapReader sceneReader)
+        public override void PopulateExternalData(MapStream sceneReader)
         {
             foreach(var info in this.TextureInfos)
             {
@@ -151,25 +153,24 @@ namespace OpenH2.Core.Tags
 
                     if (lod.Offset.Value != 0 && lod.Offset.Value != int.MaxValue && lod.Size != 0)
                     {
-                        var reader = sceneReader.GetReader(lod.Offset);
+                        var reader = sceneReader.GetStream(lod.Offset);
 
                         // Can be null if non-local readers aren't setup
                         if(reader != null)
                         {
-                            var inputStream = reader.Data;
-                            inputStream.Position = lod.Offset.Value + 2;
+                            reader.Position = lod.Offset.Value + 2;
 
-                            using (var decompress = new DeflateStream(inputStream, CompressionMode.Decompress, true))
+                            using (var decompress = new DeflateStream(reader, CompressionMode.Decompress, true))
                             using (var outputStream = new MemoryStream())
                             {
-                                var buffer = new byte[81920];
+                                var buffer = new byte[80000];
                                 var read = -1;
 
                                 var endOfInput = lod.Offset.Value + lod.Size;
 
                                 while (read != 0)
                                 {
-                                    read = decompress.Read(buffer, 0, 81920);
+                                    read = decompress.Read(buffer, 0, 80000);
                                     outputStream.Write(buffer, 0, read);
                                 }
 

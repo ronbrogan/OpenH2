@@ -136,12 +136,13 @@ namespace OpenH2.ScenarioExplorer.ViewModels
                 var internedStringIndex = val & 0xFFFFFF;
                 var internedStringLength = (byte)(val >> 24);
 
-                if(internedStringIndex > 0
-                    && scene.InternedStrings.TryGetValue((int)internedStringIndex, out var str) 
-                    && str.Length == internedStringLength)
-                {
-                    internedStringRefs.Add(i);
-                }
+                // TODO: interned strings isn't prebuilt anymore
+                //if(internedStringIndex > 0
+                //    && scene.InternedStrings.TryGetValue((int)internedStringIndex, out var str) 
+                //    && str.Length == internedStringLength)
+                //{
+                //    internedStringRefs.Add(i);
+                //}
 
                 if(scene.TagIndex.ContainsKey(val))
                 {

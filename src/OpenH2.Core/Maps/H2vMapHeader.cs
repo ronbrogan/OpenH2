@@ -21,6 +21,7 @@ namespace OpenH2.Core.Maps
 
         [PrimitiveValue(20)]
         public int RawSecondaryOffset { get; set; }
+
         public PrimaryOffset SecondaryOffset { get; set; }
 
         [StringValue(32, 32)]

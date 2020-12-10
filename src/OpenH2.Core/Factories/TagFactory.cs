@@ -1,20 +1,20 @@
-﻿using OpenH2.Core.Parsing;
+﻿using OpenBlam.Core.MapLoading;
+using OpenBlam.Serialization;
+using OpenH2.Core.Extensions;
 using OpenH2.Core.Maps;
 using OpenH2.Core.Tags;
 using OpenH2.Core.Tags.Layout;
-using OpenBlam.Serialization;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.Serialization;
-using System.IO;
 
 namespace OpenH2.Core.Factories
 {
     public static class TagFactory
     {
-        public static BaseTag CreateTag(uint id, string name, TagIndexEntry index, H2BaseMap map, H2MapReader reader)
+        public static BaseTag CreateTag(uint id, string name, TagIndexEntry index, IH2Map map, MapStream reader)
         {
             var tagType = GetTypeForTag(index.Tag);
 
@@ -32,11 +32,6 @@ namespace OpenH2.Core.Factories
             }
             else
             {
-                var mapData = reader.MapReader;
-
-                // Preload tag data for faster reads
-                mapData.Preload(index.Offset.Value, index.DataSize);
-
                 BaseTag instance;
 
                 // PERF: check ctor existence ahead of time
@@ -53,7 +48,7 @@ namespace OpenH2.Core.Factories
 
                 tag = (BaseTag)BlamSerializer.DeserializeInto(instance,
                     tagType,
-                    reader.MapReader.Data,
+                    reader.GetStream(map.OriginFile),
                     index.Offset.Value,
                     map.SecondaryMagic,
                     map);
@@ -61,7 +56,7 @@ namespace OpenH2.Core.Factories
 
             tag.Name = name;
             tag.TagIndexEntry = index;
-            tag.DataFile = reader.GetPrimaryDataFile();
+            tag.DataFile = map.OriginFile;
             tag.PopulateExternalData(reader);
 
             return tag;

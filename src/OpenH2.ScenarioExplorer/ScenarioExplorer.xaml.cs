@@ -6,6 +6,7 @@ using Avalonia.Markup.Xaml;
 using Avalonia.Media;
 using OpenH2.Core.Extensions;
 using OpenH2.Core.Factories;
+using OpenH2.Core.Maps;
 using OpenH2.ScenarioExplorer.Preferences;
 using OpenH2.ScenarioExplorer.ViewModels;
 using PropertyChanged;
@@ -167,18 +168,22 @@ namespace OpenH2.ScenarioExplorer
                 return;
             }
 
-            using (var file = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read))
+            
+               
+            var matfac = new MaterialFactory(Environment.CurrentDirectory + "/Configs");
+            var factory = new UnifiedMapFactory(Path.GetDirectoryName(path));
+            var scene = factory.Load(Path.GetFileName(path));
+
+            if(scene is not H2vMap map)
             {
-                var rawData = file.ToMemory();
-                file.Seek(0, SeekOrigin.Begin);
-
-                var factory = new MapFactory(Path.GetDirectoryName(path), new MaterialFactory(Environment.CurrentDirectory + "/Configs"));
-                var scene = factory.FromFile(file);
-                var vm = new ScenarioViewModel(scene, rawData, prefs.DiscoveryMode);
-
-                DataCtx.LoadedScenario = vm;
-                DataCtx.SelectedEntry = vm.TreeRoots[0];
+                throw new Exception("Only support for Halo 2 Vista maps is currently available");
             }
+
+            var vm = new ScenarioViewModel(map, prefs.DiscoveryMode);
+
+            DataCtx.LoadedScenario = vm;
+            DataCtx.SelectedEntry = vm.TreeRoots[0];
+            
 
             loadedMap = path;
             this.Title = $"OpenH2 Scenario Explorer - {Path.GetFileName(path)} {(prefs.DiscoveryMode ? "[Discovery Mode]" : "")}";

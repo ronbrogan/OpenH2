@@ -8,6 +8,12 @@ using OpenBlam.Serialization.Layout;
 using System;
 using System.Numerics;
 using System.Text.Json.Serialization;
+using OpenBlam.Core.MapLoading;
+using OpenBlam.Serialization.Materialization;
+using OpenBlam.Serialization;
+using System.Diagnostics;
+using System.IO;
+using OpenH2.Core.Extensions;
 
 namespace OpenH2.Core.Tags
 {
@@ -130,8 +136,10 @@ namespace OpenH2.Core.Tags
         //public object[] MiscObject23Cao { get; set; }
 
 
-        public override void PopulateExternalData(H2MapReader sceneReader)
+        public override void PopulateExternalData(MapStream reader)
         {
+            
+
             foreach (var part in RenderChunks)
             {
                 if (part.DataBlockRawOffset == uint.MaxValue)
@@ -142,23 +150,20 @@ namespace OpenH2.Core.Tags
                     continue;
                 }
 
-                var headerData = sceneReader.Chunk(new NormalOffset((int)part.DataBlockRawOffset), (int)part.DataPreambleSize, "ModelMeshHeader");
-
-                part.Header = new ModelResourceBlockHeader()
-                {
-                    PartInfoCount = headerData.ReadUInt32At(8),
-                    PartInfo2Count = headerData.ReadUInt32At(16),
-                    PartInfo3Count = headerData.ReadUInt32At(24),
-                    IndexCount = headerData.ReadUInt32At(40),
-                    UknownDataLength = headerData.ReadUInt32At(48),
-                    UknownIndiciesCount = headerData.ReadUInt32At(56),
-                    VertexComponentCount = headerData.ReadUInt32At(64)
-                };
+                var headerOffset = new NormalOffset((int)part.DataBlockRawOffset);
+                var mapData = reader.GetStream(headerOffset.Location);
+                part.Header = BlamSerializer.Deserialize<ModelResourceBlockHeader>(mapData, headerOffset.Value);
 
                 foreach (var resource in part.Resources)
                 {
                     var dataOffset = part.DataBlockRawOffset + 8 + part.DataPreambleSize + resource.Offset;
-                    resource.Data = sceneReader.Chunk(new NormalOffset((int)dataOffset), resource.Size, "Bsp Render Data").ReadArray(0, resource.Size);
+                    mapData.Position = new NormalOffset((int)dataOffset).Value;
+                    var resourceData = new byte[resource.Size];
+                    var readCount = mapData.Read(resourceData, 0, resource.Size);
+
+                    Debug.Assert(readCount == resource.Size);
+
+                    resource.Data = resourceData;
                 }
 
                 var meshes = ModelResouceContainerProcessor.ProcessContainer(part, ModelShaderReferences);
@@ -174,23 +179,21 @@ namespace OpenH2.Core.Tags
                     continue;
                 }
 
-                var headerData = sceneReader.Chunk(new NormalOffset((int)def.DataBlockRawOffset), (int)def.DataPreambleSize, "InstancedGeometryMeshHeader");
-
-                def.Header = new ModelResourceBlockHeader()
-                {
-                    PartInfoCount = headerData.ReadUInt32At(8),
-                    PartInfo2Count = headerData.ReadUInt32At(16),
-                    PartInfo3Count = headerData.ReadUInt32At(24),
-                    IndexCount = headerData.ReadUInt32At(40),
-                    UknownDataLength = headerData.ReadUInt32At(48),
-                    UknownIndiciesCount = headerData.ReadUInt32At(56),
-                    VertexComponentCount = headerData.ReadUInt32At(64)
-                };
+                var headerOffset = new NormalOffset((int)def.DataBlockRawOffset);
+                var mapData = reader.GetStream(headerOffset.Location);
+                def.Header = BlamSerializer.Deserialize<ModelResourceBlockHeader>(mapData, headerOffset.Value);
 
                 foreach (var resource in def.Resources)
                 {
                     var dataOffset = def.DataBlockRawOffset + 8 + def.DataPreambleSize + resource.Offset;
-                    resource.Data = sceneReader.Chunk(new NormalOffset((int)dataOffset), resource.Size, "InstancedGeometry Render Data").ReadArray(0, resource.Size);
+                    mapData.Position = new NormalOffset((int)dataOffset).Value;
+
+                    var resourceData = new byte[resource.Size];
+                    var readCount = mapData.Read(resourceData, 0, resource.Size);
+
+                    Debug.Assert(readCount == resource.Size);
+
+                    resource.Data = resourceData;
                 }
 
                 var meshes = ModelResouceContainerProcessor.ProcessContainer(def, ModelShaderReferences, "InstancedGeometry_" + def.DataBlockRawOffset);

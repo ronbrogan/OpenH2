@@ -2,6 +2,8 @@
 using OpenH2.Core.Maps;
 using OpenH2.Core.Tags.Layout;
 using OpenBlam.Serialization.Layout;
+using OpenBlam.Core.MapLoading;
+using System.IO;
 
 namespace OpenH2.Core.Tags
 {
@@ -41,7 +43,7 @@ namespace OpenH2.Core.Tags
         //[InternalReferenceValue(12)]
         //public ShaderInfo[] Shaders { get; set; }
 
-        public override void PopulateExternalData(H2MapReader sceneReader)
+        public override void PopulateExternalData(MapStream sceneReader)
         {
         }
     }

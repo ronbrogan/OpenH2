@@ -6,6 +6,8 @@ using OpenH2.Core.Tags.Layout;
 using OpenBlam.Serialization.Layout;
 using System;
 using System.Numerics;
+using OpenBlam.Core.MapLoading;
+using System.IO;
 
 namespace OpenH2.Core.Tags
 {
@@ -34,7 +36,7 @@ namespace OpenH2.Core.Tags
         [ReferenceArray(84)]
         public Obj1656[] Obj1656s { get; set; }
 
-        public override void PopulateExternalData(H2MapReader reader)
+        public override void PopulateExternalData(MapStream reader)
         {
             return;
 

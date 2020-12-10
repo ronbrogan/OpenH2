@@ -6,6 +6,8 @@ using OpenH2.Core.Tags.Layout;
 using OpenBlam.Serialization.Layout;
 using System.Numerics;
 using System.Text.Json.Serialization;
+using OpenBlam.Core.MapLoading;
+using System.IO;
 
 namespace OpenH2.Core.Tags.Scenario
 {
@@ -89,9 +91,9 @@ namespace OpenH2.Core.Tags.Scenario
         [ReferenceArray(944)] public MissionDialogMap[] MissionDialogMapping { get; set; }
         //[ReferenceArray(984)] public uint[] FreeSpace { get; set; }
 
-        public override void PopulateExternalData(H2MapReader reader)
+        public override void PopulateExternalData(MapStream reader)
         {
-            foreach(var reference in this.WellKnownItems)
+            foreach (var reference in this.WellKnownItems)
             {
                 reference.Initialize(this);
             }

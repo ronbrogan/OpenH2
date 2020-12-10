@@ -14,10 +14,11 @@ namespace OpenH2.ScenarioExplorer.ViewModels
         {
             var vm = new DataPreviewViewModel(offset, tag);
 
-            if(map.InternedStrings.TryGetValue(vm.Short, out var str))
-            {
-                vm.InternedString = str;
-            }
+            // TODO: interned strings isn't prebuilt anymore
+            //if(map.InternedStrings.TryGetValue(vm.Short, out var str))
+            //{
+            //    vm.InternedString = str;
+            //}
 
             if(map.TryGetTag(vm.UInt, out BaseTag t))
             {

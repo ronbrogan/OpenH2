@@ -3,6 +3,7 @@ using OpenH2.Core.Architecture;
 using OpenH2.Core.Configuration;
 using OpenH2.Core.Extensions;
 using OpenH2.Core.Factories;
+using OpenH2.Core.Maps;
 using OpenH2.Engine.Components;
 using OpenH2.Engine.Entities;
 using OpenH2.Foundation;
@@ -59,11 +60,11 @@ namespace OpenH2.Engine
 
             var matFactory = new MaterialFactory(configPath);
 
-            var factory = new MapFactory(Path.GetDirectoryName(mapPath), matFactory);
+            var factory = new UnifiedMapFactory(Path.GetDirectoryName(mapPath));
 
             matFactory.AddListener(() =>
             {
-                LoadMap(factory, mapPath);
+                LoadMap(factory, mapPath, matFactory);
             });
 
             var rtWorld = new RealtimeWorld(this, gameWindowGetter(), audioHost.GetAudioAdapter());
@@ -71,19 +72,26 @@ namespace OpenH2.Engine
 
             world = rtWorld;
 
-            LoadMap(factory, mapPath);
+            LoadMap(factory, mapPath, matFactory);
 
             gameLoop.RegisterCallbacks(world.Update, world.Render);
             gameLoop.Start(60, 60);
         }
 
-        private void LoadMap(MapFactory factory, string mapPath)
+        private void LoadMap(UnifiedMapFactory factory, string mapPath, IMaterialFactory materialFactory)
         {
             var watch = new Stopwatch();
             watch.Start();
 
-            using var fs = new FileStream(mapPath, FileMode.Open, FileAccess.Read, FileShare.Read, 8096);
-            var map = factory.FromFile(fs);
+            var imap = factory.Load(mapPath);
+
+            if(imap is not H2vMap map)
+            {
+                throw new Exception("Engine only supports Halo 2 Vista maps currently");
+            }
+
+            map.UseMaterialFactory(materialFactory);
+
             var scene = new Scene(map, new EntityCreator(map));
             scene.Load();
 

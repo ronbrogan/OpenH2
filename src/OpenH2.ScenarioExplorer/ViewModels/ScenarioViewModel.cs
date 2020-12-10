@@ -17,7 +17,6 @@ namespace OpenH2.ScenarioExplorer.ViewModels
         public Dictionary<uint, TagViewModel> TagLookup = new Dictionary<uint, TagViewModel>();
 
         public H2vMap Scene { get; }
-        private readonly Memory<byte> sceneData;
         private readonly bool discoveryMode;
 
         private ITagTreeProcessor treeProcessor;
@@ -29,14 +28,14 @@ namespace OpenH2.ScenarioExplorer.ViewModels
         public int PrimaryMagic => Scene.PrimaryMagic;
         public int SecondaryMagic => Scene.SecondaryMagic;
 
-        public Dictionary<int, string> InternedStrings => Scene.InternedStrings;
+        // TODO: build this here. The scene no longer pre-builds the dictionary
+        public Dictionary<int, string> InternedStrings { get; } = new();// => Scene.InternedStrings;
 
         public ScenarioViewModel() { }
 
-        public ScenarioViewModel(H2vMap scene, Memory<byte> sceneData, bool discoveryMode = true)
+        public ScenarioViewModel(H2vMap scene, bool discoveryMode = true)
         {
             this.Scene = scene;
-            this.sceneData = sceneData;
             this.discoveryMode = discoveryMode;
 
             this.GenerateCaoCode = ReactiveCommand.Create(GenerateCaoCodeM);
