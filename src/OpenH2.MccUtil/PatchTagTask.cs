@@ -7,6 +7,8 @@ using OpenBlam.Serialization;
 using System.IO;
 using System.Text.Json;
 using System.Threading.Tasks;
+using OpenH2.Core.Maps.Vista;
+using OpenH2.Core.Maps.MCC;
 
 namespace OpenH2.MccUtil
 {
@@ -23,7 +25,7 @@ namespace OpenH2.MccUtil
 
     public class PatchTagTask
     {
-        private H2BaseMap scene;
+        private H2mccMap scene;
 
         public PatchTagCommandLineArguments Args { get; }
 
@@ -39,16 +41,15 @@ namespace OpenH2.MccUtil
 
         public async Task Run()
         {
-
             using var inmemMap = new MemoryStream();
             using (var map = File.Open(this.Args.MapPath, FileMode.Open))
             {
-                map.CopyTo(inmemMap);
+                H2mccCompression.Decompress(map, inmemMap);
                 inmemMap.Position = 0;
 
                 // Load to determine where to write patches to
-                var factory = new MccMapFactory();
-                this.scene = factory.FromStream(map);
+                var factory = new UnifiedMapFactory(this.Args.MapPath);
+                this.scene = factory.LoadH2mccMap(inmemMap);
             }
 
             var tagPatcher = new TagPatcher(scene, inmemMap);
@@ -58,7 +59,7 @@ namespace OpenH2.MccUtil
                 tagPatcher.Apply(patch);
 
             inmemMap.Position = 0;
-            var sig = H2vMap.CalculateSignature(inmemMap.ToArray());
+            var sig = H2BaseMap.CalculateSignature(inmemMap);
             inmemMap.WriteInt32At(BlamSerializer.StartsAt<H2vMapHeader>(h => h.StoredSignature), sig);
             inmemMap.Position = 0;
 

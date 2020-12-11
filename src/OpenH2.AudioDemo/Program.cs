@@ -1,5 +1,6 @@
 ﻿using OpenH2.Audio;
 using OpenH2.Core.Factories;
+using OpenH2.Core.Maps.Vista;
 using OpenH2.Core.Tags;
 using OpenTK.Audio.OpenAL;
 using OpenTK.Audio.OpenAL.Extensions.Creative.EnumerateAll;
@@ -45,8 +46,13 @@ namespace OpenH2.AudioDemo
 
             // var get samples from map
             var map = @"D:\H2vMaps\01a_tutorial.map";
-            var factory = new MapFactory(Path.GetDirectoryName(map), NullMaterialFactory.Instance);
-            var scene = factory.FromFile(File.OpenRead(map));
+            var factory = new UnifiedMapFactory(Path.GetDirectoryName(map));
+            var h2map = factory.Load(Path.GetFileName(map));
+
+            if (h2map is not H2vMap scene)
+            {
+                throw new NotSupportedException("Only Vista maps are supported in this tool");
+            }
 
             var soundMapping = scene.GetTag(scene.Globals.SoundInfos[0].SoundMap);
 

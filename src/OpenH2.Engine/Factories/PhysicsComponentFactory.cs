@@ -1,5 +1,6 @@
 ﻿using OpenH2.Core.Architecture;
 using OpenH2.Core.Maps;
+using OpenH2.Core.Maps.Vista;
 using OpenH2.Core.Tags;
 using OpenH2.Core.Tags.Common.Collision;
 using OpenH2.Engine.Components;

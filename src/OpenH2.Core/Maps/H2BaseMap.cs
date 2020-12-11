@@ -15,6 +15,21 @@ using System.IO;
 
 namespace OpenH2.Core.Maps
 {
+    public static class H2BaseMap
+    {
+        public static int CalculateSignature(Stream mapStream)
+        {
+            var sig = 0;
+
+            for (var i = 2048; i < mapStream.Length; i += 4)
+            {
+                sig ^= mapStream.ReadInt32At(i);
+            }
+
+            return sig;
+        }
+    }
+
     public abstract class H2BaseMap<THeader> : HaloMap<THeader>, IH2Map where THeader : IH2MapHeader
     {
         public string Name => this.Header.Name;
@@ -22,17 +37,16 @@ namespace OpenH2.Core.Maps
         private IH2Map spShared = NullH2Map.Instance;
         private IH2Map mpShared = NullH2Map.Instance;
 
+        public DataFile OriginFile { get; private set; }
         public int PrimaryMagic { get; set; }
         public int SecondaryMagic { get; set; }
-
         public IndexHeader IndexHeader { get; set; }
         public Dictionary<uint, TagIndexEntry> TagIndex { get; set; }
 
         int IInternedStringProvider.IndexOffset => Header.InternedStringIndexOffset;
         int IInternedStringProvider.DataOffset => Header.InternedStringsOffset;
         IH2MapHeader IH2Map.Header => this.Header;
-        public Stream LocalStream => this.localStream;
-        public DataFile OriginFile { get; private set; }
+        
 
         public override void UseAncillaryMap(byte identifier, IMap ancillaryMap)
         {
@@ -205,17 +219,9 @@ namespace OpenH2.Core.Maps
             return data;
         }
 
-        public static int CalculateSignature(Memory<byte> sceneData)
+        public int CalculateSignature()
         {
-            var sig = 0;
-            var span = sceneData.Span;
-
-            for (var i = 2048; i < sceneData.Length; i += 4)
-            {
-                sig ^= span.ReadInt32At(i);
-            }
-
-            return sig;
+            return H2BaseMap.CalculateSignature(this.localStream);
         }
 
         protected Dictionary<uint, BaseTag> tags = new();

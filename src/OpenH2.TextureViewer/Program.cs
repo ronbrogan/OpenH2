@@ -1,5 +1,5 @@
 ﻿using OpenH2.Core.Factories;
-using OpenH2.Core.Maps;
+using OpenH2.Core.Maps.Vista;
 using OpenH2.Core.Tags;
 using OpenH2.Foundation;
 using OpenH2.Rendering.OpenGL;
@@ -48,12 +48,12 @@ namespace OpenH2.TextureViewer
                 return;
             }
 
-            H2vMap scene = null;
+            var factory = new UnifiedMapFactory(Path.GetDirectoryName(mapPath));
+            var h2map = factory.Load(Path.GetFileName(mapPath));
 
-            using (var map = new FileStream(mapPath, FileMode.Open, FileAccess.Read, FileShare.Read))
+            if (h2map is not H2vMap scene)
             {
-                var factory = new MapFactory(Path.GetDirectoryName(mapPath), new MaterialFactory(Path.Combine(Environment.CurrentDirectory, "Configs")));
-                scene = factory.FromFile(map);
+                throw new NotSupportedException("Only Vista maps are supported");
             }
 
             Bitmaps = scene.GetLocalTagsOfType<BitmapTag>().ToArray();

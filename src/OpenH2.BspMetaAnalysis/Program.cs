@@ -6,8 +6,8 @@ using System.Drawing;
 using System;
 using System.Collections.Generic;
 using OpenH2.Core.Tags;
-using OpenH2.Core.Maps;
 using System.Numerics;
+using OpenH2.Core.Maps.Vista;
 
 namespace OpenH2.BspMetaAnalysis
 {
@@ -15,13 +15,15 @@ namespace OpenH2.BspMetaAnalysis
     {
         static void Main(string[] args)
         {
-            var mapName = @"D:\H2vMaps\containment.map";
+            var mapPath = @"D:\H2vMaps\containment.map";
 
-            H2vMap map;
+            var factory = new UnifiedMapFactory(Path.GetDirectoryName(mapPath));
+            var h2map = factory.Load(Path.GetFileName(mapPath));
 
-            var fac = new MapFactory(Path.GetDirectoryName(mapName), new MaterialFactory(Environment.CurrentDirectory + "\\Configs"));
-            using (var fs = new FileStream(mapName, FileMode.Open))
-                map = fac.FromFile(fs);
+            if (h2map is not H2vMap map)
+            {
+                throw new NotSupportedException("Only Vista maps are supported in this tool");
+            }
 
             var bsps = map.GetLocalTagsOfType<BspTag>().ToArray();
 

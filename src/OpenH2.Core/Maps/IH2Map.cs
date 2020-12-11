@@ -16,7 +16,6 @@ namespace OpenH2.Core.Maps
         int SecondaryMagic { get; set; }
         IH2MapHeader Header { get; }
         Dictionary<uint, TagIndexEntry> TagIndex { get; set; }
-        Stream LocalStream { get; }
         DataFile OriginFile { get; }
         void LoadWellKnownTags();
 
@@ -43,8 +42,6 @@ namespace OpenH2.Core.Maps
         public int DataOffset => 0;
 
         public Dictionary<uint, TagIndexEntry> TagIndex { get; set; } = new();
-
-        public Stream LocalStream { get; } = Stream.Null;
 
         public DataFile OriginFile => DataFile.Local;
 

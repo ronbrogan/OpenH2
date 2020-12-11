@@ -27,8 +27,6 @@ namespace OpenH2.MccUtil
 
     public class PatchScriptTask
     {
-        private H2mccMap scene;
-
         public PatchScriptCommandLineArguments Args { get; }
 
         public static async Task Run(PatchScriptCommandLineArguments args)
@@ -47,10 +45,15 @@ namespace OpenH2.MccUtil
             // Load to determine where to write patches to
             using var map = File.Open(this.Args.MapPath, FileMode.Open);
 
-            var factory = new MccMapFactory();
-            this.scene = factory.FromStream(map);
+            var factory = new UnifiedMapFactory(Path.GetDirectoryName(this.Args.MapPath));
+            var h2map = factory.Load(Path.GetFileName(this.Args.MapPath));
 
-            ScriptTreePatcher.PatchMap(scene, map, this.Args.ScriptPatchPath);
+            if(h2map is not H2mccMap mccMap)
+            {
+                throw new NotSupportedException("Only MCC maps are supported in this tool");
+            }
+
+            ScriptTreePatcher.PatchMap(mccMap, map, this.Args.ScriptPatchPath);
         }
     }
 }

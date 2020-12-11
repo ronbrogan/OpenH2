@@ -1,4 +1,5 @@
 ﻿using OpenH2.Core.Factories;
+using OpenH2.Core.Maps.Vista;
 using OpenH2.Core.Tags;
 using System;
 using System.Diagnostics;
@@ -18,12 +19,17 @@ namespace OpenH2.AudioAnalysis
 
             var mapRoot = args[0];
 
-            var factory = new MapFactory(mapRoot, NullMaterialFactory.Instance);
+            var factory = new UnifiedMapFactory(mapRoot);
 
             var maps = Directory.EnumerateFiles(mapRoot, "*.map");
             foreach(var map in maps)
             {
-                var scene = factory.FromFile(File.OpenRead(map));
+                var h2map = factory.Load(Path.GetFileName(map));
+
+                if (h2map is not H2vMap scene)
+                {
+                    throw new NotSupportedException("Only Vista maps are supported in this tool");
+                }
 
                 var scenarioOut = Path.Combine(outRoot, scene.Header.Name);
                 Directory.CreateDirectory(scenarioOut);

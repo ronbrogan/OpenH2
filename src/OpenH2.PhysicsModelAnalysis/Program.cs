@@ -1,6 +1,5 @@
 ﻿using OpenH2.Core.Factories;
 using OpenH2.Core.ExternalFormats;
-using OpenH2.Core.Maps;
 using OpenH2.Core.Tags;
 using OpenH2.Core.Tags.Common.Models;
 using System;
@@ -9,6 +8,7 @@ using System.IO;
 using System.Linq;
 using System.Numerics;
 using System.Text;
+using OpenH2.Core.Maps.Vista;
 
 namespace OpenH2.PhysicsModelAnalysis
 {
@@ -16,13 +16,15 @@ namespace OpenH2.PhysicsModelAnalysis
     {
         static void Main(string[] args)
         {
-            var mapName = @"D:\H2vMaps\zanzibar.map";
+            var mapPath = @"D:\H2vMaps\zanzibar.map";
 
-            H2vMap map;
+            var factory = new UnifiedMapFactory(Path.GetDirectoryName(mapPath));
+            var h2map = factory.Load(Path.GetFileName(mapPath));
 
-            var fac = new MapFactory(Path.GetDirectoryName(mapName), new MaterialFactory(Environment.CurrentDirectory + "\\Configs"));
-            using (var fs = new FileStream(mapName, FileMode.Open))
-                map = fac.FromFile(fs);
+            if (h2map is not H2vMap map)
+            {
+                throw new NotSupportedException("Only Vista maps are supported");
+            }
 
             var phmos = map.GetLocalTagsOfType<PhysicsModelTag>();
 

@@ -9,10 +9,6 @@ namespace OpenH2.Core.Maps.MCC
         public SoundMappingTag LocalSounds { get; internal set; }
         public GlobalsTag Globals { get; internal set; }
 
-        public H2mccMap()
-        {
-        }
-
         public override void LoadWellKnownTags()
         {
             if (this.TryGetTag(this.IndexHeader.Scenario, out var scnr))

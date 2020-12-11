@@ -1,4 +1,5 @@
 ﻿using OpenH2.Core.Factories;
+using OpenH2.Core.Maps.Vista;
 using OpenH2.Core.Scripting.Generation;
 using OpenH2.Core.Scripting.LowLevel;
 using OpenH2.Core.Tags.Scenario;
@@ -30,8 +31,13 @@ namespace OpenH2.ScriptAnalysis
                     //continue;
                 }
 
-                var factory = new MapFactory(Path.GetDirectoryName(map), NullMaterialFactory.Instance);
-                var scene = factory.FromFile(File.OpenRead(map));
+                var factory = new UnifiedMapFactory(Path.GetDirectoryName(map));
+                var h2map = factory.Load(Path.GetFileName(map));
+
+                if (h2map is not H2vMap scene)
+                {
+                    throw new NotSupportedException("Only Vista maps are supported");
+                }
 
                 loader.Load(scene.Scenario);
 

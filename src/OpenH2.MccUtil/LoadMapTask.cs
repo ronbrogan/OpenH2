@@ -1,5 +1,6 @@
 ﻿using CommandLine;
 using OpenH2.Core.Factories;
+using OpenH2.Core.Maps;
 using OpenH2.Core.Maps.MCC;
 using System;
 using System.IO;
@@ -46,10 +47,15 @@ namespace OpenH2.MccUtil
             var mem = new MemoryStream();
             File.OpenRead(path).CopyTo(mem);
             mem.Seek(0, SeekOrigin.Begin);
-            var sig = H2mccMap.CalculateSignature(mem);
+            var sig = H2BaseMap.CalculateSignature(mem);
 
-            var factory = new MccMapFactory();
-            var map = factory.FromStream(File.OpenRead(path));
+            var factory = new UnifiedMapFactory(Path.GetDirectoryName(this.Args.File));
+            var h2map = factory.Load(Path.GetFileName(this.Args.File));
+
+            if (h2map is not H2mccMap mccMap)
+            {
+                throw new NotSupportedException("Only MCC maps are supported in this tool");
+            }
 
             Console.WriteLine("Loaded map");
         }

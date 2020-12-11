@@ -1,5 +1,5 @@
 ﻿using OpenH2.Core.Enums;
-using OpenH2.Core.Maps;
+using OpenH2.Core.Maps.Vista;
 using OpenH2.Core.Offsets;
 using OpenH2.Core.Tags;
 using System;

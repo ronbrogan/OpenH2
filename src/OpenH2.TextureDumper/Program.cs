@@ -1,7 +1,7 @@
 ﻿using OpenBlam.Core.ExternalFormats;
 using OpenH2.Core.Enums.Texture;
 using OpenH2.Core.Factories;
-using OpenH2.Core.Maps;
+using OpenH2.Core.Maps.Vista;
 using OpenH2.Core.Tags;
 using System;
 using System.Collections.Generic;
@@ -48,12 +48,12 @@ namespace OpenH2.TextureDumper
                 return;
             }
 
-            H2vMap scene = null;
+            var factory = new UnifiedMapFactory(Path.GetDirectoryName(mapPath));
+            var h2map = factory.Load(Path.GetFileName(mapPath));
 
-            using (var map = new FileStream(mapPath, FileMode.Open, FileAccess.Read, FileShare.Read))
+            if (h2map is not H2vMap scene)
             {
-                var factory = new MapFactory(Path.GetDirectoryName(mapPath), new MaterialFactory(Environment.CurrentDirectory));
-                scene = factory.FromFile(map);
+                throw new NotSupportedException("Only Vista maps are supported in this tool");
             }
 
             var bitmaps = scene.GetLocalTagsOfType<BitmapTag>();

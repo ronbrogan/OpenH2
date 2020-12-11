@@ -6,7 +6,7 @@ using Avalonia.Markup.Xaml;
 using Avalonia.Media;
 using OpenH2.Core.Extensions;
 using OpenH2.Core.Factories;
-using OpenH2.Core.Maps;
+using OpenH2.Core.Maps.Vista;
 using OpenH2.ScenarioExplorer.Preferences;
 using OpenH2.ScenarioExplorer.ViewModels;
 using PropertyChanged;

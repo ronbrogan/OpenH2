@@ -12,6 +12,7 @@ using System.Linq;
 using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
+using OpenH2.Core.Maps;
 
 namespace OpenH2.MccUtil
 {
@@ -45,7 +46,7 @@ namespace OpenH2.MccUtil
         {
             using var map = new FileStream(this.args.FilePath, FileMode.Open, FileAccess.ReadWrite, FileShare.Read, 80192, false);
 
-            var sig = H2mccMap.CalculateSignature(map);
+            var sig = H2BaseMap.CalculateSignature(map);
             
             var sigOffset = BlamSerializer.StartsAt<H2mccMapHeader>(h => h.StoredSignature);
 

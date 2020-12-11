@@ -9,6 +9,7 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Numerics;
 using System.Text;
+using OpenH2.Core.Maps.Vista;
 
 namespace OpenH2.AnimationAnalysis
 {
@@ -25,8 +26,13 @@ namespace OpenH2.AnimationAnalysis
         {
             var mapPath = @"D:\H2vMaps\03a_oldmombasa.map";
 
-            var mapFactory = new MapFactory(Path.GetDirectoryName(mapPath), NullMaterialFactory.Instance);
-            var map = mapFactory.FromFile(File.OpenRead(mapPath));
+            var factory = new UnifiedMapFactory(Path.GetDirectoryName(mapPath));
+            var h2map = factory.Load(Path.GetFileName(mapPath));
+
+            if (h2map is not H2vMap map)
+            {
+                throw new NotSupportedException("Only Vista maps are supported in this tool");
+            }
 
             var animation = map.GetTag<AnimationGraphTag>(4070576426);
             var animations = map.GetLocalTagsOfType<AnimationGraphTag>();

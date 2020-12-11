@@ -1,4 +1,5 @@
-﻿using OpenBlam.Core.MapLoading;
+﻿using OpenBlam.Core.Extensions;
+using OpenBlam.Core.MapLoading;
 using OpenBlam.Core.Maps;
 using OpenBlam.Core.Streams;
 using OpenBlam.Serialization;
@@ -6,8 +7,10 @@ using OpenH2.Core.Enums;
 using OpenH2.Core.Extensions;
 using OpenH2.Core.Maps;
 using OpenH2.Core.Maps.MCC;
+using OpenH2.Core.Maps.Vista;
 using OpenH2.Core.Offsets;
 using OpenH2.Core.Tags;
+using System;
 using System.Collections.Generic;
 using System.IO;
 
@@ -18,6 +21,7 @@ namespace OpenH2.Core.Factories
         private const string MainMenuName = "mainmenu.map";
         private const string MultiPlayerSharedName = "shared.map";
         private const string SinglePlayerSharedName = "single_player_shared.map";
+        private readonly string mapRoot;
         private MapLoader loader;
 
         public UnifiedMapFactory(string mapRoot)
@@ -27,17 +31,62 @@ namespace OpenH2.Core.Factories
                 .UseAncillaryMap((byte)DataFile.SinglePlayerShared, SinglePlayerSharedName)
                 .UseAncillaryMap((byte)DataFile.Shared, MultiPlayerSharedName)
                 .Build();
+            this.mapRoot = mapRoot;
         }
 
         public IH2Map Load(string mapFileName)
         {
-            // TODO: implement and dispatch mcc loading
-            return LoadH2vMap(mapFileName);
+            Span<byte> header = new byte[2048];
+            using (var peek = File.OpenRead(Path.Combine(this.mapRoot, mapFileName)))
+            {
+                peek.Read(header);
+            }
+
+            var baseHeader = BlamSerializer.Deserialize<H2HeaderBase>(header);
+
+            return baseHeader.Version switch
+            {
+                MapVersion.Halo2 => LoadH2Map(mapFileName, header),
+                MapVersion.Halo2Mcc => LoadH2mccMap(mapFileName),
+                _ => throw new NotSupportedException()
+            };
         }
 
-        public H2vMap LoadH2vMap(string mapFileName)
+        public IH2Map LoadH2Map(string mapFileName, Span<byte> headerData)
         {
+            // Vista and Xbox use the same version, using header layout to differentiate
+            // If the stored signature according to the Vista layout is 0, it's an Xbox map
+            if(headerData.ReadUInt32At(BlamSerializer.StartsAt<H2vMapHeader>(h => h.StoredSignature)) == 0)
+            {
+                throw new NotSupportedException("Xbox maps aren't supported yet");
+            }
+
             return this.loader.Load<H2vMap>(mapFileName, LoadMetadata);
+        }
+
+        public H2mccMap LoadH2mccMap(string mapFileName)
+        {
+            // Not using ancillary maps for MCC maps because of the compression
+            // Since MapLoader doesn't support on the fly decompression it wouldn't be
+            // able to load the ancillary maps (since they'd still be compressed)
+            var singleLoader = MapLoader.FromRoot(this.mapRoot);
+
+            using var onDisk = File.OpenRead(Path.Combine(this.mapRoot, mapFileName));
+            var decompressed = new MemoryStream();
+            H2mccCompression.Decompress(onDisk, decompressed);
+            decompressed.Position = 0;
+
+            return this.loader.Load<H2mccMap>(decompressed, LoadMetadata);
+        }
+
+        public H2mccMap LoadH2mccMap(Stream decompressedMap)
+        {
+            // Not using ancillary maps for MCC maps because of the compression
+            // Since MapLoader doesn't support on the fly decompression it wouldn't be
+            // able to load the ancillary maps (since they'd still be compressed)
+            var singleLoader = MapLoader.FromRoot(this.mapRoot);
+
+            return this.loader.Load<H2mccMap>(decompressedMap, LoadMetadata);
         }
 
         private static void LoadMetadata(IMap map, Stream reader)
@@ -110,15 +159,6 @@ namespace OpenH2.Core.Factories
         public static int CalculateSecondaryMagic(IH2MapHeader header, int firstObjOffset)
         {
             return firstObjOffset - header.SecondaryOffset.Value;
-        }
-
-        private void AssertMccData(Stream reader)
-        {
-            var fourCC = reader.ReadUInt32At(0);
-            if (fourCC != H2mccCompression.DecompressedFourCC)
-            {
-                throw new System.Exception("Cannot load a map that hasn't been decompressed first");
-            }
         }
     }
 }

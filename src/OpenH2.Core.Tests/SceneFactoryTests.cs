@@ -8,6 +8,7 @@ using Xunit.Abstractions;
 using OpenH2.Core.Maps;
 using System;
 using OpenH2.Core.Tags.Scenario;
+using OpenH2.Core.Maps.Vista;
 
 namespace OpenH2.Core.Tests
 {
@@ -24,16 +25,18 @@ namespace OpenH2.Core.Tests
         [Fact, Trait("skip", "true")]
         public void Load_scene_from_file()
         {
-            var mapStream = new FileStream(ascensionPath, FileMode.Open, FileAccess.Read, FileShare.Read);
-
-            var materialFactory = new MaterialFactory(Path.Combine(Environment.CurrentDirectory, "Configs"));
-            var factory = new MapFactory(Path.GetDirectoryName(ascensionPath), materialFactory);
+            var factory = new UnifiedMapFactory(Path.GetDirectoryName(ascensionPath));
 
             var sw = new Stopwatch();
             sw.Restart();
 
-            var scene = factory.FromFile(mapStream, out var coverage);
-            mapStream.Dispose();
+            var h2map = factory.Load(Path.GetFileName(ascensionPath));
+
+            if (h2map is not H2vMap scene)
+            {
+                throw new NotSupportedException("Only Vista maps are supported");
+            }
+
             sw.Stop();
 
             Assert.NotNull(scene);
@@ -48,27 +51,22 @@ namespace OpenH2.Core.Tests
 
             var scnr = scene.GetLocalTagsOfType<ScenarioTag>().First();
 
-            output.WriteLine($"Scene parsing took: {sw.ElapsedMilliseconds}ms and covered: {coverage.PercentCovered.ToString("0.00")}%");
+            output.WriteLine($"Scene parsing took: {sw.ElapsedMilliseconds}ms");
         }
 
         
         [Fact, Trait("skip", "true")]
         public void Calculated_signature_matches_stored_signature()
         {
-            var mapStream = new FileStream(ascensionPath, FileMode.Open, FileAccess.Read, FileShare.Read);
+            var factory = new UnifiedMapFactory(Path.GetDirectoryName(ascensionPath));
+            var h2map = factory.Load(Path.GetFileName(ascensionPath));
 
-            var raw = mapStream.ToMemory();
-            mapStream.Seek(0, SeekOrigin.Begin);
+            if (h2map is not H2vMap scene)
+            {
+                throw new NotSupportedException("Only Vista maps are supported");
+            }
 
-
-            var materialFactory = new MaterialFactory(Path.Combine(Environment.CurrentDirectory, "Configs"));
-            var factory = new MapFactory(Path.GetDirectoryName(ascensionPath), materialFactory);
-
-            var scene = factory.FromFile(mapStream);
-
-            mapStream.Dispose();
-
-            var sig = H2vMap.CalculateSignature(raw);
+            var sig = scene.CalculateSignature();
 
             Assert.Equal(scene.Header.StoredSignature, sig);
         }

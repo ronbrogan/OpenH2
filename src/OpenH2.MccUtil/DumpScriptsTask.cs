@@ -11,7 +11,6 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text.Json;
-using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 
 namespace OpenH2.MccUtil
@@ -88,15 +87,15 @@ namespace OpenH2.MccUtil
         {
             var loader = new ScriptLoader(destination);
 
-            var rawMapStream = File.OpenRead(path);
-            var mapStream = new MemoryStream();
-            H2mccCompression.Decompress(rawMapStream, mapStream);
-            mapStream.Position = 0;
+            var factory = new UnifiedMapFactory(Path.GetDirectoryName(path));
+            var h2map = factory.Load(Path.GetFileName(path));
 
-            var factory = new MccMapFactory();
-            var scene = factory.FromStream(mapStream);
+            if (h2map is not H2mccMap mccMap)
+            {
+                throw new NotSupportedException("Only MCC maps are supported in this tool");
+            }
 
-            var scnr = scene.Scenario;
+            var scnr = mccMap.Scenario;
             loader.Load(scnr);
 
             var scenarioParts = scnr.Name.Split('\\', StringSplitOptions.RemoveEmptyEntries)

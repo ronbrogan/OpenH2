@@ -13,6 +13,7 @@ using System.Linq;
 using System.Text.Json;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using OpenH2.Core.Maps;
 
 namespace OpenH2.MccBulkPatcher
 {
@@ -77,8 +78,8 @@ namespace OpenH2.MccBulkPatcher
 
                 H2mccCompression.Decompress(rawMap, patchedMap);
 
-                var factory = new MccMapFactory();
-                var scene = factory.FromStream(patchedMap);
+                var factory = new UnifiedMapFactory(Path.GetDirectoryName(rawMapPath));
+                var scene = factory.LoadH2mccMap(patchedMap);
 
                 var patchFiles = Directory.GetFiles(patchDir, "*.tree", SearchOption.AllDirectories);
 
@@ -102,7 +103,7 @@ namespace OpenH2.MccBulkPatcher
                         tagPatcher.Apply(patch);
                 }
 
-                var sig = H2mccMap.CalculateSignature(patchedMap);
+                var sig = H2BaseMap.CalculateSignature(patchedMap);
                 patchedMap.WriteUInt32At(BlamSerializer.StartsAt<H2mccMapHeader>(h => h.StoredSignature), (uint)sig);
 
                 using var patchedFile = new FileStream(patchedMapPath, FileMode.Create);

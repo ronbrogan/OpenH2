@@ -11,6 +11,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Numerics;
+using OpenH2.Core.Maps.Vista;
 
 namespace OpenH2.ModelDumper
 {
@@ -33,12 +34,12 @@ namespace OpenH2.ModelDumper
                 return;
             }
 
-            H2vMap scene = null;
+            var factory = new UnifiedMapFactory(Path.GetDirectoryName(mapPath));
+            var h2map = factory.Load(Path.GetFileName(mapPath));
 
-            using (var map = new FileStream(mapPath, FileMode.Open, FileAccess.Read, FileShare.Read))
+            if (h2map is not H2vMap scene)
             {
-                var factory = new MapFactory(Path.GetDirectoryName(mapPath), new MaterialFactory(Environment.CurrentDirectory + "\\Configs"));
-                scene = factory.FromFile(map);
+                throw new NotSupportedException("Only Vista maps are supported");
             }
 
             var writer = new WavefrontObjWriter(Path.GetFileNameWithoutExtension(mapPath));

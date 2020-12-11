@@ -1,9 +1,10 @@
-﻿using System;
+﻿using OpenH2.Core.Factories;
+using OpenH2.Core.Maps.Vista;
+using OpenH2.Core.Tags;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using OpenH2.Core.Factories;
-using OpenH2.Core.Tags;
 
 namespace OpenH2.TagFeatureAnalysis
 {
@@ -67,8 +68,13 @@ namespace OpenH2.TagFeatureAnalysis
                 throw new Exception("Only 1 argument is accepted");
             }
 
-            var factory = new MapFactory(Path.GetDirectoryName(args[0]), new MaterialFactory(Environment.CurrentDirectory));
-            var map = factory.FromFile(File.OpenRead(args[0]));
+            var factory = new UnifiedMapFactory(Path.GetDirectoryName(args[0]));
+            var h2map = factory.Load(Path.GetFileName(args[0]));
+
+            if (h2map is not H2vMap map)
+            {
+                throw new NotSupportedException("Only Vista maps are supported");
+            }
 
             var models = map.GetLocalTagsOfType<RenderModelTag>();
             var containers = new List<ModelContainer>();

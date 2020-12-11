@@ -1,6 +1,6 @@
 ﻿using Microsoft.VisualBasic.CompilerServices;
 using OpenH2.Core.Factories;
-using OpenH2.Core.Maps;
+using OpenH2.Core.Maps.Vista;
 using OpenH2.Core.Tags;
 using OpenH2.Core.Tags.Scenario;
 using System;
@@ -25,9 +25,13 @@ namespace OpenH2.AiAnalysis
         {
             var mapPath = @"D:\H2vMaps\07a_highcharity.map";
 
-            var factory = new MapFactory(Path.GetDirectoryName(mapPath), NullMaterialFactory.Instance);
+            var factory = new UnifiedMapFactory(Path.GetDirectoryName(mapPath));
+            var h2map = factory.Load(Path.GetFileName(mapPath));
 
-            var map = factory.FromFile(File.OpenRead(mapPath));
+            if (h2map is not H2vMap map)
+            {
+                throw new NotSupportedException("Only Vista maps are supported in this tool");
+            }
 
             var props = typeof(ScenarioTag).GetProperties();
             var longestName = props.Max(p => p.Name.Length);

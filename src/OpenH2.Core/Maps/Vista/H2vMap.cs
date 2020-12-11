@@ -5,7 +5,7 @@ using OpenH2.Core.Tags.Common.Models;
 using OpenH2.Core.Tags.Scenario;
 using OpenH2.Foundation;
 
-namespace OpenH2.Core.Maps
+namespace OpenH2.Core.Maps.Vista
 {
     /// This class is the in-memory representation of a .map file
     public class H2vMap : H2BaseMap<H2vMapHeader>
@@ -15,10 +15,6 @@ namespace OpenH2.Core.Maps
         public ScenarioTag Scenario { get; private set; }
         public SoundMappingTag LocalSounds { get; set; }
         public GlobalsTag Globals { get; private set; }
-
-        public H2vMap()
-        {
-        }
 
         public override void Load(byte selfIdentifier, MapStream mapStream)
         {
