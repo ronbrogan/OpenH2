@@ -2,7 +2,7 @@
 using OpenH2.Core.Tags;
 using OpenBlam.Serialization.Layout;
 
-namespace OpenH2.Core.Maps
+namespace OpenH2.Core.Maps.Vista
 {
     [FixedLength(2048)]
     public class H2vMapHeader : IH2MapHeader

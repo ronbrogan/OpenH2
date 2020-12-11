@@ -171,7 +171,7 @@ namespace OpenH2.ScenarioExplorer
             
                
             var matfac = new MaterialFactory(Environment.CurrentDirectory + "/Configs");
-            var factory = new UnifiedMapFactory(Path.GetDirectoryName(path));
+            var factory = new MapFactory(Path.GetDirectoryName(path));
             var scene = factory.Load(Path.GetFileName(path));
 
             if(scene is not H2vMap map)

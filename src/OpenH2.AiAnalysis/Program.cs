@@ -25,7 +25,7 @@ namespace OpenH2.AiAnalysis
         {
             var mapPath = @"D:\H2vMaps\07a_highcharity.map";
 
-            var factory = new UnifiedMapFactory(Path.GetDirectoryName(mapPath));
+            var factory = new MapFactory(Path.GetDirectoryName(mapPath));
             var h2map = factory.Load(Path.GetFileName(mapPath));
 
             if (h2map is not H2vMap map)

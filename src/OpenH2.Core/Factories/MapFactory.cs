@@ -16,7 +16,7 @@ using System.IO;
 
 namespace OpenH2.Core.Factories
 {
-    public class UnifiedMapFactory
+    public class MapFactory
     {
         private const string MainMenuName = "mainmenu.map";
         private const string MultiPlayerSharedName = "shared.map";
@@ -24,7 +24,7 @@ namespace OpenH2.Core.Factories
         private readonly string mapRoot;
         private MapLoader loader;
 
-        public UnifiedMapFactory(string mapRoot)
+        public MapFactory(string mapRoot)
         {
             this.loader = MapLoaderBuilder.FromRoot(mapRoot)
                 .UseAncillaryMap((byte)DataFile.MainMenu, MainMenuName)

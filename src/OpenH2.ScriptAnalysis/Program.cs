@@ -31,7 +31,7 @@ namespace OpenH2.ScriptAnalysis
                     //continue;
                 }
 
-                var factory = new UnifiedMapFactory(Path.GetDirectoryName(map));
+                var factory = new MapFactory(Path.GetDirectoryName(map));
                 var h2map = factory.Load(Path.GetFileName(map));
 
                 if (h2map is not H2vMap scene)

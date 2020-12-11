@@ -19,7 +19,7 @@ namespace OpenH2.AudioAnalysis
 
             var mapRoot = args[0];
 
-            var factory = new UnifiedMapFactory(mapRoot);
+            var factory = new MapFactory(mapRoot);
 
             var maps = Directory.EnumerateFiles(mapRoot, "*.map");
             foreach(var map in maps)

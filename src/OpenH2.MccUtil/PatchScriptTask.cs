@@ -45,7 +45,7 @@ namespace OpenH2.MccUtil
             // Load to determine where to write patches to
             using var map = File.Open(this.Args.MapPath, FileMode.Open);
 
-            var factory = new UnifiedMapFactory(Path.GetDirectoryName(this.Args.MapPath));
+            var factory = new MapFactory(Path.GetDirectoryName(this.Args.MapPath));
             var h2map = factory.Load(Path.GetFileName(this.Args.MapPath));
 
             if(h2map is not H2mccMap mccMap)

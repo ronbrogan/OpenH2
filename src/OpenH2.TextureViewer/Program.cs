@@ -48,7 +48,7 @@ namespace OpenH2.TextureViewer
                 return;
             }
 
-            var factory = new UnifiedMapFactory(Path.GetDirectoryName(mapPath));
+            var factory = new MapFactory(Path.GetDirectoryName(mapPath));
             var h2map = factory.Load(Path.GetFileName(mapPath));
 
             if (h2map is not H2vMap scene)

@@ -46,7 +46,7 @@ namespace OpenH2.AudioDemo
 
             // var get samples from map
             var map = @"D:\H2vMaps\01a_tutorial.map";
-            var factory = new UnifiedMapFactory(Path.GetDirectoryName(map));
+            var factory = new MapFactory(Path.GetDirectoryName(map));
             var h2map = factory.Load(Path.GetFileName(map));
 
             if (h2map is not H2vMap scene)

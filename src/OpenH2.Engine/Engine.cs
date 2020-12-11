@@ -60,7 +60,7 @@ namespace OpenH2.Engine
 
             var matFactory = new MaterialFactory(configPath);
 
-            var factory = new UnifiedMapFactory(Path.GetDirectoryName(mapPath));
+            var factory = new MapFactory(Path.GetDirectoryName(mapPath));
 
             matFactory.AddListener(() =>
             {
@@ -78,7 +78,7 @@ namespace OpenH2.Engine
             gameLoop.Start(60, 60);
         }
 
-        private void LoadMap(UnifiedMapFactory factory, string mapPath, IMaterialFactory materialFactory)
+        private void LoadMap(MapFactory factory, string mapPath, IMaterialFactory materialFactory)
         {
             var watch = new Stopwatch();
             watch.Start();

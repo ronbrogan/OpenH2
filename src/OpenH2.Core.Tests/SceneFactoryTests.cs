@@ -25,7 +25,7 @@ namespace OpenH2.Core.Tests
         [Fact, Trait("skip", "true")]
         public void Load_scene_from_file()
         {
-            var factory = new UnifiedMapFactory(Path.GetDirectoryName(ascensionPath));
+            var factory = new MapFactory(Path.GetDirectoryName(ascensionPath));
 
             var sw = new Stopwatch();
             sw.Restart();
@@ -58,7 +58,7 @@ namespace OpenH2.Core.Tests
         [Fact, Trait("skip", "true")]
         public void Calculated_signature_matches_stored_signature()
         {
-            var factory = new UnifiedMapFactory(Path.GetDirectoryName(ascensionPath));
+            var factory = new MapFactory(Path.GetDirectoryName(ascensionPath));
             var h2map = factory.Load(Path.GetFileName(ascensionPath));
 
             if (h2map is not H2vMap scene)

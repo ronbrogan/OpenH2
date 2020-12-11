@@ -68,7 +68,7 @@ namespace OpenH2.TagFeatureAnalysis
                 throw new Exception("Only 1 argument is accepted");
             }
 
-            var factory = new UnifiedMapFactory(Path.GetDirectoryName(args[0]));
+            var factory = new MapFactory(Path.GetDirectoryName(args[0]));
             var h2map = factory.Load(Path.GetFileName(args[0]));
 
             if (h2map is not H2vMap map)

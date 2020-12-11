@@ -48,7 +48,7 @@ namespace OpenH2.MccUtil
                 inmemMap.Position = 0;
 
                 // Load to determine where to write patches to
-                var factory = new UnifiedMapFactory(this.Args.MapPath);
+                var factory = new MapFactory(this.Args.MapPath);
                 this.scene = factory.LoadH2mccMap(inmemMap);
             }
 

@@ -49,7 +49,7 @@ namespace OpenH2.MccUtil
             mem.Seek(0, SeekOrigin.Begin);
             var sig = H2BaseMap.CalculateSignature(mem);
 
-            var factory = new UnifiedMapFactory(Path.GetDirectoryName(this.Args.File));
+            var factory = new MapFactory(Path.GetDirectoryName(this.Args.File));
             var h2map = factory.Load(Path.GetFileName(this.Args.File));
 
             if (h2map is not H2mccMap mccMap)

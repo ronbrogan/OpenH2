@@ -18,7 +18,7 @@ namespace OpenH2.PhysicsModelAnalysis
         {
             var mapPath = @"D:\H2vMaps\zanzibar.map";
 
-            var factory = new UnifiedMapFactory(Path.GetDirectoryName(mapPath));
+            var factory = new MapFactory(Path.GetDirectoryName(mapPath));
             var h2map = factory.Load(Path.GetFileName(mapPath));
 
             if (h2map is not H2vMap map)

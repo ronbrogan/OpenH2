@@ -78,7 +78,7 @@ namespace OpenH2.MccBulkPatcher
 
                 H2mccCompression.Decompress(rawMap, patchedMap);
 
-                var factory = new UnifiedMapFactory(Path.GetDirectoryName(rawMapPath));
+                var factory = new MapFactory(Path.GetDirectoryName(rawMapPath));
                 var scene = factory.LoadH2mccMap(patchedMap);
 
                 var patchFiles = Directory.GetFiles(patchDir, "*.tree", SearchOption.AllDirectories);
