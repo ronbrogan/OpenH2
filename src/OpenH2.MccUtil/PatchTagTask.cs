@@ -49,7 +49,7 @@ namespace OpenH2.MccUtil
 
                 // Load to determine where to write patches to
                 var factory = new MapFactory(this.Args.MapPath);
-                this.scene = factory.LoadH2mccMap(inmemMap);
+                this.scene = factory.LoadSingleH2mccMap(inmemMap);
             }
 
             var tagPatcher = new TagPatcher(scene, inmemMap);

@@ -66,27 +66,16 @@ namespace OpenH2.Core.Factories
 
         public H2mccMap LoadH2mccMap(string mapFileName)
         {
-            // Not using ancillary maps for MCC maps because of the compression
-            // Since MapLoader doesn't support on the fly decompression it wouldn't be
-            // able to load the ancillary maps (since they'd still be compressed)
-            var singleLoader = MapLoader.FromRoot(this.mapRoot);
-
-            using var onDisk = File.OpenRead(Path.Combine(this.mapRoot, mapFileName));
-            var decompressed = new MemoryStream();
-            H2mccCompression.Decompress(onDisk, decompressed);
-            decompressed.Position = 0;
-
-            return this.loader.Load<H2mccMap>(decompressed, LoadMetadata);
+            return this.loader.Load<H2mccMap>(mapFileName, H2mccCompression.DecompressInline, LoadMetadata);
         }
 
-        public H2mccMap LoadH2mccMap(Stream decompressedMap)
+        public H2mccMap LoadSingleH2mccMap(Stream decompressedMap)
         {
-            // Not using ancillary maps for MCC maps because of the compression
-            // Since MapLoader doesn't support on the fly decompression it wouldn't be
-            // able to load the ancillary maps (since they'd still be compressed)
+            // Not using ancillary maps here since the map stream is already 
+            // decompressed, while the ancillary maps are still compressed
             var singleLoader = MapLoader.FromRoot(this.mapRoot);
 
-            return this.loader.Load<H2mccMap>(decompressedMap, LoadMetadata);
+            return singleLoader.Load<H2mccMap>(decompressedMap, LoadMetadata);
         }
 
         private static void LoadMetadata(IMap map, Stream reader)

@@ -84,6 +84,74 @@ namespace OpenH2.Core.Maps.MCC
         }
 
         /// <summary>
+        /// Decompresses the provided stream into the other stream, if the map has not already been decompressed.
+        /// If the provided stream has already been decompressed, it will simply return the original stream
+        /// </summary>
+        public static Stream DecompressInline(Stream input)
+        {
+            using var compressed = input;
+            if (compressed.CanSeek == false) throw new NotSupportedException("Must be able to seek on compressed");
+
+            var fourCC = compressed.ReadUInt32At(0);
+
+            if (fourCC == DecompressedFourCC)
+            {
+                compressed.Position = 0;
+                return compressed;
+            }
+
+            if (fourCC != RealFourCC)
+            {
+                throw new Exception("Provided map stream was not valid");
+            }
+
+            var decompressTo = new MemoryStream();
+
+            var info = BlamSerializer.Deserialize<H2mccCompressionSections>(compressed);
+
+            var header = new Span<byte>(new byte[4096]);
+
+            compressed.Position = 0;
+            compressed.Read(header);
+            decompressTo.WriteUInt32(DecompressedFourCC);
+            decompressTo.Write(header.Slice(4));
+
+            foreach (var section in info.Sections)
+            {
+                if (section.Offset == 0 || section.Count == 0)
+                    continue;
+
+                // Looks like compression is optional and count is negative when that happens
+                if (section.Count < 0)
+                {
+                    var realCount = -section.Count;
+                    var buf = copyPool.Rent(realCount);
+                    compressed.Position = section.Offset;
+                    var readCount = compressed.Read(buf);
+
+                    if (readCount != realCount)
+                    {
+                        copyPool.Return(buf);
+                        throw new Exception("Unable to read the amount of data required");
+                    }
+
+                    decompressTo.Write(((Span<byte>)buf).Slice(0, readCount));
+                    copyPool.Return(buf);
+                }
+                else
+                {
+                    compressed.Seek(section.Offset + 2, SeekOrigin.Begin);
+                    using var deflate = new DeflateStream(compressed, CompressionMode.Decompress, leaveOpen: true);
+                    deflate.CopyTo(decompressTo);
+                }
+            }
+
+            decompressTo.Position = 0;
+
+            return decompressTo;
+        }
+
+        /// <summary>
         /// Compresses the provided stream into the other stream, if the map was previously decompressed.
         /// If the provided stream was not previously decompressed, it will simply copy and return false
         /// </summary>

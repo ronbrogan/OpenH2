@@ -70,7 +70,8 @@ namespace OpenH2.MccBulkPatcher
 
                 if (File.Exists(rawMapPath) == false)
                 {
-                    throw new Exception($"Patch dir for '{mapName}', but no map found at '{rawMapPath}'");
+                    Console.WriteLine($"Patch dir for '{mapName}', but no map found at '{rawMapPath}'");
+                    return;
                 }
 
                 var rawMap = File.OpenRead(rawMapPath);
@@ -79,7 +80,7 @@ namespace OpenH2.MccBulkPatcher
                 H2mccCompression.Decompress(rawMap, patchedMap);
 
                 var factory = new MapFactory(Path.GetDirectoryName(rawMapPath));
-                var scene = factory.LoadH2mccMap(patchedMap);
+                var scene = factory.LoadSingleH2mccMap(patchedMap);
 
                 var patchFiles = Directory.GetFiles(patchDir, "*.tree", SearchOption.AllDirectories);
 
