@@ -10,13 +10,14 @@ namespace OpenH2.Engine.Components
         private float aspectRatio;
 
         public bool Dirty { get; set; }
+        public bool MatchViewportAspectRatio { get; set; } = true;
 
         public Vector3 PositionOffset { get; set; }
         public Matrix4x4 ProjectionMatrix { get; set; }
         public Matrix4x4 ViewMatrix { get; set; }
 
         public float FieldOfView { get => fieldOfView; set { fieldOfView = value; this.Dirty = true; } }
-        public float AspectRatio { get => aspectRatio; private set { aspectRatio = value; this.Dirty = true; } }
+        public float AspectRatio { get => aspectRatio; set { aspectRatio = value; this.Dirty = true; } }
         
 
         public CameraComponent(Entity parent) : base(parent)

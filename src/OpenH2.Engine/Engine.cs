@@ -67,10 +67,9 @@ namespace OpenH2.Engine
                 LoadMap(factory, mapPath, matFactory);
             });
 
-            var rtWorld = new RealtimeWorld(this, gameWindowGetter(), audioHost.GetAudioAdapter());
-            rtWorld.UseGraphicsAdapter(graphicsHost.GetGraphicsAdapter());
-
-            world = rtWorld;
+            world = new RealtimeWorld(gameWindowGetter(), 
+                audioHost.GetAudioAdapter(), 
+                graphicsHost);
 
             LoadMap(factory, mapPath, matFactory);
 

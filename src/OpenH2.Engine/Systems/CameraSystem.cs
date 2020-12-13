@@ -1,5 +1,6 @@
 ﻿using OpenH2.Core.Architecture;
 using OpenH2.Engine.Components;
+using OpenH2.Rendering.Abstractions;
 using System.Numerics;
 
 namespace OpenH2.Engine.Systems
@@ -7,9 +8,11 @@ namespace OpenH2.Engine.Systems
     public class CameraSystem : WorldSystem
     {
         private int currentCameraMoveTicksRemaining = 0;
+        private readonly IGraphicsHost graphics;
 
-        public CameraSystem(World world) : base(world)
+        public CameraSystem(World world, IGraphicsHost graphics) : base(world)
         {
+            this.graphics = graphics;
         }
 
         public override void Update(double timestep)
@@ -23,6 +26,11 @@ namespace OpenH2.Engine.Systems
 
             foreach(var camera in cameras)
             {
+                if(camera.MatchViewportAspectRatio && graphics.AspectRatioChanged)
+                {
+                    camera.AspectRatio = graphics.AspectRatio;
+                }
+
                 if(camera.TryGetSibling<TransformComponent>(out var xform))
                 {
                     UpdateViewMatrix(camera, xform);
@@ -52,11 +60,6 @@ namespace OpenH2.Engine.Systems
 
             var forward = Vector3.Transform(EngineGlobals.Forward, orient);
             var up = Vector3.Transform(EngineGlobals.Up, orient);
-
-            
-
-            var rotation = Matrix4x4.CreateFromQuaternion(orient);
-            var translation = Matrix4x4.CreateTranslation(-pos);
 
             camera.ViewMatrix = Matrix4x4.CreateLookAt(pos, pos + forward, up);
         }

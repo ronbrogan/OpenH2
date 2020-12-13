@@ -15,6 +15,10 @@ namespace OpenH2.Rendering.OpenGL
         private readonly IGraphicsAdapter adapter;
         private GameWindow window;
 
+        public bool AspectRatioChanged { get; private set; }
+
+        public float AspectRatio { get; private set; }
+
         public OpenGLHost()
         {
             this.adapter = new OpenGLGraphicsAdapter();
@@ -45,12 +49,14 @@ namespace OpenH2.Rendering.OpenGL
                 Size = new Vector2i((int)size.X, (int)size.Y),
                 Title = "OpenH2",
                 Flags = ContextFlags.Debug,
-                APIVersion = new Version(4, 0),
+                APIVersion = new Version(4, 6),
             };
 
             window = new GameWindow(settings, nsettings);
 
             window.Resize += this.Window_Resize;
+            this.AspectRatio = size.X / size.Y;
+            this.AspectRatioChanged = true;
 
             window.IsVisible = !hidden;
 
@@ -65,7 +71,8 @@ namespace OpenH2.Rendering.OpenGL
         private void Window_Resize(ResizeEventArgs a)
         {
             GL.Viewport(0, 0, a.Width, a.Height);
-            // reset projection matrix
+            this.AspectRatio = a.Width / (float)a.Height;
+            this.AspectRatioChanged = true;
         }
 
         public void RegisterCallbacks(Action<double> updateCallback, Action<double> renderCallback)
@@ -97,6 +104,7 @@ namespace OpenH2.Rendering.OpenGL
         }
 
         private static DebugProc callbackWrapper = DebugCallbackF;
+
         private static void DebugCallbackF(DebugSource source, DebugType type, int id, DebugSeverity severity, int length, IntPtr message, IntPtr userParam)
         {
             if (severity == DebugSeverity.DebugSeverityNotification)

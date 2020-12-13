@@ -12,12 +12,14 @@ namespace OpenH2.Engine
     {
         private List<object> globalResources = new List<object>();
 
-        public RealtimeWorld(Engine engine, 
-            GameWindow window, 
-            IAudioAdapter audioAdapter)
+        public RealtimeWorld(GameWindow window, 
+            IAudioAdapter audioAdapter,
+            IGraphicsHost graphicsHost)
         {
+            var graphics = graphicsHost.GetGraphicsAdapter();
+
             var audioSystem = new AudioSystem(this, audioAdapter);
-            var cameraSystem = new CameraSystem(this);
+            var cameraSystem = new CameraSystem(this, graphicsHost);
             // new up systems, order here will be order of update
             Systems.Add(new OpenTKInputSystem(this, window));
             Systems.Add(new PhysxPhysicsSystem(this));
@@ -25,20 +27,12 @@ namespace OpenH2.Engine
             Systems.Add(cameraSystem);
             Systems.Add(audioSystem);
             Systems.Add(new ScriptSystem(this, audioSystem, cameraSystem));
+            Systems.Add(new RenderCollectorSystem(this, graphics));
+
+            RenderSystems.Add(new RenderPipelineSystem(this, graphics));
 
             globalResources.Add(new RenderListStore());
             globalResources.Add(new InputStore());
-        }
-
-        public void UseSystem(WorldSystem system)
-        {
-            Systems.Add(system);
-        }
-
-        public void UseGraphicsAdapter(IGraphicsAdapter graphics)
-        {
-            Systems.Add(new RenderCollectorSystem(this, graphics));
-            RenderSystems.Add(new RenderPipelineSystem(this, graphics));
         }
 
         public override T GetGlobalResource<T>()
