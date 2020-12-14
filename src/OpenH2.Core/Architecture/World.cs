@@ -62,6 +62,8 @@ namespace OpenH2.Core.Architecture
 
         public void Update(double timestep)
         {
+            this.Scene.ProcessUpdates();
+
             foreach (var system in Systems)
             {
                 system.Update(timestep);

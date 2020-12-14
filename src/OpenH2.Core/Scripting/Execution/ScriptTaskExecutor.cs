@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace OpenH2.Core.Scripting.Execution
@@ -14,6 +15,7 @@ namespace OpenH2.Core.Scripting.Execution
         public ulong CurrentTick { get; private set; } = 0;
 
         private ExecutionState[] executionStates = Array.Empty<ExecutionState>();
+        private AsyncLocal<string> currentScript = new AsyncLocal<string>();
 
         public void Setup(ScenarioScriptBase scripts)
         {
@@ -64,7 +66,12 @@ namespace OpenH2.Core.Scripting.Execution
                     func = (OrchestratedScript)script.CreateDelegate(typeof(OrchestratedScript), scripts);
                 }
 
-                execState.Func = func;
+                execState.Func = async () =>
+                {
+                    await Task.Yield();
+                    currentScript.Value = execState.Description;
+                    await func();
+                };
 
                 execStates.Add(execState);
             }
@@ -120,6 +127,13 @@ namespace OpenH2.Core.Scripting.Execution
 
                 executionStates[i] = state;
             }
+        }
+
+        public void SetStatus(ScriptStatus desiredStatus)
+        {
+            var currentName = currentScript.Value;
+
+            SetStatus(currentName, desiredStatus);
         }
 
         public void SetStatus(string methodName, ScriptStatus desiredStatus)

@@ -143,7 +143,7 @@ namespace OpenH2.Core.Scripting.Generation
                 var m = 0;
                 foreach (var ai in squad.StartingLocations)
                 {
-                    var propName = nestedRepo.RegisterName(ai.Description, ScriptDataType.AI.ToString(), m++);
+                    var propName = nestedRepo.RegisterName(ai.Description, ScriptDataType.AI.ToString(), m);
 
                     ExpressionSyntax startingLocationAccess = ElementAccessExpression(
                         MemberAccessExpression(SyntaxKind.SimpleMemberAccessExpression,
@@ -159,6 +159,8 @@ namespace OpenH2.Core.Scripting.Generation
                         .WithModifiers(TokenList(Token(SyntaxKind.PublicKeyword)))
                         .WithExpressionBody(ArrowExpressionClause(startingLocationAccess))
                         .WithSemicolonToken(Token(SyntaxKind.SemicolonToken)));
+
+                    m++;
                 }
 
                 ExpressionSyntax squadAccess = ElementAccessExpression(

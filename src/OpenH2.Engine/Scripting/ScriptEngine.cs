@@ -461,7 +461,7 @@ namespace OpenH2.Engine.Scripting
         /// <summary>pauses execution of this script (or, optionally, another script) forever.</summary>
         public void sleep_forever()
         {
-            throw new Exception("Aborting, this doesn't work if we expect to be able to resume here...");
+            this.executionOrchestrator.SetStatus(ScriptStatus.Sleeping);
         }
 
         /// <summary>pauses execution of this script (or, optionally, another script) forever.</summary>

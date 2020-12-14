@@ -3,8 +3,8 @@ using OpenH2.Core.Maps.Vista;
 using OpenH2.Core.Scripting;
 using OpenH2.Core.Tags.Scenario;
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 
 namespace OpenH2.Core.Architecture
@@ -18,7 +18,9 @@ namespace OpenH2.Core.Architecture
         public H2vMap Map { get; }
         public ScenarioTag Scenario => Map.Scenario;
 
-        public Dictionary<Guid, Entity> Entities { get; private set; } = new Dictionary<Guid, Entity>();
+        public Dictionary<Guid, Entity> Entities { get; private set; } = new();
+        private ConcurrentQueue<Entity> addedEntities = new();
+        private ConcurrentQueue<Entity> removedEntities = new();
 
         public Scene(H2vMap map, IEntityCreator entityCreator)
         {
@@ -26,16 +28,16 @@ namespace OpenH2.Core.Architecture
             this.EntityCreator = entityCreator;
         }
 
+        // Queue Add to not mutate current frame's data
         public void AddEntity(Entity e)
         {
-            Entities.Add(e.Id, e);
-            OnEntityAdd.Invoke(e);
+            addedEntities.Enqueue(e);
         }
 
+        // Queue Remove to not mutate current frame's data
         public void RemoveEntity(Entity e)
         {
-            Entities.Remove(e.Id);
-            OnEntityRemove.Invoke(e);
+            removedEntities.Enqueue(e);
         }
 
         public delegate void EntityEventHandler(Entity entity);
@@ -103,6 +105,23 @@ namespace OpenH2.Core.Architecture
             }
 
             this.AddEntity(EntityCreator.FromGlobals());
+
+            this.ProcessUpdates();
+        }
+
+        public void ProcessUpdates()
+        {
+            while(removedEntities.TryDequeue(out var e))
+            {
+                Entities.Remove(e.Id);
+                OnEntityRemove.Invoke(e);
+            }
+
+            while(addedEntities.TryDequeue(out var e))
+            {
+                Entities.Add(e.Id, e);
+                OnEntityAdd.Invoke(e);
+            }
         }
 
         public void CreateEntity(ScenarioTag.EntityReference def)

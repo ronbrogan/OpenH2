@@ -208,20 +208,26 @@ namespace OpenH2.Core.Maps
 
         public Memory<byte> ReadData(DataFile source, IOffset offset, int length)
         {
-            var reader = this.mapStream.GetStream((byte)source);
-            reader.Position = offset.Value;
+            lock(this.mapStream)
+            {
+                var reader = this.mapStream.GetStream((byte)source);
+                reader.Position = offset.Value;
 
-            var data = new byte[length];
-            var read = reader.Read(data);
+                var data = new byte[length];
+                var read = reader.Read(data);
 
-            Debug.Assert(read == length);
+                Debug.Assert(read == length);
 
-            return data;
+                return data;
+            }
         }
 
         public int CalculateSignature()
         {
-            return H2BaseMap.CalculateSignature(this.localStream);
+            lock(this.mapStream)
+            {
+                return H2BaseMap.CalculateSignature(this.localStream);
+            }
         }
 
         protected Dictionary<uint, BaseTag> tags = new();
@@ -234,10 +240,12 @@ namespace OpenH2.Core.Maps
 
             var name = GetTagName(entry.ID);
 
-            tag = TagFactory.CreateTag(entry.ID, name, entry, this, this.mapStream);
-            tags[entry.ID] = tag;
-
-            return tag;
+            lock (this.mapStream)
+            {
+                tag = TagFactory.CreateTag(entry.ID, name, entry, this, this.mapStream);
+                tags[entry.ID] = tag;
+                return tag;
+            }
         }
 
         private Dictionary<uint, string> tagNames = new();
@@ -248,9 +256,12 @@ namespace OpenH2.Core.Maps
                 return name;
             }
 
-            var nameIndexOffset = (short)(id & 0x0000FFFF) * 4;
-            var nameStart = this.localStream.ReadInt32At(this.Header.FilesIndex + nameIndexOffset);
-            name = this.localStream.ReadStringFrom(this.Header.FileTableOffset + nameStart, 128);
+            lock (this.mapStream)
+            {
+                var nameIndexOffset = (short)(id & 0x0000FFFF) * 4;
+                var nameStart = this.localStream.ReadInt32At(this.Header.FilesIndex + nameIndexOffset);
+                name = this.localStream.ReadStringFrom(this.Header.FileTableOffset + nameStart, 128);
+            }
 
             tagNames[id] = name;
 

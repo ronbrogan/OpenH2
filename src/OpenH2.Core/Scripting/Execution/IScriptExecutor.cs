@@ -7,6 +7,7 @@ namespace OpenH2.Core.Scripting.Execution
     {
         void Execute();
 
+        void SetStatus(ScriptStatus desiredStatus);
         void SetStatus(string methodName, ScriptStatus desiredStatus);
         void SleepUntil(string methodName, DateTimeOffset offset);
 

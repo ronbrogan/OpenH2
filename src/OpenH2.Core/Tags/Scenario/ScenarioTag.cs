@@ -137,6 +137,7 @@ namespace OpenH2.Core.Tags.Scenario
             [PrimitiveValue(34)]
             public ushort Index { get; set; }
 
+            [JsonIgnore]
             public object GameObject => this.ItemType switch
             {
                 WellKnownVarType.Biped => scenario.BipedInstances[Index].GameObject,
