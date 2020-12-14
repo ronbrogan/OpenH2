@@ -97,20 +97,12 @@ namespace OpenH2.Engine
             watch.Stop();
             Console.WriteLine($"Loading map took {watch.ElapsedMilliseconds / 1000f} seconds");
 
-            var useFreecam = true;
-            if(useFreecam)
-            {
-                scene.AddEntity(new SpectatorCamera());
-            }
-            else
-            {
-                var player = new Player(true);
-                player.FriendlyName = "player_0";
-                player.Transform.Position = map.Scenario.PlayerSpawnMarkers[0].Position + new Vector3(0, 0, 0.3f);
-                player.Transform.Orientation = Quaternion.CreateFromAxisAngle(EngineGlobals.Up, map.Scenario.PlayerSpawnMarkers[0].Heading);
-                player.Transform.UpdateDerivedData();
-                scene.AddEntity(player);
-            }
+            var player = new Player(true);
+            player.FriendlyName = "player_0";
+            player.Transform.Position = map.Scenario.PlayerSpawnMarkers[0].Position + new Vector3(0, 0, 0.3f);
+            player.Transform.Orientation = Quaternion.CreateFromAxisAngle(EngineGlobals.Up, map.Scenario.PlayerSpawnMarkers[0].Heading);
+            player.Transform.UpdateDerivedData();
+            scene.AddEntity(player);
 
             world.LoadScene(scene);
         }

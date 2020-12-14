@@ -36,12 +36,19 @@ namespace OpenH2.Engine.Systems
 
             }
 
-            var inputVector = GetInput(input);
-
-            UpdateMovers(movers, inputVector, yaw, pitch, timestep);
+            UpdateMovers(movers, input, yaw, pitch, timestep);
         }
 
-        private Vector3 GetInput(InputStore input)
+        private static Dictionary<Keys, Func<float, Vector3, Vector3>> downKeyMap = new()
+        {
+            { Keys.W, (s,d) => d += new Vector3(s, 0, 0) },
+            { Keys.S, (s,d) => d += new Vector3(-s, 0, 0) },
+            { Keys.A, (s,d) => d += new Vector3(0, -s, 0) },
+            { Keys.D, (s,d) => d += new Vector3(0, s, 0) },
+            { Keys.LeftShift, (s,d) => d += new Vector3(0, 0, -s) },
+        };
+
+        private Vector3 GetInput(InputStore input, MoverComponent mover)
         {
             var speed = 1f;
 
@@ -52,34 +59,59 @@ namespace OpenH2.Engine.Systems
 
             var delta = Vector3.Zero;
 
-            var keyMap = new Dictionary<Keys, Action>
-            {
-                { Keys.W, () => delta += new Vector3(speed, 0, 0) },
-                { Keys.S, () => delta += new Vector3(-speed, 0, 0) },
-                { Keys.A, () => delta += new Vector3(0, -speed, 0) },
-                { Keys.D, () => delta += new Vector3(0, speed, 0) },
-                //{ Key.Space, () => delta += new Vector3(0, 0, speed) },
-                { Keys.LeftShift, () => delta += new Vector3(0, 0, -speed) },
-            };
-
             // handle down keys
-            foreach (var key in keyMap.Keys)
+            foreach (var key in downKeyMap.Keys)
             {
                 if (input.IsDown(key))
                 {
-                    keyMap[key]();
+                    delta = downKeyMap[key](speed, delta);
                 }
             }
 
-            if(input.WasPressed(Keys.Space))
+            if(input.WasPressed(Keys.M))
             {
-                delta += new Vector3(0, 0, speed);
+                if(mover.Mode != mover.Config.Mode)
+                {
+                    // If previously toggled, switch back to original mode
+                    mover.Mode = mover.Config.Mode;
+                }
+                else
+                {
+                    // Otherwise, set to what the inverse of the configured mode is
+                    if (mover.Config.Mode == MoverComponent.MovementMode.Freecam)
+                    {
+                        mover.Mode = MoverComponent.MovementMode.DynamicCharacterControl;
+                    }
+                    else
+                    {
+                        mover.Mode = MoverComponent.MovementMode.Freecam;
+                    }
+                }
+
+                // TODO: implment a way to update the physics implementation without remove/add
+                this.world.Scene.RemoveEntity(mover.Parent);
+                this.world.Scene.AddEntity(mover.Parent);
+            }
+
+            if(mover.Mode == MoverComponent.MovementMode.Freecam)
+            {
+                if(input.IsDown(Keys.Space))
+                {
+                    delta += new Vector3(0, 0, speed);
+                }
+            }
+            else
+            {
+                if (input.WasPressed(Keys.Space))
+                {
+                    delta += new Vector3(0, 0, speed);
+                }
             }
 
             return delta;
         }
 
-        public void UpdateMovers(List<MoverComponent> movers, Vector3 inputVector, float yaw, float pitch, double timestep)
+        public void UpdateMovers(List<MoverComponent> movers, InputStore input, float yaw, float pitch, double timestep)
         {
             var yawQuat = Quaternion.CreateFromAxisAngle(EngineGlobals.Up, yaw);
             var pitchQuat = Quaternion.CreateFromAxisAngle(EngineGlobals.Strafe, pitch);
@@ -90,6 +122,8 @@ namespace OpenH2.Engine.Systems
                 
                 // Update camera orientation
                 xform.Orientation = Quaternion.Normalize(yawQuat * xform.Orientation * pitchQuat);
+
+                var inputVector = GetInput(input, mover);
 
                 if (inputVector.LengthSquared() == 0)
                     return;

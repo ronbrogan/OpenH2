@@ -340,7 +340,10 @@ namespace OpenH2.Engine.Scripting
         /// <summary>returns an item in an object list.</summary>
         public IGameObject list_get(GameObjectList object_list, int index)
         {
-            return object_list.Objects[index];
+            if(object_list.Objects.Length > index)
+                return object_list.Objects[index];
+
+            return null;
         }
 
         /// <summary>starts the map from the beginning.</summary>

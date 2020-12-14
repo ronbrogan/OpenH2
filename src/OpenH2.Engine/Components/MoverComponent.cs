@@ -13,7 +13,7 @@ namespace OpenH2.Engine.Components
         public IPhysicsProxy PhysicsImplementation { get; set; } = NullPhysicsProxy.Instance;
         public TransformComponent Transform { get; }
         public MovementConfig Config { get; }
-        public MovementMode Mode { get; }
+        public MovementMode Mode { get; set; }
         public object State { get; }
 
         public MoverComponent(Entity parent, TransformComponent xform, MovementConfig config, object state = null) : base(parent)
