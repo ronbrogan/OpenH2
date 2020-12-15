@@ -132,9 +132,9 @@ namespace OpenH2.MccUtil
                 if(node.Original.NodeType == Core.Scripting.NodeType.Expression &&
                     node.Original.DataType == Core.Scripting.ScriptDataType.MethodOrOperator)
                 {
-                    MethodInfos.AddOrUpdate(node.Value as string, k => new HashSet<ushort>() { node.Original.ScriptIndex }, (k, h) =>
+                    MethodInfos.AddOrUpdate(node.Value as string, k => new HashSet<ushort>() { node.Original.OperationId }, (k, h) =>
                     {
-                        h.Add(node.Original.ScriptIndex);
+                        h.Add(node.Original.OperationId);
                         return h;
                     });
                 }

@@ -13,7 +13,7 @@ namespace OpenH2.Core.Scripting.GenerationState
 
         public ScriptInvocationContext(ScenarioTag scenario, ScenarioTag.ScriptSyntaxNode node) : base(node)
         {
-            var method = scenario.ScriptMethods[node.ScriptIndex];
+            var method = scenario.ScriptMethods[node.OperationId];
 
             invocation = SyntaxFactory.InvocationExpression(
                 SyntaxFactory.MemberAccessExpression(

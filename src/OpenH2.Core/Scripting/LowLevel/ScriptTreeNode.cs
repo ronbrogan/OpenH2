@@ -59,11 +59,11 @@ namespace OpenH2.Core.Scripting.LowLevel
 
                     if(verbose)
                     {
-                        b.Append($", {current.node.Type}<{current.node.DataType}> @:{current.node.Index} check:{orig?.Checkval},op:{orig?.ScriptIndex},dt:{(ushort?)orig?.DataType},nt:{(ushort?)orig?.NodeType},next:{orig?.NextIndex},nextCheck:{orig?.NextCheckval},str:{orig?.NodeString},h:{orig?.ValueH},d0:{orig?.NodeData_H16},d1:{orig?.NodeData_L16};");
+                        b.Append($", {current.node.Type}<{current.node.DataType}> @:{current.node.Index} check:{orig?.Checkval},op:{orig?.OperationId},dt:{(ushort?)orig?.DataType},nt:{(ushort?)orig?.NodeType},next:{orig?.NextIndex},nextCheck:{orig?.NextCheckval},str:{orig?.NodeString},h:{orig?.ValueH},d0:{orig?.NodeData_H16},d1:{orig?.NodeData_L16};");
                     }
                     else
                     {
-                        b.Append($", {current.node.Type}<{current.node.DataType}> @:{current.node.Index} op:{orig?.ScriptIndex},dt:{(ushort?)orig?.DataType},nt:{(ushort?)orig?.NodeType},next:{orig?.NextIndex},str:{orig?.NodeString},d0:{orig?.NodeData_H16},d1:{orig?.NodeData_L16};");
+                        b.Append($", {current.node.Type}<{current.node.DataType}> @:{current.node.Index} op:{orig?.OperationId},dt:{(ushort?)orig?.DataType},nt:{(ushort?)orig?.NodeType},next:{orig?.NextIndex},str:{orig?.NodeString},d0:{orig?.NodeData_H16},d1:{orig?.NodeData_L16};");
                     }
 
                     for (var i = current.Item1.Children.Count - 1; i >= 0; i--)

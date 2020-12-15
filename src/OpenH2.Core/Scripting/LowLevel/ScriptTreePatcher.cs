@@ -57,7 +57,7 @@ namespace OpenH2.Core.Scripting.LowLevel
                     }
 
                     //map.WriteUInt16At(patchStart + 0, patch.NodeData.Checkval);
-                    map.WriteUInt16At(patchStart + 2, patch.NodeData.ScriptIndex);
+                    map.WriteUInt16At(patchStart + 2, patch.NodeData.OperationId);
                     map.WriteUInt16At(patchStart + 4, (ushort)patch.NodeData.DataType);
                     map.WriteUInt16At(patchStart + 6, (ushort)patch.NodeData.NodeType);
                     map.WriteUInt16At(patchStart + 8, patch.NodeData.NextIndex);
@@ -86,7 +86,7 @@ namespace OpenH2.Core.Scripting.LowLevel
                     NodeData = new ScenarioTag.ScriptSyntaxNode
                     {
                         //Checkval = ParseFrom(line, "a:"),
-                        ScriptIndex = ParseFrom(line, "op:"),
+                        OperationId = ParseFrom(line, "op:"),
                         DataType = (ScriptDataType)ParseFrom(line, "dt:"),
                         NodeType = (NodeType)ParseFrom(line, "nt:"),
                         NextIndex = ParseFrom(line, "next:"),
@@ -104,7 +104,7 @@ namespace OpenH2.Core.Scripting.LowLevel
 
                 var node = scene.Scenario.ScriptSyntaxNodes[patch.Index];
 
-                if (node.ScriptIndex != patch.NodeData.ScriptIndex
+                if (node.OperationId != patch.NodeData.OperationId
                     || node.DataType != patch.NodeData.DataType
                     || node.NodeType != patch.NodeData.NodeType
                     || node.NextIndex != patch.NodeData.NextIndex

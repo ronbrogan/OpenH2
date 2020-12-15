@@ -84,7 +84,7 @@ namespace OpenH2.Core.Scripting.LowLevel
                 }
                 else if (node.NodeType == NodeType.ScriptInvocation)
                 {
-                    value = tag.ScriptMethods[node.ScriptIndex].Description;
+                    value = tag.ScriptMethods[node.OperationId].Description;
                 }
 
                 current.Original = node;

@@ -5,13 +5,10 @@ namespace OpenH2.Engine.Scripting
     using OpenH2.Core.Scripting;
     using OpenH2.Core.Scripting.Execution;
     using OpenH2.Core.Tags;
-    using OpenH2.Core.Tags.Scenario;
     using OpenH2.Engine.Systems;
     using OpenH2.Foundation.Extensions;
     using OpenH2.Foundation.Logging;
     using System;
-    using System.Collections.Generic;
-    using System.Diagnostics;
     using System.Threading.Tasks;
 
     public partial class ScriptEngine : IScriptEngine

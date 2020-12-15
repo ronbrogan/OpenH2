@@ -130,22 +130,32 @@ namespace OpenH2.Engine.Scripting
         }
 
         /// <summary>Flies the actor through the given point</summary>
-        public void cs_fly_by()
+        public void cs_fly_by(ISpatialPoint point)
         {
         }
 
         /// <summary>Flies the actor through the given point</summary>
-        public void cs_fly_by(ISpatialPoint point, float tolerance = 0f)
+        public void cs_fly_by(ISpatialPoint point, float tolerance)
         {
         }
 
         /// <summary>Flies the actor to the given point (within the given tolerance)</summary>
-        public void cs_fly_to(ISpatialPoint point, float tolerance = 0f)
+        public void cs_fly_to(ISpatialPoint point)
+        {
+        }
+
+        /// <summary>Flies the actor to the given point (within the given tolerance)</summary>
+        public void cs_fly_to(ISpatialPoint point, float tolerance)
         {
         }
 
         /// <summary>Flies the actor to the given point and orients him in the appropriate direction (within the given tolerance)</summary>
-        public void cs_fly_to_and_face(ISpatialPoint point, ISpatialPoint face, float tolerance = 0f)
+        public void cs_fly_to_and_face(ISpatialPoint point, ISpatialPoint face)
+        {
+        }
+
+        /// <summary>Flies the actor to the given point and orients him in the appropriate direction (within the given tolerance)</summary>
+        public void cs_fly_to_and_face(ISpatialPoint point, ISpatialPoint face, float tolerance)
         {
         }
 
@@ -160,7 +170,12 @@ namespace OpenH2.Engine.Scripting
         }
 
         /// <summary>Moves the actor to a specified point</summary>
-        public void cs_go_to(ISpatialPoint point, float tolerance = 1f)
+        public void cs_go_to(ISpatialPoint point)
+        {
+        }
+
+        /// <summary>Moves the actor to a specified point</summary>
+        public void cs_go_to(ISpatialPoint point, float tolerance)
         {
         }
 

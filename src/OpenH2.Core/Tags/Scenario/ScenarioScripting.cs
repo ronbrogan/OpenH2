@@ -287,7 +287,7 @@ namespace OpenH2.Core.Tags.Scenario
             public ushort Checkval { get; set; }
 
             [PrimitiveValue(2)]
-            public ushort ScriptIndex { get; set; }
+            public ushort OperationId { get; set; }
 
             [PrimitiveValue(4)]
             public ScriptDataType DataType { get; set; }
