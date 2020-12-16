@@ -2,7 +2,6 @@
 using OpenH2.Core.Maps.Vista;
 using OpenH2.Core.Scripting.Generation;
 using OpenH2.Core.Scripting.LowLevel;
-using OpenH2.Core.Tags.Scenario;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -14,7 +13,7 @@ namespace OpenH2.ScriptAnalysis
 {
     public class Program
     {
-        private static ConcurrentDictionary<string, HashSet<ushort>> MethodInfos = new ConcurrentDictionary<string, HashSet<ushort>>();
+        private static ConcurrentDictionary<string, (HashSet<ushort>, HashSet<string>)> MethodInfos = new();
 
         static void Main(string[] args)
         {
@@ -78,9 +77,17 @@ namespace OpenH2.ScriptAnalysis
                 if (node.Original.NodeType == Core.Scripting.NodeType.Expression &&
                     node.Original.DataType == Core.Scripting.ScriptDataType.MethodOrOperator)
                 {
-                    MethodInfos.AddOrUpdate(node.Value as string, k => new HashSet<ushort>() { node.Original.OperationId }, (k, h) =>
+                    MethodInfos.AddOrUpdate(node.Value as string, 
+                        k => (
+                            new HashSet<ushort>() { node.Original.OperationId },
+                            new HashSet<string>(node.Children.Select(c => c.DataType.ToString()))), 
+                        (k, h) =>
                     {
-                        h.Add(node.Original.OperationId);
+                        h.Item1.Add(node.Original.OperationId);
+                        foreach(var c in node.Children)
+                        {
+                            h.Item2.Add(c.DataType.ToString());
+                        }
                         return h;
                     });
                 }
@@ -92,7 +99,7 @@ namespace OpenH2.ScriptAnalysis
 
         private static string GenerateBuiltinInfo()
         {
-            return string.Join("\r\n", MethodInfos.OrderBy(i => i.Value.First()).Select(i => JsonSerializer.Serialize(i.Value) + ": " + i.Key));
+            return string.Join("\r\n", MethodInfos.OrderBy(i => i.Value.Item1.First()).Select(i => JsonSerializer.Serialize(i.Value.Item1) + ": " + i.Key + " <" + string.Join(",", i.Value.Item2) + ">"));
         }
     }
 }

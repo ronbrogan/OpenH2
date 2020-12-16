@@ -1,4 +1,5 @@
-﻿using System.Runtime.CompilerServices;
+﻿using System.Diagnostics;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
 namespace OpenH2.Core.Scripting.Execution
@@ -30,7 +31,7 @@ namespace OpenH2.Core.Scripting.Execution
             if (DataType == ScriptDataType.Float)
                 return Float;
             else
-                return (float)Int;
+                return Int;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -49,6 +50,56 @@ namespace OpenH2.Core.Scripting.Execution
                 return (short)Float;
             else
                 return Short;
+        }
+
+        public void Add(InterpreterResult operand)
+        {
+            Debug.Assert(this.DataType == ScriptDataType.Float);
+
+            this.Float += operand.GetFloat();
+        }
+
+        public void Subtract(InterpreterResult operand)
+        {
+            Debug.Assert(this.DataType == ScriptDataType.Float);
+
+            this.Float -= operand.GetFloat();
+        }
+
+        public void Multiply(InterpreterResult operand)
+        {
+            Debug.Assert(this.DataType == ScriptDataType.Float);
+
+            this.Float *= operand.GetFloat();
+        }
+
+        public void Divide(InterpreterResult operand)
+        {
+            Debug.Assert(this.DataType == ScriptDataType.Float);
+
+            this.Float /= operand.GetFloat();
+        }
+
+        public static InterpreterResult Min(InterpreterResult left, InterpreterResult right)
+        {
+            Debug.Assert(left.DataType == ScriptDataType.Float);
+
+            return Difference(left, right) < 0 ? left : right;
+        }
+
+        public static InterpreterResult Max(InterpreterResult left, InterpreterResult right)
+        {
+            Debug.Assert(left.DataType == ScriptDataType.Float);
+
+            return Difference(left, right) < 0 ? right : left;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static float Difference(InterpreterResult left, InterpreterResult right)
+        {
+            Debug.Assert(left.DataType == ScriptDataType.Float);
+
+            return left.Float - right.GetFloat();
         }
 
         public static InterpreterResult From(bool v, ScriptDataType t = ScriptDataType.Boolean) => new InterpreterResult() { Boolean = v, DataType = t };

@@ -33,7 +33,10 @@ namespace OpenH2.Engine.EntityFactories
             }
 
             var character = map.GetTag(map.Scenario.CharacterDefinitions[charIndex].CharacterReference);
-            var biped = map.GetTag(character.Biped);
+            if(map.TryGetTag(character.Biped, out var biped) == false)
+            {
+                return entity;
+            }
 
             var comp = new RenderModelComponent(entity, new Model<BitmapTag>
             {

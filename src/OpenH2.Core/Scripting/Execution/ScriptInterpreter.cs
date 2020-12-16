@@ -41,6 +41,7 @@ namespace OpenH2.Core.Scripting.Execution
         private Result InterpretScope(ScenarioTag.ScriptSyntaxNode node, out ushort next)
         {
             next = node.NextIndex;
+            var destType = node.DataType;
 
             Result value = default;
             ushort innerNext = node.NodeData_H16;
@@ -48,6 +49,28 @@ namespace OpenH2.Core.Scripting.Execution
             while (innerNext != ushort.MaxValue)
             {
                 value = Interpret(this.scenario.ScriptSyntaxNodes[node.NodeData_H16], out innerNext);
+            }
+
+            if(value.DataType != destType)
+            {
+                switch(destType)
+                {
+                    case ScriptDataType.Float:
+                        value.Float = value.GetFloat();
+                        value.DataType = ScriptDataType.Float;
+                        break;
+                    case ScriptDataType.Int:
+                        value.Int = value.GetInt();
+                        value.DataType = ScriptDataType.Int;
+                        break;
+                    case ScriptDataType.Short:
+                        value.Short = value.GetShort();
+                        value.DataType = ScriptDataType.Short;
+                        break;
+                    default:
+                        Debug.Fail($"No configured cast from {value.DataType} to {destType}");
+                        break;
+                }
             }
 
             return value;
@@ -178,32 +201,13 @@ namespace OpenH2.Core.Scripting.Execution
         {
             var argNext = node.NextIndex;
 
-            Result firstOp = default;
+            var firstOp = Interpret(this.scenario.ScriptSyntaxNodes[argNext], out argNext);
 
-            while(argNext != ushort.MaxValue)
+            while (argNext != ushort.MaxValue)
             {
                 var operand = Interpret(this.scenario.ScriptSyntaxNodes[argNext], out argNext);
 
-                if(firstOp == default)
-                {
-                    firstOp = operand;
-                }
-                else
-                {
-                    if(firstOp.DataType == ScriptDataType.Float)
-                    {
-                        firstOp.Float = firstOp.GetFloat() + operand.GetFloat();
-                    }
-                    else if(firstOp.DataType == ScriptDataType.Int)
-                    {
-                        firstOp.Int = firstOp.GetInt() + operand.GetInt();
-                    }
-                    else
-                    {
-                        Debug.Assert(firstOp.DataType == ScriptDataType.Short);
-                        firstOp.Short = (short)(firstOp.GetShort() + operand.GetShort());
-                    }
-                }
+                firstOp.Add(operand);
             }
 
             return firstOp;
@@ -211,32 +215,96 @@ namespace OpenH2.Core.Scripting.Execution
 
         private Result Subtract(ScenarioTag.ScriptSyntaxNode node)
         {
-            return default;
+            var argNext = node.NextIndex;
+
+            var firstOp = Interpret(this.scenario.ScriptSyntaxNodes[argNext], out argNext);
+
+            while (argNext != ushort.MaxValue)
+            {
+                var operand = Interpret(this.scenario.ScriptSyntaxNodes[argNext], out argNext);
+
+                firstOp.Subtract(operand);
+            }
+
+            return firstOp;
         }
 
         private Result Multiply(ScenarioTag.ScriptSyntaxNode node)
         {
-            return default;
+            var argNext = node.NextIndex;
+
+            var firstOp = Interpret(this.scenario.ScriptSyntaxNodes[argNext], out argNext);
+
+            while (argNext != ushort.MaxValue)
+            {
+                var operand = Interpret(this.scenario.ScriptSyntaxNodes[argNext], out argNext);
+
+                firstOp.Multiply(operand);
+            }
+
+            return firstOp;
         }
 
         private Result Divide(ScenarioTag.ScriptSyntaxNode node)
         {
-            return default;
+            var argNext = node.NextIndex;
+
+            var firstOp = Interpret(this.scenario.ScriptSyntaxNodes[argNext], out argNext);
+
+            while (argNext != ushort.MaxValue)
+            {
+                var operand = Interpret(this.scenario.ScriptSyntaxNodes[argNext], out argNext);
+
+                firstOp.Divide(operand);
+            }
+
+            return firstOp;
         }
 
         private Result Min(ScenarioTag.ScriptSyntaxNode node)
         {
-            return default;
+            var argNext = node.NextIndex;
+
+            var firstOp = Interpret(this.scenario.ScriptSyntaxNodes[argNext], out argNext);
+
+            while (argNext != ushort.MaxValue)
+            {
+                var operand = Interpret(this.scenario.ScriptSyntaxNodes[argNext], out argNext);
+
+                firstOp = Result.Min(firstOp, operand);
+            }
+
+            return firstOp;
         }
 
         private Result Max(ScenarioTag.ScriptSyntaxNode node)
         {
-            return default;
+            var argNext = node.NextIndex;
+
+            var firstOp = Interpret(this.scenario.ScriptSyntaxNodes[argNext], out argNext);
+
+            while (argNext != ushort.MaxValue)
+            {
+                var operand = Interpret(this.scenario.ScriptSyntaxNodes[argNext], out argNext);
+
+                firstOp = Result.Max(firstOp, operand);
+            }
+
+            return firstOp;
         }
 
         private Result ValueEquals(ScenarioTag.ScriptSyntaxNode node)
         {
-            return default;
+            var argNext = node.NextIndex;
+
+            var firstOp = Interpret(this.scenario.ScriptSyntaxNodes[argNext], out argNext);
+            var operand = Interpret(this.scenario.ScriptSyntaxNodes[argNext], out argNext);
+
+            firstOp = Result.Min(firstOp, operand);
+
+            Debug.Assert(argNext == ushort.MaxValue);
+
+            return firstOp;
         }
 
         private Result GreaterThan(ScenarioTag.ScriptSyntaxNode node)
