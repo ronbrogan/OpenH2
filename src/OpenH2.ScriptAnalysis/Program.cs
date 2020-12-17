@@ -13,7 +13,7 @@ namespace OpenH2.ScriptAnalysis
 {
     public class Program
     {
-        private static ConcurrentDictionary<string, (HashSet<ushort>, HashSet<string>)> MethodInfos = new();
+        private static ConcurrentDictionary<string, (HashSet<ushort>, HashSet<string>, int)> MethodInfos = new();
 
         static void Main(string[] args)
         {
@@ -80,7 +80,8 @@ namespace OpenH2.ScriptAnalysis
                     MethodInfos.AddOrUpdate(node.Value as string, 
                         k => (
                             new HashSet<ushort>() { node.Original.OperationId },
-                            new HashSet<string>(node.Children.Select(c => c.DataType.ToString()))), 
+                            new HashSet<string>(node.Children.Select(c => c.DataType.ToString())),
+                            node.Children.Count), 
                         (k, h) =>
                     {
                         h.Item1.Add(node.Original.OperationId);
@@ -88,6 +89,7 @@ namespace OpenH2.ScriptAnalysis
                         {
                             h.Item2.Add(c.DataType.ToString());
                         }
+                        h.Item3 = Math.Max(h.Item3, node.Children.Count);
                         return h;
                     });
                 }
@@ -99,7 +101,7 @@ namespace OpenH2.ScriptAnalysis
 
         private static string GenerateBuiltinInfo()
         {
-            return string.Join("\r\n", MethodInfos.OrderBy(i => i.Value.Item1.First()).Select(i => JsonSerializer.Serialize(i.Value.Item1) + ": " + i.Key + " <" + string.Join(",", i.Value.Item2) + ">"));
+            return string.Join("\r\n", MethodInfos.OrderBy(i => i.Value.Item1.First()).Select(i => JsonSerializer.Serialize(i.Value.Item1) + ": " + i.Key + " <" + string.Join(",", i.Value.Item2) + "> #" + i.Value.Item3));
         }
     }
 }

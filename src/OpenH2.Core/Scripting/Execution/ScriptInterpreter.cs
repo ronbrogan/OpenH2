@@ -1,4 +1,5 @@
 ﻿using OpenBlam.Core.Extensions;
+using OpenH2.Core.Exceptions;
 using OpenH2.Core.Tags.Scenario;
 using System;
 using System.Diagnostics;
@@ -141,28 +142,28 @@ namespace OpenH2.Core.Scripting.Execution
 
         private Result InterpretMethodOrOperator(ScenarioTag.ScriptSyntaxNode node)
         {
-            // Collect arguments by evaluating child nodes
-
             // Dispatch to relevant implementation
             return node.OperationId switch
             {
-                0 => this.Begin(node),
-                1 => this.BeginRandom(node),
-                2 => this.If(node),
-                4 => this.Set(node),
-                5 => this.And(node),
-                6 => this.Or(node),
-                7 => this.Add(node),
-                8 => this.Subtract(node),
-                9 => this.Multiply(node),
-                10 => this.Divide(node),
-                11 => this.Min(node),
-                12 => this.Max(node),
-                13 => this.ValueEquals(node),
-                15 => this.GreaterThan(node),
-                16 => this.LessThan(node),
-                17 => this.GreaterThanOrEquals(node),
-                18 => this.LessThanOrEquals(node),
+                ScriptOps.Begin => this.Begin(node),
+                ScriptOps.BeginRandom => this.BeginRandom(node),
+                ScriptOps.If => this.If(node),
+                ScriptOps.Set => this.Set(node),
+                ScriptOps.And => this.And(node),
+                ScriptOps.Or => this.Or(node),
+                ScriptOps.Add => this.Add(node),
+                ScriptOps.Subtract => this.Subtract(node),
+                ScriptOps.Multiply => this.Multiply(node),
+                ScriptOps.Divide => this.Divide(node),
+                ScriptOps.Min => this.Min(node),
+                ScriptOps.Max => this.Max(node),
+                ScriptOps.Equals => this.ValueEquals(node),
+                ScriptOps.GreaterThan => this.GreaterThan(node),
+                ScriptOps.LessThan => this.LessThan(node),
+                ScriptOps.GreaterThanOrEqual => this.GreaterThanOrEquals(node),
+                ScriptOps.LessThanOrEqual => this.LessThanOrEquals(node),
+                ScriptOps.Not => this.Not(node),
+
                 _ => this.DispatchMethodOrOperator(node)
             };
         }
@@ -189,12 +190,58 @@ namespace OpenH2.Core.Scripting.Execution
 
         private Result And(ScenarioTag.ScriptSyntaxNode node)
         {
-            return default;
+            var argNext = node.NextIndex;
+
+            var result = Result.From(true);
+
+            while (argNext != ushort.MaxValue)
+            {
+                var operand = Interpret(this.scenario.ScriptSyntaxNodes[argNext], out argNext);
+                Debug.Assert(operand.DataType == ScriptDataType.Boolean);
+                if (operand.Boolean == false)
+                {
+                    result.Boolean = false;
+                    break;
+                }
+            }
+
+            return result;
         }
 
         private Result Or(ScenarioTag.ScriptSyntaxNode node)
         {
-            return default;
+            var argNext = node.NextIndex;
+
+            var result = Result.From(false);
+
+            while (argNext != ushort.MaxValue)
+            {
+                var operand = Interpret(this.scenario.ScriptSyntaxNodes[argNext], out argNext);
+                Debug.Assert(operand.DataType == ScriptDataType.Boolean);
+                if (operand.Boolean)
+                {
+                    result.Boolean = true;
+                    break;
+                }
+            }
+
+            return result;
+        }
+
+        private Result Not(ScenarioTag.ScriptSyntaxNode node)
+        {
+            var argNext = node.NextIndex;
+
+            var result = Result.From(false);
+
+            var operand = Interpret(this.scenario.ScriptSyntaxNodes[argNext], out argNext);
+
+            Debug.Assert(operand.DataType == ScriptDataType.Boolean);
+            Debug.Assert(argNext == ushort.MaxValue);
+
+            result.Boolean = !operand.Boolean;
+
+            return result;
         }
 
         private Result Add(ScenarioTag.ScriptSyntaxNode node)
@@ -297,34 +344,83 @@ namespace OpenH2.Core.Scripting.Execution
         {
             var argNext = node.NextIndex;
 
-            var firstOp = Interpret(this.scenario.ScriptSyntaxNodes[argNext], out argNext);
-            var operand = Interpret(this.scenario.ScriptSyntaxNodes[argNext], out argNext);
-
-            firstOp = Result.Min(firstOp, operand);
-
+            var left = Interpret(this.scenario.ScriptSyntaxNodes[argNext], out argNext);
+            var right = Interpret(this.scenario.ScriptSyntaxNodes[argNext], out argNext);
             Debug.Assert(argNext == ushort.MaxValue);
 
-            return firstOp;
+            return left.DataType switch
+            {
+                ScriptDataType.Boolean => Result.From(left.Boolean == right.Boolean),
+                ScriptDataType.Float => Result.From(left.GetFloat() == right.GetFloat()),
+                ScriptDataType.Short => Result.From(left.GetShort() == right.GetShort()),
+                ScriptDataType.Int => Result.From(left.GetInt() == right.GetInt()),
+                ScriptDataType.GameDifficulty => Result.From(left.GetShort() == right.GetShort()),
+                _ => throw new InterpreterException($"Equality comparison for {left.DataType} is not supported")
+            };
         }
 
         private Result GreaterThan(ScenarioTag.ScriptSyntaxNode node)
         {
-            return default;
+            var argNext = node.NextIndex;
+
+            var left = Interpret(this.scenario.ScriptSyntaxNodes[argNext], out argNext);
+            var right = Interpret(this.scenario.ScriptSyntaxNodes[argNext], out argNext);
+            Debug.Assert(argNext == ushort.MaxValue);
+
+            return left.DataType switch
+            {
+                ScriptDataType.Float => Result.From(left.GetFloat() > right.GetFloat()),
+                ScriptDataType.Short => Result.From(left.GetShort() > right.GetShort()),
+                _ => throw new InterpreterException($"Equality comparison for {left.DataType} is not supported")
+            };
         }
 
         private Result GreaterThanOrEquals(ScenarioTag.ScriptSyntaxNode node)
         {
-            return default;
+            var argNext = node.NextIndex;
+
+            var left = Interpret(this.scenario.ScriptSyntaxNodes[argNext], out argNext);
+            var right = Interpret(this.scenario.ScriptSyntaxNodes[argNext], out argNext);
+            Debug.Assert(argNext == ushort.MaxValue);
+
+            return left.DataType switch
+            {
+                ScriptDataType.Float => Result.From(left.GetFloat() >= right.GetFloat()),
+                ScriptDataType.Short => Result.From(left.GetShort() >= right.GetShort()),
+                _ => throw new InterpreterException($"Equality comparison for {left.DataType} is not supported")
+            };
         }
 
         private Result LessThan(ScenarioTag.ScriptSyntaxNode node)
         {
-            return default;
+            var argNext = node.NextIndex;
+
+            var left = Interpret(this.scenario.ScriptSyntaxNodes[argNext], out argNext);
+            var right = Interpret(this.scenario.ScriptSyntaxNodes[argNext], out argNext);
+            Debug.Assert(argNext == ushort.MaxValue);
+
+            return left.DataType switch
+            {
+                ScriptDataType.Float => Result.From(left.GetFloat() < right.GetFloat()),
+                ScriptDataType.Short => Result.From(left.GetShort() < right.GetShort()),
+                _ => throw new InterpreterException($"Equality comparison for {left.DataType} is not supported")
+            };
         }
 
         private Result LessThanOrEquals(ScenarioTag.ScriptSyntaxNode node)
         {
-            return default;
+            var argNext = node.NextIndex;
+
+            var left = Interpret(this.scenario.ScriptSyntaxNodes[argNext], out argNext);
+            var right = Interpret(this.scenario.ScriptSyntaxNodes[argNext], out argNext);
+            Debug.Assert(argNext == ushort.MaxValue);
+
+            return left.DataType switch
+            {
+                ScriptDataType.Float => Result.From(left.GetFloat() <= right.GetFloat()),
+                ScriptDataType.Short => Result.From(left.GetShort() <= right.GetShort()),
+                _ => throw new InterpreterException($"Equality comparison for {left.DataType} is not supported")
+            };
         }
 
         /*
