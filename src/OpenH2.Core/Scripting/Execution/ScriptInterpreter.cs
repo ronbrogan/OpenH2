@@ -7,7 +7,12 @@ using Result = OpenH2.Core.Scripting.Execution.InterpreterResult;
 
 namespace OpenH2.Core.Scripting.Execution
 {
-    public class ScriptInterpreter
+    public partial class ScriptInterpreter
+    {
+        
+    }
+
+    public partial class ScriptInterpreter
     {
         private readonly ScenarioTag scenario;
         private readonly IScriptEngine scriptEngine;
@@ -164,7 +169,7 @@ namespace OpenH2.Core.Scripting.Execution
                 ScriptOps.LessThanOrEqual => this.LessThanOrEquals(node),
                 ScriptOps.Not => this.Not(node),
 
-                _ => this.DispatchMethodOrOperator(node)
+                _ => this.DispatchMethod(node)
             };
         }
 
@@ -430,17 +435,6 @@ namespace OpenH2.Core.Scripting.Execution
          * Then this DispatchMethodOrOperator method can be generated with a switch to each invoke, bypassing
          * the static dictionary altogether, removing array allocations for MethodInfo.Invoke and call overhead
          */
-        private delegate Result DispatchMethodOrOperatorImpl(ScenarioTag.ScriptSyntaxNode node);
-        private DispatchMethodOrOperatorImpl DispatchMethodOrOperator;
-
-        private void Invoke_sleep(ScenarioTag.ScriptSyntaxNode node)
-        {
-            var argNext = node.NextIndex;
-
-            var length = Interpret(this.scenario.ScriptSyntaxNodes[argNext], out argNext);
-            Debug.Assert(argNext == ushort.MaxValue);
-
-            this.scriptEngine.sleep((int)length);
-        }
+        private partial Result DispatchMethod(ScenarioTag.ScriptSyntaxNode node);
     }
 }

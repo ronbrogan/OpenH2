@@ -28,7 +28,6 @@ namespace OpenH2.Core.Scripting
         void ai_attach_units(GameObjectList units, IAiActorDefinition ai);
 
         /// <summary>attaches the specified list of units to the specified encounter.</summary>
-        [ScriptImplementation(287)]
         void ai_attach_units(IUnit unit, IAiActorDefinition ai);
 
         /// <summary>forces a group of actors to start or stop berserking</summary>
@@ -59,11 +58,9 @@ namespace OpenH2.Core.Scripting
         // a conversion of the single object to list
 
         /// <summary>if TRUE, forces all actors to completely disregard the specified units, otherwise lets them acknowledge the units again</summary>
-        [ScriptImplementation(314)]
         void ai_disregard(IGameObject unit, bool boolean);
 
         /// <summary>if TRUE, forces all actors to completely disregard the specified units, otherwise lets them acknowledge the units again</summary>
-        [ScriptImplementation(314)]
         void ai_disregard(IAiActorDefinition actor, bool boolean);
 
         /// <summary>if TRUE, forces all actors to completely disregard the specified units, otherwise lets them acknowledge the units again</summary>
@@ -116,10 +113,6 @@ namespace OpenH2.Core.Scripting
 
         /// <summary>makes all or part of an encounter move to another encounter.</summary>
         [ScriptImplementation(309)]
-        void ai_migrate(IAiActorDefinition ai);
-
-        /// <summary>makes all or part of an encounter move to another encounter.</summary>
-        [ScriptImplementation(309)]
         void ai_migrate(IAiActorDefinition ai, IAiActorDefinition ai1);
 
         /// <summary>return the number of non-swarm actors in the specified encounter and/or squad.</summary>
@@ -149,10 +142,6 @@ namespace OpenH2.Core.Scripting
         /// <summary>Play the given mission dialogue line on the given ai, directing the ai's gaze at the nearest visible player</summary>
         [ScriptImplementation(361)]
         short ai_play_line_at_player(IAiActorDefinition ai, string string_id);
-
-        /// <summary>Play the given mission dialogue line on the given ai, directing the ai's gaze at the nearest visible player</summary>
-        [ScriptImplementation(361)]
-        short ai_play_line_at_player(string emotion);
 
         /// <summary>Play the given mission dialogue line on the given object (uses first available variant)</summary>
         [ScriptImplementation(362)]
@@ -245,10 +234,6 @@ namespace OpenH2.Core.Scripting
 
         /// <summary>Reserves the given seat on the given vehicle (so that AI may not enter it</summary>
         [ScriptImplementation(342)]
-        void ai_vehicle_reserve_seat(string emotion, bool boolean);
-
-        /// <summary>Reserves the given seat on the given vehicle (so that AI may not enter it</summary>
-        [ScriptImplementation(342)]
         void ai_vehicle_reserve_seat(IVehicle vehicle, string string_id, bool boolean);
 
         /// <summary>Returns true if the ai's units are ALL vitality pinned (see object_vitality_pinned)</summary>
@@ -256,7 +241,6 @@ namespace OpenH2.Core.Scripting
         bool ai_vitality_pinned(IAiActorDefinition ai);
 
         /// <summary>evaluates the sequence of expressions in random order and returns the last value evaluated.</summary>
-        [ScriptImplementation(1)]
         void begin_random(params Func<Task>[] expressions);
 
         /// <summary>returns true if the movie is done playing</summary>
@@ -401,10 +385,6 @@ namespace OpenH2.Core.Scripting
 
         /// <summary>invert player0's look</summary>
         [ScriptImplementation(729)]
-        void controller_set_look_invert();
-
-        /// <summary>invert player0's look</summary>
-        [ScriptImplementation(729)]
         void controller_set_look_invert(bool boolean);
 
         /// <summary>Command script ends prematurely when actor's combat status raises to 'alert' or higher</summary>
@@ -425,10 +405,6 @@ namespace OpenH2.Core.Scripting
 
         /// <summary>Actor aims at the object for the duration of the cs, or until overridden (overrides look)</summary>
         [ScriptImplementation(398)]
-        void cs_aim_object(bool boolean);
-
-        /// <summary>Actor aims at the object for the duration of the cs, or until overridden (overrides look)</summary>
-        [ScriptImplementation(398)]
         void cs_aim_object(bool boolean, IGameObject entity);
 
         /// <summary>Actor aims at nearest player for the duration of the cs, or until overridden (overrides look)</summary>
@@ -438,10 +414,6 @@ namespace OpenH2.Core.Scripting
         /// <summary></summary>
         [ScriptImplementation(430)]
         void cs_approach(IGameObject entity, float real, float real1, float real12);
-
-        /// <summary></summary>
-        [ScriptImplementation(430)]
-        void cs_approach(float floatValue, float floatValue1, float floatValue2);
 
         /// <summary></summary>
         [ScriptImplementation(432)]
@@ -553,10 +525,6 @@ namespace OpenH2.Core.Scripting
 
         /// <summary>Actor gets in the appropriate vehicle</summary>
         [ScriptImplementation(426)]
-        void cs_go_to_vehicle();
-
-        /// <summary>Actor gets in the appropriate vehicle</summary>
-        [ScriptImplementation(426)]
         void cs_go_to_vehicle(IVehicle vehicle);
 
         /// <summary>Actor throws a grenade, either by tossing (arg2=0), lobbing (1) or bouncing (2)</summary>
@@ -578,10 +546,6 @@ namespace OpenH2.Core.Scripting
         /// <summary>Actor looks at the point for the remainder of the cs, or until overridden</summary>
         [ScriptImplementation(393)]
         void cs_look(bool boolean, ISpatialPoint point = null);
-
-        /// <summary>Actor looks at the object for the duration of the cs, or until overridden</summary>
-        [ScriptImplementation(395)]
-        void cs_look_object(bool boolean);
 
         /// <summary>Actor looks at the object for the duration of the cs, or until overridden</summary>
         [ScriptImplementation(395)]
@@ -683,24 +647,12 @@ namespace OpenH2.Core.Scripting
         void custom_animation(IUnit unit, AnimationGraphTag animation, string stringid, bool interpolate);
 
         /// <summary>starts a custom animation playing on a unit (interpolates into animation if last parameter is TRUE)</summary>
-        [ScriptImplementation(201)]
-        void custom_animation(IUnit unit, string emotion, bool interpolate);
-
-        /// <summary>starts a custom animation playing on a unit (interpolates into animation if last parameter is TRUE)</summary>
-        [ScriptImplementation(202)]
-        void custom_animation_loop(string emotion, bool interpolate);
-
-        /// <summary>starts a custom animation playing on a unit (interpolates into animation if last parameter is TRUE)</summary>
         [ScriptImplementation(202)]
         void custom_animation_loop(IUnit unit, AnimationGraphTag animation1, string emotion, bool interpolate);
 
         /// <summary>starts a custom animation relative to some other object (interpolates into animation if last parameter is TRUE)</summary>
         [ScriptImplementation(203)]
         void custom_animation_relative(IUnit entity, AnimationGraphTag animation, string emotion, bool boolean, IGameObject other);
-
-        /// <summary>starts a custom animation relative to some other object (interpolates into animation if last parameter is TRUE)</summary>
-        [ScriptImplementation(203)]
-        void custom_animation_relative(IUnit unit, string emotion, bool interpolate, IGameObject entity);
 
         /// <summary>starts a custom animation relative to some other object (interpolates into animation if last parameter is TRUE)</summary>
         [ScriptImplementation(204)]
@@ -725,10 +677,6 @@ namespace OpenH2.Core.Scripting
         /// <summary>deactivates a nav point type attached to a team anchored to a flag</summary>
         [ScriptImplementation(643)]
         void deactivate_team_nav_point_flag(ITeam team, ILocationFlag cutscene_flag);
-
-        /// <summary>deactivates a nav point type attached to a team anchored to an object</summary>
-        [ScriptImplementation(644)]
-        void deactivate_team_nav_point_object(ITeam team);
 
         /// <summary>deactivates a nav point type attached to a team anchored to an object</summary>
         [ScriptImplementation(644)]
@@ -813,10 +761,6 @@ namespace OpenH2.Core.Scripting
         [ScriptImplementation(41)]
         void effect_new_on_object_marker(EffectTag effect, IGameObject entity, string string_id);
 
-        /// <summary>starts the specified effect on the specified object at the specified marker.</summary>
-        [ScriptImplementation(41)]
-        void effect_new_on_object_marker(EffectTag effect, string emotion);
-
         /// <summary>enables the code that constrains the max # active lights</summary>
         [ScriptImplementation(925)]
         void enable_render_light_suppressor();
@@ -843,11 +787,11 @@ namespace OpenH2.Core.Scripting
 
         /// <summary>returns the current difficulty setting, but lies to you and will never return easy, instead returning normal</summary>
         [ScriptImplementation(467)]
-        string game_difficulty_get();
+        IGameDifficulty game_difficulty_get();
 
         /// <summary>returns the actual current difficulty setting without lying</summary>
         [ScriptImplementation(468)]
-        string game_difficulty_get_real();
+        IGameDifficulty game_difficulty_get_real();
 
         /// <summary>returns TRUE if the game is cooperative</summary>
         [ScriptImplementation(568)]
@@ -950,7 +894,6 @@ namespace OpenH2.Core.Scripting
         void kill_volume_enable(ITriggerVolume trigger_volume);
 
         /// <summary>returns the number of objects in a list</summary>
-        [ScriptImplementation(38)]
         short list_count(IGameObject e);
 
         /// <summary>returns the number of objects in a list</summary>
@@ -1003,7 +946,6 @@ namespace OpenH2.Core.Scripting
 
         // TODO: this overload shouldn't exist. Entities are supposed to be implicitly singleton lists
         /// <summary>returns true if any of the specified units are looking within the specified number of degrees of the object.</summary>
-        [ScriptImplementation(112)]
         bool objects_can_see_object(IGameObject entity, IGameObject target, float degrees);
 
         /// <summary>returns true if any of the specified units are looking within the specified number of degrees of the object.</summary>
@@ -1015,7 +957,6 @@ namespace OpenH2.Core.Scripting
         void objects_detach(IGameObject entity, IGameObject entity1);
 
         /// <summary>returns minimum distance from any of the specified objects to the specified flag. (returns -1 if there are no objects, or no flag, to check)</summary>
-        [ScriptImplementation(115)]
         float objects_distance_to_flag(IGameObject entity, ILocationFlag locationFlag);
 
         /// <summary>returns minimum distance from any of the specified objects to the specified flag. (returns -1 if there are no objects, or no flag, to check)</summary>
@@ -1027,7 +968,6 @@ namespace OpenH2.Core.Scripting
         float objects_distance_to_object(GameObjectList list, IGameObject entity);
 
         /// <summary>loads textures/geometry/sounds necessary to present objects that are about to come on-screen</summary>
-        [ScriptImplementation(99)]
         void objects_predict(IGameObject entity);
 
         /// <summary>loads textures/geometry/sounds necessary to present objects that are about to come on-screen</summary>
@@ -1045,15 +985,7 @@ namespace OpenH2.Core.Scripting
         [ScriptImplementation(85)]
         void object_cannot_die(IGameObject entity, bool boolean);
 
-        /// <summary>
-        /// Set whether the object can die from damage or not (as opposed to by scripting)
-        /// Overload introduced by MCC, used in 03b_newmombasa
-        /// </summary>
-        [ScriptImplementation(85)]
-        void object_cannot_die(IUnit entity, IGameObject vehicle, string seat);
-
         /// <summary>prevents an object from taking damage</summary>
-        [ScriptImplementation(90)]
         void object_cannot_take_damage(IGameObject entity);
 
         /// <summary>prevents an object from taking damage</summary>
@@ -1061,7 +993,6 @@ namespace OpenH2.Core.Scripting
         void object_cannot_take_damage(GameObjectList object_list);
 
         /// <summary>allows an object to take damage again</summary>
-        [ScriptImplementation(91)]
         void object_can_take_damage(IGameObject entity);
 
         /// <summary>allows an object to take damage again</summary>
@@ -1376,10 +1307,6 @@ namespace OpenH2.Core.Scripting
         [ScriptImplementation(186)]
         void scenery_animation_start_relative(IScenery scenery, AnimationGraphTag animation, string emotion, IGameObject entity);
 
-        /// <summary>starts a custom animation playing on a piece of scenery relative to a parent object</summary>
-        [ScriptImplementation(186)]
-        void scenery_animation_start_relative(IScenery scenery, string emotion, IGameObject entity);
-
         /// <summary>returns the number of ticks remaining in a custom animation (or zero, if the animation is over).</summary>
         [ScriptImplementation(190)]
         short scenery_get_animation_time(IScenery scenery);
@@ -1389,7 +1316,6 @@ namespace OpenH2.Core.Scripting
         void set_global_sound_environment(float real, float real1, float real12, float real123, int value, float real1234);
 
         /// <summary>pauses execution of this script (or, optionally, another script) for the specified number of ticks.</summary>
-        [ScriptImplementation(19)]
         Task sleep(int ticks);
 
         /// <summary>pauses execution of this script (or, optionally, another script) for the specified number of ticks.</summary>
@@ -1401,11 +1327,9 @@ namespace OpenH2.Core.Scripting
         void sleep_forever();
 
         /// <summary>pauses execution of another script forever.</summary>
-        [ScriptImplementation(20)]
         void sleep_forever(ScriptReference script);
 
         /// <summary>pauses execution of this script until the specified condition is true, checking once per second unless a different number of ticks is specified.</summary>
-        [ScriptImplementation(21)]
         Task sleep_until(Func<Task<bool>> condition, int ticks = 60, int timeout = -1);
 
         /// <summary>changes the gain on the specified sound class(es) to the specified gain over the specified number of ticks.</summary>
@@ -1505,8 +1429,8 @@ namespace OpenH2.Core.Scripting
         void unit_add_equipment(IUnit unit, IStartingProfile starting_profile, bool reset, bool isGarbage);
 
         /// <summary>adds/resets the unit's health, shield, and inventory (weapons and grenades) to the named profile. resets if third parameter is true, adds if false. weapons will be marked as garbage if fourth parameter is true (for respawning equipment).</summary>
-        [ScriptImplementation(250)]
-        void unit_add_equipment(IUnit unit, IEquipment equipment, bool reset, bool isGarbage);
+        //[ScriptImplementation(250)]
+        //void unit_add_equipment(IUnit unit, IEquipment equipment, bool reset, bool isGarbage);
 
         /// <summary>prevents any of the given units from dropping weapons or grenades when they die</summary>
         [ScriptImplementation(247)]
@@ -1536,11 +1460,9 @@ namespace OpenH2.Core.Scripting
         // a conversion of the single object to list
 
         /// <summary>prevents any of the given units from being knocked around or playing ping animations</summary>
-        [ScriptImplementation(248)]
         void unit_impervious(IGameObject unit, bool boolean);
 
         /// <summary>prevents any of the given units from being knocked around or playing ping animations</summary>
-        [ScriptImplementation(248)]
         void unit_impervious(IAiActorDefinition actor, bool boolean);
 
         /// <summary>prevents any of the given units from being knocked around or playing ping animations</summary>
@@ -1549,19 +1471,11 @@ namespace OpenH2.Core.Scripting
 
         /// <summary>returns true if the given unit is seated on a parent unit</summary>
         [ScriptImplementation(222)]
-        bool unit_in_vehicle();
-
-        /// <summary>returns true if the given unit is seated on a parent unit</summary>
-        [ScriptImplementation(222)]
         bool unit_in_vehicle(IUnit unit);
 
         /// <summary>returns whether or not the given unit is current emitting an ai</summary>
         [ScriptImplementation(198)]
         bool unit_is_emitting(IUnit unit);
-
-        /// <summary>kills a given unit, no saving throw</summary>
-        [ScriptImplementation(196)]
-        void unit_kill();
 
         /// <summary>kills a given unit, no saving throw</summary>
         [ScriptImplementation(196)]
@@ -1604,7 +1518,6 @@ namespace OpenH2.Core.Scripting
         IGameObject vehicle_driver(IUnit unit);
 
         /// <summary>makes a list of units (named or by encounter) magically get into a vehicle, in the substring-specified seats (e.g. CD-passenger... empty string matches all seats)</summary>
-        [ScriptImplementation(232)]
         void vehicle_load_magic(IGameObject vehicle, string vehicleSeat, IGameObject unit);
 
         /// <summary>makes a list of units (named or by encounter) magically get into a vehicle, in the substring-specified seats (e.g. CD-passenger... empty string matches all seats)</summary>
@@ -1616,7 +1529,6 @@ namespace OpenH2.Core.Scripting
         bool vehicle_test_seat(IVehicle vehicle, string seat, IUnit unit);
 
         /// <summary>tests whether the named seat has an object in the object list (use "" to test all seats for any unit in the list)</summary>
-        [ScriptImplementation(223)]
         bool vehicle_test_seat_list(IVehicle vehicle, string seat, IGameObject subject);
 
         /// <summary>tests whether the named seat has an object in the object list (use "" to test all seats for any unit in the list)</summary>
@@ -1647,11 +1559,9 @@ namespace OpenH2.Core.Scripting
         // a conversion of the single object to list
 
         /// <summary>returns true if any of the specified objects are within the specified volume. trigger volume must have been postprocessed</summary>
-        [ScriptImplementation(33)]
         bool volume_test_objects(ITriggerVolume trigger, IGameObject entity);
 
         /// <summary>returns true if any of the specified objects are within the specified volume. trigger volume must have been postprocessed</summary>
-        [ScriptImplementation(33)]
         bool volume_test_objects(ITriggerVolume trigger, IAiActorDefinition actor);
 
         /// <summary>returns true if any of the specified objects are within the specified volume. trigger volume must have been postprocessed</summary>
@@ -1659,11 +1569,9 @@ namespace OpenH2.Core.Scripting
         bool volume_test_objects(ITriggerVolume trigger_volume, GameObjectList object_list);
 
         /// <summary>returns true if any (rb: all?) of the specified objects are within the specified volume. trigger volume must have been postprocessed</summary>
-        [ScriptImplementation(34)]
         bool volume_test_objects_all(ITriggerVolume trigger, IGameObject entity);
 
         /// <summary>returns true if any (rb: all?) of the specified objects are within the specified volume. trigger volume must have been postprocessed</summary>
-        [ScriptImplementation(34)]
         bool volume_test_objects_all(ITriggerVolume trigger, IAiActorDefinition actor);
 
         /// <summary>returns true if any (rb: all?) of the specified objects are within the specified volume. trigger volume must have been postprocessed</summary>

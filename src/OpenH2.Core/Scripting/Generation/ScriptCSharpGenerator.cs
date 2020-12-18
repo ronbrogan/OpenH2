@@ -548,9 +548,10 @@ namespace OpenH2.Core.Scripting.Generation
                 case ScriptDataType.Short:
                 case ScriptDataType.Boolean:
                 case ScriptDataType.StringId:
-                case ScriptDataType.GameDifficulty:
                 case ScriptDataType.VehicleSeat:
                     return new LiteralContext(scenario, node, currentScope);
+                case ScriptDataType.GameDifficulty:
+                    return new GameDifficultyContext(scenario, node, currentScope);
                 default:
                     // TODO: hack until everything is tracked down, populating string as value if exists
                     return new UnknownContext(scenario, node);

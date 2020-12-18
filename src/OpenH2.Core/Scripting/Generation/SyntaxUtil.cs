@@ -105,6 +105,7 @@ namespace OpenH2.Core.Scripting.Generation
             { typeof(float), ScriptDataType.Float },
             { typeof(string), ScriptDataType.String },
             { typeof(bool), ScriptDataType.Boolean },
+            //{ typeof(IGameDifficulty), ScriptDataType.GameDifficulty },
             { typeof(ITeam), ScriptDataType.Team },
             { typeof(IAiActorDefinition), ScriptDataType.AI },
             { typeof(IAIBehavior), ScriptDataType.AIBehavior },
@@ -213,8 +214,7 @@ namespace OpenH2.Core.Scripting.Generation
 
             object nodeValue = node.DataType switch
             {
-                // TODO: netstandard2.1 or net5 upgrade, replace with BitConverter.Int32BitsToSingle
-                ScriptDataType.Float => BitConverter.ToSingle(BitConverter.GetBytes((int)node.NodeData_32), 0),
+                ScriptDataType.Float => BitConverter.Int32BitsToSingle((int)node.NodeData_32),
                 ScriptDataType.Int => (int)node.NodeData_32,
                 ScriptDataType.Boolean => node.NodeData_B3 == 1,
                 ScriptDataType.Short => (short)node.NodeData_H16,

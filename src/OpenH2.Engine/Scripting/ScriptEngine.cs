@@ -205,15 +205,15 @@ namespace OpenH2.Engine.Scripting
         }
 
         /// <summary>returns the current difficulty setting, but lies to you and will never return easy, instead returning normal</summary>
-        public string game_difficulty_get()
+        public IGameDifficulty game_difficulty_get()
         {
-            return "normal";
+            return GameDifficulty.Normal();
         }
 
         /// <summary>returns the actual current difficulty setting without lying</summary>
-        public string game_difficulty_get_real()
+        public IGameDifficulty game_difficulty_get_real()
         {
-            return "easy";
+            return GameDifficulty.Easy();
         }
 
         /// <summary>returns TRUE if the game is cooperative</summary>

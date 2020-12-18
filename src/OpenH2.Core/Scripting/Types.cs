@@ -52,6 +52,32 @@
     public interface IDamageState { }
     public interface ISpatialPoint { }
     public interface ISound : IGameObject { }
+    public interface IGameDifficulty 
+    { 
+        short Id { get; }
+    }
+    public interface IInternedStringId { }
+    public interface IVehicleSeat { }
+
+    public struct GameDifficulty : IGameDifficulty
+    {
+        public short Id { get; }
+
+        public GameDifficulty(short id) { Id = id; }
+
+        public static GameDifficulty Easy() => new GameDifficulty(0);
+        public static GameDifficulty Normal() => new GameDifficulty(1); 
+        public static GameDifficulty Heroic() => new GameDifficulty(2);
+        public static GameDifficulty Legendary() => new GameDifficulty(3);
+
+        public static implicit operator short(GameDifficulty d) => d.Id;
+        public static bool operator ==(GameDifficulty f, IGameDifficulty other) => f.Id == other.Id;
+        public static bool operator !=(GameDifficulty f, IGameDifficulty other) => f.Id == other.Id;
+        public static bool operator ==(IGameDifficulty f, GameDifficulty other) => f.Id == other.Id;
+        public static bool operator !=(IGameDifficulty f, GameDifficulty other) => f.Id == other.Id;
+        public static bool operator ==(GameDifficulty f, GameDifficulty other) => f.Id == other.Id;
+        public static bool operator !=(GameDifficulty f, GameDifficulty other) => f.Id == other.Id;
+    }
 
     public interface IGameObjectDefinition<T>
     {
