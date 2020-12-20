@@ -109,6 +109,7 @@ namespace OpenH2.Core.Scripting.Execution
         public static InterpreterResult From(ushort v, ScriptDataType t = ScriptDataType.Short) => new InterpreterResult() { Short = (short)v, DataType = t };
         public static InterpreterResult From(float v, ScriptDataType t = ScriptDataType.Float) => new InterpreterResult() { Float = v, DataType = t };
         public static InterpreterResult From(object v, ScriptDataType t = ScriptDataType.Entity) => new InterpreterResult() { Object = v, DataType = t };
+        public static InterpreterResult From() => new InterpreterResult() { DataType = ScriptDataType.Void };
 
         public static implicit operator float(InterpreterResult r)
         {

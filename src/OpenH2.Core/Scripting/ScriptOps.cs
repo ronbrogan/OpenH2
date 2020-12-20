@@ -20,5 +20,6 @@
         public const ushort GreaterThanOrEqual = 17;
         public const ushort LessThanOrEqual = 18;
         public const ushort Not = 25;
+        public const ushort Print = 27;
     }
 }

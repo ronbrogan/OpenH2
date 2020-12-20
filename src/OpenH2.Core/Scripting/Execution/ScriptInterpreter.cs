@@ -16,28 +16,49 @@ namespace OpenH2.Core.Scripting.Execution
     {
         private readonly ScenarioTag scenario;
         private readonly IScriptEngine scriptEngine;
+        private readonly Result[] variables;
 
         public ScriptInterpreter(ScenarioTag scenario, IScriptEngine scriptEngine)
         {
             this.scenario = scenario;
             this.scriptEngine = scriptEngine;
+
+            if(scenario.ScriptVariables?.Length > 0)
+            {
+                this.variables = new Result[scenario.ScriptVariables.Length];
+
+                InitializeVariables();
+            }
+        }
+
+        private void InitializeVariables()
+        {
+            for (int i = 0; i < this.scenario.ScriptVariables.Length; i++)
+            {
+                var variable = this.scenario.ScriptVariables[i];
+
+                variables[i] = Interpret(this.scenario.ScriptSyntaxNodes[variable.Value_H16], out var next);
+                Debug.Assert(next == ushort.MaxValue);
+            }
         }
 
         internal Result Interpret(ScenarioTag.ScriptSyntaxNode node, out ushort next)
         {
             next = ushort.MaxValue;
 
-            switch (node.NodeType)
+            return node.NodeType switch
             {
-                case NodeType.Scope: return InterpretScope(node, out next);
-                case NodeType.Expression: return InterpretExpression(node, out next);
-                case NodeType.ScriptInvocation:
-                    break;
-                case NodeType.VariableAccess:
-                    break;
-            }
+                NodeType.Scope => InterpretScope(node, out next),
+                NodeType.Expression => InterpretExpression(node, out next),
+                NodeType.ScriptInvocation => InterpretScriptInvocation(node, out next),
+                NodeType.VariableAccess => this.variables[node.NodeData_H16],
+                _ => default,
+            };
+        }
 
-            return default;
+        internal Result GetVariable(int index)
+        {
+            return this.variables[index];
         }
 
         /// <summary>
@@ -98,7 +119,7 @@ namespace OpenH2.Core.Scripting.Execution
 
             Result result = node.DataType switch
             {
-                ScriptDataType.Void => default,
+                ScriptDataType.Void => Result.From(),
                 ScriptDataType.Boolean => Result.From(node.NodeData_B3 == 1 ? true : false),
                 ScriptDataType.Float => Result.From(node.NodeData_32),
                 ScriptDataType.Short => Result.From(node.NodeData_H16),
@@ -145,6 +166,47 @@ namespace OpenH2.Core.Scripting.Execution
             return result;
         }
 
+        private Result InterpretScriptInvocation(ScenarioTag.ScriptSyntaxNode node, out ushort next)
+        {
+            var destType = node.DataType;
+
+            var invocationNode = this.scenario.ScriptSyntaxNodes[node.NodeData_H16];
+            Debug.Assert(invocationNode.NodeType == NodeType.Expression);
+            Debug.Assert(invocationNode.DataType == ScriptDataType.MethodOrOperator);
+            Debug.Assert(invocationNode.NextCheckval == ushort.MaxValue);
+
+            var methodToInvoke = this.scenario.ScriptMethods[invocationNode.OperationId];
+
+            var value = Interpret(this.scenario.ScriptSyntaxNodes[methodToInvoke.SyntaxNodeIndex], out next);
+            Debug.Assert(next == ushort.MaxValue);
+
+            if (value.DataType != destType)
+            {
+                switch (destType)
+                {
+                    case ScriptDataType.Float:
+                        value.Float = value.GetFloat();
+                        value.DataType = ScriptDataType.Float;
+                        break;
+                    case ScriptDataType.Int:
+                        value.Int = value.GetInt();
+                        value.DataType = ScriptDataType.Int;
+                        break;
+                    case ScriptDataType.Short:
+                        value.Short = value.GetShort();
+                        value.DataType = ScriptDataType.Short;
+                        break;
+                    default:
+                        Debug.Fail($"No configured cast from {value.DataType} to {destType}");
+                        break;
+                }
+            }
+
+            next = node.NextIndex;
+
+            return value;
+        }
+
         private Result InterpretMethodOrOperator(ScenarioTag.ScriptSyntaxNode node)
         {
             // Dispatch to relevant implementation
@@ -175,22 +237,59 @@ namespace OpenH2.Core.Scripting.Execution
 
         private Result Begin(ScenarioTag.ScriptSyntaxNode node)
         {
-            return default;
+            var argNext = node.NextIndex;
+
+            Result result = default;
+
+            while (argNext != ushort.MaxValue)
+            {
+                result = Interpret(this.scenario.ScriptSyntaxNodes[argNext], out argNext);
+            }
+
+            return result;
         }
 
+        // TODO: not random!
         private Result BeginRandom(ScenarioTag.ScriptSyntaxNode node)
         {
-            return default;
+            return Begin(node);
         }
 
         private Result If(ScenarioTag.ScriptSyntaxNode node)
         {
-            return default;
+            var argNext = node.NextIndex;
+
+            var condition = Interpret(this.scenario.ScriptSyntaxNodes[argNext], out argNext);
+            Debug.Assert(condition.DataType == ScriptDataType.Boolean);
+
+            var trueExp = this.scenario.ScriptSyntaxNodes[argNext];
+
+            if (condition.Boolean)
+            {
+                return Interpret(trueExp, out _);
+            }
+            else
+            {
+                var falseExp = this.scenario.ScriptSyntaxNodes[trueExp.NextIndex];
+                return Interpret(falseExp, out _);
+            }
         }
 
         private Result Set(ScenarioTag.ScriptSyntaxNode node)
         {
-            return default;
+            var variableAccess = this.scenario.ScriptSyntaxNodes[node.NextIndex];
+            Debug.Assert(variableAccess.NodeType == NodeType.VariableAccess);
+            var valueExp = this.scenario.ScriptSyntaxNodes[variableAccess.NextIndex];
+
+            var variable = this.variables[variableAccess.NodeData_H16];
+            Debug.Assert(variable.DataType == valueExp.DataType);
+
+            var value = Interpret(valueExp, out var argNext);
+            Debug.Assert(argNext == ushort.MaxValue);
+            Debug.Assert(value.DataType == variable.DataType);
+
+            this.variables[variableAccess.NodeData_H16] = value;
+            return Result.From();
         }
 
         private Result And(ScenarioTag.ScriptSyntaxNode node)

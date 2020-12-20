@@ -267,17 +267,6 @@ namespace OpenH2.Core.Generators.Scripting
                             IdentifierName("ScriptDataType"),
                             IdentifierName(sdt))));
             }
-            else
-            {
-                return ReturnStatement(ObjectCreationExpression(ParseTypeName("InterpreterResult"))
-                    .WithInitializer(InitializerExpression(SyntaxKind.ObjectInitializerExpression,
-                        SingletonSeparatedList<ExpressionSyntax>(
-                            AssignmentExpression(SyntaxKind.SimpleAssignmentExpression,
-                                IdentifierName("DataType"),
-                                MemberAccessExpression(SyntaxKind.SimpleMemberAccessExpression,
-                                    IdentifierName("ScriptDataType"),
-                                    IdentifierName("Void")))))));
-            }
 
             return ReturnStatement(val);
         }
