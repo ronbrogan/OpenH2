@@ -9,16 +9,14 @@ namespace OpenH2.Core.Scripting.Execution
 {
     public partial class ScriptInterpreter
     {
-        
-    }
-
-    public partial class ScriptInterpreter
-    {
         private readonly ScenarioTag scenario;
         private readonly IScriptEngine scriptEngine;
         private readonly Result[] variables;
+        private bool interruptRequested = false;
 
-        public ScriptInterpreter(ScenarioTag scenario, IScriptEngine scriptEngine)
+        public ScriptInterpreter(
+            ScenarioTag scenario, 
+            IScriptEngine scriptEngine)
         {
             this.scenario = scenario;
             this.scriptEngine = scriptEngine;
@@ -28,6 +26,10 @@ namespace OpenH2.Core.Scripting.Execution
                 this.variables = new Result[scenario.ScriptVariables.Length];
 
                 InitializeVariables();
+            }
+            else
+            {
+                this.variables = Array.Empty<Result>();
             }
         }
 
@@ -42,7 +44,7 @@ namespace OpenH2.Core.Scripting.Execution
             }
         }
 
-        internal Result Interpret(ScenarioTag.ScriptSyntaxNode node, out ushort next)
+        public Result Interpret(ScenarioTag.ScriptSyntaxNode node, out ushort next)
         {
             next = ushort.MaxValue;
 
@@ -56,9 +58,14 @@ namespace OpenH2.Core.Scripting.Execution
             };
         }
 
-        internal Result GetVariable(int index)
+        public Result GetVariable(int index)
         {
             return this.variables[index];
+        }
+
+        public void Interrupt()
+        {
+            interruptRequested = true;
         }
 
         /// <summary>
@@ -112,9 +119,7 @@ namespace OpenH2.Core.Scripting.Execution
 
             if(node.DataType == ScriptDataType.MethodOrOperator)
             {
-                // MethodOrOperator will always consume all child nodes, no next node to bubble
-                next = ushort.MaxValue;
-                return InterpretMethodOrOperator(node);
+                return InterpretMethodOrOperator(node, out next);
             }
 
             Result result = node.DataType switch
@@ -207,13 +212,15 @@ namespace OpenH2.Core.Scripting.Execution
             return value;
         }
 
-        private Result InterpretMethodOrOperator(ScenarioTag.ScriptSyntaxNode node)
+        private Result InterpretMethodOrOperator(ScenarioTag.ScriptSyntaxNode node, out ushort next)
         {
+            next = ushort.MaxValue;
+
             // Dispatch to relevant implementation
             return node.OperationId switch
             {
-                ScriptOps.Begin => this.Begin(node),
-                ScriptOps.BeginRandom => this.BeginRandom(node),
+                ScriptOps.Begin => this.Begin(node, out next),
+                ScriptOps.BeginRandom => this.BeginRandom(node, out next),
                 ScriptOps.If => this.If(node),
                 ScriptOps.Set => this.Set(node),
                 ScriptOps.And => this.And(node),
@@ -235,24 +242,24 @@ namespace OpenH2.Core.Scripting.Execution
             };
         }
 
-        private Result Begin(ScenarioTag.ScriptSyntaxNode node)
+        private Result Begin(ScenarioTag.ScriptSyntaxNode node, out ushort next)
         {
-            var argNext = node.NextIndex;
+            next = node.NextIndex;
 
             Result result = default;
 
-            while (argNext != ushort.MaxValue)
+            while (interruptRequested == false && next != ushort.MaxValue)
             {
-                result = Interpret(this.scenario.ScriptSyntaxNodes[argNext], out argNext);
+                result = Interpret(this.scenario.ScriptSyntaxNodes[next], out next);
             }
 
             return result;
         }
 
         // TODO: not random!
-        private Result BeginRandom(ScenarioTag.ScriptSyntaxNode node)
+        private Result BeginRandom(ScenarioTag.ScriptSyntaxNode node, out ushort next)
         {
-            return Begin(node);
+            return Begin(node, out next);
         }
 
         private Result If(ScenarioTag.ScriptSyntaxNode node)

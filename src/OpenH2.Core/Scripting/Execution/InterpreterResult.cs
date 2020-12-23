@@ -1,11 +1,31 @@
-﻿using System.Diagnostics;
+﻿using OpenH2.Core.Tags.Scenario;
+using System.Collections.Generic;
+using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
 namespace OpenH2.Core.Scripting.Execution
 {
+    public struct InterpreterState
+    {
+        public Stack<ScenarioTag.ScriptSyntaxNode> CallStack;
+        public Stack<InterpreterResult> Results;
+        public InterpreterResult Result;
+
+        public static InterpreterState Create()
+        {
+            var s = new InterpreterState();
+            s.CallStack = new(32);
+            s.Results = new(6);
+            s.Result = InterpreterResult.From();
+            return s;
+        }
+
+        public bool IsComplete() => CallStack.Count > 0;
+    }
+
     [StructLayout(LayoutKind.Explicit)]
-    internal struct InterpreterResult
+    public struct InterpreterResult
     {
         [FieldOffset(0)]
         public bool Boolean;

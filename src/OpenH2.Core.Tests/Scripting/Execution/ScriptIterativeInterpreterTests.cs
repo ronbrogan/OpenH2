@@ -9,12 +9,12 @@ using Xunit.Abstractions;
 
 namespace OpenH2.Core.Tests.Scripting.Execution
 {
-    public class ScriptInterpreterTests
+    public class ScriptIterativeInterpreterTests
     {
         private readonly ITestOutputHelper output;
 
 
-        public ScriptInterpreterTests(ITestOutputHelper output)
+        public ScriptIterativeInterpreterTests(ITestOutputHelper output)
         {
             this.output = output;
         }
@@ -30,13 +30,14 @@ namespace OpenH2.Core.Tests.Scripting.Execution
                 }
             };
 
-            var interpreter = new ScriptInterpreter(scen, Mock.Of<IScriptEngine>());
+            var interpreter = new ScriptIterativeInterpreter(scen, Mock.Of<IScriptEngine>());
 
-            var result = interpreter.Interpret(scen.ScriptSyntaxNodes[0], out var n);
+            var terminated = interpreter.Interpret(scen.ScriptSyntaxNodes[0], out var state);
+            var result = state.Results.Pop();
 
             Assert.Equal(ScriptDataType.Float, result.DataType);
             Assert.Equal(2f, result.Float);
-            Assert.Equal(ushort.MaxValue, n);
+            Assert.True(terminated);
         }
 
         [Fact]
@@ -51,13 +52,14 @@ namespace OpenH2.Core.Tests.Scripting.Execution
                 }
             };
 
-            var interpreter = new ScriptInterpreter(scen, Mock.Of<IScriptEngine>());
+            var interpreter = new ScriptIterativeInterpreter(scen, Mock.Of<IScriptEngine>());
 
-            var result = interpreter.Interpret(scen.ScriptSyntaxNodes[0], out var n);
+            var terminated = interpreter.Interpret(scen.ScriptSyntaxNodes[0], out var state);
+            var result = state.Results.Pop();
 
             Assert.Equal(ScriptDataType.Float, result.DataType);
             Assert.Equal(2f, result.Float);
-            Assert.Equal(ushort.MaxValue, n);
+            Assert.True(terminated);
         }
 
         [Fact]
@@ -75,13 +77,14 @@ namespace OpenH2.Core.Tests.Scripting.Execution
                 }
             };
 
-            var interpreter = new ScriptInterpreter(scen, Mock.Of<IScriptEngine>());
+            var interpreter = new ScriptIterativeInterpreter(scen, Mock.Of<IScriptEngine>());
 
-            var result = interpreter.Interpret(scen.ScriptSyntaxNodes[0], out var n);
+            var terminated = interpreter.Interpret(scen.ScriptSyntaxNodes[0], out var state);
+            var result = state.Results.Pop();
 
             Assert.Equal(ScriptDataType.Short, result.DataType);
             Assert.Equal(6, result.Short);
-            Assert.Equal(ushort.MaxValue, n);
+            Assert.True(terminated);
         }
 
         [Fact]
@@ -102,13 +105,14 @@ namespace OpenH2.Core.Tests.Scripting.Execution
                 }
             };
 
-            var interpreter = new ScriptInterpreter(scen, Mock.Of<IScriptEngine>());
+            var interpreter = new ScriptIterativeInterpreter(scen, Mock.Of<IScriptEngine>());
 
-            var result = interpreter.Interpret(scen.ScriptSyntaxNodes[0], out var n);
+            var terminated = interpreter.Interpret(scen.ScriptSyntaxNodes[0], out var state);
+            var result = state.Results.Pop();
 
             Assert.Equal(ScriptDataType.Float, result.DataType);
             Assert.Equal(3, result.Float);
-            Assert.Equal(ushort.MaxValue, n);
+            Assert.True(terminated);
         }
 
         [Fact]
@@ -136,12 +140,13 @@ namespace OpenH2.Core.Tests.Scripting.Execution
             var engine = new Mock<IScriptEngine>();
             engine.Setup(e => e.print(It.IsAny<string>())).Callback((string s) => output.WriteLine(s));
 
-            var interpreter = new ScriptInterpreter(scen, engine.Object);
+            var interpreter = new ScriptIterativeInterpreter(scen, engine.Object);
 
-            var result = interpreter.Interpret(scen.ScriptSyntaxNodes[0], out var n);
+            var terminated = interpreter.Interpret(scen.ScriptSyntaxNodes[0], out var state);
+            var result = state.Results.Pop();
 
             Assert.Equal(ScriptDataType.Void, result.DataType);
-            Assert.Equal(ushort.MaxValue, n);
+            Assert.True(terminated);
 
             engine.Verify(e => e.print("hi"), Times.Once);
             engine.Verify(e => e.print("hey"), Times.Once);
@@ -166,13 +171,14 @@ namespace OpenH2.Core.Tests.Scripting.Execution
                 }
             };
 
-            var interpreter = new ScriptInterpreter(scen, Mock.Of<IScriptEngine>());
+            var interpreter = new ScriptIterativeInterpreter(scen, Mock.Of<IScriptEngine>());
 
-            var result = interpreter.Interpret(scen.ScriptSyntaxNodes[0], out var n);
+            var terminated = interpreter.Interpret(scen.ScriptSyntaxNodes[0], out var state);
+            var result = state.Results.Pop();
 
             Assert.Equal(ScriptDataType.Float, result.DataType);
             Assert.Equal(2f, result.Float);
-            Assert.Equal(ushort.MaxValue, n);
+            Assert.True(terminated);
         }
 
         [Fact]
@@ -193,13 +199,14 @@ namespace OpenH2.Core.Tests.Scripting.Execution
                 }
             };
 
-            var interpreter = new ScriptInterpreter(scen, Mock.Of<IScriptEngine>());
+            var interpreter = new ScriptIterativeInterpreter(scen, Mock.Of<IScriptEngine>());
 
-            var result = interpreter.Interpret(scen.ScriptSyntaxNodes[0], out var n);
+            var terminated = interpreter.Interpret(scen.ScriptSyntaxNodes[0], out var state);
+            var result = state.Results.Pop();
 
             Assert.Equal(ScriptDataType.Float, result.DataType);
             Assert.Equal(3f, result.Float);
-            Assert.Equal(ushort.MaxValue, n);
+            Assert.True(terminated);
         }
 
         [Fact]
@@ -221,7 +228,7 @@ namespace OpenH2.Core.Tests.Scripting.Execution
                 }
             };
 
-            var interpreter = new ScriptInterpreter(scen, Mock.Of<IScriptEngine>());
+            var interpreter = new ScriptIterativeInterpreter(scen, Mock.Of<IScriptEngine>());
 
             Assert.Equal(ScriptDataType.Int, interpreter.GetVariable(0).DataType);
             Assert.Equal(123, interpreter.GetVariable(0).Int);
@@ -257,7 +264,7 @@ namespace OpenH2.Core.Tests.Scripting.Execution
                 }
             };
 
-            var interpreter = new ScriptInterpreter(scen, Mock.Of<IScriptEngine>());
+            var interpreter = new ScriptIterativeInterpreter(scen, Mock.Of<IScriptEngine>());
 
             Assert.Equal(12f, interpreter.GetVariable(1));
 
@@ -288,11 +295,12 @@ namespace OpenH2.Core.Tests.Scripting.Execution
                 }
             };
 
-            var interpreter = new ScriptInterpreter(scen, Mock.Of<IScriptEngine>());
+            var interpreter = new ScriptIterativeInterpreter(scen, Mock.Of<IScriptEngine>());
 
             Assert.Equal(12f, interpreter.GetVariable(1));
 
-            var result = interpreter.Interpret(scen.ScriptSyntaxNodes[0], out var n);
+            var terminated = interpreter.Interpret(scen.ScriptSyntaxNodes[0], out var state);
+            var result = state.Results.Pop();
 
             Assert.Equal(12f, result.Float);
             Assert.Equal(12f, interpreter.GetVariable(1));
@@ -325,7 +333,7 @@ namespace OpenH2.Core.Tests.Scripting.Execution
                 }
             };
 
-            var interpreter = new ScriptInterpreter(scen, Mock.Of<IScriptEngine>());
+            var interpreter = new ScriptIterativeInterpreter(scen, Mock.Of<IScriptEngine>());
 
             // Ensure initialization worked
             Assert.Equal(12f, interpreter.GetVariable(1));
@@ -335,8 +343,8 @@ namespace OpenH2.Core.Tests.Scripting.Execution
             Assert.Equal(2f, interpreter.GetVariable(1));
 
             // Get
-            var getResult = interpreter.Interpret(scen.ScriptSyntaxNodes[7], out _);
-            Assert.Equal(2f, getResult.Float);
+            var terminated = interpreter.Interpret(scen.ScriptSyntaxNodes[7], out var state);
+            Assert.Equal(2f, state.Results.Pop().Float);
         }
 
         [Fact]
@@ -354,13 +362,14 @@ namespace OpenH2.Core.Tests.Scripting.Execution
                 }
             };
 
-            var interpreter = new ScriptInterpreter(scen, Mock.Of<IScriptEngine>());
+            var interpreter = new ScriptIterativeInterpreter(scen, Mock.Of<IScriptEngine>());
 
-            var result = interpreter.Interpret(scen.ScriptSyntaxNodes[0], out var n);
+            var terminated = interpreter.Interpret(scen.ScriptSyntaxNodes[0], out var state);
+            var result = state.Results.Pop();
 
             Assert.Equal(ScriptDataType.Float, result.DataType);
             Assert.Equal(6f, result.Float);
-            Assert.Equal(ushort.MaxValue, n);
+            Assert.True(terminated);
         }
 
         [Fact]
@@ -377,13 +386,14 @@ namespace OpenH2.Core.Tests.Scripting.Execution
                 }
             };
 
-            var interpreter = new ScriptInterpreter(scen, Mock.Of<IScriptEngine>());
+            var interpreter = new ScriptIterativeInterpreter(scen, Mock.Of<IScriptEngine>());
 
-            var result = interpreter.Interpret(scen.ScriptSyntaxNodes[0], out var n);
+            var terminated = interpreter.Interpret(scen.ScriptSyntaxNodes[0], out var state);
+            var result = state.Results.Pop();
 
             Assert.Equal(ScriptDataType.Float, result.DataType);
             Assert.Equal(0f, result.Float);
-            Assert.Equal(ushort.MaxValue, n);
+            Assert.True(terminated);
         }
 
         [Fact]
@@ -401,13 +411,14 @@ namespace OpenH2.Core.Tests.Scripting.Execution
                 }
             };
 
-            var interpreter = new ScriptInterpreter(scen, Mock.Of<IScriptEngine>());
+            var interpreter = new ScriptIterativeInterpreter(scen, Mock.Of<IScriptEngine>());
 
-            var result = interpreter.Interpret(scen.ScriptSyntaxNodes[0], out var n);
+            var terminated = interpreter.Interpret(scen.ScriptSyntaxNodes[0], out var state);
+            var result = state.Results.Pop();
 
             Assert.Equal(ScriptDataType.Float, result.DataType);
             Assert.Equal(8f, result.Float);
-            Assert.Equal(ushort.MaxValue, n);
+            Assert.True(terminated);
         }
 
         [Fact]
@@ -424,13 +435,14 @@ namespace OpenH2.Core.Tests.Scripting.Execution
                 }
             };
 
-            var interpreter = new ScriptInterpreter(scen, Mock.Of<IScriptEngine>());
+            var interpreter = new ScriptIterativeInterpreter(scen, Mock.Of<IScriptEngine>());
 
-            var result = interpreter.Interpret(scen.ScriptSyntaxNodes[0], out var n);
+            var terminated = interpreter.Interpret(scen.ScriptSyntaxNodes[0], out var state);
+            var result = state.Results.Pop();
 
             Assert.Equal(ScriptDataType.Float, result.DataType);
             Assert.Equal(1f, result.Float);
-            Assert.Equal(ushort.MaxValue, n);
+            Assert.True(terminated);
         }
 
         [Fact]
@@ -447,13 +459,14 @@ namespace OpenH2.Core.Tests.Scripting.Execution
                 }
             };
 
-            var interpreter = new ScriptInterpreter(scen, Mock.Of<IScriptEngine>());
+            var interpreter = new ScriptIterativeInterpreter(scen, Mock.Of<IScriptEngine>());
 
-            var result = interpreter.Interpret(scen.ScriptSyntaxNodes[0], out var n);
+            var terminated = interpreter.Interpret(scen.ScriptSyntaxNodes[0], out var state);
+            var result = state.Results.Pop();
 
             Assert.Equal(ScriptDataType.Float, result.DataType);
             Assert.Equal(1f, result.Float);
-            Assert.Equal(ushort.MaxValue, n);
+            Assert.True(terminated);
         }
 
         [Fact]
@@ -470,13 +483,14 @@ namespace OpenH2.Core.Tests.Scripting.Execution
                 }
             };
 
-            var interpreter = new ScriptInterpreter(scen, Mock.Of<IScriptEngine>());
+            var interpreter = new ScriptIterativeInterpreter(scen, Mock.Of<IScriptEngine>());
 
-            var result = interpreter.Interpret(scen.ScriptSyntaxNodes[0], out var n);
+            var terminated = interpreter.Interpret(scen.ScriptSyntaxNodes[0], out var state);
+            var result = state.Results.Pop();
 
             Assert.Equal(ScriptDataType.Float, result.DataType);
             Assert.Equal(1f, result.Float);
-            Assert.Equal(ushort.MaxValue, n);
+            Assert.True(terminated);
         }
 
         [Fact]
@@ -493,13 +507,14 @@ namespace OpenH2.Core.Tests.Scripting.Execution
                 }
             };
 
-            var interpreter = new ScriptInterpreter(scen, Mock.Of<IScriptEngine>());
+            var interpreter = new ScriptIterativeInterpreter(scen, Mock.Of<IScriptEngine>());
 
-            var result = interpreter.Interpret(scen.ScriptSyntaxNodes[0], out var n);
+            var terminated = interpreter.Interpret(scen.ScriptSyntaxNodes[0], out var state);
+            var result = state.Results.Pop();
 
             Assert.Equal(ScriptDataType.Float, result.DataType);
             Assert.Equal(2f, result.Float);
-            Assert.Equal(ushort.MaxValue, n);
+            Assert.True(terminated);
         }
 
         [Fact]
@@ -516,13 +531,14 @@ namespace OpenH2.Core.Tests.Scripting.Execution
                 }
             };
 
-            var interpreter = new ScriptInterpreter(scen, Mock.Of<IScriptEngine>());
+            var interpreter = new ScriptIterativeInterpreter(scen, Mock.Of<IScriptEngine>());
 
-            var result = interpreter.Interpret(scen.ScriptSyntaxNodes[0], out var n);
+            var terminated = interpreter.Interpret(scen.ScriptSyntaxNodes[0], out var state);
+            var result = state.Results.Pop();
 
             Assert.Equal(ScriptDataType.Float, result.DataType);
             Assert.Equal(2f, result.Float);
-            Assert.Equal(ushort.MaxValue, n);
+            Assert.True(terminated);
         }
 
         [Fact]
@@ -539,13 +555,14 @@ namespace OpenH2.Core.Tests.Scripting.Execution
                 }
             };
 
-            var interpreter = new ScriptInterpreter(scen, Mock.Of<IScriptEngine>());
+            var interpreter = new ScriptIterativeInterpreter(scen, Mock.Of<IScriptEngine>());
 
-            var result = interpreter.Interpret(scen.ScriptSyntaxNodes[0], out var n);
+            var terminated = interpreter.Interpret(scen.ScriptSyntaxNodes[0], out var state);
+            var result = state.Results.Pop();
 
             Assert.Equal(ScriptDataType.Boolean, result.DataType);
             Assert.True(result.Boolean);
-            Assert.Equal(ushort.MaxValue, n);
+            Assert.True(terminated);
         }
 
         [Fact]
@@ -562,13 +579,14 @@ namespace OpenH2.Core.Tests.Scripting.Execution
                 }
             };
 
-            var interpreter = new ScriptInterpreter(scen, Mock.Of<IScriptEngine>());
+            var interpreter = new ScriptIterativeInterpreter(scen, Mock.Of<IScriptEngine>());
 
-            var result = interpreter.Interpret(scen.ScriptSyntaxNodes[0], out var n);
+            var terminated = interpreter.Interpret(scen.ScriptSyntaxNodes[0], out var state);
+            var result = state.Results.Pop();
 
             Assert.Equal(ScriptDataType.Boolean, result.DataType);
             Assert.False(result.Boolean);
-            Assert.Equal(ushort.MaxValue, n);
+            Assert.True(terminated);
         }
 
         [Fact]
@@ -585,13 +603,14 @@ namespace OpenH2.Core.Tests.Scripting.Execution
                 }
             };
 
-            var interpreter = new ScriptInterpreter(scen, Mock.Of<IScriptEngine>());
+            var interpreter = new ScriptIterativeInterpreter(scen, Mock.Of<IScriptEngine>());
 
-            var result = interpreter.Interpret(scen.ScriptSyntaxNodes[0], out var n);
+            var terminated = interpreter.Interpret(scen.ScriptSyntaxNodes[0], out var state);
+            var result = state.Results.Pop();
 
             Assert.Equal(ScriptDataType.Boolean, result.DataType);
             Assert.True(result.Boolean);
-            Assert.Equal(ushort.MaxValue, n);
+            Assert.True(terminated);
         }
 
         [Fact]
@@ -608,13 +627,14 @@ namespace OpenH2.Core.Tests.Scripting.Execution
                 }
             };
 
-            var interpreter = new ScriptInterpreter(scen, Mock.Of<IScriptEngine>());
+            var interpreter = new ScriptIterativeInterpreter(scen, Mock.Of<IScriptEngine>());
 
-            var result = interpreter.Interpret(scen.ScriptSyntaxNodes[0], out var n);
+            var terminated = interpreter.Interpret(scen.ScriptSyntaxNodes[0], out var state);
+            var result = state.Results.Pop();
 
             Assert.Equal(ScriptDataType.Boolean, result.DataType);
             Assert.False(result.Boolean);
-            Assert.Equal(ushort.MaxValue, n);
+            Assert.True(terminated);
         }
 
         [Fact]
@@ -631,13 +651,14 @@ namespace OpenH2.Core.Tests.Scripting.Execution
                 }
             };
 
-            var interpreter = new ScriptInterpreter(scen, Mock.Of<IScriptEngine>());
+            var interpreter = new ScriptIterativeInterpreter(scen, Mock.Of<IScriptEngine>());
 
-            var result = interpreter.Interpret(scen.ScriptSyntaxNodes[0], out var n);
+            var terminated = interpreter.Interpret(scen.ScriptSyntaxNodes[0], out var state);
+            var result = state.Results.Pop();
 
             Assert.Equal(ScriptDataType.Boolean, result.DataType);
             Assert.True(result.Boolean);
-            Assert.Equal(ushort.MaxValue, n);
+            Assert.True(terminated);
         }
 
         [Fact]
@@ -654,13 +675,14 @@ namespace OpenH2.Core.Tests.Scripting.Execution
                 }
             };
 
-            var interpreter = new ScriptInterpreter(scen, Mock.Of<IScriptEngine>());
+            var interpreter = new ScriptIterativeInterpreter(scen, Mock.Of<IScriptEngine>());
 
-            var result = interpreter.Interpret(scen.ScriptSyntaxNodes[0], out var n);
+            var terminated = interpreter.Interpret(scen.ScriptSyntaxNodes[0], out var state);
+            var result = state.Results.Pop();
 
             Assert.Equal(ScriptDataType.Boolean, result.DataType);
             Assert.False(result.Boolean);
-            Assert.Equal(ushort.MaxValue, n);
+            Assert.True(terminated);
         }
 
         [Fact]
@@ -677,13 +699,14 @@ namespace OpenH2.Core.Tests.Scripting.Execution
                 }
             };
 
-            var interpreter = new ScriptInterpreter(scen, Mock.Of<IScriptEngine>());
+            var interpreter = new ScriptIterativeInterpreter(scen, Mock.Of<IScriptEngine>());
 
-            var result = interpreter.Interpret(scen.ScriptSyntaxNodes[0], out var n);
+            var terminated = interpreter.Interpret(scen.ScriptSyntaxNodes[0], out var state);
+            var result = state.Results.Pop();
 
             Assert.Equal(ScriptDataType.Boolean, result.DataType);
             Assert.True(result.Boolean);
-            Assert.Equal(ushort.MaxValue, n);
+            Assert.True(terminated);
         }
 
         [Fact]
@@ -700,13 +723,14 @@ namespace OpenH2.Core.Tests.Scripting.Execution
                 }
             };
 
-            var interpreter = new ScriptInterpreter(scen, Mock.Of<IScriptEngine>());
+            var interpreter = new ScriptIterativeInterpreter(scen, Mock.Of<IScriptEngine>());
 
-            var result = interpreter.Interpret(scen.ScriptSyntaxNodes[0], out var n);
+            var terminated = interpreter.Interpret(scen.ScriptSyntaxNodes[0], out var state);
+            var result = state.Results.Pop();
 
             Assert.Equal(ScriptDataType.Boolean, result.DataType);
             Assert.False(result.Boolean);
-            Assert.Equal(ushort.MaxValue, n);
+            Assert.True(terminated);
         }
 
         [Fact]
@@ -723,13 +747,14 @@ namespace OpenH2.Core.Tests.Scripting.Execution
                 }
             };
 
-            var interpreter = new ScriptInterpreter(scen, Mock.Of<IScriptEngine>());
+            var interpreter = new ScriptIterativeInterpreter(scen, Mock.Of<IScriptEngine>());
 
-            var result = interpreter.Interpret(scen.ScriptSyntaxNodes[0], out var n);
+            var terminated = interpreter.Interpret(scen.ScriptSyntaxNodes[0], out var state);
+            var result = state.Results.Pop();
 
             Assert.Equal(ScriptDataType.Boolean, result.DataType);
             Assert.True(result.Boolean);
-            Assert.Equal(ushort.MaxValue, n);
+            Assert.True(terminated);
         }
 
         [Fact]
@@ -746,13 +771,14 @@ namespace OpenH2.Core.Tests.Scripting.Execution
                 }
             };
 
-            var interpreter = new ScriptInterpreter(scen, Mock.Of<IScriptEngine>());
+            var interpreter = new ScriptIterativeInterpreter(scen, Mock.Of<IScriptEngine>());
 
-            var result = interpreter.Interpret(scen.ScriptSyntaxNodes[0], out var n);
+            var terminated = interpreter.Interpret(scen.ScriptSyntaxNodes[0], out var state);
+            var result = state.Results.Pop();
 
             Assert.Equal(ScriptDataType.Boolean, result.DataType);
             Assert.False(result.Boolean);
-            Assert.Equal(ushort.MaxValue, n);
+            Assert.True(terminated);
         }
 
         [Fact]
@@ -769,13 +795,14 @@ namespace OpenH2.Core.Tests.Scripting.Execution
                 }
             };
 
-            var interpreter = new ScriptInterpreter(scen, Mock.Of<IScriptEngine>());
+            var interpreter = new ScriptIterativeInterpreter(scen, Mock.Of<IScriptEngine>());
 
-            var result = interpreter.Interpret(scen.ScriptSyntaxNodes[0], out var n);
+            var terminated = interpreter.Interpret(scen.ScriptSyntaxNodes[0], out var state);
+            var result = state.Results.Pop();
 
             Assert.Equal(ScriptDataType.Boolean, result.DataType);
             Assert.True(result.Boolean);
-            Assert.Equal(ushort.MaxValue, n);
+            Assert.True(terminated);
         }
 
         [Fact]
@@ -792,13 +819,14 @@ namespace OpenH2.Core.Tests.Scripting.Execution
                 }
             };
 
-            var interpreter = new ScriptInterpreter(scen, Mock.Of<IScriptEngine>());
+            var interpreter = new ScriptIterativeInterpreter(scen, Mock.Of<IScriptEngine>());
 
-            var result = interpreter.Interpret(scen.ScriptSyntaxNodes[0], out var n);
+            var terminated = interpreter.Interpret(scen.ScriptSyntaxNodes[0], out var state);
+            var result = state.Results.Pop();
 
             Assert.Equal(ScriptDataType.Boolean, result.DataType);
             Assert.False(result.Boolean);
-            Assert.Equal(ushort.MaxValue, n);
+            Assert.True(terminated);
         }
 
         [Fact]
@@ -815,13 +843,14 @@ namespace OpenH2.Core.Tests.Scripting.Execution
                 }
             };
 
-            var interpreter = new ScriptInterpreter(scen, Mock.Of<IScriptEngine>());
+            var interpreter = new ScriptIterativeInterpreter(scen, Mock.Of<IScriptEngine>());
 
-            var result = interpreter.Interpret(scen.ScriptSyntaxNodes[0], out var n);
+            var terminated = interpreter.Interpret(scen.ScriptSyntaxNodes[0], out var state);
+            var result = state.Results.Pop();
 
             Assert.Equal(ScriptDataType.Boolean, result.DataType);
             Assert.True(result.Boolean);
-            Assert.Equal(ushort.MaxValue, n);
+            Assert.True(terminated);
         }
 
         [Fact]
@@ -838,13 +867,14 @@ namespace OpenH2.Core.Tests.Scripting.Execution
                 }
             };
 
-            var interpreter = new ScriptInterpreter(scen, Mock.Of<IScriptEngine>());
+            var interpreter = new ScriptIterativeInterpreter(scen, Mock.Of<IScriptEngine>());
 
-            var result = interpreter.Interpret(scen.ScriptSyntaxNodes[0], out var n);
+            var terminated = interpreter.Interpret(scen.ScriptSyntaxNodes[0], out var state);
+            var result = state.Results.Pop();
 
             Assert.Equal(ScriptDataType.Boolean, result.DataType);
             Assert.False(result.Boolean);
-            Assert.Equal(ushort.MaxValue, n);
+            Assert.True(terminated);
         }
 
         [Fact]
@@ -861,13 +891,14 @@ namespace OpenH2.Core.Tests.Scripting.Execution
                 }
             };
 
-            var interpreter = new ScriptInterpreter(scen, Mock.Of<IScriptEngine>());
+            var interpreter = new ScriptIterativeInterpreter(scen, Mock.Of<IScriptEngine>());
 
-            var result = interpreter.Interpret(scen.ScriptSyntaxNodes[0], out var n);
+            var terminated = interpreter.Interpret(scen.ScriptSyntaxNodes[0], out var state);
+            var result = state.Results.Pop();
 
             Assert.Equal(ScriptDataType.Boolean, result.DataType);
             Assert.True(result.Boolean);
-            Assert.Equal(ushort.MaxValue, n);
+            Assert.True(terminated);
         }
 
         [Fact]
@@ -884,13 +915,14 @@ namespace OpenH2.Core.Tests.Scripting.Execution
                 }
             };
 
-            var interpreter = new ScriptInterpreter(scen, Mock.Of<IScriptEngine>());
+            var interpreter = new ScriptIterativeInterpreter(scen, Mock.Of<IScriptEngine>());
 
-            var result = interpreter.Interpret(scen.ScriptSyntaxNodes[0], out var n);
+            var terminated = interpreter.Interpret(scen.ScriptSyntaxNodes[0], out var state);
+            var result = state.Results.Pop();
 
             Assert.Equal(ScriptDataType.Boolean, result.DataType);
             Assert.False(result.Boolean);
-            Assert.Equal(ushort.MaxValue, n);
+            Assert.True(terminated);
         }
 
         [Fact]
@@ -907,13 +939,14 @@ namespace OpenH2.Core.Tests.Scripting.Execution
                 }
             };
 
-            var interpreter = new ScriptInterpreter(scen, Mock.Of<IScriptEngine>());
+            var interpreter = new ScriptIterativeInterpreter(scen, Mock.Of<IScriptEngine>());
 
-            var result = interpreter.Interpret(scen.ScriptSyntaxNodes[0], out var n);
+            var terminated = interpreter.Interpret(scen.ScriptSyntaxNodes[0], out var state);
+            var result = state.Results.Pop();
 
             Assert.Equal(ScriptDataType.Boolean, result.DataType);
             Assert.True(result.Boolean);
-            Assert.Equal(ushort.MaxValue, n);
+            Assert.True(terminated);
         }
 
         [Fact]
@@ -930,13 +963,14 @@ namespace OpenH2.Core.Tests.Scripting.Execution
                 }
             };
 
-            var interpreter = new ScriptInterpreter(scen, Mock.Of<IScriptEngine>());
+            var interpreter = new ScriptIterativeInterpreter(scen, Mock.Of<IScriptEngine>());
 
-            var result = interpreter.Interpret(scen.ScriptSyntaxNodes[0], out var n);
+            var terminated = interpreter.Interpret(scen.ScriptSyntaxNodes[0], out var state);
+            var result = state.Results.Pop();
 
             Assert.Equal(ScriptDataType.Boolean, result.DataType);
             Assert.False(result.Boolean);
-            Assert.Equal(ushort.MaxValue, n);
+            Assert.True(terminated);
         }
 
         [Fact]
@@ -953,13 +987,14 @@ namespace OpenH2.Core.Tests.Scripting.Execution
                 }
             };
 
-            var interpreter = new ScriptInterpreter(scen, Mock.Of<IScriptEngine>());
+            var interpreter = new ScriptIterativeInterpreter(scen, Mock.Of<IScriptEngine>());
 
-            var result = interpreter.Interpret(scen.ScriptSyntaxNodes[0], out var n);
+            var terminated = interpreter.Interpret(scen.ScriptSyntaxNodes[0], out var state);
+            var result = state.Results.Pop();
 
             Assert.Equal(ScriptDataType.Boolean, result.DataType);
             Assert.True(result.Boolean);
-            Assert.Equal(ushort.MaxValue, n);
+            Assert.True(terminated);
         }
 
         [Fact]
@@ -976,13 +1011,14 @@ namespace OpenH2.Core.Tests.Scripting.Execution
                 }
             };
 
-            var interpreter = new ScriptInterpreter(scen, Mock.Of<IScriptEngine>());
+            var interpreter = new ScriptIterativeInterpreter(scen, Mock.Of<IScriptEngine>());
 
-            var result = interpreter.Interpret(scen.ScriptSyntaxNodes[0], out var n);
+            var terminated = interpreter.Interpret(scen.ScriptSyntaxNodes[0], out var state);
+            var result = state.Results.Pop();
 
             Assert.Equal(ScriptDataType.Boolean, result.DataType);
             Assert.False(result.Boolean);
-            Assert.Equal(ushort.MaxValue, n);
+            Assert.True(terminated);
         }
 
         [Fact]
@@ -999,13 +1035,14 @@ namespace OpenH2.Core.Tests.Scripting.Execution
                 }
             };
 
-            var interpreter = new ScriptInterpreter(scen, Mock.Of<IScriptEngine>());
+            var interpreter = new ScriptIterativeInterpreter(scen, Mock.Of<IScriptEngine>());
 
-            var result = interpreter.Interpret(scen.ScriptSyntaxNodes[0], out var n);
+            var terminated = interpreter.Interpret(scen.ScriptSyntaxNodes[0], out var state);
+            var result = state.Results.Pop();
 
             Assert.Equal(ScriptDataType.Boolean, result.DataType);
             Assert.True(result.Boolean);
-            Assert.Equal(ushort.MaxValue, n);
+            Assert.True(terminated);
         }
 
         [Fact]
@@ -1022,13 +1059,14 @@ namespace OpenH2.Core.Tests.Scripting.Execution
                 }
             };
 
-            var interpreter = new ScriptInterpreter(scen, Mock.Of<IScriptEngine>());
+            var interpreter = new ScriptIterativeInterpreter(scen, Mock.Of<IScriptEngine>());
 
-            var result = interpreter.Interpret(scen.ScriptSyntaxNodes[0], out var n);
+            var terminated = interpreter.Interpret(scen.ScriptSyntaxNodes[0], out var state);
+            var result = state.Results.Pop();
 
             Assert.Equal(ScriptDataType.Boolean, result.DataType);
             Assert.False(result.Boolean);
-            Assert.Equal(ushort.MaxValue, n);
+            Assert.True(terminated);
         }
 
         [Fact]
@@ -1046,13 +1084,14 @@ namespace OpenH2.Core.Tests.Scripting.Execution
                 }
             };
 
-            var interpreter = new ScriptInterpreter(scen, Mock.Of<IScriptEngine>());
+            var interpreter = new ScriptIterativeInterpreter(scen, Mock.Of<IScriptEngine>());
 
-            var result = interpreter.Interpret(scen.ScriptSyntaxNodes[0], out var n);
+            var terminated = interpreter.Interpret(scen.ScriptSyntaxNodes[0], out var state);
+            var result = state.Results.Pop();
 
             Assert.Equal(ScriptDataType.Boolean, result.DataType);
             Assert.True(result.Boolean);
-            Assert.Equal(ushort.MaxValue, n);
+            Assert.True(terminated);
         }
 
         [Fact]
@@ -1070,13 +1109,14 @@ namespace OpenH2.Core.Tests.Scripting.Execution
                 }
             };
 
-            var interpreter = new ScriptInterpreter(scen, Mock.Of<IScriptEngine>());
+            var interpreter = new ScriptIterativeInterpreter(scen, Mock.Of<IScriptEngine>());
 
-            var result = interpreter.Interpret(scen.ScriptSyntaxNodes[0], out var n);
+            var terminated = interpreter.Interpret(scen.ScriptSyntaxNodes[0], out var state);
+            var result = state.Results.Pop();
 
             Assert.Equal(ScriptDataType.Boolean, result.DataType);
             Assert.False(result.Boolean);
-            Assert.Equal(ushort.MaxValue, n);
+            Assert.True(terminated);
         }
 
         [Fact]
@@ -1094,13 +1134,14 @@ namespace OpenH2.Core.Tests.Scripting.Execution
                 }
             };
 
-            var interpreter = new ScriptInterpreter(scen, Mock.Of<IScriptEngine>());
+            var interpreter = new ScriptIterativeInterpreter(scen, Mock.Of<IScriptEngine>());
 
-            var result = interpreter.Interpret(scen.ScriptSyntaxNodes[0], out var n);
+            var terminated = interpreter.Interpret(scen.ScriptSyntaxNodes[0], out var state);
+            var result = state.Results.Pop();
 
             Assert.Equal(ScriptDataType.Boolean, result.DataType);
             Assert.True(result.Boolean);
-            Assert.Equal(ushort.MaxValue, n);
+            Assert.True(terminated);
         }
 
         [Fact]
@@ -1118,13 +1159,14 @@ namespace OpenH2.Core.Tests.Scripting.Execution
                 }
             };
 
-            var interpreter = new ScriptInterpreter(scen, Mock.Of<IScriptEngine>());
+            var interpreter = new ScriptIterativeInterpreter(scen, Mock.Of<IScriptEngine>());
 
-            var result = interpreter.Interpret(scen.ScriptSyntaxNodes[0], out var n);
+            var terminated = interpreter.Interpret(scen.ScriptSyntaxNodes[0], out var state);
+            var result = state.Results.Pop();
 
             Assert.Equal(ScriptDataType.Boolean, result.DataType);
             Assert.True(result.Boolean);
-            Assert.Equal(ushort.MaxValue, n);
+            Assert.True(terminated);
         }
 
         [Fact]
@@ -1142,13 +1184,14 @@ namespace OpenH2.Core.Tests.Scripting.Execution
                 }
             };
 
-            var interpreter = new ScriptInterpreter(scen, Mock.Of<IScriptEngine>());
+            var interpreter = new ScriptIterativeInterpreter(scen, Mock.Of<IScriptEngine>());
 
-            var result = interpreter.Interpret(scen.ScriptSyntaxNodes[0], out var n);
+            var terminated = interpreter.Interpret(scen.ScriptSyntaxNodes[0], out var state);
+            var result = state.Results.Pop();
 
             Assert.Equal(ScriptDataType.Boolean, result.DataType);
             Assert.False(result.Boolean);
-            Assert.Equal(ushort.MaxValue, n);
+            Assert.True(terminated);
         }
 
         [Fact]
@@ -1164,13 +1207,14 @@ namespace OpenH2.Core.Tests.Scripting.Execution
                 }
             };
 
-            var interpreter = new ScriptInterpreter(scen, Mock.Of<IScriptEngine>());
+            var interpreter = new ScriptIterativeInterpreter(scen, Mock.Of<IScriptEngine>());
 
-            var result = interpreter.Interpret(scen.ScriptSyntaxNodes[0], out var n);
+            var terminated = interpreter.Interpret(scen.ScriptSyntaxNodes[0], out var state);
+            var result = state.Results.Pop();
 
             Assert.Equal(ScriptDataType.Boolean, result.DataType);
             Assert.False(result.Boolean);
-            Assert.Equal(ushort.MaxValue, n);
+            Assert.True(terminated);
         }
 
         [Fact]
@@ -1186,13 +1230,14 @@ namespace OpenH2.Core.Tests.Scripting.Execution
                 }
             };
 
-            var interpreter = new ScriptInterpreter(scen, Mock.Of<IScriptEngine>());
+            var interpreter = new ScriptIterativeInterpreter(scen, Mock.Of<IScriptEngine>());
 
-            var result = interpreter.Interpret(scen.ScriptSyntaxNodes[0], out var n);
+            var terminated = interpreter.Interpret(scen.ScriptSyntaxNodes[0], out var state);
+            var result = state.Results.Pop();
 
             Assert.Equal(ScriptDataType.Boolean, result.DataType);
             Assert.True(result.Boolean);
-            Assert.Equal(ushort.MaxValue, n);
+            Assert.True(terminated);
         }
 
         private ScenarioTag.ScriptSyntaxNode ScopeNode(ScriptDataType dt, ushort op, ushort child, ushort next = 65535)

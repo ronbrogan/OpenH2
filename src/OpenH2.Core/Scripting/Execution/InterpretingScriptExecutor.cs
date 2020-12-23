@@ -1,8 +1,6 @@
 ﻿using OpenH2.Core.Maps;
 using OpenH2.Core.Tags.Scenario;
 using System;
-using System.Collections.Generic;
-using System.Reflection;
 using System.Threading.Tasks;
 
 namespace OpenH2.Core.Scripting.Execution

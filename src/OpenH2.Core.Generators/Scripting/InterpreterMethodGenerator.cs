@@ -20,8 +20,6 @@ namespace OpenH2.Core.Generators.Scripting
 
         public void Execute(GeneratorExecutionContext context)
         {
-            //Debugger.Launch();
-
             var scriptEngine = context.Compilation.GetTypeByMetadataName("OpenH2.Core.Scripting.IScriptEngine");
 
             var cls = GeneratePartialClass(scriptEngine);
