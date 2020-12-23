@@ -1,16 +1,12 @@
 ﻿using OpenH2.Core.Enums;
-using OpenH2.Core.Maps.Vista;
-using OpenH2.Core.Offsets;
+using OpenH2.Core.Maps;
 using OpenH2.Core.Tags;
-using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace OpenH2.ScenarioExplorer.ViewModels
 {
     public static class DataPreviewViewModelFactory
     {
-        public static DataPreviewViewModel Create(int offset, TagViewModel tag, H2vMap map)
+        public static DataPreviewViewModel Create(int offset, TagViewModel tag, IH2Map map)
         {
             var vm = new DataPreviewViewModel(offset, tag);
 

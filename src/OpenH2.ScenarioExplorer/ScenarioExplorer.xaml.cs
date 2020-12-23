@@ -168,18 +168,11 @@ namespace OpenH2.ScenarioExplorer
                 return;
             }
 
-            
-               
             var matfac = new MaterialFactory(Environment.CurrentDirectory + "/Configs");
             var factory = new MapFactory(Path.GetDirectoryName(path));
             var scene = factory.Load(Path.GetFileName(path));
 
-            if(scene is not H2vMap map)
-            {
-                throw new Exception("Only support for Halo 2 Vista maps is currently available");
-            }
-
-            var vm = new ScenarioViewModel(map, prefs.DiscoveryMode);
+            var vm = new ScenarioViewModel(scene, prefs.DiscoveryMode);
 
             DataCtx.LoadedScenario = vm;
             DataCtx.SelectedEntry = vm.TreeRoots[0];

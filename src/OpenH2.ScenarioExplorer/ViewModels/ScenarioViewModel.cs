@@ -1,4 +1,5 @@
-﻿using OpenH2.Core.Maps.Vista;
+﻿using OpenH2.Core.Maps;
+using OpenH2.Core.Maps.Vista;
 using OpenH2.Core.Tags;
 using OpenH2.ScenarioExplorer.Processors;
 using PropertyChanged;
@@ -16,7 +17,7 @@ namespace OpenH2.ScenarioExplorer.ViewModels
 
         public Dictionary<uint, TagViewModel> TagLookup = new Dictionary<uint, TagViewModel>();
 
-        public H2vMap Scene { get; }
+        public IH2Map Scene { get; }
         private readonly bool discoveryMode;
 
         private ITagTreeProcessor treeProcessor;
@@ -33,7 +34,7 @@ namespace OpenH2.ScenarioExplorer.ViewModels
 
         public ScenarioViewModel() { }
 
-        public ScenarioViewModel(H2vMap scene, bool discoveryMode = true)
+        public ScenarioViewModel(IH2Map scene, bool discoveryMode = true)
         {
             this.Scene = scene;
             this.discoveryMode = discoveryMode;

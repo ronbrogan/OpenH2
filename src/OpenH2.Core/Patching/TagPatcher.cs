@@ -214,6 +214,39 @@ namespace OpenH2.Core.Patching
             }
         }
 
+        public void WriteByteArray(Stream data, int offset, JsonElement value)
+        {
+            if (value.ValueKind != JsonValueKind.String)
+            {
+                throw new Exception("Byte array values must be a hex string");
+            }
+
+            var hex = value.GetString();
+
+            if (hex.Length % 2 == 1)
+                throw new Exception("Hex data must have an even number of characters");
+
+            var arr = new byte[hex.Length >> 1];
+
+            for (int i = 0; i < hex.Length >> 1; ++i)
+            {
+                arr[i] = (byte)((GetHexVal(hex[i << 1]) << 4) + (GetHexVal(hex[(i << 1) + 1])));
+            }
+
+            data.Write(arr);
+
+            int GetHexVal(char hex)
+            {
+                int val = (int)hex;
+                //For uppercase A-F letters:
+                //return val - (val < 58 ? 48 : 55);
+                //For lowercase a-f letters:
+                //return val - (val < 58 ? 48 : 87);
+                //Or the two combined, but a bit slower:
+                return val - (val < 58 ? 48 : (val < 97 ? 55 : 87));
+            }
+        }
+
         private uint GetTagIdFromString(string tagNameWithExtension)
         {
             var tagName = tagNameWithExtension.Substring(0, tagNameWithExtension.IndexOf('.'));

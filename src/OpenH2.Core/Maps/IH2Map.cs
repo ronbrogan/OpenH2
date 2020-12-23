@@ -2,7 +2,9 @@
 using OpenBlam.Core.Maps;
 using OpenBlam.Serialization.Materialization;
 using OpenH2.Core.Enums;
+using OpenH2.Core.Offsets;
 using OpenH2.Core.Tags;
+using System;
 using System.Collections.Generic;
 using System.IO;
 
@@ -18,6 +20,9 @@ namespace OpenH2.Core.Maps
         Dictionary<uint, TagIndexEntry> TagIndex { get; set; }
         DataFile OriginFile { get; }
         void LoadWellKnownTags();
+
+        Memory<byte> ReadData(DataFile source, IOffset offset, int length);
+        SecondaryOffset GetSecondaryOffset(DataFile source, int rawOffset);
 
         bool TryGetTag<T>(uint id, out T? tag) where T : BaseTag;
         bool TryGetTag<T>(TagRef<T> tagref, out T? tag) where T : BaseTag;
@@ -82,6 +87,16 @@ namespace OpenH2.Core.Maps
 
         public void LoadWellKnownTags()
         {
+        }
+
+        public Memory<byte> ReadData(DataFile source, IOffset offset, int length)
+        {
+            return new byte[0];
+        }
+
+        public SecondaryOffset GetSecondaryOffset(DataFile source, int rawOffset)
+        {
+            return new SecondaryOffset(this, rawOffset);
         }
     }
 }

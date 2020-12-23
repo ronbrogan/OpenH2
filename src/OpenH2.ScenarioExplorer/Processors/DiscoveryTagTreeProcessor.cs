@@ -1,5 +1,6 @@
 ﻿using OpenBlam.Core.Extensions;
 using OpenH2.Core.Extensions;
+using OpenH2.Core.Maps;
 using OpenH2.Core.Maps.Vista;
 using OpenH2.Core.Tags;
 using OpenH2.ScenarioExplorer.ViewModels;
@@ -11,11 +12,11 @@ namespace OpenH2.ScenarioExplorer.Processors
 {
     public class DiscoveryTagTreeProcessor : ITagTreeProcessor
     {
-        private readonly H2vMap scene;
+        private readonly IH2Map scene;
 
         private (uint, uint) sceneTagIndexRange;
 
-        public DiscoveryTagTreeProcessor(H2vMap scene)
+        public DiscoveryTagTreeProcessor(IH2Map scene)
         {
             this.scene = scene;
 

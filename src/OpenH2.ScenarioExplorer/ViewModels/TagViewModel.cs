@@ -2,6 +2,7 @@
 using OpenBlam.Core.Extensions;
 using OpenH2.AvaloniaControls.HexViewerImpl;
 using OpenH2.Core.Extensions;
+using OpenH2.Core.Maps;
 using OpenH2.Core.Maps.Vista;
 using OpenH2.Core.Offsets;
 using OpenH2.Core.Tags;
@@ -97,7 +98,7 @@ namespace OpenH2.ScenarioExplorer.ViewModels
         public List<CaoViewModel> Caos { get; set; } = new List<CaoViewModel>();
         public int RawOffset { get; internal set; }
 
-        public void GeneratePointsOfInterest(H2vMap scene)
+        public void GeneratePointsOfInterest(IH2Map scene)
         {
             // go over all data, create entries for:
             //  - internal offset and count entries

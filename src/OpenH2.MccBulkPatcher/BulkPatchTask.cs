@@ -82,14 +82,6 @@ namespace OpenH2.MccBulkPatcher
                 var factory = new MapFactory(Path.GetDirectoryName(rawMapPath));
                 var scene = factory.LoadSingleH2mccMap(patchedMap);
 
-                var patchFiles = Directory.GetFiles(patchDir, "*.tree", SearchOption.AllDirectories);
-
-                foreach (var patchFile in patchFiles)
-                {
-                    Console.WriteLine($"Patching '{scene.Header.Name}' with '{patchFile.Substring(patchDir.Length)}'");
-                    ScriptTreePatcher.PatchMap(scene, patchedMap, patchFile);
-                }
-
                 var tagPatches = Directory.GetFiles(patchDir, "*.tagpatch", SearchOption.AllDirectories);
 
                 var tagPatcher = new TagPatcher(scene, patchedMap);
@@ -103,6 +95,15 @@ namespace OpenH2.MccBulkPatcher
                     foreach (var patch in patches)
                         tagPatcher.Apply(patch);
                 }
+
+                var scriptPatchFiles = Directory.GetFiles(patchDir, "*.tree", SearchOption.AllDirectories);
+
+                foreach (var patchFile in scriptPatchFiles)
+                {
+                    Console.WriteLine($"Patching '{scene.Header.Name}' with '{patchFile.Substring(patchDir.Length)}'");
+                    ScriptTreePatcher.PatchMap(scene, patchedMap, patchFile);
+                }
+
 
                 var sig = H2BaseMap.CalculateSignature(patchedMap);
                 patchedMap.WriteUInt32At(BlamSerializer.StartsAt<H2mccMapHeader>(h => h.StoredSignature), (uint)sig);

@@ -12,9 +12,9 @@ namespace OpenH2.ScenarioExplorer.Processors
 {
     public class ExplorationTagTreeProcessor : ITagTreeProcessor
     {
-        private readonly H2vMap scene;
+        private readonly IH2Map scene;
 
-        public ExplorationTagTreeProcessor(H2vMap scene)
+        public ExplorationTagTreeProcessor(IH2Map scene)
         {
             this.scene = scene;
         }

@@ -4,6 +4,7 @@ using OpenH2.Engine.Components;
 using OpenH2.Engine.Stores;
 using OpenH2.Engine.Systems.Movement;
 using OpenH2.Foundation.Extensions;
+using OpenH2.Foundation.Logging;
 using OpenTK.Windowing.Common.Input;
 using OpenTK.Windowing.GraphicsLibraryFramework;
 using System;
@@ -91,6 +92,17 @@ namespace OpenH2.Engine.Systems
                 // TODO: implment a way to update the physics implementation without remove/add
                 this.world.Scene.RemoveEntity(mover.Parent);
                 this.world.Scene.AddEntity(mover.Parent);
+            }
+
+            if(input.WasPressed(Keys.P))
+            {
+                var p = mover.Transform.Position;
+                var q = mover.Transform.Orientation;
+                var roll = MathF.Atan2(2.0f * (q.Z * q.Y + q.W * q.X), 1.0f - 2.0f * (q.X * q.X + q.Y * q.Y));
+                var pitch = MathF.Asin(2.0f * (q.Y * q.W - q.Z * q.X));
+                var yaw = MathF.Atan2(2.0f * (q.Z * q.W + q.X * q.Y), -1.0f + 2.0f * (q.W * q.W + q.X * q.X));
+
+                Logger.Log($"Current Location: {p.X.ToString("0.00")},{p.Y.ToString("0.00")},{p.Z.ToString("0.00")}@{yaw.ToString("0.0000")}", Logger.Color.White);
             }
 
             if(mover.Mode == MoverComponent.MovementMode.Freecam)
