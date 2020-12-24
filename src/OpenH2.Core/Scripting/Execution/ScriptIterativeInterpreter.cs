@@ -66,7 +66,7 @@ namespace OpenH2.Core.Scripting.Execution
 
         public bool Interpret(ref State state)
         {
-            while(state.CallStack.TryPop(out var node))
+            while (state.CallStack.TryPop(out var node))
             {
                 bool ret = node.NodeType switch
                 {
@@ -107,11 +107,11 @@ namespace OpenH2.Core.Scripting.Execution
         {
             state.CallStack.Push(node);
 
-            if(node.NextIndex != ushort.MaxValue)
+            if (node.NextIndex != ushort.MaxValue)
             {
                 Push(this.scenario.ScriptSyntaxNodes[node.NextIndex], ref state);
             }
-            
+
             return true;
         }
 
@@ -302,34 +302,152 @@ namespace OpenH2.Core.Scripting.Execution
             {
                 //ScriptOps.Begin => this.Begin(node, out next),
                 //ScriptOps.BeginRandom => this.BeginRandom(node, out next),
-                //ScriptOps.If => this.If(node),
-                //ScriptOps.Set => this.Set(node),
-                //ScriptOps.And => this.And(node),
-                //ScriptOps.Or => this.Or(node),
+                //ScriptOps.If => this.If(node, ref state),
+                //ScriptOps.Set => this.Set(node, ref state),
+                ScriptOps.And => this.And(node, ref state),
+                ScriptOps.Or => this.Or(node, ref state),
                 ScriptOps.Add => this.Add(node, ref state),
-                //ScriptOps.Subtract => this.Subtract(node),
-                //ScriptOps.Multiply => this.Multiply(node),
-                //ScriptOps.Divide => this.Divide(node),
-                //ScriptOps.Min => this.Min(node),
-                //ScriptOps.Max => this.Max(node),
+                ScriptOps.Subtract => this.Subtract(node, ref state),
+                ScriptOps.Multiply => this.Multiply(node, ref state),
+                ScriptOps.Divide => this.Divide(node, ref state),
+                ScriptOps.Min => this.Min(node, ref state),
+                ScriptOps.Max => this.Max(node, ref state),
                 ScriptOps.Equals => this.ValueEquals(node, ref state),
-                //ScriptOps.GreaterThan => this.GreaterThan(node),
-                //ScriptOps.LessThan => this.LessThan(node),
-                //ScriptOps.GreaterThanOrEqual => this.GreaterThanOrEquals(node),
-                //ScriptOps.LessThanOrEqual => this.LessThanOrEquals(node),
-                //ScriptOps.Not => this.Not(node),
+                ScriptOps.GreaterThan => this.GreaterThan(node, ref state),
+                ScriptOps.LessThan => this.LessThan(node, ref state),
+                ScriptOps.GreaterThanOrEqual => this.GreaterThanOrEquals(node, ref state),
+                ScriptOps.LessThanOrEqual => this.LessThanOrEquals(node, ref state),
+                ScriptOps.Not => this.Not(node, ref state),
 
                 //_ => this.DispatchMethod(node)
             };
+        }
+
+        private bool And(ScenarioTag.ScriptSyntaxNode node, ref State state)
+        {
+            var result = Result.From(true);
+
+            while (state.Results.TryPop(out var operand))
+            {
+                Debug.Assert(operand.DataType == ScriptDataType.Boolean);
+                if (operand.Boolean == false)
+                {
+                    result.Boolean = false;
+                    break;
+                }
+            }
+
+            state.Results.Push(result);
+
+            return true;
+        }
+
+        private bool Or(ScenarioTag.ScriptSyntaxNode node, ref State state)
+        {
+            var result = Result.From(false);
+
+            while (state.Results.TryPop(out var operand))
+            {
+                Debug.Assert(operand.DataType == ScriptDataType.Boolean);
+                if (operand.Boolean)
+                {
+                    result.Boolean = true;
+                    break;
+                }
+            }
+
+            state.Results.Push(result);
+
+            return true;
+        }
+
+        private bool Not(ScenarioTag.ScriptSyntaxNode node, ref State state)
+        {
+            var result = Result.From(false);
+
+            var operand = state.Results.Pop();
+
+            Debug.Assert(operand.DataType == ScriptDataType.Boolean);
+
+            result.Boolean = !operand.Boolean;
+
+            state.Results.Push(result);
+
+            return true;
         }
 
         private bool Add(ScenarioTag.ScriptSyntaxNode node, ref State state)
         {
             var left = state.Results.Pop();
 
-            while(state.Results.TryPop(out var right))
+            while (state.Results.TryPop(out var right))
             {
-                left.Float += right.GetFloat();
+                left.Add(right);
+            };
+
+            state.Results.Push(left);
+            return true;
+        }
+
+        private bool Subtract(ScenarioTag.ScriptSyntaxNode node, ref State state)
+        {
+            var left = state.Results.Pop();
+
+            while (state.Results.TryPop(out var right))
+            {
+                left.Subtract(right);
+            };
+
+            state.Results.Push(left);
+            return true;
+        }
+
+        private bool Multiply(ScenarioTag.ScriptSyntaxNode node, ref State state)
+        {
+            var left = state.Results.Pop();
+
+            while (state.Results.TryPop(out var right))
+            {
+                left.Multiply(right);
+            };
+
+            state.Results.Push(left);
+            return true;
+        }
+
+        private bool Divide(ScenarioTag.ScriptSyntaxNode node, ref State state)
+        {
+            var left = state.Results.Pop();
+
+            while (state.Results.TryPop(out var right))
+            {
+                left.Divide(right);
+            };
+
+            state.Results.Push(left);
+            return true;
+        }
+
+        private bool Min(ScenarioTag.ScriptSyntaxNode node, ref State state)
+        {
+            var left = state.Results.Pop();
+
+            while (state.Results.TryPop(out var right))
+            {
+                left = Result.Min(left, right);
+            };
+
+            state.Results.Push(left);
+            return true;
+        }
+
+        private bool Max(ScenarioTag.ScriptSyntaxNode node, ref State state)
+        {
+            var left = state.Results.Pop();
+
+            while (state.Results.TryPop(out var right))
+            {
+                left = Result.Max(left, right);
             };
 
             state.Results.Push(left);
@@ -353,6 +471,67 @@ namespace OpenH2.Core.Scripting.Execution
 
             state.Results.Push(result);
 
+            return true;
+        }
+
+        private bool GreaterThan(ScenarioTag.ScriptSyntaxNode node, ref State state)
+        {
+            var left = state.Results.Pop();
+            var right = state.Results.Pop();
+
+            var result = left.DataType switch
+            {
+                ScriptDataType.Float => Result.From(left.GetFloat() > right.GetFloat()),
+                ScriptDataType.Short => Result.From(left.GetShort() > right.GetShort()),
+                _ => throw new InterpreterException($"Equality comparison for {left.DataType} is not supported")
+            };
+
+            state.Results.Push(result);
+            return true;
+        }
+
+        private bool GreaterThanOrEquals(ScenarioTag.ScriptSyntaxNode node, ref State state)
+        {
+            var left = state.Results.Pop();
+            var right = state.Results.Pop();
+
+            var result = left.DataType switch
+            {
+                ScriptDataType.Float => Result.From(left.GetFloat() >= right.GetFloat()),
+                ScriptDataType.Short => Result.From(left.GetShort() >= right.GetShort()),
+                _ => throw new InterpreterException($"Equality comparison for {left.DataType} is not supported")
+            };
+            state.Results.Push(result);
+            return true;
+        }
+
+        private bool LessThan(ScenarioTag.ScriptSyntaxNode node, ref State state)
+        {
+            var left = state.Results.Pop();
+            var right = state.Results.Pop();
+
+            var result = left.DataType switch
+            {
+                ScriptDataType.Float => Result.From(left.GetFloat() < right.GetFloat()),
+                ScriptDataType.Short => Result.From(left.GetShort() < right.GetShort()),
+                _ => throw new InterpreterException($"Equality comparison for {left.DataType} is not supported")
+            };
+            state.Results.Push(result);
+            return true;
+        }
+
+        private bool LessThanOrEquals(ScenarioTag.ScriptSyntaxNode node, ref State state)
+        {
+            var left = state.Results.Pop();
+            var right = state.Results.Pop();
+
+            var result = left.DataType switch
+            {
+                ScriptDataType.Float => Result.From(left.GetFloat() <= right.GetFloat()),
+                ScriptDataType.Short => Result.From(left.GetShort() <= right.GetShort()),
+                _ => throw new InterpreterException($"Equality comparison for {left.DataType} is not supported")
+            };
+            state.Results.Push(result);
             return true;
         }
     }
