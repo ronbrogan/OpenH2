@@ -3,6 +3,7 @@ using OpenH2.Core.Maps;
 using OpenH2.Core.Maps.Vista;
 using OpenH2.Core.Tags;
 using OpenH2.Foundation;
+using OpenH2.Physics.Colliders;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -15,6 +16,7 @@ namespace OpenH2.Engine.Factories
         private static Mesh<BitmapTag>[] EmptyModel = Array.Empty<Mesh<BitmapTag>>();
 
         private static ConcurrentDictionary<ulong, Mesh<BitmapTag>[]> meshes = new ConcurrentDictionary<ulong, Mesh<BitmapTag>[]>();
+        private static ConcurrentDictionary<TriangleMeshCollider, Mesh<BitmapTag>[]> colliderMeshes = new ConcurrentDictionary<TriangleMeshCollider, Mesh<BitmapTag>[]>();
 
         private static Material<BitmapTag> BoneMaterial = new Material<BitmapTag>() { DiffuseColor = new Vector4(1f, 0, 0, 1f) };
 
@@ -23,6 +25,11 @@ namespace OpenH2.Engine.Factories
             var key = (((ulong)hlmtReference.Id) << 32) | (ulong)damageLevel;
 
             return meshes.GetOrAdd(key, _ => Create(map, hlmtReference, damageLevel));
+        }
+
+        public static Mesh<BitmapTag>[] GetRenderModel(TriangleMeshCollider collider)
+        {
+            return colliderMeshes.GetOrAdd(collider, c => Create(c));
         }
 
         public static Mesh<BitmapTag>[] GetBonesModel(H2vMap map, TagRef<HaloModelTag> hlmtReference, int damageLevel = 0)
@@ -69,6 +76,27 @@ namespace OpenH2.Engine.Factories
             }
 
             return renderModelMeshes.ToArray();
+        }
+
+        private static Mesh<BitmapTag>[] Create(TriangleMeshCollider collider)
+        {
+            var verts = new VertexFormat[collider.Vertices.Length];
+
+            for (int i = 0; i < collider.Vertices.Length; i++)
+            {
+                verts[i] = new VertexFormat(collider.Vertices[i], new Vector2(), new Vector3());
+            }
+
+            var mesh = new Mesh<BitmapTag>()
+            {
+                ElementType = MeshElementType.TriangleList,
+                Indicies = collider.TriangleIndices,
+                Note = "TriangleMeshCollider",
+                Verticies = verts,
+                Material = new Material<BitmapTag>() { DiffuseColor = new Vector4(0f, 1f, 0f, 1f) }
+            };
+
+            return new Mesh<BitmapTag>[] { mesh };
         }
 
         private static Mesh<BitmapTag>[] CreateBoneMeshes(H2vMap map, TagRef<HaloModelTag> hlmtReference, int damageLevel)

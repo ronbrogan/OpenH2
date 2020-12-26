@@ -17,6 +17,8 @@ namespace OpenH2.Foundation
 
         public ModelFlags Flags { get; set; }
 
+        public RenderLayers RenderLayer { get; set; } = RenderLayers.Normal;
+
         public Matrix4x4 CreateTransformationMatrix()
         {
             var translate = Matrix4x4.CreateTranslation(Position);
@@ -41,5 +43,15 @@ namespace OpenH2.Foundation
         Wireframe       = 1 << 6,
         DebugViz        = 1 << 7,
         DoubleSided     = 1 << 8
+    }
+
+    [Flags]
+    public enum RenderLayers
+    {
+        Invalid     = 0,
+        Normal      = 1 << 0,
+        Collision   = 1 << 1,
+        Debug       = 1 << 2,
+        Scripting   = 1 << 3
     }
 }

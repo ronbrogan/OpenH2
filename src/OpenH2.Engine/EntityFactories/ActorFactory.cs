@@ -49,7 +49,8 @@ namespace OpenH2.Engine.EntityFactories
             {
                 Note = $"[{biped.Id}] {biped.Name} Bones",
                 Flags = ModelFlags.Wireframe,
-                Meshes = MeshFactory.GetBonesModel(map, biped.Model)
+                Meshes = MeshFactory.GetBonesModel(map, biped.Model),
+                RenderLayer = RenderLayers.Debug
             });
 
             var orientation = Quaternion.CreateFromAxisAngle(EngineGlobals.Up, loc.Rotation);

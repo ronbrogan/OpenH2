@@ -51,11 +51,19 @@ namespace OpenH2.Engine.EntityFactories
                 Flags = ModelFlags.Diffuse | ModelFlags.ReceivesShadows | ModelFlags.IsStatic
             });
 
+
             var collisionTerrain = PhysicsComponentFactory.CreateTerrain(terrain, tag.CollisionInfos, tag.Shaders);
+
+            var colliderRenderModel = new RenderModelComponent(terrain, new Model<BitmapTag>
+            {
+                Meshes = MeshFactory.GetRenderModel(collisionTerrain.Collider),
+                Flags = ModelFlags.Wireframe | ModelFlags.IsStatic,
+                RenderLayer = RenderLayers.Collision
+            });
 
             var xform = new TransformComponent(terrain, Vector3.Zero);
 
-            terrain.SetComponents(new Component[] { renderModel, xform, collisionTerrain });
+            terrain.SetComponents(new Component[] { renderModel, colliderRenderModel, xform, collisionTerrain });
 
             return terrain;
         }

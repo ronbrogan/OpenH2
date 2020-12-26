@@ -48,7 +48,8 @@ namespace OpenH2.Engine.EntityFactories
                 {
                     Note = $"[{tag.Id}] {tag.Name} bones",
                     Meshes = MeshFactory.GetBonesModel(map, tag.Model),
-                    Flags = ModelFlags.Wireframe
+                    Flags = ModelFlags.Wireframe,
+                    RenderLayer = RenderLayers.Debug
                 }));
 
                 var body = PhysicsComponentFactory.CreateKinematicRigidBody(scenery, xform, map, tag.Model);
