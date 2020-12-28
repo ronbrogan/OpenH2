@@ -46,5 +46,17 @@ namespace OpenH2.Core.Tests.Animation
 
             Assert.Equal(1, animation.Frames.GetLength(0));
         }
+
+        [Fact, Trait("skip", "true")]
+        public void ProcessAnimation4()
+        {
+            Span<byte> animationData = File.ReadAllBytes(@"D:\h2scratch\animations\marine_tutorial.jmad.l01_0010_jon.anim");
+
+            var processor = JmadDataProcessor.GetProcessor();
+
+            var animation = processor.GetAnimation(110, maxBones: 53, animationData);
+
+            Assert.Equal(1, animation.Frames.GetLength(0));
+        }
     }
 }

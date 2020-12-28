@@ -6,6 +6,30 @@ using System.Numerics;
 
 namespace OpenH2.Core.Animation
 {
+    public enum JmadDataType
+    {
+        Flat = 1,
+        Three = 3,
+        Six = 6
+    }
+
+    public struct JmadDataHeader
+    {
+        public JmadDataType Type;
+        public int OrientationCount;
+        public int TranslationCount;
+        public int ScaleCount;
+
+        public int OrientationOffset;
+        public int TranslationOffset;
+        public int ScaleOffset;
+
+        public int TotalLength()
+        {
+            return ScaleOffset + ScaleCount * sizeof(float);
+        }
+    }
+
     public class JmadDataProcessor : IAnimationProcessor
     {
         private delegate int OrientationFrameSetCount(Span<byte> data);
@@ -19,25 +43,23 @@ namespace OpenH2.Core.Animation
             return processor;
         }
 
-        public Animation GetAnimation(int frames, int bones, Span<byte> data)
+        public Animation GetAnimation(int frames, int bones, Span<byte> allData)
         {
-            var orientationSets = GetOrientationBoneCount(data);
-            var translationSets = GetTranslationBoneCount(data);
+            var data = allData.Slice(ReadHeader(allData).TotalLength());
+            var header = ReadHeader(data);
 
-            var setCount = Math.Max(orientationSets, translationSets);
+
+            var setCount = Math.Max(header.OrientationCount, Math.Max(header.TranslationCount, header.ScaleCount));
             Debug.Assert(setCount <= bones);
-
-            var dataStart = GetFrameDataStart(data);
 
             var frameData = new AnimationFrame[setCount, frames];
 
-            var orientStart = dataStart;
-            for(var i = 0; i < orientationSets; i++)
+            for(var i = 0; i < header.OrientationCount; i++)
             {
                 for (int j = 0; j < frames; j++)
                 {
                     var quatOffset = j * 8;
-                    var thisQuat = orientStart + i * 8 * frames + quatOffset;
+                    var thisQuat = header.OrientationOffset + i * 8 * frames + quatOffset;
 
                     var quat = new Quaternion(
                         Decompress(data.ReadInt16At(thisQuat + 0)),
@@ -46,19 +68,20 @@ namespace OpenH2.Core.Animation
                         Decompress(data.ReadInt16At(thisQuat + 6))
                     );
 
-                    Debug.Assert(Math.Abs(quat.Length() - 1) < 0.001f, $"Quaternions must be unit length", "Quat at: {0}, {1}", i, j);
+                    var length = quat.Length();
+
+                    Debug.Assert(Math.Abs(length - 1) < 0.001f, $"Quaternions must be unit length", "Quat at: {0}, {1}", i, j);
 
                     frameData[i, j].Orientation = quat;
                 }
             }
 
-            var translateStart = dataStart + 8 * frames * orientationSets;
-            for (var i = 0; i < translationSets; i++)
+            for (var i = 0; i < header.TranslationCount; i++)
             {
                 for (int j = 0; j < frames; j++)
                 {
                     var posOffset = j * 12;
-                    var thisPos = translateStart + i * 12 * frames + posOffset;
+                    var thisPos = header.TranslationOffset + i * 12 * frames + posOffset;
 
                     var pos = new Vector3(
                         data.ReadFloatAt(thisPos + 0),
@@ -73,35 +96,44 @@ namespace OpenH2.Core.Animation
             return new Animation() { Frames = frameData };
         }
 
-        private int GetInfoOffset(Span<byte> data)
-        {
-            // Guessing that 0x3 indicates that there's a float in front of info header
-            var threeVal = data.ReadByteAt(3);
-
-            return data.ReadInt32At(16) + (threeVal == 1 ? 4 : 0);
-        }
-
-        private int GetFrameDataStart(Span<byte> data)
-        {
-            var infoOffset = GetInfoOffset(data);
-            var sizeCount = data.ReadByteAt(infoOffset);
-
-            // 4 byte head, 2 floats, 2 static sizes, sizeCount sizes
-            return infoOffset + 4 + 8 + 8 + sizeCount * 4;
-        }
-
-        private int GetOrientationBoneCount(Span<byte> data)
-        {
-            var infoOffset = GetInfoOffset(data);
-            return data.ReadByteAt(infoOffset + 1);
-        }
-
-        private int GetTranslationBoneCount(Span<byte> data)
-        {
-            var infoOffset = GetInfoOffset(data);
-            return data.ReadByteAt(infoOffset + 2);
-        }
-
         private static float Decompress(short v) => v / 32768.0f;
+
+
+        private JmadDataHeader ReadHeader(Span<byte> data)
+        {
+            var header = new JmadDataHeader
+            {
+                Type = (JmadDataType)data[0],
+                OrientationCount = data[1],
+                TranslationCount = data[2],
+                ScaleCount = data[3]
+            };
+
+            switch (header.Type)
+            {
+                case JmadDataType.Flat:
+                    header.OrientationOffset = 32;
+                    header.TranslationOffset = data.ReadInt32At(12);
+                    header.ScaleOffset = data.ReadInt32At(16);
+                    break;
+                case JmadDataType.Three:
+                    header.OrientationOffset = 32;
+                    header.TranslationOffset = data.ReadInt32At(12);
+                    header.ScaleOffset = data.ReadInt32At(16);
+                    break;
+                case JmadDataType.Six:
+                    header.OrientationOffset = data.ReadInt32At(32);
+                    header.TranslationOffset = data.ReadInt32At(36);
+                    header.ScaleOffset = data.ReadInt32At(40);
+                    break;
+                default:
+                    Debug.Fail("Unsupported data type");
+                    break;
+            }
+
+            return header;
+        }
+
+
     }
 }
