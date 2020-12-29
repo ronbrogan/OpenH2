@@ -239,7 +239,7 @@ namespace OpenH2.ModelDumper
                     * Matrix4x4.CreateFromQuaternion(Quaternion.Identity)
                     * Matrix4x4.CreateTranslation(new Vector3(1f * count++, 0, 0));
 
-                if (!scene.TryGetTag(charTag.Biped, out var biped))
+                if (!scene.TryGetTag(charTag.Unit, out var biped))
                 {
                     continue;
                 }

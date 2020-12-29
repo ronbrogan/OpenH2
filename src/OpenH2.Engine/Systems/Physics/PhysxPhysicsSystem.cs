@@ -155,6 +155,7 @@ namespace OpenH2.Engine.Systems
                 AddCollider(rigid, terrain.Collider);
 
                 this.physxScene.AddActor(rigid);
+                terrain.PhysicsActor = rigid;
             }
 
             var sceneries = world.Components<StaticGeometryComponent>();
@@ -165,6 +166,7 @@ namespace OpenH2.Engine.Systems
                 AddCollider(rigid, scenery.Collider);
 
                 this.physxScene.AddActor(rigid);
+                scenery.PhysicsActor = rigid;
             }
 
             var rigidBodies = this.world.Components<RigidBodyComponent>();
@@ -283,6 +285,26 @@ namespace OpenH2.Engine.Systems
             {
                 AddTrigger(trigger);
             }
+
+            if(entity.TryGetChild<StaticTerrainComponent>(out var terrain))
+            {
+                var rigid = this.physxPhysics.CreateRigidStatic();
+
+                AddCollider(rigid, terrain.Collider);
+
+                this.physxScene.AddActor(rigid);
+                terrain.PhysicsActor = rigid;
+            }
+
+            if (entity.TryGetChild<StaticGeometryComponent>(out var geom))
+            {
+                var rigid = this.physxPhysics.CreateRigidStatic(geom.Transform.TransformationMatrix);
+
+                AddCollider(rigid, geom.Collider);
+
+                this.physxScene.AddActor(rigid);
+                geom.PhysicsActor = rigid;
+            }
         }
 
         private void RemoveEntity(Entity entity)
@@ -301,9 +323,23 @@ namespace OpenH2.Engine.Systems
             {
                 RemoveTrigger(trigger);
             }
-        }
 
-        
+            if (entity.TryGetChild<StaticTerrainComponent>(out var terrain))
+            {
+                if(terrain.PhysicsActor is RigidStatic rigid)
+                {
+                    this.physxScene.RemoveActor(rigid);
+                }
+            }
+
+            if (entity.TryGetChild<StaticGeometryComponent>(out var geom))
+            {
+                if (geom.PhysicsActor is RigidStatic rigid)
+                {
+                    this.physxScene.RemoveActor(rigid);
+                }
+            }
+        }
 
         public void RemoveRigidBodyComponent(RigidBodyComponent component)
         {

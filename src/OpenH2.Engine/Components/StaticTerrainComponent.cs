@@ -11,5 +11,7 @@ namespace OpenH2.Engine.Components
         }
 
         public TriangleMeshCollider Collider { get; internal set; }
+
+        public object PhysicsActor { get; set; }
     }
 }

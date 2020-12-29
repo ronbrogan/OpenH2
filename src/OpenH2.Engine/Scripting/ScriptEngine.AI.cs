@@ -179,9 +179,18 @@ namespace OpenH2.Engine.Scripting
         /// <summary>places the specified squad on the map.</summary>
         public void ai_place(IAiActorDefinition ai, int value)
         {
+            var toSpawn = value;
+
             if (ai is ScenarioTag.AiSquadDefinition squad)
             {
-                for (int i = 0; i < squad.SpawnMin; i++)
+                if (toSpawn == 0)
+                {
+                    toSpawn = squad.SpawnMin;
+                }
+
+                toSpawn = Math.Min(toSpawn, squad.StartingLocations.Length);
+
+                for (int i = 0; i < toSpawn; i++)
                 {
                     var loc = squad.StartingLocations[i];
                     var entity = this.scene.EntityCreator.FromSquadStartingLocation(loc);

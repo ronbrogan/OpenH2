@@ -27,9 +27,14 @@ namespace OpenH2.Engine.Factories
             return meshes.GetOrAdd(key, _ => Create(map, hlmtReference, damageLevel));
         }
 
-        public static Mesh<BitmapTag>[] GetRenderModel(TriangleMeshCollider collider)
+        public static Mesh<BitmapTag>[] GetRenderModel(TriangleMeshCollider collider, Vector4 color = default)
         {
-            return colliderMeshes.GetOrAdd(collider, c => Create(c));
+            if(color == default)
+            {
+                color = new Vector4(0f, 1f, 0f, 1f);
+            }
+
+            return colliderMeshes.GetOrAdd(collider, c => Create(c, color));
         }
 
         public static Mesh<BitmapTag>[] GetBonesModel(H2vMap map, TagRef<HaloModelTag> hlmtReference, int damageLevel = 0)
@@ -78,7 +83,7 @@ namespace OpenH2.Engine.Factories
             return renderModelMeshes.ToArray();
         }
 
-        private static Mesh<BitmapTag>[] Create(TriangleMeshCollider collider)
+        private static Mesh<BitmapTag>[] Create(TriangleMeshCollider collider, Vector4 color)
         {
             var verts = new VertexFormat[collider.Vertices.Length];
 
@@ -93,7 +98,7 @@ namespace OpenH2.Engine.Factories
                 Indicies = collider.TriangleIndices,
                 Note = "TriangleMeshCollider",
                 Verticies = verts,
-                Material = new Material<BitmapTag>() { DiffuseColor = new Vector4(0f, 1f, 0f, 1f) }
+                Material = new Material<BitmapTag>() { DiffuseColor = color }
             };
 
             return new Mesh<BitmapTag>[] { mesh };

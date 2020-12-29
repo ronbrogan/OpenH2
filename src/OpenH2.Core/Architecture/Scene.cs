@@ -45,27 +45,6 @@ namespace OpenH2.Core.Architecture
         public void Load()
         {
             Func<IPlaceable, bool> shouldPlace = (IPlaceable p) => p.PlacementFlags.HasFlag(PlacementFlags.NotAutomatically) == false;
-            var terrains = this.Scenario.Terrains;
-
-            foreach (var terrain in terrains)
-            {
-                this.Map.TryGetTag(terrain.Bsp, out var bsp);
-
-                this.AddEntity(EntityCreator.FromBsp(bsp));
-
-                foreach (var instance in bsp.InstancedGeometryInstances)
-                {
-                    this.AddEntity(EntityCreator.FromInstancedGeometry(bsp, instance));
-                }
-            }
-
-            foreach (var sky in this.Map.Scenario.SkyboxInstances)
-            {
-                if (sky.Skybox == uint.MaxValue)
-                    continue;
-
-                this.AddEntity(EntityCreator.FromSkyboxInstance(sky));
-            }
 
             foreach (ScenarioTag.SceneryInstance scen in this.Map.Scenario.SceneryInstances.Where(shouldPlace))
             {
@@ -111,16 +90,21 @@ namespace OpenH2.Core.Architecture
 
         public void ProcessUpdates()
         {
-            while(removedEntities.TryDequeue(out var e))
+            while (removedEntities.TryDequeue(out var e))
             {
-                Entities.Remove(e.Id);
-                OnEntityRemove.Invoke(e);
+                if (Entities.ContainsKey(e.Id))
+                {
+                    Entities.Remove(e.Id);
+                    OnEntityRemove.Invoke(e);
+                }
             }
 
-            while(addedEntities.TryDequeue(out var e))
+            while (addedEntities.TryDequeue(out var e))
             {
-                Entities.Add(e.Id, e);
-                OnEntityAdd.Invoke(e);
+                if (Entities.TryAdd(e.Id, e))
+                {
+                    OnEntityAdd.Invoke(e);
+                }
             }
         }
 
@@ -141,7 +125,7 @@ namespace OpenH2.Core.Architecture
                 _ => throw new NotImplementedException(),
             };
 
-            if(newEntity != null)
+            if (newEntity != null)
             {
                 this.AddEntity(newEntity);
             }

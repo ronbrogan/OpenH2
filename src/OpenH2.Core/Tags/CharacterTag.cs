@@ -15,7 +15,7 @@ namespace OpenH2.Core.Tags
         public TagRef<CharacterTag> Parent { get; set; }
 
         [PrimitiveValue(16)]
-        public TagRef<BipedTag> Biped { get; set; }
+        public TagRef Unit { get; set; }
 
         [PrimitiveValue(24)]
         public TagRef Creature { get; set; }

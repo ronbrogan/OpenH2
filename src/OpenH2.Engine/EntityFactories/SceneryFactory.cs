@@ -7,6 +7,7 @@ using OpenH2.Engine.Components;
 using OpenH2.Engine.Entities;
 using OpenH2.Engine.Factories;
 using OpenH2.Foundation;
+using OpenH2.Physics.Colliders;
 using System.Collections.Generic;
 using System.Numerics;
 
@@ -61,8 +62,19 @@ namespace OpenH2.Engine.EntityFactories
             {
                 var geom = PhysicsComponentFactory.CreateStaticGeometry(scenery, xform, def, bsp.Shaders);
                 comps.Add(geom);
+
+                if(geom.Collider is TriangleMeshCollider triCollider)
+                {
+                    comps.Add(new RenderModelComponent(scenery, new Model<BitmapTag>
+                    {
+                        Note = $"[{bsp.Id}] {bsp.Name}//instanced//{instance.Index}-collision",
+                        Meshes = MeshFactory.GetRenderModel(triCollider, new Vector4(0f, 1f, 1f, 1f)),
+                        Flags = ModelFlags.Wireframe | ModelFlags.IsStatic,
+                        RenderLayer = RenderLayers.Collision
+                    }));
+                }
             }
-            
+
             xform.UpdateDerivedData();
 
             scenery.SetComponents(comps);

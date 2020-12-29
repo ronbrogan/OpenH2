@@ -1,4 +1,5 @@
 ﻿using OpenH2.Core.Architecture;
+using OpenH2.Core.Maps;
 using OpenH2.Core.Maps.Vista;
 using OpenH2.Core.Tags;
 using OpenH2.Core.Tags.Scenario;
@@ -33,23 +34,34 @@ namespace OpenH2.Engine.EntityFactories
             }
 
             var character = map.GetTag(map.Scenario.CharacterDefinitions[charIndex].CharacterReference);
-            if(map.TryGetTag(character.Biped, out var biped) == false)
+            if(map.TryGetTag<BaseTag>(character.Unit, out var unit) == false)
             {
                 return entity;
             }
 
+            TagRef<HaloModelTag> model = default;
+
+            if(unit is BipedTag biped)
+            {
+                model = biped.Model;
+            }
+            else if(unit is VehicleTag vehicle)
+            {
+                model = vehicle.Hlmt;
+            }
+
             var comp = new RenderModelComponent(entity, new Model<BitmapTag>
             {
-                Note = $"[{biped.Id}] {biped.Name}",
+                Note = $"[{unit.Id}] {unit.Name}",
                 Flags = ModelFlags.Diffuse | ModelFlags.CastsShadows | ModelFlags.ReceivesShadows,
-                Meshes = MeshFactory.GetRenderModel(map, biped.Model)
+                Meshes = MeshFactory.GetRenderModel(map, model)
             });
 
             var boneComp = new RenderModelComponent(entity, new Model<BitmapTag>
             {
-                Note = $"[{biped.Id}] {biped.Name} Bones",
+                Note = $"[{unit.Id}] {unit.Name} Bones",
                 Flags = ModelFlags.Wireframe,
-                Meshes = MeshFactory.GetBonesModel(map, biped.Model),
+                Meshes = MeshFactory.GetBonesModel(map, model),
                 RenderLayer = RenderLayers.Debug
             });
 
@@ -57,11 +69,11 @@ namespace OpenH2.Engine.EntityFactories
             var xform = new TransformComponent(entity, loc.Position, orientation);
 
             // TODO: add back
-            var body = PhysicsComponentFactory.CreateDynamicRigidBody(entity, xform, map, biped.Model);
+            var body = PhysicsComponentFactory.CreateDynamicRigidBody(entity, xform, map, model);
 
             var comOffset = Vector3.Zero;
 
-            if (map.TryGetTag(biped.Model, out var hlmt) &&
+            if (map.TryGetTag(model, out var hlmt) &&
                 map.TryGetTag(hlmt.PhysicsModel, out var phmo) &&
                 phmo.BodyParameters.Length > 0)
             {
