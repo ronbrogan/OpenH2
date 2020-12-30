@@ -98,6 +98,8 @@ namespace OpenH2.Engine.Systems
                     }
                 }
 
+                scene.GatherPlacedEntities(i, entities);
+
                 this.bspEntities[i] = entities;
             }
 

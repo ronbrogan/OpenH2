@@ -48,7 +48,13 @@ namespace OpenH2.Core.Tags.Scenario
             [PrimitiveValue(20)]
             public Vector3 Orientation { get; set; }
 
-            public IScenery GameObject { get; set; }
+            [PrimitiveValue(40)]
+            public int UniqueId { get; set; }
+
+            [PrimitiveValue(44)]
+            public ushort BspIndex { get; set; }
+
+            public IScenery? GameObject { get; set; }
         }
 
         [FixedLength(40)]
@@ -84,7 +90,7 @@ namespace OpenH2.Core.Tags.Scenario
             [PrimitiveValue(32)]
             public float Value { get; set; }
 
-            public IDeviceGroup GameObject { get; set; }
+            public IDeviceGroup? GameObject { get; set; }
         }
 
         [FixedLength(68)]
@@ -102,7 +108,13 @@ namespace OpenH2.Core.Tags.Scenario
             [PrimitiveValue(20)]
             public Vector3 Orientation { get; set; }
 
-            public IController GameObject { get; set; }
+            [PrimitiveValue(40)]
+            public int UniqueId { get; set; }
+
+            [PrimitiveValue(44)]
+            public ushort BspIndex { get; set; }
+
+            public IController? GameObject { get; set; }
         }
 
         [FixedLength(40)]
@@ -128,7 +140,13 @@ namespace OpenH2.Core.Tags.Scenario
             [PrimitiveValue(20)]
             public Vector3 Orientation { get; set; }
 
-            public IMachine GameObject { get; set; }
+            [PrimitiveValue(40)]
+            public int UniqueId { get; set; }
+
+            [PrimitiveValue(44)]
+            public ushort BspIndex { get; set; }
+
+            public IMachine? GameObject { get; set; }
         }
 
         [FixedLength(40)]
@@ -153,7 +171,13 @@ namespace OpenH2.Core.Tags.Scenario
             [PrimitiveValue(20)]
             public Vector3 Orientation { get; set; }
 
-            public ISoundScenery GameObject { get; set; }
+            [PrimitiveValue(40)]
+            public int UniqueId { get; set; }
+
+            [PrimitiveValue(44)]
+            public ushort BspIndex { get; set; }
+
+            public ISoundScenery? GameObject { get; set; }
         }
 
         [FixedLength(40)]
@@ -177,6 +201,12 @@ namespace OpenH2.Core.Tags.Scenario
 
             [PrimitiveValue(20)]
             public Vector3 Orientation { get; set; }
+
+            [PrimitiveValue(40)]
+            public int UniqueId { get; set; }
+
+            [PrimitiveValue(44)]
+            public ushort BspIndex { get; set; }
         }
 
         [FixedLength(40)]

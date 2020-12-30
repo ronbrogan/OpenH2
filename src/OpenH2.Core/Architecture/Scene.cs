@@ -44,25 +44,6 @@ namespace OpenH2.Core.Architecture
 
         public void Load()
         {
-            Func<IPlaceable, bool> shouldPlace = (IPlaceable p) => p.PlacementFlags.HasFlag(PlacementFlags.NotAutomatically) == false;
-
-            foreach (ScenarioTag.SceneryInstance scen in this.Map.Scenario.SceneryInstances.Where(shouldPlace))
-            {
-                if (scen.SceneryDefinitionIndex == ushort.MaxValue)
-                    continue;
-
-                this.AddEntity(EntityCreator.FromSceneryInstance(scen));
-            }
-
-            foreach (ScenarioTag.BlocInstance bloc in this.Map.Scenario.BlocInstances.Where(shouldPlace))
-            {
-                this.AddEntity(EntityCreator.FromBlocInstance(bloc));
-            }
-
-            foreach (ScenarioTag.MachineryInstance mach in this.Map.Scenario.MachineryInstances.Where(shouldPlace))
-            {
-                this.AddEntity(EntityCreator.FromMachineryInstance(mach));
-            }
 
             foreach (var item in this.Map.Scenario.ItemCollectionPlacements)
             {
@@ -86,6 +67,30 @@ namespace OpenH2.Core.Architecture
             this.AddEntity(EntityCreator.FromGlobals());
 
             this.ProcessUpdates();
+        }
+
+        public void GatherPlacedEntities(int bspIndex, List<Entity> entities)
+        {
+            Func<IPlaceable, bool> shouldPlace = (IPlaceable p) => p.PlacementFlags.HasFlag(PlacementFlags.NotAutomatically) == false
+                && p.BspIndex == bspIndex;
+
+            foreach (ScenarioTag.SceneryInstance scen in this.Map.Scenario.SceneryInstances.Where(shouldPlace))
+            {
+                if (scen.SceneryDefinitionIndex == ushort.MaxValue)
+                    continue;
+
+                entities.Add(EntityCreator.FromSceneryInstance(scen));
+            }
+
+            foreach (ScenarioTag.BlocInstance bloc in this.Map.Scenario.BlocInstances.Where(shouldPlace))
+            {
+                entities.Add(EntityCreator.FromBlocInstance(bloc));
+            }
+
+            foreach (ScenarioTag.MachineryInstance mach in this.Map.Scenario.MachineryInstances.Where(shouldPlace))
+            {
+                entities.Add(EntityCreator.FromMachineryInstance(mach));
+            }
         }
 
         public void ProcessUpdates()

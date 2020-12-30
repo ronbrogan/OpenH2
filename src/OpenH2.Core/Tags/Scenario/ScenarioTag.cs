@@ -189,7 +189,7 @@ namespace OpenH2.Core.Tags.Scenario
             [PrimitiveValue(20)]
             public Vector3 Orientation { get; set; }
 
-            public IVehicle GameObject { get; set; }
+            public IVehicle? GameObject { get; set; }
         }
 
         [FixedLength(56)]
@@ -204,7 +204,7 @@ namespace OpenH2.Core.Tags.Scenario
             [PrimitiveValue(20)]
             public Vector3 Orientation { get; set; }
 
-            public IEquipment GameObject { get; set; }
+            public IEquipment? GameObject { get; set; }
         }
 
         [FixedLength(84)]
@@ -228,7 +228,7 @@ namespace OpenH2.Core.Tags.Scenario
             [InternedString(52)]
             public string Description { get; set; }
 
-            public IUnit GameObject { get; set; }
+            public IUnit? GameObject { get; set; }
         }
 
         [FixedLength(68)]
@@ -266,7 +266,7 @@ namespace OpenH2.Core.Tags.Scenario
             [PrimitiveValue(64)]
             public uint Unknown3 { get; set; }
 
-            public ITriggerVolume GameObject { get; set; }
+            public ITriggerVolume? GameObject { get; set; }
         }
 
         [FixedLength(32)]
@@ -402,7 +402,7 @@ namespace OpenH2.Core.Tags.Scenario
             [PrimitiveValue(48)]
             public float Param { get; set; }
 
-            public ILocationFlag GameObject { get; set; }
+            public ILocationFlag? GameObject { get; set; }
         }
 
         [FixedLength(64)]
@@ -423,7 +423,7 @@ namespace OpenH2.Core.Tags.Scenario
             [PrimitiveValue(60)]
             public float FieldOfView { get; set; }
 
-            public ICameraPathTarget GameObject { get; set; }
+            public ICameraPathTarget? GameObject { get; set; }
         }
 
 
@@ -454,7 +454,7 @@ namespace OpenH2.Core.Tags.Scenario
             [PrimitiveValue(24)]
             public Vector3 Floats { get; set; }
 
-            public ICinematicTitle GameObject { get; set; }
+            public ICinematicTitle? GameObject { get; set; }
         }
 
 
@@ -508,7 +508,7 @@ namespace OpenH2.Core.Tags.Scenario
 
             }
 
-            public IAiOrders GameObject { get; set; }
+            public IAiOrders? GameObject { get; set; }
         }
 
         [FixedLength(48)]

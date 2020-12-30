@@ -39,7 +39,13 @@ namespace OpenH2.Core.Tags.Scenario
             [PrimitiveValue(20)]
             public Vector3 Orientation { get; set; }
 
-            public IWeapon GameObject { get; set; }
+            [PrimitiveValue(40)]
+            public int UniqueId { get; set; }
+
+            [PrimitiveValue(44)]
+            public ushort BspIndex { get; set; }
+
+            public IWeapon? GameObject { get; set; }
         }
 
         [FixedLength(40)]
@@ -77,7 +83,29 @@ namespace OpenH2.Core.Tags.Scenario
             [PrimitiveValue(20)]
             public Vector3 Orientation { get; set; }
 
-            public IBloc GameObject { get; set; }
+            [PrimitiveValue(40)]
+            public int UniqueId { get; set; }
+
+            [PrimitiveValue(44)]
+            public ushort BspIndex { get; set; }
+
+
+            [PrimitiveValue(56)]
+            public ColorChangeFlags ActiveColorChanges { get; set; }
+
+            [PrimitiveArray(60, 3)]
+            public byte[] PrimaryColorBbr { get; set; } = null!;
+
+            [PrimitiveArray(64, 3)]
+            public byte[] SecondaryColorBbr { get; set; } = null!;
+
+            [PrimitiveArray(68, 3)]
+            public byte[] TertiaryColorBbr { get; set; } = null!;
+
+            [PrimitiveArray(72, 3)]
+            public byte[] QuaternaryColorBbr { get; set; } = null!;
+
+            public IBloc? GameObject { get; set; }
         }
 
         [FixedLength(40)]
@@ -91,19 +119,19 @@ namespace OpenH2.Core.Tags.Scenario
         public class OriginatingData
         {
             [ReferenceArray(0)]
-            public WildcardTagReference[] Entities { get; set; }
+            public WildcardTagReference[] Entities { get; set; } = null!;
 
             [ReferenceArray(8)]
-            public WildcardTagReference[] Scripts { get; set; }
+            public WildcardTagReference[] Scripts { get; set; } = null!;
 
             [ReferenceArray(16)]
-            public WildcardTagReference[] Ai { get; set; }
+            public WildcardTagReference[] Ai { get; set; } = null!;
 
             [FixedLength(8)]
             public class WildcardTagReference
             {
                 [StringValue(0, 4)]
-                public string TagType { get; set; }
+                public string TagType { get; set; } = null!;
 
                 [PrimitiveValue(4)]
                 public TagRef Tag { get; set; }

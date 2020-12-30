@@ -81,12 +81,14 @@
 
     public interface IGameObjectDefinition<T>
     {
-        T GameObject { get; }
+        T? GameObject { get; }
     }
 
     public interface IPlaceable
     {
         PlacementFlags PlacementFlags { get; set; }
+
+        ushort BspIndex { get; set; }
     }
 
     public struct ScenarioEntity<TItem> : IEntityIdentifier 

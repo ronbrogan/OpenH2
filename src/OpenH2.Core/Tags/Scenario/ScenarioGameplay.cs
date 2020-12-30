@@ -46,7 +46,7 @@ namespace OpenH2.Core.Tags.Scenario
             [PrimitiveValue(66)]
             public ushort SecondaryGrenadeCount { get; set; }
 
-            public IStartingProfile GameObject { get; set; }
+            public IStartingProfile? GameObject { get; set; }
         }
 
         [FixedLength(52)]

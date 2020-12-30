@@ -317,21 +317,24 @@ namespace OpenH2.Engine.Systems
 
         public void AddRigidBodyComponent(RigidBodyComponent component)
         {
-            var dynamic = this.physxPhysics.CreateRigidDynamic(component.Transform.TransformationMatrix);
-            dynamic.CenterOfMassLocalPose = Matrix4x4.CreateTranslation(component.CenterOfMass);
-            dynamic.MassSpaceInertiaTensor = MathUtil.Diagonalize(component.InertiaTensor);
-            dynamic.Mass = component.Mass;
-            component.PhysicsImplementation = new RigidBodyProxy(dynamic);
-
-            if (component.IsDynamic == false)
+            if (component.PhysicsImplementation is not RigidDynamic dynamic)
             {
-                dynamic.RigidBodyFlags = RigidBodyFlag.Kinematic;
+                dynamic = this.physxPhysics.CreateRigidDynamic(component.Transform.TransformationMatrix);
+                dynamic.CenterOfMassLocalPose = Matrix4x4.CreateTranslation(component.CenterOfMass);
+                dynamic.MassSpaceInertiaTensor = MathUtil.Diagonalize(component.InertiaTensor);
+                dynamic.Mass = component.Mass;
+                component.PhysicsImplementation = new RigidBodyProxy(dynamic);
+
+                if (component.IsDynamic == false)
+                {
+                    dynamic.RigidBodyFlags = RigidBodyFlag.Kinematic;
+                }
+
+                dynamic.UserData = component;
+                dynamic.Name = component.Parent.FriendlyName ?? component.Parent.Id.ToString();
+
+                AddCollider(dynamic, component.Collider);
             }
-
-            dynamic.UserData = component;
-            dynamic.Name = component.Parent.FriendlyName ?? component.Parent.Id.ToString();
-
-            AddCollider(dynamic, component.Collider);
 
             this.physxScene.AddActor(dynamic);
 
