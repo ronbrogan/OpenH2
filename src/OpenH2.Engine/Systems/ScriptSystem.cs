@@ -4,7 +4,9 @@ using OpenH2.Core.Scripting.Execution;
 using OpenH2.Core.Scripting.Generation;
 using OpenH2.Core.Tags.Scenario;
 using OpenH2.Engine.Scripting;
+using OpenH2.Engine.Stores;
 using OpenH2.Foundation.Logging;
+using OpenTK.Windowing.GraphicsLibraryFramework;
 using System;
 using System.Diagnostics;
 using System.Linq;
@@ -16,10 +18,12 @@ namespace OpenH2.Engine.Systems
     {
         private readonly AudioSystem audioSystem;
         private readonly CameraSystem cameraSystem;
+        private bool run = false;
         private ScriptTaskExecutor executor;
         private ScriptEngine engine;
         private ScenarioScriptBase scripts;
         private Stopwatch stopwatch;
+        private InputStore inputStore;
 
         public ScriptSystem(World world, 
             AudioSystem audioSystem,
@@ -31,6 +35,7 @@ namespace OpenH2.Engine.Systems
 
         public override void Initialize(Scene scene)
         {
+            this.inputStore = this.world.GetGlobalResource<InputStore>();
             var scenario = scene.Map.Scenario;
 
             var loader = new ScriptLoader();
@@ -63,14 +68,17 @@ namespace OpenH2.Engine.Systems
 
         public override void Update(double timestep)
         {
-            if(this.stopwatch.ElapsedMilliseconds >= 33)
+            if(this.inputStore.WasPressed(Keys.F11))
+            {
+                this.run = !this.run;
+                Logger.LogInfo($"Toggling script execution to [{(this.run ? "ON" : "OFF")}]");
+            }
+
+            if(run && this.stopwatch.ElapsedMilliseconds >= 33)
             {
                 this.stopwatch.Restart();
                 this.executor.Execute();
             }
-
-            //this.stopwatch.Stop();
-            //Logger.LogInfo($"[SCRIPT-SYS] ExecutionTime: {this.stopwatch.ElapsedTicks}ticks");
         }
     }
 }
