@@ -52,5 +52,6 @@ void main(void)
         gl_Position = gl_in[i].gl_Position;
         EmitVertex();
     }
+
     EndPrimitive();
 }

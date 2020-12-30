@@ -20,14 +20,17 @@ namespace OpenH2.Engine.EntityFactories
             var xform = new TransformComponent(ent, tvDefinition.Position, orient);
 
             var renderModel = ModelFactory.Cuboid(new Vector3(), tvDefinition.Size, new Vector4(1f, 1f, 0f, 0.5f));
-            renderModel.Flags = ModelFlags.Wireframe | 
-                ModelFlags.IsTransparent | 
-                ModelFlags.DoubleSided;
+            renderModel.Flags = ModelFlags.IsTransparent;
             renderModel.RenderLayer = RenderLayers.Scripting;
-            
+
+            var wireframeRenderModel = ModelFactory.Cuboid(new Vector3(), tvDefinition.Size, new Vector4(1f, 1f, 0f, 1f));
+            wireframeRenderModel.Flags = ModelFlags.Wireframe;
+            wireframeRenderModel.RenderLayer = RenderLayers.Scripting;
+
             ent.SetComponents(xform,
                 TriggerGeometryComponent.Cuboid(ent, xform, tvDefinition.Size, tvDefinition.Description),
-                new RenderModelComponent(ent, renderModel));
+                new RenderModelComponent(ent, renderModel),
+                new RenderModelComponent(ent, wireframeRenderModel));
             return ent;
         }
     }

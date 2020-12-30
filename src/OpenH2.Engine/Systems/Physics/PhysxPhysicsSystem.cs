@@ -150,23 +150,13 @@ namespace OpenH2.Engine.Systems
 
             foreach (var terrain in terrains)
             {
-                var rigid = this.physxPhysics.CreateRigidStatic();
-
-                AddCollider(rigid, terrain.Collider);
-
-                this.physxScene.AddActor(rigid);
-                terrain.PhysicsActor = rigid;
+                AddTerrain(terrain);
             }
 
             var sceneries = world.Components<StaticGeometryComponent>();
             foreach(var scenery in sceneries)
             {
-                var rigid = this.physxPhysics.CreateRigidStatic(scenery.Transform.TransformationMatrix);
-
-                AddCollider(rigid, scenery.Collider);
-
-                this.physxScene.AddActor(rigid);
-                scenery.PhysicsActor = rigid;
+                AddStaticGeom(scenery);
             }
 
             var rigidBodies = this.world.Components<RigidBodyComponent>();
@@ -288,22 +278,12 @@ namespace OpenH2.Engine.Systems
 
             if(entity.TryGetChild<StaticTerrainComponent>(out var terrain))
             {
-                var rigid = this.physxPhysics.CreateRigidStatic();
-
-                AddCollider(rigid, terrain.Collider);
-
-                this.physxScene.AddActor(rigid);
-                terrain.PhysicsActor = rigid;
+                AddTerrain(terrain);
             }
 
             if (entity.TryGetChild<StaticGeometryComponent>(out var geom))
             {
-                var rigid = this.physxPhysics.CreateRigidStatic(geom.Transform.TransformationMatrix);
-
-                AddCollider(rigid, geom.Collider);
-
-                this.physxScene.AddActor(rigid);
-                geom.PhysicsActor = rigid;
+                AddStaticGeom(geom);
             }
         }
 
@@ -326,36 +306,13 @@ namespace OpenH2.Engine.Systems
 
             if (entity.TryGetChild<StaticTerrainComponent>(out var terrain))
             {
-                if(terrain.PhysicsActor is RigidStatic rigid)
-                {
-                    this.physxScene.RemoveActor(rigid);
-                }
+                RemoveTerrain(terrain);
             }
 
             if (entity.TryGetChild<StaticGeometryComponent>(out var geom))
             {
-                if (geom.PhysicsActor is RigidStatic rigid)
-                {
-                    this.physxScene.RemoveActor(rigid);
-                }
+                RemoveStaticGeom(geom);
             }
-        }
-
-        public void RemoveRigidBodyComponent(RigidBodyComponent component)
-        {
-            if (component.PhysicsImplementation is RigidBodyProxy p)
-            {
-                this.physxScene.RemoveActor(p.RigidBody);
-            }
-        }
-
-        private void RemoveCharacterController(MoverComponent mover)
-        {
-            if(ControllerMap.TryGetValue(mover, out var ctrl))
-            {
-                //?
-            }
-        
         }
 
         public void AddRigidBodyComponent(RigidBodyComponent component)
@@ -420,8 +377,6 @@ namespace OpenH2.Engine.Systems
             }
             if (component.Mode == MoverComponent.MovementMode.KinematicCharacterControl)
             {
-                
-
                 var desc = new CapsuleControllerDesc()
                 {
                     Height = config.Height-.02f - (2 * radius),
@@ -474,7 +429,6 @@ namespace OpenH2.Engine.Systems
             }
         }
 
-
         public void AddTrigger(TriggerGeometryComponent component)
         {
             var halfSize = component.Size / 2f;
@@ -497,6 +451,69 @@ namespace OpenH2.Engine.Systems
             this.physxScene.AddActor(body);
         }
 
+        private void AddStaticGeom(StaticGeometryComponent geom)
+        {
+            if (geom.PhysicsActor is RigidStatic existingRigid)
+            {
+                this.physxScene.AddActor(existingRigid);
+                return;
+            }
+
+            var rigid = this.physxPhysics.CreateRigidStatic(geom.Transform.TransformationMatrix);
+
+            AddCollider(rigid, geom.Collider);
+
+            this.physxScene.AddActor(rigid);
+            geom.PhysicsActor = rigid;
+        }
+
+        private void AddTerrain(StaticTerrainComponent terrain)
+        {
+            if(terrain.PhysicsActor is RigidStatic existingRigid)
+            {
+                this.physxScene.AddActor(existingRigid);
+                return;
+            }
+
+            var rigid = this.physxPhysics.CreateRigidStatic();
+
+            AddCollider(rigid, terrain.Collider);
+
+            this.physxScene.AddActor(rigid);
+            terrain.PhysicsActor = rigid;
+        }
+
+        private void RemoveStaticGeom(StaticGeometryComponent geom)
+        {
+            if (geom.PhysicsActor is RigidStatic rigid)
+            {
+                this.physxScene.RemoveActor(rigid);
+            }
+        }
+
+        private void RemoveTerrain(StaticTerrainComponent terrain)
+        {
+            if (terrain.PhysicsActor is RigidStatic rigid)
+            {
+                this.physxScene.RemoveActor(rigid);
+            }
+        }
+
+        public void RemoveRigidBodyComponent(RigidBodyComponent component)
+        {
+            if (component.PhysicsImplementation is RigidBodyProxy p)
+            {
+                this.physxScene.RemoveActor(p.RigidBody);
+            }
+        }
+
+        private void RemoveCharacterController(MoverComponent mover)
+        {
+            if (ControllerMap.TryGetValue(mover, out var ctrl))
+            {
+                //?
+            }
+        }
 
         private void RemoveTrigger(TriggerGeometryComponent comp)
         {

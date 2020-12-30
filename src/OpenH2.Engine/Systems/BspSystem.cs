@@ -4,6 +4,7 @@ using OpenH2.Engine.Stores;
 using OpenH2.Foundation.Logging;
 using OpenTK.Windowing.GraphicsLibraryFramework;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Text;
 
@@ -12,20 +13,52 @@ namespace OpenH2.Engine.Systems
     public class BspSystem : WorldSystem
     {
         private InputStore inputStore;
-        private int loadedIndex;
-        private int? switchToIndex;
 
         private Dictionary<int, List<Entity>> bspEntities = new();
+
+        private BitArray loadedBsps = new BitArray(0);
+        private BitArray bspsToLoad = new BitArray(0);
+        private BitArray bspsToUnload = new BitArray(0);
+
 
         public BspSystem(World world) : base(world)
         {
         }
 
-        public void SwitchToBsp(int desiredIndex)
+        public void SwitchBsp(int desiredIndex, bool toggle)
         {
-            if(loadedIndex != desiredIndex)
+            if(desiredIndex >= loadedBsps.Length)
             {
-                switchToIndex = desiredIndex;
+                Logger.Log($"BSP[{desiredIndex}] does not exist", Logger.Color.Red);
+                return;
+            }
+
+            if(toggle)
+            {
+                if (this.loadedBsps[desiredIndex])
+                {
+                    this.bspsToUnload[desiredIndex] = true;
+                }
+                else
+                {
+                    this.bspsToLoad[desiredIndex] = true;
+                }
+            }
+            else
+            {
+                for (int i = 0; i < loadedBsps.Length; i++)
+                {
+                    if (i == desiredIndex) 
+                        continue;
+
+                    if(loadedBsps[i]) 
+                        bspsToUnload[i] = true;
+                }
+
+                if (this.loadedBsps[desiredIndex] == false)
+                {
+                    bspsToLoad[desiredIndex] = true;
+                }
             }
         }
 
@@ -35,6 +68,10 @@ namespace OpenH2.Engine.Systems
             this.inputStore = this.world.GetGlobalResource<InputStore>();
 
             var terrains = scene.Scenario.Terrains;
+
+            this.loadedBsps = new BitArray(terrains.Length);
+            this.bspsToLoad = new BitArray(terrains.Length);
+            this.bspsToUnload = new BitArray(terrains.Length);
 
             for (int i = 0; i < terrains.Length; i++)
             {
@@ -65,80 +102,91 @@ namespace OpenH2.Engine.Systems
             }
 
             // Load BSP 0
-            this.loadedIndex = 0;
-            foreach (var e in bspEntities[this.loadedIndex])
-                this.world.Scene.AddEntity(e);
+            this.bspsToLoad[0] = true;
         }
 
         public override void Update(double timestep)
         {
             PopulateSwitchCommandFromKeys();
 
-            if (switchToIndex.HasValue)
+            for (int i = 0; i < this.bspsToUnload.Length; i++)
             {
-                if(bspEntities.TryGetValue(this.switchToIndex.Value, out var addEntities))
+                if(this.bspsToUnload[i])
                 {
-                    var desiredIndex = switchToIndex.Value;
-                    switchToIndex = null;
+                    this.bspsToUnload[i] = false;
 
-                    foreach (var e in bspEntities[this.loadedIndex])
+                    foreach (var e in bspEntities[i])
                         world.Scene.RemoveEntity(e);
 
-                    foreach (var e in addEntities)
+                    this.loadedBsps[i] = false;
+                }
+            }
+
+            for (int i = 0; i < this.bspsToLoad.Length; i++)
+            {
+                if (this.bspsToLoad[i])
+                {
+                    this.bspsToLoad[i] = false;
+
+                    foreach (var e in bspEntities[i])
                         world.Scene.AddEntity(e);
 
-                    this.loadedIndex = desiredIndex;
-                }
-                else
-                {
-                    Logger.Log($"BSP[{this.switchToIndex}] does not exist", Logger.Color.Red);
-                    this.switchToIndex = null;
-                    return;
+                    this.loadedBsps[i] = true;
                 }
             }
         }
 
         private void PopulateSwitchCommandFromKeys()
         {
+            var bspIndex = -1;
+
             if (this.inputStore.WasPressed(Keys.KeyPad0))
             {
-                SwitchToBsp(0);
+                bspIndex = 0;
             }
             else if (this.inputStore.WasPressed(Keys.KeyPad1))
             {
-                SwitchToBsp(1);
+                bspIndex = 1;
             }
             else if (this.inputStore.WasPressed(Keys.KeyPad2))
             {
-                SwitchToBsp(2);
+                bspIndex = 2;
             }
             else if (this.inputStore.WasPressed(Keys.KeyPad3))
             {
-                SwitchToBsp(3);
+                bspIndex = 3;
             }
             else if (this.inputStore.WasPressed(Keys.KeyPad4))
             {
-                SwitchToBsp(4);
+                bspIndex = 4;
             }
             else if (this.inputStore.WasPressed(Keys.KeyPad5))
             {
-                SwitchToBsp(5);
+                bspIndex = 5;
             }
             else if (this.inputStore.WasPressed(Keys.KeyPad6))
             {
-                SwitchToBsp(6);
+                bspIndex = 6;
             }
             else if (this.inputStore.WasPressed(Keys.KeyPad7))
             {
-                SwitchToBsp(7);
+                bspIndex = 7;
             }
             else if (this.inputStore.WasPressed(Keys.KeyPad8))
             {
-                SwitchToBsp(8);
+                bspIndex = 8;
             }
             else if (this.inputStore.WasPressed(Keys.KeyPad9))
             {
-                SwitchToBsp(9);
+                bspIndex = 9;
+            }
+
+            if(bspIndex >= 0)
+            {
+                var toggle = this.inputStore.IsDown(Keys.LeftControl)
+                || this.inputStore.IsDown(Keys.RightControl);
+
+                SwitchBsp(bspIndex, toggle);
             }
         }
     }

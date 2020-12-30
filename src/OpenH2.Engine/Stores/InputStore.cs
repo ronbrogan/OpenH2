@@ -1,6 +1,4 @@
 ﻿using OpenTK.Windowing.GraphicsLibraryFramework;
-using System;
-using System.Linq;
 using System.Numerics;
 
 namespace OpenH2.Engine.Stores
