@@ -239,12 +239,27 @@ namespace OpenH2.ModelDumper
                     * Matrix4x4.CreateFromQuaternion(Quaternion.Identity)
                     * Matrix4x4.CreateTranslation(new Vector3(1f * count++, 0, 0));
 
-                if (!scene.TryGetTag(charTag.Unit, out var biped))
+                if (!scene.TryGetTag(charTag.Unit, out BaseTag unit))
                 {
                     continue;
                 }
 
-                if (!scene.TryGetTag(biped.Model, out var hlmt))
+                TagRef<HaloModelTag> hlmtRef;
+
+                if(unit is BipedTag biped)
+                {
+                    hlmtRef = biped.Model;
+                }
+                else if(unit is VehicleTag vehi)
+                {
+                    hlmtRef = vehi.Hlmt;
+                }
+                else
+                {
+                    continue;
+                }
+
+                if (!scene.TryGetTag(hlmtRef, out var hlmt))
                 {
                     continue;
                 }
