@@ -50,7 +50,7 @@ namespace OpenH2.Core.Scripting.Execution
 
             return node.NodeType switch
             {
-                NodeType.Scope => InterpretScope(node, out next),
+                NodeType.BuiltinInvocation => InterpretScope(node, out next),
                 NodeType.Expression => InterpretExpression(node, out next),
                 NodeType.ScriptInvocation => InterpretScriptInvocation(node, out next),
                 NodeType.VariableAccess => this.variables[node.NodeData_H16],
@@ -85,9 +85,9 @@ namespace OpenH2.Core.Scripting.Execution
                 value = Interpret(this.scenario.ScriptSyntaxNodes[node.NodeData_H16], out innerNext);
             }
 
-            if(value.DataType != destType)
+            if (value.DataType != destType)
             {
-                switch(destType)
+                switch (destType)
                 {
                     case ScriptDataType.Float:
                         value.Float = value.GetFloat();
@@ -117,7 +117,7 @@ namespace OpenH2.Core.Scripting.Execution
         {
             next = node.NextIndex;
 
-            if(node.DataType == ScriptDataType.MethodOrOperator)
+            if (node.DataType == ScriptDataType.MethodOrOperator)
             {
                 return InterpretMethodOrOperator(node, out next);
             }

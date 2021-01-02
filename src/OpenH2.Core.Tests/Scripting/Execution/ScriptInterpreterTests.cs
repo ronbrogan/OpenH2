@@ -1197,7 +1197,7 @@ namespace OpenH2.Core.Tests.Scripting.Execution
 
         private ScenarioTag.ScriptSyntaxNode ScopeNode(ScriptDataType dt, ushort op, ushort child, ushort next = 65535)
         {
-            return Node(NodeType.Scope, dt, op, next, child);
+            return Node(NodeType.BuiltinInvocation, dt, op, next, child);
         }
 
         private ScenarioTag.ScriptSyntaxNode Node(NodeType nt, ScriptDataType dt, ushort op, ushort next = 65535, uint data = 0, ushort stringIndex = 0)

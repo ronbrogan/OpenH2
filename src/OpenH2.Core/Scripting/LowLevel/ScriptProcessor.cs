@@ -100,7 +100,7 @@ namespace OpenH2.Core.Scripting.LowLevel
                 // Expression scope seems to use NodeData to specify what is inside the scope
                 // and the Next value is used to specify the scope's next sibling instead
                 // This is how the linear-ish node structure can expand into a more traditional AST
-                if (node.NodeType == NodeType.Scope || node.NodeType == NodeType.ScriptInvocation)
+                if (node.NodeType == NodeType.BuiltinInvocation || node.NodeType == NodeType.ScriptInvocation)
                 {
                     // Use scope's parent as next node's parent instead of the scope
                     // This makes the 'next' into a 'sibling'

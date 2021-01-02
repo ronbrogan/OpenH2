@@ -43,7 +43,7 @@ namespace OpenH2.Core.Scripting.LowLevel
                     }
 
                     // Fixup next node's check value for scope/invocation nodes
-                    if ((patch.NodeData.NodeType == NodeType.Scope || patch.NodeData.NodeType == NodeType.ScriptInvocation))
+                    if ((patch.NodeData.NodeType == NodeType.BuiltinInvocation || patch.NodeData.NodeType == NodeType.ScriptInvocation))
                     {
                         if(patch.NodeData.NodeData_H16 == ushort.MaxValue)
                         {

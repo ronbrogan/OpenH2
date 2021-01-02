@@ -48,201 +48,139 @@ namespace OpenH2.Core.Scripting.Execution
             for (int i = 0; i < this.scenario.ScriptVariables.Length; i++)
             {
                 var variable = this.scenario.ScriptVariables[i];
-
-                var completed = Interpret(this.scenario.ScriptSyntaxNodes[variable.Value_H16], out var state);
+                CreateState(variable.Value_H16, out var state);
+                var completed = Interpret(ref state);
                 Debug.Assert(completed);
-                variables[i] = state.Results.Pop();
+                variables[i] = state.Result;
             }
         }
 
-        public bool Interpret(ScenarioTag.ScriptSyntaxNode node, out State state)
+        /// <summary>
+        /// Entry point to setup the interpreter state/callstack with the provided node
+        /// </summary>
+        public void CreateState(int nodeIndex, out State state)
         {
             state = State.Create();
 
-            Push(node, ref state);
+            var node = this.scenario.ScriptSyntaxNodes[nodeIndex];
 
-            return Interpret(ref state);
+            if(node.NodeType == NodeType.BuiltinInvocation || node.NodeType == NodeType.ScriptInvocation)
+            {
+                // Push node as normal
+                state.Push(new StackFrame()
+                {
+                    Locals = new(6),
+                    OriginatingNode = node,
+                    Previous = this.scenario.ScriptSyntaxNodes[node.NodeData_H16],
+                    Next = ushort.MaxValue
+                });
+            }
+            else
+            {
+                // Create synthetic frame and set next?
+            }
         }
 
-        public bool Interpret(ref State state)
+        public bool Interpret(int nodeIndex, out State state)
         {
-            while (state.CallStack.TryPop(out var node))
+            CreateState(nodeIndex, out state);
+
+            while (state.FrameCount > 0 && state.Yield == false)
             {
-                bool ret = node.NodeType switch
-                {
-                    NodeType.Scope => InterpretScope(node, ref state),
-                    NodeType.Expression => InterpretExpression(node, ref state),
-                    NodeType.ScriptInvocation => InterpretScriptInvocation(node, ref state),
-                    NodeType.VariableAccess => InterpretVariableAccess(node, ref state),
-                    _ => default,
-                };
+                Interpret(ref state.TopFrame, ref state);
             }
 
             return true;
         }
 
-        private void Push(ScenarioTag.ScriptSyntaxNode node, ref State state)
+        /// <summary>
+        /// Method that will be called repeatedly
+        /// Will block until the callstack terminates or yields for continuation
+        /// </summary>
+        /// <returns>True if completed, false if yielded for continuation. Caller should eventually call again if return value is false</returns>
+        public bool Interpret(ref State state)
         {
-            bool ret = node.NodeType switch
+            while(state.Yield == false)
             {
-                NodeType.Scope => PushScope(node, ref state),
-                NodeType.Expression => PushExpression(node, ref state),
-                NodeType.ScriptInvocation => PushScriptInvocation(node, ref state),
-                NodeType.VariableAccess => PushVariableAccess(node, ref state),
-                _ => default,
+                Interpret(ref state.TopFrame, ref state);
+            }
+
+            return true;
+        }
+
+        private void Interpret(ref StackFrame topFrame, ref State state)
+        {
+            // Always defer interpretation to the invocation that created the frame, it knows what to do
+            InterpretFrame(topFrame.OriginatingNode, ref state);
+        }
+
+        private void InterpretFrame(ScenarioTag.ScriptSyntaxNode node, ref State state)
+        {
+            switch (node.NodeType)
+            {
+                case NodeType.BuiltinInvocation: InterpretBuiltinFrame(node, ref state); break;
+                case NodeType.ScriptInvocation: InterpretScriptFrame(node, ref state); break;
+                default: throw new ("Non-invocation node provided to InterpretInvocation");
             };
         }
 
-        private bool PushScope(ScenarioTag.ScriptSyntaxNode node, ref State state)
+        private void InterpretBuiltinFrame(ScenarioTag.ScriptSyntaxNode node, ref State state)
         {
-            state.CallStack.Push(node);
+            ref var top = ref state.TopFrame;
+            if (top.Next != ushort.MaxValue)
+            {
+                // Grab next node, reset index to allow implementation to dictate arg evaluation
+                var nextNode = this.scenario.ScriptSyntaxNodes[top.Next];
+                top.Next = ushort.MaxValue;
+                Interpret(nextNode, ref state);
+            }
+            else
+            {
+                // Need to defer to implementation, allowing implementation to indicate that arguments are needed
 
-            Debug.Assert(node.NodeData_H16 != ushort.MaxValue);
-            Push(this.scenario.ScriptSyntaxNodes[node.NodeData_H16], ref state);
+                InterpretBuiltinInvocation(node, ref state);
 
-            return true;
+                // If implementation terminates, we need to pop current frame and push result onto next frame's Locals?
+                // If we pop frame and push to locals, how do we handle the bottom-most frame?
+            }
         }
 
-        private bool PushExpression(ScenarioTag.ScriptSyntaxNode node, ref State state)
+        private void InterpretScriptFrame(ScenarioTag.ScriptSyntaxNode node, ref State state)
         {
-            state.CallStack.Push(node);
+            // Need to defer to implementation, pre-gather all arguments? even support arguments for this?
 
-            if (node.NextIndex != ushort.MaxValue)
-            {
-                Push(this.scenario.ScriptSyntaxNodes[node.NextIndex], ref state);
-            }
-
-            return true;
+            // If implementation terminates, we need to pop current frame and push result onto next frame's Locals?
+            // If we pop frame and push to locals, how do we handle the bottom-most frame?
         }
 
-        private bool PushScriptInvocation(ScenarioTag.ScriptSyntaxNode node, ref State state)
+        private void Interpret(ScenarioTag.ScriptSyntaxNode node, ref State state)
         {
-            state.CallStack.Push(node);
-
-            Debug.Assert(node.NodeData_H16 != ushort.MaxValue);
-            //Push(this.scenario.ScriptSyntaxNodes[node.NodeData_H16], ref state);
-
-            return true;
+            switch(node.NodeType)
+            {
+                case NodeType.BuiltinInvocation: PushBuiltinInvocation(node, ref state); break;
+                //case NodeType.ScriptInvocation: PushScriptInvocation(node, ref state); break;
+                case NodeType.Expression: InterpretExpression(node, ref state); break;
+                case NodeType.VariableAccess: InterpretVariableAccess(node, ref state); break;
+                default: throw new NotSupportedException($"NodeType {node.NodeType} is not supported");
+            };
         }
 
-        private bool PushVariableAccess(ScenarioTag.ScriptSyntaxNode node, ref State state)
+        private void PushBuiltinInvocation(ScenarioTag.ScriptSyntaxNode node, ref State state)
         {
-            state.CallStack.Push(node);
-            return true;
+            Debug.Assert(node.NodeType == NodeType.BuiltinInvocation);
+
+            state.Push(new StackFrame()
+            {
+                Locals = new(6),
+                OriginatingNode = node,
+                Previous = this.scenario.ScriptSyntaxNodes[node.NodeData_H16],
+                Next = ushort.MaxValue
+            });
         }
 
-        /// <summary>
-        /// Pop scope is responsible for preparing its return value and pushing its sibling onto the stack
-        /// </summary>
-        /// <param name="node"></param>
-        /// <param name="state"></param>
-        /// <returns></returns>
-        private bool InterpretScope(ScenarioTag.ScriptSyntaxNode node, ref State state)
+        private void InterpretExpression(ScenarioTag.ScriptSyntaxNode node, ref State state)
         {
-            var destType = node.DataType;
-
-            if (destType != ScriptDataType.Void)
-            {
-                var value = state.Results.Pop();
-
-                if (value.DataType != destType)
-                {
-                    switch (destType)
-                    {
-                        case ScriptDataType.Float:
-                            value.Float = value.GetFloat();
-                            value.DataType = ScriptDataType.Float;
-                            break;
-                        case ScriptDataType.Int:
-                            value.Int = value.GetInt();
-                            value.DataType = ScriptDataType.Int;
-                            break;
-                        case ScriptDataType.Short:
-                            value.Short = value.GetShort();
-                            value.DataType = ScriptDataType.Short;
-                            break;
-                        default:
-                            Debug.Fail($"No configured cast from {value.DataType} to {destType}");
-                            break;
-                    }
-                }
-
-                state.Results.Push(value);
-            }
-
-            if (node.NextIndex != ushort.MaxValue)
-            {
-                Push(this.scenario.ScriptSyntaxNodes[node.NextIndex], ref state);
-            }
-
-            return true;
-        }
-
-        private bool InterpretScriptInvocation(ScenarioTag.ScriptSyntaxNode node, ref State state)
-        {
-            var destType = node.DataType;
-
-            var invocationNode = this.scenario.ScriptSyntaxNodes[node.NodeData_H16];
-            Debug.Assert(invocationNode.NodeType == NodeType.Expression);
-            Debug.Assert(invocationNode.DataType == ScriptDataType.MethodOrOperator);
-            Debug.Assert(invocationNode.NextCheckval == ushort.MaxValue);
-
-            var methodToInvoke = this.scenario.ScriptMethods[invocationNode.OperationId];
-
-            // TODO: how to handle invoking other methods?
-            //var value = Interpret(this.scenario.ScriptSyntaxNodes[methodToInvoke.SyntaxNodeIndex], out next);
-            var value = default(Result);
-
-            if (value.DataType != destType)
-            {
-                switch (destType)
-                {
-                    case ScriptDataType.Float:
-                        value.Float = value.GetFloat();
-                        value.DataType = ScriptDataType.Float;
-                        break;
-                    case ScriptDataType.Int:
-                        value.Int = value.GetInt();
-                        value.DataType = ScriptDataType.Int;
-                        break;
-                    case ScriptDataType.Short:
-                        value.Short = value.GetShort();
-                        value.DataType = ScriptDataType.Short;
-                        break;
-                    default:
-                        Debug.Fail($"No configured cast from {value.DataType} to {destType}");
-                        break;
-                }
-            }
-
-            if (value.DataType != ScriptDataType.Void)
-            {
-                state.Results.Push(value);
-            }
-
-            if (node.NextIndex != ushort.MaxValue)
-            {
-                Push(this.scenario.ScriptSyntaxNodes[node.NextIndex], ref state);
-            }
-
-            return true;
-        }
-
-        private bool InterpretVariableAccess(ScenarioTag.ScriptSyntaxNode node, ref State state)
-        {
-            state.Results.Push(this.variables[node.NodeData_H16]);
-            return true;
-        }
-
-        /// <summary>
-        /// Interprets an expression node, producing an arbitrary value (void, value, or ref) and returns the next node index to execute
-        /// </summary>
-        private bool InterpretExpression(ScenarioTag.ScriptSyntaxNode node, ref State state)
-        {
-            if (node.DataType == ScriptDataType.MethodOrOperator)
-            {
-                return InterpretMethodOrOperator(node, ref state);
-            }
+            Debug.Assert(node.DataType != ScriptDataType.MethodOrOperator, "MethodOrOperator should be handled by wrapping node");
 
             Result result = node.DataType switch
             {
@@ -291,248 +229,138 @@ namespace OpenH2.Core.Scripting.Execution
 
             result.DataType = node.DataType;
 
-            state.Results.Push(result);
-            return true;
+            ref var frame = ref state.TopFrame;
+            frame.Locals.Push(result);
+            frame.Previous = node;
         }
 
-        private bool InterpretMethodOrOperator(ScenarioTag.ScriptSyntaxNode node, ref State state)
+        private void InterpretVariableAccess(ScenarioTag.ScriptSyntaxNode node, ref State state)
+        {
+            // TODO, handle GET and SET cases
+        }
+
+        private void InterpretBuiltinInvocation(ScenarioTag.ScriptSyntaxNode node, ref State state)
         {
             // Dispatch to relevant implementation
-            return node.OperationId switch
-            {
-                //ScriptOps.Begin => this.Begin(node, out next),
-                //ScriptOps.BeginRandom => this.BeginRandom(node, out next),
-                //ScriptOps.If => this.If(node, ref state),
-                //ScriptOps.Set => this.Set(node, ref state),
-                ScriptOps.And => this.And(node, ref state),
-                ScriptOps.Or => this.Or(node, ref state),
-                ScriptOps.Add => this.Add(node, ref state),
-                ScriptOps.Subtract => this.Subtract(node, ref state),
-                ScriptOps.Multiply => this.Multiply(node, ref state),
-                ScriptOps.Divide => this.Divide(node, ref state),
-                ScriptOps.Min => this.Min(node, ref state),
-                ScriptOps.Max => this.Max(node, ref state),
-                ScriptOps.Equals => this.ValueEquals(node, ref state),
-                ScriptOps.GreaterThan => this.GreaterThan(node, ref state),
-                ScriptOps.LessThan => this.LessThan(node, ref state),
-                ScriptOps.GreaterThanOrEqual => this.GreaterThanOrEquals(node, ref state),
-                ScriptOps.LessThanOrEqual => this.LessThanOrEquals(node, ref state),
-                ScriptOps.Not => this.Not(node, ref state),
 
-                //_ => this.DispatchMethod(node)
+            // Handle methods that special-case arguments
+            switch(node.OperationId)
+            {
+                //case ScriptOps.Begin: this.Begin(node, ref state); return;
+                //case ScriptOps.BeginRandom: this.BeginRandom(node, ref state); return;
+                //case ScriptOps.If: this.If(node, ref state); return;
+                //case ScriptOps.And: this.And(node); return;
+                //case ScriptOps.Or: this.Or(node); return;
+                //case ScriptOps.Set: this.Set(node); return;
+                default: break;
             };
-        }
 
-        private bool And(ScenarioTag.ScriptSyntaxNode node, ref State state)
-        {
-            var result = Result.From(true);
-
-            while (state.Results.TryPop(out var operand))
+            // Handle methods that consume all arguments
+            var argsRemain = PrepareNextArgument(ref state);
+            if(argsRemain)
             {
-                Debug.Assert(operand.DataType == ScriptDataType.Boolean);
-                if (operand.Boolean == false)
-                {
-                    result.Boolean = false;
-                    break;
-                }
+                return;
             }
 
-            state.Results.Push(result);
-
-            return true;
-        }
-
-        private bool Or(ScenarioTag.ScriptSyntaxNode node, ref State state)
-        {
-            var result = Result.From(false);
-
-            while (state.Results.TryPop(out var operand))
+            switch(node.OperationId)
             {
-                Debug.Assert(operand.DataType == ScriptDataType.Boolean);
-                if (operand.Boolean)
-                {
-                    result.Boolean = true;
-                    break;
-                }
+                case ScriptOps.Not: this.Not(node, ref state); break;
+                //case ScriptOps.Equals: this.ValueEquals(node); break;
+                //case ScriptOps.GreaterThan: this.GreaterThan(node); break;
+                //case ScriptOps.LessThan: this.LessThan(node); break;
+                //case ScriptOps.GreaterThanOrEqual: this.GreaterThanOrEquals(node); break;
+                //case ScriptOps.LessThanOrEqual: this.LessThanOrEquals(node); break;
+
+                //case ScriptOps.Add: this.Add(node); break;
+                //case ScriptOps.Subtract: this.Subtract(node); break;
+                //case ScriptOps.Multiply: this.Multiply(node); break;
+                //case ScriptOps.Divide: this.Divide(node); break;
+                //case ScriptOps.Min: this.Min(node); break;
+                //case ScriptOps.Max: this.Max(node); break;
+
+                default: throw new NotSupportedException($"Operation {node.OperationId} not supported");
+                //_: this.DispatchMethod(node)
             }
-
-            state.Results.Push(result);
-
-            return true;
         }
 
-        private bool Not(ScenarioTag.ScriptSyntaxNode node, ref State state)
+        //private Result Begin(ScenarioTag.ScriptSyntaxNode node, ref State state)
+        //{
+        //    next = node.NextIndex;
+        //
+        //    Result result = default;
+        //
+        //    while (interruptRequested == false && next != ushort.MaxValue)
+        //    {
+        //        result = Interpret(this.scenario.ScriptSyntaxNodes[next], out next);
+        //    }
+        //
+        //    return result;
+        //}
+        //
+        //// TODO: not random!
+        //private void BeginRandom(ScenarioTag.ScriptSyntaxNode node, ref State state)
+        //{
+        //    Begin(node, ref state);
+        //}
+        //
+        //private void If(ScenarioTag.ScriptSyntaxNode node, ref State state)
+        //{
+        //    var argNext = node.NextIndex;
+        //
+        //    var condition = Interpret(this.scenario.ScriptSyntaxNodes[argNext], ref state);
+        //    Debug.Assert(condition.DataType == ScriptDataType.Boolean);
+        //
+        //    var trueExp = this.scenario.ScriptSyntaxNodes[argNext];
+        //
+        //    if (condition.Boolean)
+        //    {
+        //        return Interpret(trueExp, out _);
+        //    }
+        //    else
+        //    {
+        //        var falseExp = this.scenario.ScriptSyntaxNodes[trueExp.NextIndex];
+        //        return Interpret(falseExp, out _);
+        //    }
+        //}
+
+        private void Not(ScenarioTag.ScriptSyntaxNode node, ref State state)
         {
-            var result = Result.From(false);
+            ref var frame = ref state.TopFrame;
 
-            var operand = state.Results.Pop();
+            Debug.Assert(frame.Locals.Count == 1);
 
+            var operand = frame.Locals.Pop();
             Debug.Assert(operand.DataType == ScriptDataType.Boolean);
 
-            result.Boolean = !operand.Boolean;
-
-            state.Results.Push(result);
-
-            return true;
+            ProduceResult(Result.From(!operand.Boolean), ref state);
         }
 
-        private bool Add(ScenarioTag.ScriptSyntaxNode node, ref State state)
+        private bool PrepareNextArgument(ref State state)
         {
-            var left = state.Results.Pop();
-
-            while (state.Results.TryPop(out var right))
+            ref var top = ref state.TopFrame;
+            if (top.Previous.NextIndex == ushort.MaxValue)
             {
-                left.Add(right);
-            };
-
-            state.Results.Push(left);
-            return true;
+                return false;
+            }
+            else
+            {
+                top.Next = top.Previous.NextIndex;
+                return true;
+            }
         }
 
-        private bool Subtract(ScenarioTag.ScriptSyntaxNode node, ref State state)
+        private void ProduceResult(InterpreterResult result, ref State state)
         {
-            var left = state.Results.Pop();
+            var completedFrame = state.Pop();
 
-            while (state.Results.TryPop(out var right))
+            if(state.FrameCount == 0)
             {
-                left.Subtract(right);
-            };
-
-            state.Results.Push(left);
-            return true;
-        }
-
-        private bool Multiply(ScenarioTag.ScriptSyntaxNode node, ref State state)
-        {
-            var left = state.Results.Pop();
-
-            while (state.Results.TryPop(out var right))
+                state.Result = result;
+            }
+            else
             {
-                left.Multiply(right);
-            };
-
-            state.Results.Push(left);
-            return true;
-        }
-
-        private bool Divide(ScenarioTag.ScriptSyntaxNode node, ref State state)
-        {
-            var left = state.Results.Pop();
-
-            while (state.Results.TryPop(out var right))
-            {
-                left.Divide(right);
-            };
-
-            state.Results.Push(left);
-            return true;
-        }
-
-        private bool Min(ScenarioTag.ScriptSyntaxNode node, ref State state)
-        {
-            var left = state.Results.Pop();
-
-            while (state.Results.TryPop(out var right))
-            {
-                left = Result.Min(left, right);
-            };
-
-            state.Results.Push(left);
-            return true;
-        }
-
-        private bool Max(ScenarioTag.ScriptSyntaxNode node, ref State state)
-        {
-            var left = state.Results.Pop();
-
-            while (state.Results.TryPop(out var right))
-            {
-                left = Result.Max(left, right);
-            };
-
-            state.Results.Push(left);
-            return true;
-        }
-
-        private bool ValueEquals(ScenarioTag.ScriptSyntaxNode node, ref State state)
-        {
-            var left = state.Results.Pop();
-            var right = state.Results.Pop();
-
-            var result = left.DataType switch
-            {
-                ScriptDataType.Boolean => Result.From(left.Boolean == right.Boolean),
-                ScriptDataType.Float => Result.From(left.GetFloat() == right.GetFloat()),
-                ScriptDataType.Short => Result.From(left.GetShort() == right.GetShort()),
-                ScriptDataType.Int => Result.From(left.GetInt() == right.GetInt()),
-                ScriptDataType.GameDifficulty => Result.From(left.GetShort() == right.GetShort()),
-                _ => throw new InterpreterException($"Equality comparison for {left.DataType} is not supported")
-            };
-
-            state.Results.Push(result);
-
-            return true;
-        }
-
-        private bool GreaterThan(ScenarioTag.ScriptSyntaxNode node, ref State state)
-        {
-            var left = state.Results.Pop();
-            var right = state.Results.Pop();
-
-            var result = left.DataType switch
-            {
-                ScriptDataType.Float => Result.From(left.GetFloat() > right.GetFloat()),
-                ScriptDataType.Short => Result.From(left.GetShort() > right.GetShort()),
-                _ => throw new InterpreterException($"Equality comparison for {left.DataType} is not supported")
-            };
-
-            state.Results.Push(result);
-            return true;
-        }
-
-        private bool GreaterThanOrEquals(ScenarioTag.ScriptSyntaxNode node, ref State state)
-        {
-            var left = state.Results.Pop();
-            var right = state.Results.Pop();
-
-            var result = left.DataType switch
-            {
-                ScriptDataType.Float => Result.From(left.GetFloat() >= right.GetFloat()),
-                ScriptDataType.Short => Result.From(left.GetShort() >= right.GetShort()),
-                _ => throw new InterpreterException($"Equality comparison for {left.DataType} is not supported")
-            };
-            state.Results.Push(result);
-            return true;
-        }
-
-        private bool LessThan(ScenarioTag.ScriptSyntaxNode node, ref State state)
-        {
-            var left = state.Results.Pop();
-            var right = state.Results.Pop();
-
-            var result = left.DataType switch
-            {
-                ScriptDataType.Float => Result.From(left.GetFloat() < right.GetFloat()),
-                ScriptDataType.Short => Result.From(left.GetShort() < right.GetShort()),
-                _ => throw new InterpreterException($"Equality comparison for {left.DataType} is not supported")
-            };
-            state.Results.Push(result);
-            return true;
-        }
-
-        private bool LessThanOrEquals(ScenarioTag.ScriptSyntaxNode node, ref State state)
-        {
-            var left = state.Results.Pop();
-            var right = state.Results.Pop();
-
-            var result = left.DataType switch
-            {
-                ScriptDataType.Float => Result.From(left.GetFloat() <= right.GetFloat()),
-                ScriptDataType.Short => Result.From(left.GetShort() <= right.GetShort()),
-                _ => throw new InterpreterException($"Equality comparison for {left.DataType} is not supported")
-            };
-            state.Results.Push(result);
-            return true;
+                state.TopFrame.Locals.Push(result);
+            }
         }
     }
 }

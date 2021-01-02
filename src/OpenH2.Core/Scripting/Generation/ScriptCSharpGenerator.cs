@@ -453,7 +453,7 @@ namespace OpenH2.Core.Scripting.Generation
         {
             return node.NodeType switch
             {
-                NodeType.Scope => HandleScopeStart(node),
+                NodeType.BuiltinInvocation => HandleScopeStart(node),
                 NodeType.Expression => HandleExpression(node),
                 NodeType.ScriptInvocation => HandleScriptInvocation(node),
                 NodeType.VariableAccess => HandleVariableAccess(node),

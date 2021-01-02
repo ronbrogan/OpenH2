@@ -1,4 +1,5 @@
 ﻿using OpenH2.Core.Tags.Scenario;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
@@ -6,22 +7,51 @@ using System.Runtime.InteropServices;
 
 namespace OpenH2.Core.Scripting.Execution
 {
+    public struct StackFrame
+    {
+        public Stack<InterpreterResult> Locals;
+        public ScenarioTag.ScriptSyntaxNode OriginatingNode;
+        public ScenarioTag.ScriptSyntaxNode Previous;
+        public ushort Next;
+    }
+
     public struct InterpreterState
     {
-        public Stack<ScenarioTag.ScriptSyntaxNode> CallStack;
-        public Stack<InterpreterResult> Results;
+        private int TopOfStack;
+        private StackFrame[] CallStack;
+        public bool Yield;
+
         public InterpreterResult Result;
 
         public static InterpreterState Create()
         {
             var s = new InterpreterState();
-            s.CallStack = new(32);
-            s.Results = new(6);
+            s.TopOfStack = -1;
+            s.CallStack = new StackFrame[32];
             s.Result = InterpreterResult.From();
             return s;
         }
 
-        public bool IsComplete() => CallStack.Count > 0;
+        public ref StackFrame TopFrame => ref this.CallStack[this.TopOfStack];
+
+        public void Push(StackFrame frame)
+        {
+            try
+            {
+                this.CallStack[++this.TopOfStack] = frame;
+            }
+            catch (IndexOutOfRangeException)
+            {
+                throw new Exception("Interpreter CallStack has exceeded the allowed depth");
+            }
+        }
+
+        public ref StackFrame Pop()
+        {
+            return ref this.CallStack[this.TopOfStack--];
+        }
+
+        public int FrameCount => TopOfStack+1;
     }
 
     [StructLayout(LayoutKind.Explicit)]
@@ -43,7 +73,7 @@ namespace OpenH2.Core.Scripting.Execution
         public ScriptDataType DataType;
 
         [FieldOffset(8)]
-        public object Object;
+        public object? Object;
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public float GetFloat()
@@ -128,7 +158,7 @@ namespace OpenH2.Core.Scripting.Execution
         public static InterpreterResult From(short v, ScriptDataType t = ScriptDataType.Short) => new InterpreterResult() { Short = v, DataType = t };
         public static InterpreterResult From(ushort v, ScriptDataType t = ScriptDataType.Short) => new InterpreterResult() { Short = (short)v, DataType = t };
         public static InterpreterResult From(float v, ScriptDataType t = ScriptDataType.Float) => new InterpreterResult() { Float = v, DataType = t };
-        public static InterpreterResult From(object v, ScriptDataType t = ScriptDataType.Entity) => new InterpreterResult() { Object = v, DataType = t };
+        public static InterpreterResult From(object? v, ScriptDataType t = ScriptDataType.Entity) => new InterpreterResult() { Object = v, DataType = t };
         public static InterpreterResult From() => new InterpreterResult() { DataType = ScriptDataType.Void };
 
         public static implicit operator float(InterpreterResult r)

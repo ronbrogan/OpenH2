@@ -32,8 +32,8 @@ namespace OpenH2.Core.Tests.Scripting.Execution
 
             var interpreter = new ScriptIterativeInterpreter(scen, Mock.Of<IScriptEngine>());
 
-            var terminated = interpreter.Interpret(scen.ScriptSyntaxNodes[0], out var state);
-            var result = state.Results.Pop();
+            var terminated = interpreter.Interpret(0, out var state);
+            var result = state.Result;
 
             Assert.Equal(ScriptDataType.Float, result.DataType);
             Assert.Equal(2f, result.Float);
@@ -48,14 +48,14 @@ namespace OpenH2.Core.Tests.Scripting.Execution
                 ScriptSyntaxNodes = new ScenarioTag.ScriptSyntaxNode[]
                 {
                     ScopeNode(ScriptDataType.Float, op: 6, child: 1),
-                    Node(NodeType.Expression, ScriptDataType.Float, op: 6, data: From(2f)),
+                        Node(NodeType.Expression, ScriptDataType.Float, op: 6, data: From(2f)),
                 }
             };
 
             var interpreter = new ScriptIterativeInterpreter(scen, Mock.Of<IScriptEngine>());
 
-            var terminated = interpreter.Interpret(scen.ScriptSyntaxNodes[0], out var state);
-            var result = state.Results.Pop();
+            var terminated = interpreter.Interpret(0, out var state);
+            var result = state.Result;
 
             Assert.Equal(ScriptDataType.Float, result.DataType);
             Assert.Equal(2f, result.Float);
@@ -69,7 +69,7 @@ namespace OpenH2.Core.Tests.Scripting.Execution
             {
                 ScriptSyntaxNodes = new ScenarioTag.ScriptSyntaxNode[]
                 {
-                    ScopeNode(ScriptDataType.Short, op: 7, child: 1),
+                    ScopeNode(ScriptDataType.Short, op: ScriptOps.Add, child: 1),
                         Node(NodeType.Expression, ScriptDataType.MethodOrOperator, op: ScriptOps.Add, next: 2),
                             Node(NodeType.Expression, ScriptDataType.Float, op: 6, data: From(2f), next: 3),
                                 Node(NodeType.Expression, ScriptDataType.Float, op: 6, data: From(2f), next: 4),
@@ -79,8 +79,8 @@ namespace OpenH2.Core.Tests.Scripting.Execution
 
             var interpreter = new ScriptIterativeInterpreter(scen, Mock.Of<IScriptEngine>());
 
-            var terminated = interpreter.Interpret(scen.ScriptSyntaxNodes[0], out var state);
-            var result = state.Results.Pop();
+            var terminated = interpreter.Interpret(0, out var state);
+            var result = state.Result;
 
             Assert.Equal(ScriptDataType.Short, result.DataType);
             Assert.Equal(6, result.Short);
@@ -94,7 +94,7 @@ namespace OpenH2.Core.Tests.Scripting.Execution
             {
                 ScriptSyntaxNodes = new ScenarioTag.ScriptSyntaxNode[]
                 {
-                    ScopeNode(ScriptDataType.Float, op: 6, child: 1),
+                    ScopeNode(ScriptDataType.Float, op: ScriptOps.Begin, child: 1),
                         Node(NodeType.Expression, ScriptDataType.MethodOrOperator, op: ScriptOps.Begin, next: 2),
                             ScopeNode(ScriptDataType.Float, op:6, child: 3, next: 4),
                                 Node(NodeType.Expression, ScriptDataType.Float, op: 6, data: From(1f)),
@@ -107,8 +107,8 @@ namespace OpenH2.Core.Tests.Scripting.Execution
 
             var interpreter = new ScriptIterativeInterpreter(scen, Mock.Of<IScriptEngine>());
 
-            var terminated = interpreter.Interpret(scen.ScriptSyntaxNodes[0], out var state);
-            var result = state.Results.Pop();
+            var terminated = interpreter.Interpret(0, out var state);
+            var result = state.Result;
 
             Assert.Equal(ScriptDataType.Float, result.DataType);
             Assert.Equal(3, result.Float);
@@ -123,15 +123,15 @@ namespace OpenH2.Core.Tests.Scripting.Execution
                 ScriptStrings = Encoding.UTF8.GetBytes("hi\0hey\0hello\0"),
                 ScriptSyntaxNodes = new ScenarioTag.ScriptSyntaxNode[]
                 {
-                    ScopeNode(ScriptDataType.Void, op: 4, child: 1),
+                    ScopeNode(ScriptDataType.Void, op: ScriptOps.Begin, child: 1),
                         Node(NodeType.Expression, ScriptDataType.MethodOrOperator, op: ScriptOps.Begin, next: 2),
-                            ScopeNode(ScriptDataType.Void, op:6, child: 3, next: 5),
+                            ScopeNode(ScriptDataType.Void, op:ScriptOps.Print, child: 3, next: 5),
                                 Node(NodeType.Expression, ScriptDataType.MethodOrOperator, op: ScriptOps.Print, next: 4),
                                     Node(NodeType.Expression, ScriptDataType.String, op: 9, stringIndex: 0),
-                            ScopeNode(ScriptDataType.Void, op:6, child: 6, next: 8),
+                            ScopeNode(ScriptDataType.Void, op:ScriptOps.Print, child: 6, next: 8),
                                 Node(NodeType.Expression, ScriptDataType.MethodOrOperator, op: ScriptOps.Print, next: 7),
                                     Node(NodeType.Expression, ScriptDataType.String, op: 9, stringIndex: 3),
-                            ScopeNode(ScriptDataType.Void, op:6, child: 9),
+                            ScopeNode(ScriptDataType.Void, op:ScriptOps.Print, child: 9),
                                 Node(NodeType.Expression, ScriptDataType.MethodOrOperator, op: ScriptOps.Print, next: 10),
                                     Node(NodeType.Expression, ScriptDataType.String, op: 9, stringIndex: 7)
                 }
@@ -142,8 +142,8 @@ namespace OpenH2.Core.Tests.Scripting.Execution
 
             var interpreter = new ScriptIterativeInterpreter(scen, engine.Object);
 
-            var terminated = interpreter.Interpret(scen.ScriptSyntaxNodes[0], out var state);
-            var result = state.Results.Pop();
+            var terminated = interpreter.Interpret(0, out var state);
+            var result = state.Result;
 
             Assert.Equal(ScriptDataType.Void, result.DataType);
             Assert.True(terminated);
@@ -160,7 +160,7 @@ namespace OpenH2.Core.Tests.Scripting.Execution
             {
                 ScriptSyntaxNodes = new ScenarioTag.ScriptSyntaxNode[]
                 {
-                    ScopeNode(ScriptDataType.Float, op: 6, child: 1),
+                    ScopeNode(ScriptDataType.Float, op: ScriptOps.If, child: 1),
                         Node(NodeType.Expression, ScriptDataType.MethodOrOperator, op: ScriptOps.If, next: 2),
                             ScopeNode(ScriptDataType.Boolean, op:5, child: 3, next: 4),
                                 Node(NodeType.Expression, ScriptDataType.Boolean, op: 5, data: 1),
@@ -173,8 +173,8 @@ namespace OpenH2.Core.Tests.Scripting.Execution
 
             var interpreter = new ScriptIterativeInterpreter(scen, Mock.Of<IScriptEngine>());
 
-            var terminated = interpreter.Interpret(scen.ScriptSyntaxNodes[0], out var state);
-            var result = state.Results.Pop();
+            var terminated = interpreter.Interpret(0, out var state);
+            var result = state.Result;
 
             Assert.Equal(ScriptDataType.Float, result.DataType);
             Assert.Equal(2f, result.Float);
@@ -188,7 +188,7 @@ namespace OpenH2.Core.Tests.Scripting.Execution
             {
                 ScriptSyntaxNodes = new ScenarioTag.ScriptSyntaxNode[]
                 {
-                    ScopeNode(ScriptDataType.Float, op: 6, child: 1),
+                    ScopeNode(ScriptDataType.Float, op: ScriptOps.If, child: 1),
                         Node(NodeType.Expression, ScriptDataType.MethodOrOperator, op: ScriptOps.If, next: 2),
                             ScopeNode(ScriptDataType.Boolean, op:5, child: 3, next: 4),
                                 Node(NodeType.Expression, ScriptDataType.Boolean, op: 5, data: 0),
@@ -201,8 +201,8 @@ namespace OpenH2.Core.Tests.Scripting.Execution
 
             var interpreter = new ScriptIterativeInterpreter(scen, Mock.Of<IScriptEngine>());
 
-            var terminated = interpreter.Interpret(scen.ScriptSyntaxNodes[0], out var state);
-            var result = state.Results.Pop();
+            var terminated = interpreter.Interpret(0, out var state);
+            var result = state.Result;
 
             Assert.Equal(ScriptDataType.Float, result.DataType);
             Assert.Equal(3f, result.Float);
@@ -253,7 +253,7 @@ namespace OpenH2.Core.Tests.Scripting.Execution
                 },
                 ScriptSyntaxNodes = new ScenarioTag.ScriptSyntaxNode[]
                 {
-                    ScopeNode(ScriptDataType.Void, op: 6, child: 1),
+                    ScopeNode(ScriptDataType.Void, op: ScriptOps.Set, child: 1),
                         Node(NodeType.Expression, ScriptDataType.MethodOrOperator, op: ScriptOps.Set, next: 2),
                             Node(NodeType.VariableAccess, ScriptDataType.Float, op: 6, data: 1, next: 3),
                                 Node(NodeType.Expression, ScriptDataType.Float, op: 6, data: From(2f)),
@@ -268,7 +268,7 @@ namespace OpenH2.Core.Tests.Scripting.Execution
 
             Assert.Equal(12f, interpreter.GetVariable(1));
 
-            interpreter.Interpret(scen.ScriptSyntaxNodes[0], out var n);
+            interpreter.Interpret(0, out var n);
 
             Assert.Equal(2f, interpreter.GetVariable(1));
         }
@@ -299,8 +299,8 @@ namespace OpenH2.Core.Tests.Scripting.Execution
 
             Assert.Equal(12f, interpreter.GetVariable(1));
 
-            var terminated = interpreter.Interpret(scen.ScriptSyntaxNodes[0], out var state);
-            var result = state.Results.Pop();
+            var terminated = interpreter.Interpret(0, out var state);
+            var result = state.Result;
 
             Assert.Equal(12f, result.Float);
             Assert.Equal(12f, interpreter.GetVariable(1));
@@ -319,7 +319,7 @@ namespace OpenH2.Core.Tests.Scripting.Execution
                 },
                 ScriptSyntaxNodes = new ScenarioTag.ScriptSyntaxNode[]
                 {
-                    ScopeNode(ScriptDataType.Void, op: 6, child: 1),
+                    ScopeNode(ScriptDataType.Void, op: ScriptOps.Set, child: 1),
                         Node(NodeType.Expression, ScriptDataType.MethodOrOperator, op: ScriptOps.Set, next: 2),
                             Node(NodeType.VariableAccess, ScriptDataType.Float, op: 6, data: 1, next: 3),
                                 Node(NodeType.Expression, ScriptDataType.Float, op: 6, data: From(2f)),
@@ -339,12 +339,12 @@ namespace OpenH2.Core.Tests.Scripting.Execution
             Assert.Equal(12f, interpreter.GetVariable(1));
 
             // Set
-            interpreter.Interpret(scen.ScriptSyntaxNodes[0], out _);
+            interpreter.Interpret(0, out _);
             Assert.Equal(2f, interpreter.GetVariable(1));
 
             // Get
-            var terminated = interpreter.Interpret(scen.ScriptSyntaxNodes[7], out var state);
-            Assert.Equal(2f, state.Results.Pop().Float);
+            var terminated = interpreter.Interpret(7, out var state);
+            Assert.Equal(2f, state.Result.Float);
         }
 
         [Fact]
@@ -354,7 +354,7 @@ namespace OpenH2.Core.Tests.Scripting.Execution
             {
                 ScriptSyntaxNodes = new ScenarioTag.ScriptSyntaxNode[]
                 {
-                    ScopeNode(ScriptDataType.Float, op: 6, child: 1),
+                    ScopeNode(ScriptDataType.Float, op: ScriptOps.Add, child: 1),
                         Node(NodeType.Expression, ScriptDataType.MethodOrOperator, op: ScriptOps.Add, next: 2),
                             Node(NodeType.Expression, ScriptDataType.Float, op: 6, data: From(2f), next: 3),
                                 Node(NodeType.Expression, ScriptDataType.Float, op: 6, data: From(2f), next: 4),
@@ -364,8 +364,8 @@ namespace OpenH2.Core.Tests.Scripting.Execution
 
             var interpreter = new ScriptIterativeInterpreter(scen, Mock.Of<IScriptEngine>());
 
-            var terminated = interpreter.Interpret(scen.ScriptSyntaxNodes[0], out var state);
-            var result = state.Results.Pop();
+            var terminated = interpreter.Interpret(0, out var state);
+            var result = state.Result;
 
             Assert.Equal(ScriptDataType.Float, result.DataType);
             Assert.Equal(6f, result.Float);
@@ -379,7 +379,7 @@ namespace OpenH2.Core.Tests.Scripting.Execution
             {
                 ScriptSyntaxNodes = new ScenarioTag.ScriptSyntaxNode[]
                 {
-                    ScopeNode(ScriptDataType.Float, op: 6, child: 1),
+                    ScopeNode(ScriptDataType.Float, op: ScriptOps.Subtract, child: 1),
                         Node(NodeType.Expression, ScriptDataType.MethodOrOperator, op: ScriptOps.Subtract, next: 2),
                             Node(NodeType.Expression, ScriptDataType.Float, op: 6, data: From(2f), next: 3),
                                 Node(NodeType.Expression, ScriptDataType.Float, op: 6, data: From(2f))
@@ -388,8 +388,8 @@ namespace OpenH2.Core.Tests.Scripting.Execution
 
             var interpreter = new ScriptIterativeInterpreter(scen, Mock.Of<IScriptEngine>());
 
-            var terminated = interpreter.Interpret(scen.ScriptSyntaxNodes[0], out var state);
-            var result = state.Results.Pop();
+            var terminated = interpreter.Interpret(0, out var state);
+            var result = state.Result;
 
             Assert.Equal(ScriptDataType.Float, result.DataType);
             Assert.Equal(0f, result.Float);
@@ -403,7 +403,7 @@ namespace OpenH2.Core.Tests.Scripting.Execution
             {
                 ScriptSyntaxNodes = new ScenarioTag.ScriptSyntaxNode[]
                 {
-                    ScopeNode(ScriptDataType.Float, op: 6, child: 1),
+                    ScopeNode(ScriptDataType.Float, op: ScriptOps.Multiply, child: 1),
                         Node(NodeType.Expression, ScriptDataType.MethodOrOperator, op: ScriptOps.Multiply, next: 2),
                             Node(NodeType.Expression, ScriptDataType.Float, op: 6, data: From(2f), next: 3),
                                 Node(NodeType.Expression, ScriptDataType.Float, op: 6, data: From(2f), next: 4),
@@ -413,8 +413,8 @@ namespace OpenH2.Core.Tests.Scripting.Execution
 
             var interpreter = new ScriptIterativeInterpreter(scen, Mock.Of<IScriptEngine>());
 
-            var terminated = interpreter.Interpret(scen.ScriptSyntaxNodes[0], out var state);
-            var result = state.Results.Pop();
+            var terminated = interpreter.Interpret(0, out var state);
+            var result = state.Result;
 
             Assert.Equal(ScriptDataType.Float, result.DataType);
             Assert.Equal(8f, result.Float);
@@ -428,7 +428,7 @@ namespace OpenH2.Core.Tests.Scripting.Execution
             {
                 ScriptSyntaxNodes = new ScenarioTag.ScriptSyntaxNode[]
                 {
-                    ScopeNode(ScriptDataType.Float, op: 6, child: 1),
+                    ScopeNode(ScriptDataType.Float, op: ScriptOps.Divide, child: 1),
                         Node(NodeType.Expression, ScriptDataType.MethodOrOperator, op: ScriptOps.Divide, next: 2),
                             Node(NodeType.Expression, ScriptDataType.Float, op: 6, data: From(2f), next: 3),
                                 Node(NodeType.Expression, ScriptDataType.Float, op: 6, data: From(2f))
@@ -437,8 +437,8 @@ namespace OpenH2.Core.Tests.Scripting.Execution
 
             var interpreter = new ScriptIterativeInterpreter(scen, Mock.Of<IScriptEngine>());
 
-            var terminated = interpreter.Interpret(scen.ScriptSyntaxNodes[0], out var state);
-            var result = state.Results.Pop();
+            var terminated = interpreter.Interpret(0, out var state);
+            var result = state.Result;
 
             Assert.Equal(ScriptDataType.Float, result.DataType);
             Assert.Equal(1f, result.Float);
@@ -452,7 +452,7 @@ namespace OpenH2.Core.Tests.Scripting.Execution
             {
                 ScriptSyntaxNodes = new ScenarioTag.ScriptSyntaxNode[]
                 {
-                    ScopeNode(ScriptDataType.Float, op: 6, child: 1),
+                    ScopeNode(ScriptDataType.Float, op: ScriptOps.Min, child: 1),
                         Node(NodeType.Expression, ScriptDataType.MethodOrOperator, op: ScriptOps.Min, next: 2),
                             Node(NodeType.Expression, ScriptDataType.Float, op: 6, data: From(1f), next: 3),
                                 Node(NodeType.Expression, ScriptDataType.Float, op: 6, data: From(2f))
@@ -461,8 +461,8 @@ namespace OpenH2.Core.Tests.Scripting.Execution
 
             var interpreter = new ScriptIterativeInterpreter(scen, Mock.Of<IScriptEngine>());
 
-            var terminated = interpreter.Interpret(scen.ScriptSyntaxNodes[0], out var state);
-            var result = state.Results.Pop();
+            var terminated = interpreter.Interpret(0, out var state);
+            var result = state.Result;
 
             Assert.Equal(ScriptDataType.Float, result.DataType);
             Assert.Equal(1f, result.Float);
@@ -476,7 +476,7 @@ namespace OpenH2.Core.Tests.Scripting.Execution
             {
                 ScriptSyntaxNodes = new ScenarioTag.ScriptSyntaxNode[]
                 {
-                    ScopeNode(ScriptDataType.Float, op: 6, child: 1),
+                    ScopeNode(ScriptDataType.Float, op: ScriptOps.Min, child: 1),
                         Node(NodeType.Expression, ScriptDataType.MethodOrOperator, op: ScriptOps.Min, next: 2),
                             Node(NodeType.Expression, ScriptDataType.Float, op: 6, data: From(2f), next: 3),
                                 Node(NodeType.Expression, ScriptDataType.Float, op: 6, data: From(1f))
@@ -485,8 +485,8 @@ namespace OpenH2.Core.Tests.Scripting.Execution
 
             var interpreter = new ScriptIterativeInterpreter(scen, Mock.Of<IScriptEngine>());
 
-            var terminated = interpreter.Interpret(scen.ScriptSyntaxNodes[0], out var state);
-            var result = state.Results.Pop();
+            var terminated = interpreter.Interpret(0, out var state);
+            var result = state.Result;
 
             Assert.Equal(ScriptDataType.Float, result.DataType);
             Assert.Equal(1f, result.Float);
@@ -500,7 +500,7 @@ namespace OpenH2.Core.Tests.Scripting.Execution
             {
                 ScriptSyntaxNodes = new ScenarioTag.ScriptSyntaxNode[]
                 {
-                    ScopeNode(ScriptDataType.Float, op: 6, child: 1),
+                    ScopeNode(ScriptDataType.Float, op: ScriptOps.Max, child: 1),
                         Node(NodeType.Expression, ScriptDataType.MethodOrOperator, op: ScriptOps.Max, next: 2),
                             Node(NodeType.Expression, ScriptDataType.Float, op: 6, data: From(1f), next: 3),
                                 Node(NodeType.Expression, ScriptDataType.Float, op: 6, data: From(2f))
@@ -509,8 +509,8 @@ namespace OpenH2.Core.Tests.Scripting.Execution
 
             var interpreter = new ScriptIterativeInterpreter(scen, Mock.Of<IScriptEngine>());
 
-            var terminated = interpreter.Interpret(scen.ScriptSyntaxNodes[0], out var state);
-            var result = state.Results.Pop();
+            var terminated = interpreter.Interpret(0, out var state);
+            var result = state.Result;
 
             Assert.Equal(ScriptDataType.Float, result.DataType);
             Assert.Equal(2f, result.Float);
@@ -524,7 +524,7 @@ namespace OpenH2.Core.Tests.Scripting.Execution
             {
                 ScriptSyntaxNodes = new ScenarioTag.ScriptSyntaxNode[]
                 {
-                    ScopeNode(ScriptDataType.Float, op: 6, child: 1),
+                    ScopeNode(ScriptDataType.Float, op: ScriptOps.Max, child: 1),
                         Node(NodeType.Expression, ScriptDataType.MethodOrOperator, op: ScriptOps.Max, next: 2),
                             Node(NodeType.Expression, ScriptDataType.Float, op: 6, data: From(2f), next: 3),
                                 Node(NodeType.Expression, ScriptDataType.Float, op: 6, data: From(1f))
@@ -533,8 +533,8 @@ namespace OpenH2.Core.Tests.Scripting.Execution
 
             var interpreter = new ScriptIterativeInterpreter(scen, Mock.Of<IScriptEngine>());
 
-            var terminated = interpreter.Interpret(scen.ScriptSyntaxNodes[0], out var state);
-            var result = state.Results.Pop();
+            var terminated = interpreter.Interpret(0, out var state);
+            var result = state.Result;
 
             Assert.Equal(ScriptDataType.Float, result.DataType);
             Assert.Equal(2f, result.Float);
@@ -548,7 +548,7 @@ namespace OpenH2.Core.Tests.Scripting.Execution
             {
                 ScriptSyntaxNodes = new ScenarioTag.ScriptSyntaxNode[]
                 {
-                    ScopeNode(ScriptDataType.Boolean, op: 5, child: 1),
+                    ScopeNode(ScriptDataType.Boolean, op: ScriptOps.Equals, child: 1),
                         Node(NodeType.Expression, ScriptDataType.MethodOrOperator, op: ScriptOps.Equals, next: 2),
                             Node(NodeType.Expression, ScriptDataType.Float, op: 6, data: From(2f), next: 3),
                                 Node(NodeType.Expression, ScriptDataType.Float, op: 6, data: From(2f))
@@ -557,8 +557,8 @@ namespace OpenH2.Core.Tests.Scripting.Execution
 
             var interpreter = new ScriptIterativeInterpreter(scen, Mock.Of<IScriptEngine>());
 
-            var terminated = interpreter.Interpret(scen.ScriptSyntaxNodes[0], out var state);
-            var result = state.Results.Pop();
+            var terminated = interpreter.Interpret(0, out var state);
+            var result = state.Result;
 
             Assert.Equal(ScriptDataType.Boolean, result.DataType);
             Assert.True(result.Boolean);
@@ -572,7 +572,7 @@ namespace OpenH2.Core.Tests.Scripting.Execution
             {
                 ScriptSyntaxNodes = new ScenarioTag.ScriptSyntaxNode[]
                 {
-                    ScopeNode(ScriptDataType.Boolean, op: 5, child: 1),
+                    ScopeNode(ScriptDataType.Boolean, op: ScriptOps.Equals, child: 1),
                         Node(NodeType.Expression, ScriptDataType.MethodOrOperator, op: ScriptOps.Equals, next: 2),
                             Node(NodeType.Expression, ScriptDataType.Float, op: 6, data: From(2f), next: 3),
                                 Node(NodeType.Expression, ScriptDataType.Float, op: 6, data: From(1f))
@@ -581,8 +581,8 @@ namespace OpenH2.Core.Tests.Scripting.Execution
 
             var interpreter = new ScriptIterativeInterpreter(scen, Mock.Of<IScriptEngine>());
 
-            var terminated = interpreter.Interpret(scen.ScriptSyntaxNodes[0], out var state);
-            var result = state.Results.Pop();
+            var terminated = interpreter.Interpret(0, out var state);
+            var result = state.Result;
 
             Assert.Equal(ScriptDataType.Boolean, result.DataType);
             Assert.False(result.Boolean);
@@ -596,7 +596,7 @@ namespace OpenH2.Core.Tests.Scripting.Execution
             {
                 ScriptSyntaxNodes = new ScenarioTag.ScriptSyntaxNode[]
                 {
-                    ScopeNode(ScriptDataType.Boolean, op: 5, child: 1),
+                    ScopeNode(ScriptDataType.Boolean, op: ScriptOps.Equals, child: 1),
                         Node(NodeType.Expression, ScriptDataType.MethodOrOperator, op: ScriptOps.Equals, next: 2),
                             Node(NodeType.Expression, ScriptDataType.Int, op: 8, data: 2, next: 3),
                                 Node(NodeType.Expression, ScriptDataType.Int, op: 8, data: 2)
@@ -605,8 +605,8 @@ namespace OpenH2.Core.Tests.Scripting.Execution
 
             var interpreter = new ScriptIterativeInterpreter(scen, Mock.Of<IScriptEngine>());
 
-            var terminated = interpreter.Interpret(scen.ScriptSyntaxNodes[0], out var state);
-            var result = state.Results.Pop();
+            var terminated = interpreter.Interpret(0, out var state);
+            var result = state.Result;
 
             Assert.Equal(ScriptDataType.Boolean, result.DataType);
             Assert.True(result.Boolean);
@@ -620,7 +620,7 @@ namespace OpenH2.Core.Tests.Scripting.Execution
             {
                 ScriptSyntaxNodes = new ScenarioTag.ScriptSyntaxNode[]
                 {
-                    ScopeNode(ScriptDataType.Boolean, op: 5, child: 1),
+                    ScopeNode(ScriptDataType.Boolean, op: ScriptOps.Equals, child: 1),
                         Node(NodeType.Expression, ScriptDataType.MethodOrOperator, op: ScriptOps.Equals, next: 2),
                             Node(NodeType.Expression, ScriptDataType.Int, op: 8, data: 2, next: 3),
                                 Node(NodeType.Expression, ScriptDataType.Int, op: 8, data: 1)
@@ -629,8 +629,8 @@ namespace OpenH2.Core.Tests.Scripting.Execution
 
             var interpreter = new ScriptIterativeInterpreter(scen, Mock.Of<IScriptEngine>());
 
-            var terminated = interpreter.Interpret(scen.ScriptSyntaxNodes[0], out var state);
-            var result = state.Results.Pop();
+            var terminated = interpreter.Interpret(0, out var state);
+            var result = state.Result;
 
             Assert.Equal(ScriptDataType.Boolean, result.DataType);
             Assert.False(result.Boolean);
@@ -644,7 +644,7 @@ namespace OpenH2.Core.Tests.Scripting.Execution
             {
                 ScriptSyntaxNodes = new ScenarioTag.ScriptSyntaxNode[]
                 {
-                    ScopeNode(ScriptDataType.Boolean, op: 5, child: 1),
+                    ScopeNode(ScriptDataType.Boolean, op: ScriptOps.Equals, child: 1),
                         Node(NodeType.Expression, ScriptDataType.MethodOrOperator, op: ScriptOps.Equals, next: 2),
                             Node(NodeType.Expression, ScriptDataType.Float, op: 6, data: 2, next: 3),
                                 Node(NodeType.Expression, ScriptDataType.Float, op: 6, data: 2)
@@ -653,8 +653,8 @@ namespace OpenH2.Core.Tests.Scripting.Execution
 
             var interpreter = new ScriptIterativeInterpreter(scen, Mock.Of<IScriptEngine>());
 
-            var terminated = interpreter.Interpret(scen.ScriptSyntaxNodes[0], out var state);
-            var result = state.Results.Pop();
+            var terminated = interpreter.Interpret(0, out var state);
+            var result = state.Result;
 
             Assert.Equal(ScriptDataType.Boolean, result.DataType);
             Assert.True(result.Boolean);
@@ -668,7 +668,7 @@ namespace OpenH2.Core.Tests.Scripting.Execution
             {
                 ScriptSyntaxNodes = new ScenarioTag.ScriptSyntaxNode[]
                 {
-                    ScopeNode(ScriptDataType.Boolean, op: 5, child: 1),
+                    ScopeNode(ScriptDataType.Boolean, op: ScriptOps.Equals, child: 1),
                         Node(NodeType.Expression, ScriptDataType.MethodOrOperator, op: ScriptOps.Equals, next: 2),
                             Node(NodeType.Expression, ScriptDataType.Short, op: 7, data: 2, next: 3),
                                 Node(NodeType.Expression, ScriptDataType.Short, op: 7, data: 1)
@@ -677,8 +677,8 @@ namespace OpenH2.Core.Tests.Scripting.Execution
 
             var interpreter = new ScriptIterativeInterpreter(scen, Mock.Of<IScriptEngine>());
 
-            var terminated = interpreter.Interpret(scen.ScriptSyntaxNodes[0], out var state);
-            var result = state.Results.Pop();
+            var terminated = interpreter.Interpret(0, out var state);
+            var result = state.Result;
 
             Assert.Equal(ScriptDataType.Boolean, result.DataType);
             Assert.False(result.Boolean);
@@ -701,8 +701,8 @@ namespace OpenH2.Core.Tests.Scripting.Execution
 
             var interpreter = new ScriptIterativeInterpreter(scen, Mock.Of<IScriptEngine>());
 
-            var terminated = interpreter.Interpret(scen.ScriptSyntaxNodes[0], out var state);
-            var result = state.Results.Pop();
+            var terminated = interpreter.Interpret(0, out var state);
+            var result = state.Result;
 
             Assert.Equal(ScriptDataType.Boolean, result.DataType);
             Assert.True(result.Boolean);
@@ -716,7 +716,7 @@ namespace OpenH2.Core.Tests.Scripting.Execution
             {
                 ScriptSyntaxNodes = new ScenarioTag.ScriptSyntaxNode[]
                 {
-                    ScopeNode(ScriptDataType.Boolean, op: 5, child: 1),
+                    ScopeNode(ScriptDataType.Boolean, op: ScriptOps.LessThan, child: 1),
                         Node(NodeType.Expression, ScriptDataType.MethodOrOperator, op: ScriptOps.LessThan, next: 2),
                             Node(NodeType.Expression, ScriptDataType.Short, op: 7, data: 2, next: 3),
                                 Node(NodeType.Expression, ScriptDataType.Short, op: 7, data: 1)
@@ -725,8 +725,8 @@ namespace OpenH2.Core.Tests.Scripting.Execution
 
             var interpreter = new ScriptIterativeInterpreter(scen, Mock.Of<IScriptEngine>());
 
-            var terminated = interpreter.Interpret(scen.ScriptSyntaxNodes[0], out var state);
-            var result = state.Results.Pop();
+            var terminated = interpreter.Interpret(0, out var state);
+            var result = state.Result;
 
             Assert.Equal(ScriptDataType.Boolean, result.DataType);
             Assert.False(result.Boolean);
@@ -740,7 +740,7 @@ namespace OpenH2.Core.Tests.Scripting.Execution
             {
                 ScriptSyntaxNodes = new ScenarioTag.ScriptSyntaxNode[]
                 {
-                    ScopeNode(ScriptDataType.Boolean, op: 5, child: 1),
+                    ScopeNode(ScriptDataType.Boolean, op: ScriptOps.LessThanOrEqual, child: 1),
                         Node(NodeType.Expression, ScriptDataType.MethodOrOperator, op: ScriptOps.LessThanOrEqual, next: 2),
                             Node(NodeType.Expression, ScriptDataType.Short, op: 7, data: 2, next: 3),
                                 Node(NodeType.Expression, ScriptDataType.Short, op: 7, data: 2)
@@ -749,8 +749,8 @@ namespace OpenH2.Core.Tests.Scripting.Execution
 
             var interpreter = new ScriptIterativeInterpreter(scen, Mock.Of<IScriptEngine>());
 
-            var terminated = interpreter.Interpret(scen.ScriptSyntaxNodes[0], out var state);
-            var result = state.Results.Pop();
+            var terminated = interpreter.Interpret(0, out var state);
+            var result = state.Result;
 
             Assert.Equal(ScriptDataType.Boolean, result.DataType);
             Assert.True(result.Boolean);
@@ -764,7 +764,7 @@ namespace OpenH2.Core.Tests.Scripting.Execution
             {
                 ScriptSyntaxNodes = new ScenarioTag.ScriptSyntaxNode[]
                 {
-                    ScopeNode(ScriptDataType.Boolean, op: 5, child: 1),
+                    ScopeNode(ScriptDataType.Boolean, op: ScriptOps.LessThanOrEqual, child: 1),
                         Node(NodeType.Expression, ScriptDataType.MethodOrOperator, op: ScriptOps.LessThanOrEqual, next: 2),
                             Node(NodeType.Expression, ScriptDataType.Short, op: 7, data: 2, next: 3),
                                 Node(NodeType.Expression, ScriptDataType.Short, op: 7, data: 1)
@@ -773,8 +773,8 @@ namespace OpenH2.Core.Tests.Scripting.Execution
 
             var interpreter = new ScriptIterativeInterpreter(scen, Mock.Of<IScriptEngine>());
 
-            var terminated = interpreter.Interpret(scen.ScriptSyntaxNodes[0], out var state);
-            var result = state.Results.Pop();
+            var terminated = interpreter.Interpret(0, out var state);
+            var result = state.Result;
 
             Assert.Equal(ScriptDataType.Boolean, result.DataType);
             Assert.False(result.Boolean);
@@ -788,7 +788,7 @@ namespace OpenH2.Core.Tests.Scripting.Execution
             {
                 ScriptSyntaxNodes = new ScenarioTag.ScriptSyntaxNode[]
                 {
-                    ScopeNode(ScriptDataType.Boolean, op: 5, child: 1),
+                    ScopeNode(ScriptDataType.Boolean, op: ScriptOps.GreaterThan, child: 1),
                         Node(NodeType.Expression, ScriptDataType.MethodOrOperator, op: ScriptOps.GreaterThan, next: 2),
                             Node(NodeType.Expression, ScriptDataType.Short, op: 7, data: 2, next: 3),
                                 Node(NodeType.Expression, ScriptDataType.Short, op: 7, data: 1)
@@ -797,8 +797,8 @@ namespace OpenH2.Core.Tests.Scripting.Execution
 
             var interpreter = new ScriptIterativeInterpreter(scen, Mock.Of<IScriptEngine>());
 
-            var terminated = interpreter.Interpret(scen.ScriptSyntaxNodes[0], out var state);
-            var result = state.Results.Pop();
+            var terminated = interpreter.Interpret(0, out var state);
+            var result = state.Result;
 
             Assert.Equal(ScriptDataType.Boolean, result.DataType);
             Assert.True(result.Boolean);
@@ -812,7 +812,7 @@ namespace OpenH2.Core.Tests.Scripting.Execution
             {
                 ScriptSyntaxNodes = new ScenarioTag.ScriptSyntaxNode[]
                 {
-                    ScopeNode(ScriptDataType.Boolean, op: 5, child: 1),
+                    ScopeNode(ScriptDataType.Boolean, op: ScriptOps.GreaterThan, child: 1),
                         Node(NodeType.Expression, ScriptDataType.MethodOrOperator, op: ScriptOps.GreaterThan, next: 2),
                             Node(NodeType.Expression, ScriptDataType.Short, op: 7, data: 1, next: 3),
                                 Node(NodeType.Expression, ScriptDataType.Short, op: 7, data: 2)
@@ -821,8 +821,8 @@ namespace OpenH2.Core.Tests.Scripting.Execution
 
             var interpreter = new ScriptIterativeInterpreter(scen, Mock.Of<IScriptEngine>());
 
-            var terminated = interpreter.Interpret(scen.ScriptSyntaxNodes[0], out var state);
-            var result = state.Results.Pop();
+            var terminated = interpreter.Interpret(0, out var state);
+            var result = state.Result;
 
             Assert.Equal(ScriptDataType.Boolean, result.DataType);
             Assert.False(result.Boolean);
@@ -836,7 +836,7 @@ namespace OpenH2.Core.Tests.Scripting.Execution
             {
                 ScriptSyntaxNodes = new ScenarioTag.ScriptSyntaxNode[]
                 {
-                    ScopeNode(ScriptDataType.Boolean, op: 5, child: 1),
+                    ScopeNode(ScriptDataType.Boolean, op: ScriptOps.GreaterThanOrEqual, child: 1),
                         Node(NodeType.Expression, ScriptDataType.MethodOrOperator, op: ScriptOps.GreaterThanOrEqual, next: 2),
                             Node(NodeType.Expression, ScriptDataType.Short, op: 7, data: 2, next: 3),
                                 Node(NodeType.Expression, ScriptDataType.Short, op: 7, data: 2)
@@ -845,8 +845,8 @@ namespace OpenH2.Core.Tests.Scripting.Execution
 
             var interpreter = new ScriptIterativeInterpreter(scen, Mock.Of<IScriptEngine>());
 
-            var terminated = interpreter.Interpret(scen.ScriptSyntaxNodes[0], out var state);
-            var result = state.Results.Pop();
+            var terminated = interpreter.Interpret(0, out var state);
+            var result = state.Result;
 
             Assert.Equal(ScriptDataType.Boolean, result.DataType);
             Assert.True(result.Boolean);
@@ -860,7 +860,7 @@ namespace OpenH2.Core.Tests.Scripting.Execution
             {
                 ScriptSyntaxNodes = new ScenarioTag.ScriptSyntaxNode[]
                 {
-                    ScopeNode(ScriptDataType.Boolean, op: 5, child: 1),
+                    ScopeNode(ScriptDataType.Boolean, op: ScriptOps.GreaterThanOrEqual, child: 1),
                         Node(NodeType.Expression, ScriptDataType.MethodOrOperator, op: ScriptOps.GreaterThanOrEqual, next: 2),
                             Node(NodeType.Expression, ScriptDataType.Short, op: 7, data: 1, next: 3),
                                 Node(NodeType.Expression, ScriptDataType.Short, op: 7, data: 2)
@@ -869,8 +869,8 @@ namespace OpenH2.Core.Tests.Scripting.Execution
 
             var interpreter = new ScriptIterativeInterpreter(scen, Mock.Of<IScriptEngine>());
 
-            var terminated = interpreter.Interpret(scen.ScriptSyntaxNodes[0], out var state);
-            var result = state.Results.Pop();
+            var terminated = interpreter.Interpret(0, out var state);
+            var result = state.Result;
 
             Assert.Equal(ScriptDataType.Boolean, result.DataType);
             Assert.False(result.Boolean);
@@ -884,7 +884,7 @@ namespace OpenH2.Core.Tests.Scripting.Execution
             {
                 ScriptSyntaxNodes = new ScenarioTag.ScriptSyntaxNode[]
                 {
-                    ScopeNode(ScriptDataType.Boolean, op: 5, child: 1),
+                    ScopeNode(ScriptDataType.Boolean, op: ScriptOps.LessThan, child: 1),
                         Node(NodeType.Expression, ScriptDataType.MethodOrOperator, op: ScriptOps.LessThan, next: 2),
                             Node(NodeType.Expression, ScriptDataType.Float, op: 6, data: From(1), next: 3),
                                 Node(NodeType.Expression, ScriptDataType.Float, op: 6, data: From(2))
@@ -893,8 +893,8 @@ namespace OpenH2.Core.Tests.Scripting.Execution
 
             var interpreter = new ScriptIterativeInterpreter(scen, Mock.Of<IScriptEngine>());
 
-            var terminated = interpreter.Interpret(scen.ScriptSyntaxNodes[0], out var state);
-            var result = state.Results.Pop();
+            var terminated = interpreter.Interpret(0, out var state);
+            var result = state.Result;
 
             Assert.Equal(ScriptDataType.Boolean, result.DataType);
             Assert.True(result.Boolean);
@@ -908,7 +908,7 @@ namespace OpenH2.Core.Tests.Scripting.Execution
             {
                 ScriptSyntaxNodes = new ScenarioTag.ScriptSyntaxNode[]
                 {
-                    ScopeNode(ScriptDataType.Boolean, op: 5, child: 1),
+                    ScopeNode(ScriptDataType.Boolean, op: ScriptOps.LessThan, child: 1),
                         Node(NodeType.Expression, ScriptDataType.MethodOrOperator, op: ScriptOps.LessThan, next: 2),
                             Node(NodeType.Expression, ScriptDataType.Float, op: 6, data: From(2), next: 3),
                                 Node(NodeType.Expression, ScriptDataType.Float, op: 6, data: From(1))
@@ -917,8 +917,8 @@ namespace OpenH2.Core.Tests.Scripting.Execution
 
             var interpreter = new ScriptIterativeInterpreter(scen, Mock.Of<IScriptEngine>());
 
-            var terminated = interpreter.Interpret(scen.ScriptSyntaxNodes[0], out var state);
-            var result = state.Results.Pop();
+            var terminated = interpreter.Interpret(0, out var state);
+            var result = state.Result;
 
             Assert.Equal(ScriptDataType.Boolean, result.DataType);
             Assert.False(result.Boolean);
@@ -932,7 +932,7 @@ namespace OpenH2.Core.Tests.Scripting.Execution
             {
                 ScriptSyntaxNodes = new ScenarioTag.ScriptSyntaxNode[]
                 {
-                    ScopeNode(ScriptDataType.Boolean, op: 5, child: 1),
+                    ScopeNode(ScriptDataType.Boolean, op: ScriptOps.LessThanOrEqual, child: 1),
                         Node(NodeType.Expression, ScriptDataType.MethodOrOperator, op: ScriptOps.LessThanOrEqual, next: 2),
                             Node(NodeType.Expression, ScriptDataType.Float, op: 6, data: From(2), next: 3),
                                 Node(NodeType.Expression, ScriptDataType.Float, op: 6, data: From(2))
@@ -941,8 +941,8 @@ namespace OpenH2.Core.Tests.Scripting.Execution
 
             var interpreter = new ScriptIterativeInterpreter(scen, Mock.Of<IScriptEngine>());
 
-            var terminated = interpreter.Interpret(scen.ScriptSyntaxNodes[0], out var state);
-            var result = state.Results.Pop();
+            var terminated = interpreter.Interpret(0, out var state);
+            var result = state.Result;
 
             Assert.Equal(ScriptDataType.Boolean, result.DataType);
             Assert.True(result.Boolean);
@@ -956,7 +956,7 @@ namespace OpenH2.Core.Tests.Scripting.Execution
             {
                 ScriptSyntaxNodes = new ScenarioTag.ScriptSyntaxNode[]
                 {
-                    ScopeNode(ScriptDataType.Boolean, op: 5, child: 1),
+                    ScopeNode(ScriptDataType.Boolean, op: ScriptOps.LessThanOrEqual, child: 1),
                         Node(NodeType.Expression, ScriptDataType.MethodOrOperator, op: ScriptOps.LessThanOrEqual, next: 2),
                             Node(NodeType.Expression, ScriptDataType.Float, op: 6, data: From(2), next: 3),
                                 Node(NodeType.Expression, ScriptDataType.Float, op: 6, data: From(1))
@@ -965,8 +965,8 @@ namespace OpenH2.Core.Tests.Scripting.Execution
 
             var interpreter = new ScriptIterativeInterpreter(scen, Mock.Of<IScriptEngine>());
 
-            var terminated = interpreter.Interpret(scen.ScriptSyntaxNodes[0], out var state);
-            var result = state.Results.Pop();
+            var terminated = interpreter.Interpret(0, out var state);
+            var result = state.Result;
 
             Assert.Equal(ScriptDataType.Boolean, result.DataType);
             Assert.False(result.Boolean);
@@ -980,7 +980,7 @@ namespace OpenH2.Core.Tests.Scripting.Execution
             {
                 ScriptSyntaxNodes = new ScenarioTag.ScriptSyntaxNode[]
                 {
-                    ScopeNode(ScriptDataType.Boolean, op: 5, child: 1),
+                    ScopeNode(ScriptDataType.Boolean, op: ScriptOps.GreaterThan, child: 1),
                         Node(NodeType.Expression, ScriptDataType.MethodOrOperator, op: ScriptOps.GreaterThan, next: 2),
                             Node(NodeType.Expression, ScriptDataType.Float, op: 6, data: From(2), next: 3),
                                 Node(NodeType.Expression, ScriptDataType.Float, op: 6, data: From(1))
@@ -989,8 +989,8 @@ namespace OpenH2.Core.Tests.Scripting.Execution
 
             var interpreter = new ScriptIterativeInterpreter(scen, Mock.Of<IScriptEngine>());
 
-            var terminated = interpreter.Interpret(scen.ScriptSyntaxNodes[0], out var state);
-            var result = state.Results.Pop();
+            var terminated = interpreter.Interpret(0, out var state);
+            var result = state.Result;
 
             Assert.Equal(ScriptDataType.Boolean, result.DataType);
             Assert.True(result.Boolean);
@@ -1004,7 +1004,7 @@ namespace OpenH2.Core.Tests.Scripting.Execution
             {
                 ScriptSyntaxNodes = new ScenarioTag.ScriptSyntaxNode[]
                 {
-                    ScopeNode(ScriptDataType.Boolean, op: 5, child: 1),
+                    ScopeNode(ScriptDataType.Boolean, op: ScriptOps.GreaterThan, child: 1),
                         Node(NodeType.Expression, ScriptDataType.MethodOrOperator, op: ScriptOps.GreaterThan, next: 2),
                             Node(NodeType.Expression, ScriptDataType.Float, op: 6, data: From(1), next: 3),
                                 Node(NodeType.Expression, ScriptDataType.Float, op: 6, data: From(2))
@@ -1013,8 +1013,8 @@ namespace OpenH2.Core.Tests.Scripting.Execution
 
             var interpreter = new ScriptIterativeInterpreter(scen, Mock.Of<IScriptEngine>());
 
-            var terminated = interpreter.Interpret(scen.ScriptSyntaxNodes[0], out var state);
-            var result = state.Results.Pop();
+            var terminated = interpreter.Interpret(0, out var state);
+            var result = state.Result;
 
             Assert.Equal(ScriptDataType.Boolean, result.DataType);
             Assert.False(result.Boolean);
@@ -1028,7 +1028,7 @@ namespace OpenH2.Core.Tests.Scripting.Execution
             {
                 ScriptSyntaxNodes = new ScenarioTag.ScriptSyntaxNode[]
                 {
-                    ScopeNode(ScriptDataType.Boolean, op: 5, child: 1),
+                    ScopeNode(ScriptDataType.Boolean, op: ScriptOps.GreaterThanOrEqual, child: 1),
                         Node(NodeType.Expression, ScriptDataType.MethodOrOperator, op: ScriptOps.GreaterThanOrEqual, next: 2),
                             Node(NodeType.Expression, ScriptDataType.Float, op: 6, data: From(2), next: 3),
                                 Node(NodeType.Expression, ScriptDataType.Float, op: 6, data: From(2))
@@ -1037,8 +1037,8 @@ namespace OpenH2.Core.Tests.Scripting.Execution
 
             var interpreter = new ScriptIterativeInterpreter(scen, Mock.Of<IScriptEngine>());
 
-            var terminated = interpreter.Interpret(scen.ScriptSyntaxNodes[0], out var state);
-            var result = state.Results.Pop();
+            var terminated = interpreter.Interpret(0, out var state);
+            var result = state.Result;
 
             Assert.Equal(ScriptDataType.Boolean, result.DataType);
             Assert.True(result.Boolean);
@@ -1052,7 +1052,7 @@ namespace OpenH2.Core.Tests.Scripting.Execution
             {
                 ScriptSyntaxNodes = new ScenarioTag.ScriptSyntaxNode[]
                 {
-                    ScopeNode(ScriptDataType.Boolean, op: 5, child: 1),
+                    ScopeNode(ScriptDataType.Boolean, op: ScriptOps.GreaterThanOrEqual, child: 1),
                         Node(NodeType.Expression, ScriptDataType.MethodOrOperator, op: ScriptOps.GreaterThanOrEqual, next: 2),
                             Node(NodeType.Expression, ScriptDataType.Float, op: 6, data: From(1), next: 3),
                                 Node(NodeType.Expression, ScriptDataType.Float, op: 6, data: From(2))
@@ -1061,8 +1061,8 @@ namespace OpenH2.Core.Tests.Scripting.Execution
 
             var interpreter = new ScriptIterativeInterpreter(scen, Mock.Of<IScriptEngine>());
 
-            var terminated = interpreter.Interpret(scen.ScriptSyntaxNodes[0], out var state);
-            var result = state.Results.Pop();
+            var terminated = interpreter.Interpret(0, out var state);
+            var result = state.Result;
 
             Assert.Equal(ScriptDataType.Boolean, result.DataType);
             Assert.False(result.Boolean);
@@ -1076,7 +1076,7 @@ namespace OpenH2.Core.Tests.Scripting.Execution
             {
                 ScriptSyntaxNodes = new ScenarioTag.ScriptSyntaxNode[]
                 {
-                    ScopeNode(ScriptDataType.Boolean, op: 5, child: 1),
+                    ScopeNode(ScriptDataType.Boolean, op: ScriptOps.And, child: 1),
                         Node(NodeType.Expression, ScriptDataType.MethodOrOperator, op: ScriptOps.And, next: 2),
                             Node(NodeType.Expression, ScriptDataType.Boolean, op: 5, data: 1, next: 3),
                                 Node(NodeType.Expression, ScriptDataType.Boolean, op: 5, data: 1, next: 4),
@@ -1086,8 +1086,8 @@ namespace OpenH2.Core.Tests.Scripting.Execution
 
             var interpreter = new ScriptIterativeInterpreter(scen, Mock.Of<IScriptEngine>());
 
-            var terminated = interpreter.Interpret(scen.ScriptSyntaxNodes[0], out var state);
-            var result = state.Results.Pop();
+            var terminated = interpreter.Interpret(0, out var state);
+            var result = state.Result;
 
             Assert.Equal(ScriptDataType.Boolean, result.DataType);
             Assert.True(result.Boolean);
@@ -1101,7 +1101,7 @@ namespace OpenH2.Core.Tests.Scripting.Execution
             {
                 ScriptSyntaxNodes = new ScenarioTag.ScriptSyntaxNode[]
                 {
-                    ScopeNode(ScriptDataType.Boolean, op: 5, child: 1),
+                    ScopeNode(ScriptDataType.Boolean, op: ScriptOps.And, child: 1),
                         Node(NodeType.Expression, ScriptDataType.MethodOrOperator, op: ScriptOps.And, next: 2),
                             Node(NodeType.Expression, ScriptDataType.Boolean, op: 5, data: 1, next: 3),
                                 Node(NodeType.Expression, ScriptDataType.Boolean, op: 5, data: 1, next: 4),
@@ -1111,8 +1111,8 @@ namespace OpenH2.Core.Tests.Scripting.Execution
 
             var interpreter = new ScriptIterativeInterpreter(scen, Mock.Of<IScriptEngine>());
 
-            var terminated = interpreter.Interpret(scen.ScriptSyntaxNodes[0], out var state);
-            var result = state.Results.Pop();
+            var terminated = interpreter.Interpret(0, out var state);
+            var result = state.Result;
 
             Assert.Equal(ScriptDataType.Boolean, result.DataType);
             Assert.False(result.Boolean);
@@ -1126,7 +1126,7 @@ namespace OpenH2.Core.Tests.Scripting.Execution
             {
                 ScriptSyntaxNodes = new ScenarioTag.ScriptSyntaxNode[]
                 {
-                    ScopeNode(ScriptDataType.Boolean, op: 5, child: 1),
+                    ScopeNode(ScriptDataType.Boolean, op: ScriptOps.Or, child: 1),
                         Node(NodeType.Expression, ScriptDataType.MethodOrOperator, op: ScriptOps.Or, next: 2),
                             Node(NodeType.Expression, ScriptDataType.Boolean, op: 5, data: 1, next: 3),
                                 Node(NodeType.Expression, ScriptDataType.Boolean, op: 5, data: 1, next: 4),
@@ -1136,8 +1136,8 @@ namespace OpenH2.Core.Tests.Scripting.Execution
 
             var interpreter = new ScriptIterativeInterpreter(scen, Mock.Of<IScriptEngine>());
 
-            var terminated = interpreter.Interpret(scen.ScriptSyntaxNodes[0], out var state);
-            var result = state.Results.Pop();
+            var terminated = interpreter.Interpret(0, out var state);
+            var result = state.Result;
 
             Assert.Equal(ScriptDataType.Boolean, result.DataType);
             Assert.True(result.Boolean);
@@ -1151,7 +1151,7 @@ namespace OpenH2.Core.Tests.Scripting.Execution
             {
                 ScriptSyntaxNodes = new ScenarioTag.ScriptSyntaxNode[]
                 {
-                    ScopeNode(ScriptDataType.Boolean, op: 5, child: 1),
+                    ScopeNode(ScriptDataType.Boolean, op: ScriptOps.Or, child: 1),
                         Node(NodeType.Expression, ScriptDataType.MethodOrOperator, op: ScriptOps.Or, next: 2),
                             Node(NodeType.Expression, ScriptDataType.Boolean, op: 5, data: 0, next: 3),
                                 Node(NodeType.Expression, ScriptDataType.Boolean, op: 5, data: 1, next: 4),
@@ -1161,8 +1161,8 @@ namespace OpenH2.Core.Tests.Scripting.Execution
 
             var interpreter = new ScriptIterativeInterpreter(scen, Mock.Of<IScriptEngine>());
 
-            var terminated = interpreter.Interpret(scen.ScriptSyntaxNodes[0], out var state);
-            var result = state.Results.Pop();
+            var terminated = interpreter.Interpret(0, out var state);
+            var result = state.Result;
 
             Assert.Equal(ScriptDataType.Boolean, result.DataType);
             Assert.True(result.Boolean);
@@ -1176,7 +1176,7 @@ namespace OpenH2.Core.Tests.Scripting.Execution
             {
                 ScriptSyntaxNodes = new ScenarioTag.ScriptSyntaxNode[]
                 {
-                    ScopeNode(ScriptDataType.Boolean, op: 5, child: 1),
+                    ScopeNode(ScriptDataType.Boolean, op: ScriptOps.Or, child: 1),
                         Node(NodeType.Expression, ScriptDataType.MethodOrOperator, op: ScriptOps.Or, next: 2),
                             Node(NodeType.Expression, ScriptDataType.Boolean, op: 5, data: 0, next: 3),
                                 Node(NodeType.Expression, ScriptDataType.Boolean, op: 5, data: 0, next: 4),
@@ -1186,8 +1186,8 @@ namespace OpenH2.Core.Tests.Scripting.Execution
 
             var interpreter = new ScriptIterativeInterpreter(scen, Mock.Of<IScriptEngine>());
 
-            var terminated = interpreter.Interpret(scen.ScriptSyntaxNodes[0], out var state);
-            var result = state.Results.Pop();
+            var terminated = interpreter.Interpret(0, out var state);
+            var result = state.Result;
 
             Assert.Equal(ScriptDataType.Boolean, result.DataType);
             Assert.False(result.Boolean);
@@ -1201,7 +1201,7 @@ namespace OpenH2.Core.Tests.Scripting.Execution
             {
                 ScriptSyntaxNodes = new ScenarioTag.ScriptSyntaxNode[]
                 {
-                    ScopeNode(ScriptDataType.Boolean, op: 5, child: 1),
+                    ScopeNode(ScriptDataType.Boolean, op: ScriptOps.Not, child: 1),
                         Node(NodeType.Expression, ScriptDataType.MethodOrOperator, op: ScriptOps.Not, next: 2),
                             Node(NodeType.Expression, ScriptDataType.Boolean, op: 5, data: 1)
                 }
@@ -1209,8 +1209,9 @@ namespace OpenH2.Core.Tests.Scripting.Execution
 
             var interpreter = new ScriptIterativeInterpreter(scen, Mock.Of<IScriptEngine>());
 
-            var terminated = interpreter.Interpret(scen.ScriptSyntaxNodes[0], out var state);
-            var result = state.Results.Pop();
+            var terminated = interpreter.Interpret(0, out var state);
+
+            var result = state.Result;
 
             Assert.Equal(ScriptDataType.Boolean, result.DataType);
             Assert.False(result.Boolean);
@@ -1224,7 +1225,7 @@ namespace OpenH2.Core.Tests.Scripting.Execution
             {
                 ScriptSyntaxNodes = new ScenarioTag.ScriptSyntaxNode[]
                 {
-                    ScopeNode(ScriptDataType.Boolean, op: 5, child: 1),
+                    ScopeNode(ScriptDataType.Boolean, op: ScriptOps.Not, child: 1),
                         Node(NodeType.Expression, ScriptDataType.MethodOrOperator, op: ScriptOps.Not, next: 2),
                             Node(NodeType.Expression, ScriptDataType.Boolean, op: 5, data: 0)
                 }
@@ -1232,8 +1233,8 @@ namespace OpenH2.Core.Tests.Scripting.Execution
 
             var interpreter = new ScriptIterativeInterpreter(scen, Mock.Of<IScriptEngine>());
 
-            var terminated = interpreter.Interpret(scen.ScriptSyntaxNodes[0], out var state);
-            var result = state.Results.Pop();
+            var terminated = interpreter.Interpret(0, out var state);
+            var result = state.Result;
 
             Assert.Equal(ScriptDataType.Boolean, result.DataType);
             Assert.True(result.Boolean);
@@ -1242,7 +1243,7 @@ namespace OpenH2.Core.Tests.Scripting.Execution
 
         private ScenarioTag.ScriptSyntaxNode ScopeNode(ScriptDataType dt, ushort op, ushort child, ushort next = 65535)
         {
-            return Node(NodeType.Scope, dt, op, next, child);
+            return Node(NodeType.BuiltinInvocation, dt, op, next, child);
         }
 
         private ScenarioTag.ScriptSyntaxNode Node(NodeType nt, ScriptDataType dt, ushort op, ushort next = 65535, uint data = 0, ushort stringIndex = 0)

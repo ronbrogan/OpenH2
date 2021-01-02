@@ -48,7 +48,7 @@ namespace OpenH2.Core.Scripting.LowLevel
                     {
                         b.Append(BitConverter.Int32BitsToSingle((int)orig.NodeData_32)).Append("f");
                     }
-                    else if (orig.NodeType == NodeType.Scope)
+                    else if (orig.NodeType == NodeType.BuiltinInvocation)
                     {
                         b.Append("____");
                     }
