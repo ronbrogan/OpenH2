@@ -9,7 +9,7 @@ namespace OpenH2.Core.Scripting.Execution
 {
     public struct StackFrame
     {
-        public Stack<InterpreterResult> Locals;
+        public Queue<InterpreterResult> Locals;
         public ScenarioTag.ScriptSyntaxNode OriginatingNode;
         public ScenarioTag.ScriptSyntaxNode Previous;
         public ushort Next;

@@ -64,16 +64,13 @@ namespace OpenH2.Core.Scripting.Execution
 
             var node = this.scenario.ScriptSyntaxNodes[nodeIndex];
 
-            if(node.NodeType == NodeType.BuiltinInvocation || node.NodeType == NodeType.ScriptInvocation)
+            if(node.NodeType == NodeType.BuiltinInvocation)
             {
-                // Push node as normal
-                state.Push(new StackFrame()
-                {
-                    Locals = new(6),
-                    OriginatingNode = node,
-                    Previous = this.scenario.ScriptSyntaxNodes[node.NodeData_H16],
-                    Next = ushort.MaxValue
-                });
+                PushBuiltinInvocation(node, ref state);
+            }
+            else if(node.NodeType == NodeType.ScriptInvocation)
+            {
+
             }
             else
             {
@@ -120,7 +117,7 @@ namespace OpenH2.Core.Scripting.Execution
             {
                 case NodeType.BuiltinInvocation: InterpretBuiltinFrame(node, ref state); break;
                 case NodeType.ScriptInvocation: InterpretScriptFrame(node, ref state); break;
-                default: throw new ("Non-invocation node provided to InterpretInvocation");
+                default: Throw.Exception("Non-invocation node provided to InterpretInvocation"); break;
             };
         }
 
@@ -161,7 +158,7 @@ namespace OpenH2.Core.Scripting.Execution
                 //case NodeType.ScriptInvocation: PushScriptInvocation(node, ref state); break;
                 case NodeType.Expression: InterpretExpression(node, ref state); break;
                 case NodeType.VariableAccess: InterpretVariableAccess(node, ref state); break;
-                default: throw new NotSupportedException($"NodeType {node.NodeType} is not supported");
+                default: Throw.NotSupported($"NodeType {node.NodeType} is not supported"); break;
             };
         }
 
@@ -169,11 +166,16 @@ namespace OpenH2.Core.Scripting.Execution
         {
             Debug.Assert(node.NodeType == NodeType.BuiltinInvocation);
 
+            var invocationNode = this.scenario.ScriptSyntaxNodes[node.NodeData_H16];
+            if(invocationNode.NodeType != NodeType.Expression) Throw.InterpreterException("BuiltinInvocation's first child must be an expression");
+            if(invocationNode.DataType != ScriptDataType.MethodOrOperator) Throw.InterpreterException($"BuiltinInvocation's first child must be of type {ScriptDataType.MethodOrOperator}");
+            if(node.OperationId != invocationNode.OperationId) Throw.InterpreterException($"BuiltinInvocation's OperationId must match the OperationId of its first child");
+
             state.Push(new StackFrame()
             {
                 Locals = new(6),
                 OriginatingNode = node,
-                Previous = this.scenario.ScriptSyntaxNodes[node.NodeData_H16],
+                Previous = invocationNode,
                 Next = ushort.MaxValue
             });
         }
@@ -230,7 +232,7 @@ namespace OpenH2.Core.Scripting.Execution
             result.DataType = node.DataType;
 
             ref var frame = ref state.TopFrame;
-            frame.Locals.Push(result);
+            frame.Locals.Enqueue(result);
             frame.Previous = node;
         }
 
@@ -249,8 +251,8 @@ namespace OpenH2.Core.Scripting.Execution
                 //case ScriptOps.Begin: this.Begin(node, ref state); return;
                 //case ScriptOps.BeginRandom: this.BeginRandom(node, ref state); return;
                 //case ScriptOps.If: this.If(node, ref state); return;
-                //case ScriptOps.And: this.And(node); return;
-                //case ScriptOps.Or: this.Or(node); return;
+                case ScriptOps.And: this.And(node, ref state); return;
+                case ScriptOps.Or: this.Or(node, ref state); return;
                 //case ScriptOps.Set: this.Set(node); return;
                 default: break;
             };
@@ -265,18 +267,18 @@ namespace OpenH2.Core.Scripting.Execution
             switch(node.OperationId)
             {
                 case ScriptOps.Not: this.Not(node, ref state); break;
-                //case ScriptOps.Equals: this.ValueEquals(node); break;
-                //case ScriptOps.GreaterThan: this.GreaterThan(node); break;
-                //case ScriptOps.LessThan: this.LessThan(node); break;
-                //case ScriptOps.GreaterThanOrEqual: this.GreaterThanOrEquals(node); break;
-                //case ScriptOps.LessThanOrEqual: this.LessThanOrEquals(node); break;
+                case ScriptOps.Equals: this.ValueEquals(node, ref state); break;
+                case ScriptOps.GreaterThan: this.GreaterThan(node, ref state); break;
+                case ScriptOps.LessThan: this.LessThan(node, ref state); break;
+                case ScriptOps.GreaterThanOrEqual: this.GreaterThanOrEquals(node, ref state); break;
+                case ScriptOps.LessThanOrEqual: this.LessThanOrEquals(node, ref state); break;
 
-                //case ScriptOps.Add: this.Add(node); break;
-                //case ScriptOps.Subtract: this.Subtract(node); break;
-                //case ScriptOps.Multiply: this.Multiply(node); break;
-                //case ScriptOps.Divide: this.Divide(node); break;
-                //case ScriptOps.Min: this.Min(node); break;
-                //case ScriptOps.Max: this.Max(node); break;
+                case ScriptOps.Add: this.Add(node, ref state); break;
+                case ScriptOps.Subtract: this.Subtract(node, ref state); break;
+                case ScriptOps.Multiply: this.Multiply(node, ref state); break;
+                case ScriptOps.Divide: this.Divide(node, ref state); break;
+                case ScriptOps.Min: this.Min(node, ref state); break;
+                case ScriptOps.Max: this.Max(node, ref state); break;
 
                 default: throw new NotSupportedException($"Operation {node.OperationId} not supported");
                 //_: this.DispatchMethod(node)
@@ -305,7 +307,7 @@ namespace OpenH2.Core.Scripting.Execution
         //
         //private void If(ScenarioTag.ScriptSyntaxNode node, ref State state)
         //{
-        //    var argNext = node.NextIndex;
+        //    ref var frame = ref state.TopFrame;
         //
         //    var condition = Interpret(this.scenario.ScriptSyntaxNodes[argNext], ref state);
         //    Debug.Assert(condition.DataType == ScriptDataType.Boolean);
@@ -329,10 +331,247 @@ namespace OpenH2.Core.Scripting.Execution
 
             Debug.Assert(frame.Locals.Count == 1);
 
-            var operand = frame.Locals.Pop();
+            var operand = frame.Locals.Dequeue();
             Debug.Assert(operand.DataType == ScriptDataType.Boolean);
 
             ProduceResult(Result.From(!operand.Boolean), ref state);
+        }
+
+        private void And (ScenarioTag.ScriptSyntaxNode node, ref State state)
+        {
+            ref var frame = ref state.TopFrame;
+
+            var argPending = PrepareNextArgument(ref state);
+
+            if(frame.Locals.Count > 0)
+            {
+                var operand = frame.Locals.Dequeue();
+                Debug.Assert(operand.DataType == ScriptDataType.Boolean);
+
+                if (operand.Boolean == false)
+                {
+                    ProduceResult(Result.From(false), ref state);
+                    return;
+                }
+            }
+
+            if (!argPending)
+            {
+                ProduceResult(Result.From(true), ref state);
+            }
+        }
+
+        private void Or (ScenarioTag.ScriptSyntaxNode node, ref State state)
+        {
+            ref var frame = ref state.TopFrame;
+
+            var argPending = PrepareNextArgument(ref state);
+
+            if (frame.Locals.Count > 0)
+            {
+                var operand = frame.Locals.Dequeue();
+                Debug.Assert(operand.DataType == ScriptDataType.Boolean);
+
+                if (operand.Boolean)
+                {
+                    ProduceResult(Result.From(true), ref state);
+                    return;
+                }
+            }
+
+            if (!argPending)
+            {
+                ProduceResult(Result.From(false), ref state);
+            }
+        }
+
+        private void Add (ScenarioTag.ScriptSyntaxNode node, ref State state)
+        {
+            ref var frame = ref state.TopFrame;
+
+            var firstOp = frame.Locals.Dequeue();
+
+            while(frame.Locals.Count > 0)
+            {
+                var operand = frame.Locals.Dequeue();
+
+                firstOp.Add(operand);
+            }
+
+            ProduceResult(firstOp, ref state);
+        }
+
+        private void Subtract (ScenarioTag.ScriptSyntaxNode node, ref State state)
+        {
+            ref var frame = ref state.TopFrame;
+
+            var firstOp = frame.Locals.Dequeue();
+
+            while(frame.Locals.Count > 0)
+            {
+                var operand = frame.Locals.Dequeue();
+
+                firstOp.Subtract(operand);
+            }
+
+            ProduceResult(firstOp, ref state);
+        }
+
+        private void Multiply (ScenarioTag.ScriptSyntaxNode node, ref State state)
+        {
+            ref var frame = ref state.TopFrame;
+
+            var firstOp = frame.Locals.Dequeue();
+
+            while(frame.Locals.Count > 0)
+            {
+                var operand = frame.Locals.Dequeue();
+
+                firstOp.Multiply(operand);
+            }
+
+            ProduceResult(firstOp, ref state);
+        }
+
+        private void Divide (ScenarioTag.ScriptSyntaxNode node, ref State state)
+        {
+            ref var frame = ref state.TopFrame;
+
+            var firstOp = frame.Locals.Dequeue();
+
+            while(frame.Locals.Count > 0)
+            {
+                var operand = frame.Locals.Dequeue();
+
+                firstOp.Divide(operand);
+            }
+
+            ProduceResult(firstOp, ref state);
+        }
+
+        private void Min (ScenarioTag.ScriptSyntaxNode node, ref State state)
+        {
+            ref var frame = ref state.TopFrame;
+
+            var firstOp = frame.Locals.Dequeue();
+
+            while(frame.Locals.Count > 0)
+            {
+                var operand = frame.Locals.Dequeue();
+
+                firstOp = Result.Min(firstOp, operand);
+            }
+
+            ProduceResult(firstOp, ref state);
+        }
+
+        private void Max (ScenarioTag.ScriptSyntaxNode node, ref State state)
+        {
+            ref var frame = ref state.TopFrame;
+
+            var firstOp = frame.Locals.Dequeue();
+
+            while(frame.Locals.Count > 0)
+            {
+                var operand = frame.Locals.Dequeue();
+
+                firstOp = Result.Max(firstOp, operand);
+            }
+
+            ProduceResult(firstOp, ref state);
+        }
+
+        private void ValueEquals (ScenarioTag.ScriptSyntaxNode node, ref State state)
+        {
+            ref var frame = ref state.TopFrame;
+
+            var left = frame.Locals.Dequeue();
+            var right = frame.Locals.Dequeue();
+            Debug.Assert(frame.Locals.Count == 0);
+
+            var result = left.DataType switch
+            {
+                ScriptDataType.Boolean => Result.From(left.Boolean == right.Boolean),
+                ScriptDataType.Float => Result.From(left.GetFloat() == right.GetFloat()),
+                ScriptDataType.Short => Result.From(left.GetShort() == right.GetShort()),
+                ScriptDataType.Int => Result.From(left.GetInt() == right.GetInt()),
+                ScriptDataType.GameDifficulty => Result.From(left.GetShort() == right.GetShort()),
+                _ => throw new InterpreterException($"Equality comparison for {left.DataType} is not supported")
+            };
+
+            ProduceResult(result, ref state);
+        }
+
+        private void GreaterThan (ScenarioTag.ScriptSyntaxNode node, ref State state)
+        {
+            ref var frame = ref state.TopFrame;
+
+            var left = frame.Locals.Dequeue();
+            var right = frame.Locals.Dequeue();
+            Debug.Assert(frame.Locals.Count == 0);
+
+            var result = left.DataType switch
+            {
+                ScriptDataType.Float => Result.From(left.GetFloat() > right.GetFloat()),
+                ScriptDataType.Short => Result.From(left.GetShort() > right.GetShort()),
+                _ => throw new InterpreterException($"Equality comparison for {left.DataType} is not supported")
+            };
+
+            ProduceResult(result, ref state);
+        }
+
+        private void GreaterThanOrEquals (ScenarioTag.ScriptSyntaxNode node, ref State state)
+        {
+            ref var frame = ref state.TopFrame;
+
+            var left = frame.Locals.Dequeue();
+            var right = frame.Locals.Dequeue();
+            Debug.Assert(frame.Locals.Count == 0);
+
+            var result = left.DataType switch
+            {
+                ScriptDataType.Float => Result.From(left.GetFloat() >= right.GetFloat()),
+                ScriptDataType.Short => Result.From(left.GetShort() >= right.GetShort()),
+                _ => throw new InterpreterException($"Equality comparison for {left.DataType} is not supported")
+            };
+
+            ProduceResult(result, ref state);
+        }
+
+        private void LessThan (ScenarioTag.ScriptSyntaxNode node, ref State state)
+        {
+            ref var frame = ref state.TopFrame;
+
+            var left = frame.Locals.Dequeue();
+            var right = frame.Locals.Dequeue();
+            Debug.Assert(frame.Locals.Count == 0);
+
+            var result = left.DataType switch
+            {
+                ScriptDataType.Float => Result.From(left.GetFloat() < right.GetFloat()),
+                ScriptDataType.Short => Result.From(left.GetShort() < right.GetShort()),
+                _ => throw new InterpreterException($"Equality comparison for {left.DataType} is not supported")
+            };
+
+            ProduceResult(result, ref state);
+        }
+
+        private void LessThanOrEquals (ScenarioTag.ScriptSyntaxNode node, ref State state)
+        {
+            ref var frame = ref state.TopFrame;
+
+            var left = frame.Locals.Dequeue();
+            var right = frame.Locals.Dequeue();
+            Debug.Assert(frame.Locals.Count == 0);
+
+            var result = left.DataType switch
+            {
+                ScriptDataType.Float => Result.From(left.GetFloat() <= right.GetFloat()),
+                ScriptDataType.Short => Result.From(left.GetShort() <= right.GetShort()),
+                _ => throw new InterpreterException($"Equality comparison for {left.DataType} is not supported")
+            };
+
+            ProduceResult(result, ref state);
         }
 
         private bool PrepareNextArgument(ref State state)
@@ -349,17 +588,41 @@ namespace OpenH2.Core.Scripting.Execution
             }
         }
 
-        private void ProduceResult(InterpreterResult result, ref State state)
+        private void ProduceResult(InterpreterResult value, ref State state)
         {
             var completedFrame = state.Pop();
 
-            if(state.FrameCount == 0)
+            var destType = completedFrame.OriginatingNode.DataType;
+
+            if (value.DataType != destType)
             {
-                state.Result = result;
+                switch (destType)
+                {
+                    case ScriptDataType.Float:
+                        value.Float = value.GetFloat();
+                        value.DataType = ScriptDataType.Float;
+                        break;
+                    case ScriptDataType.Int:
+                        value.Int = value.GetInt();
+                        value.DataType = ScriptDataType.Int;
+                        break;
+                    case ScriptDataType.Short:
+                        value.Short = value.GetShort();
+                        value.DataType = ScriptDataType.Short;
+                        break;
+                    default:
+                        Debug.Fail($"No configured cast from {value.DataType} to {destType}");
+                        break;
+                }
+            }
+
+            if (state.FrameCount == 0)
+            {
+                state.Result = value;
             }
             else
             {
-                state.TopFrame.Locals.Push(result);
+                state.TopFrame.Locals.Enqueue(value);
             }
         }
     }
