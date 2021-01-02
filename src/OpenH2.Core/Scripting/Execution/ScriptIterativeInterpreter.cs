@@ -2,18 +2,25 @@
 using OpenH2.Core.Exceptions;
 using OpenH2.Core.Tags.Scenario;
 using System;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.Text;
 using Result = OpenH2.Core.Scripting.Execution.InterpreterResult;
 using State = OpenH2.Core.Scripting.Execution.InterpreterState;
 
 namespace OpenH2.Core.Scripting.Execution
 {
+    /*
+     * TODO
+     *  - ScriptInvocation
+     *  - Implement, test continuations
+     *  - Remove allocations
+     * 
+     */
+
+
     /// <summary>
     /// The primary goals of this are: 1) No heap allocations to avoid GC and 2) support continuations
     /// </summary>
-    public class ScriptIterativeInterpreter
+    public partial class ScriptIterativeInterpreter
     {
         private readonly ScenarioTag scenario;
         private readonly IScriptEngine scriptEngine;
@@ -72,11 +79,11 @@ namespace OpenH2.Core.Scripting.Execution
 
             var node = this.scenario.ScriptSyntaxNodes[nodeIndex];
 
-            if(node.NodeType == NodeType.BuiltinInvocation)
+            if (node.NodeType == NodeType.BuiltinInvocation)
             {
                 PushBuiltinInvocation(node, ref state);
             }
-            else if(node.NodeType == NodeType.ScriptInvocation)
+            else if (node.NodeType == NodeType.ScriptInvocation)
             {
 
             }
@@ -112,7 +119,8 @@ namespace OpenH2.Core.Scripting.Execution
 
             while (state.FrameCount > 0 && state.Yield == false)
             {
-                Interpret(ref state.TopFrame, ref state);
+                // Always defer interpretation to the invocation that created the frame, it knows what to do
+                InterpretFrame(state.TopFrame.OriginatingNode, ref state);
             }
 
             return true;
@@ -125,31 +133,26 @@ namespace OpenH2.Core.Scripting.Execution
         /// <returns>True if completed, false if yielded for continuation. Caller should eventually call again if return value is false</returns>
         public bool Interpret(ref State state)
         {
-            while(state.Yield == false)
+            while (state.Yield == false)
             {
-                Interpret(ref state.TopFrame, ref state);
+                // Always defer interpretation to the invocation that created the frame, it knows what to do
+                InterpretFrame(state.TopFrame.OriginatingNode, ref state);
             }
 
             return true;
-        }
-
-        private void Interpret(ref StackFrame topFrame, ref State state)
-        {
-            // Always defer interpretation to the invocation that created the frame, it knows what to do
-            InterpretFrame(topFrame.OriginatingNode, ref state);
         }
 
         private void InterpretFrame(ScenarioTag.ScriptSyntaxNode node, ref State state)
         {
             switch (node.NodeType)
             {
-                case NodeType.BuiltinInvocation: InterpretBuiltinFrame(node, ref state); break;
+                case NodeType.BuiltinInvocation: InterpretBuiltinFrame(ref state); break;
                 case NodeType.ScriptInvocation: InterpretScriptFrame(node, ref state); break;
                 default: Throw.Exception("Non-invocation node provided to InterpretInvocation"); break;
             };
         }
 
-        private void InterpretBuiltinFrame(ScenarioTag.ScriptSyntaxNode node, ref State state)
+        private void InterpretBuiltinFrame(ref State state)
         {
             ref var top = ref state.TopFrame;
             if (top.Next != ushort.MaxValue)
@@ -163,7 +166,7 @@ namespace OpenH2.Core.Scripting.Execution
             {
                 // Need to defer to implementation, allowing implementation to indicate that arguments are needed
 
-                InterpretBuiltinInvocation(node, ref state);
+                InterpretBuiltinInvocation(ref state);
 
                 // If implementation terminates, we need to pop current frame and push result onto next frame's Locals?
                 // If we pop frame and push to locals, how do we handle the bottom-most frame?
@@ -180,7 +183,7 @@ namespace OpenH2.Core.Scripting.Execution
 
         private void Interpret(ScenarioTag.ScriptSyntaxNode node, ref State state)
         {
-            switch(node.NodeType)
+            switch (node.NodeType)
             {
                 case NodeType.BuiltinInvocation: PushBuiltinInvocation(node, ref state); break;
                 //case NodeType.ScriptInvocation: PushScriptInvocation(node, ref state); break;
@@ -195,11 +198,11 @@ namespace OpenH2.Core.Scripting.Execution
             Debug.Assert(node.NodeType == NodeType.BuiltinInvocation);
 
             var invocationNode = this.scenario.ScriptSyntaxNodes[node.NodeData_H16];
-            if(invocationNode.NodeType != NodeType.Expression) Throw.InterpreterException("BuiltinInvocation's first child must be an expression");
-            if(invocationNode.DataType != ScriptDataType.MethodOrOperator) Throw.InterpreterException($"BuiltinInvocation's first child must be of type {ScriptDataType.MethodOrOperator}");
-            if(node.OperationId != invocationNode.OperationId) Throw.InterpreterException($"BuiltinInvocation's OperationId must match the OperationId of its first child");
+            if (invocationNode.NodeType != NodeType.Expression) Throw.InterpreterException("BuiltinInvocation's first child must be an expression");
+            if (invocationNode.DataType != ScriptDataType.MethodOrOperator) Throw.InterpreterException($"BuiltinInvocation's first child must be of type {ScriptDataType.MethodOrOperator}");
+            if (node.OperationId != invocationNode.OperationId) Throw.InterpreterException($"BuiltinInvocation's OperationId must match the OperationId of its first child");
 
-            if(state.FrameCount > 0)
+            if (state.FrameCount > 0)
             {
                 // Set top frame's Current to resume at the proper node
                 state.TopFrame.Current = node;
@@ -277,72 +280,64 @@ namespace OpenH2.Core.Scripting.Execution
             state.TopFrame.Current = node;
         }
 
-        private void InterpretBuiltinInvocation(ScenarioTag.ScriptSyntaxNode node, ref State state)
+        private void InterpretBuiltinInvocation(ref State state)
         {
-            // Dispatch to relevant implementation
+            var opId = state.TopFrame.OriginatingNode.OperationId;
 
+            // Dispatch to relevant implementation
             // Handle methods that special-case arguments
-            switch(node.OperationId)
+            switch (opId)
             {
-                case ScriptOps.Begin: this.Begin(node, ref state); return;
-                case ScriptOps.BeginRandom: this.BeginRandom(node, ref state); return;
-                case ScriptOps.If: this.If(node, ref state); return;
-                case ScriptOps.And: this.And(node, ref state); return;
-                case ScriptOps.Or: this.Or(node, ref state); return;
-                case ScriptOps.Set: this.Set(node, ref state); return;
+                case ScriptOps.Begin: this.Begin(ref state); return;
+                case ScriptOps.BeginRandom: this.BeginRandom(ref state); return;
+                case ScriptOps.If: this.If(ref state); return;
+                case ScriptOps.And: this.And(ref state); return;
+                case ScriptOps.Or: this.Or(ref state); return;
+                case ScriptOps.Set: this.Set(ref state); return;
                 default: break;
             };
 
             // Handle methods that consume all arguments
             var argsRemain = PrepareNextArgument(ref state);
-            if(argsRemain)
+            if (argsRemain)
             {
                 return;
             }
 
-            switch(node.OperationId)
+            switch (opId)
             {
-                case ScriptOps.Not: this.Not(node, ref state); break;
-                case ScriptOps.Equals: this.ValueEquals(node, ref state); break;
-                case ScriptOps.GreaterThan: this.GreaterThan(node, ref state); break;
-                case ScriptOps.LessThan: this.LessThan(node, ref state); break;
-                case ScriptOps.GreaterThanOrEqual: this.GreaterThanOrEquals(node, ref state); break;
-                case ScriptOps.LessThanOrEqual: this.LessThanOrEquals(node, ref state); break;
+                case ScriptOps.Not: this.Not(ref state); break;
+                case ScriptOps.Equals: this.ValueEquals(ref state); break;
+                case ScriptOps.GreaterThan: this.GreaterThan(ref state); break;
+                case ScriptOps.LessThan: this.LessThan(ref state); break;
+                case ScriptOps.GreaterThanOrEqual: this.GreaterThanOrEquals(ref state); break;
+                case ScriptOps.LessThanOrEqual: this.LessThanOrEquals(ref state); break;
 
-                case ScriptOps.Add: this.Add(node, ref state); break;
-                case ScriptOps.Subtract: this.Subtract(node, ref state); break;
-                case ScriptOps.Multiply: this.Multiply(node, ref state); break;
-                case ScriptOps.Divide: this.Divide(node, ref state); break;
-                case ScriptOps.Min: this.Min(node, ref state); break;
-                case ScriptOps.Max: this.Max(node, ref state); break;
+                case ScriptOps.Add: this.Add(ref state); break;
+                case ScriptOps.Subtract: this.Subtract(ref state); break;
+                case ScriptOps.Multiply: this.Multiply(ref state); break;
+                case ScriptOps.Divide: this.Divide(ref state); break;
+                case ScriptOps.Min: this.Min(ref state); break;
+                case ScriptOps.Max: this.Max(ref state); break;
 
-                //_: this.DispatchMethod(node)
-                default: throw new NotSupportedException($"Operation {node.OperationId} not supported");
-                case ScriptOps.Print: this.Print(node, ref state); break;
+                default: this.DispatchMethod(ref state); break;
             }
         }
 
-        // TODO: remove, rely on generator
-        private void Print(ScenarioTag.ScriptSyntaxNode node, ref State state)
-        {
-            this.scriptEngine.print((string)state.TopFrame.Locals.Dequeue().Object);
-            CompleteFrame(ref state);
-        }
-
-        private void Begin(ScenarioTag.ScriptSyntaxNode node, ref State state)
+        private void Begin(ref State state)
         {
             var remainingExpressions = PrepareNextArgument(ref state);
 
             Result result = default;
 
-            if(state.TopFrame.Locals.Count > 0)
+            if (state.TopFrame.Locals.Count > 0)
             {
                 result = state.TopFrame.Locals.Dequeue();
             }
 
-            if(remainingExpressions == false)
+            if (remainingExpressions == false)
             {
-                if(node.DataType == ScriptDataType.Void)
+                if (state.TopFrame.OriginatingNode.DataType == ScriptDataType.Void)
                 {
                     CompleteFrame(ref state);
                 }
@@ -354,21 +349,21 @@ namespace OpenH2.Core.Scripting.Execution
         }
 
         // TODO: not random!
-        private void BeginRandom(ScenarioTag.ScriptSyntaxNode node, ref State state)
+        private void BeginRandom(ref State state)
         {
-            Begin(node, ref state);
+            Begin(ref state);
         }
 
-        private void If(ScenarioTag.ScriptSyntaxNode node, ref State state)
+        private void If(ref State state)
         {
             // Make sure first expression is evaluated to use as condition
-            if(state.TopFrame.Locals.Count == 0)
+            if (state.TopFrame.Locals.Count == 0)
             {
                 var remainingArgs = PrepareNextArgument(ref state);
                 Debug.Assert(remainingArgs);
                 return;
             }
-            else if(state.TopFrame.Locals.Count == 1)
+            else if (state.TopFrame.Locals.Count == 1)
             {
                 var condition = state.TopFrame.Locals.Peek();
                 Debug.Assert(condition.DataType == ScriptDataType.Boolean);
@@ -388,7 +383,7 @@ namespace OpenH2.Core.Scripting.Execution
             {
                 Debug.Assert(state.TopFrame.Locals.Count == 2, "Only 'condition' and corresponding result should be stored");
 
-                if (node.DataType == ScriptDataType.Void)
+                if (state.TopFrame.OriginatingNode.DataType == ScriptDataType.Void)
                 {
                     CompleteFrame(ref state);
                 }
@@ -401,9 +396,9 @@ namespace OpenH2.Core.Scripting.Execution
             }
         }
 
-        private void Set(ScenarioTag.ScriptSyntaxNode node, ref State state)
+        private void Set(ref State state)
         {
-            if(state.TopFrame.Locals.Count != 2)
+            if (state.TopFrame.Locals.Count != 2)
             {
                 PrepareNextArgument(ref state);
                 return;
@@ -414,7 +409,7 @@ namespace OpenH2.Core.Scripting.Execution
 
             int i;
 
-            if(variableRef.Object is VariableReference varRef)
+            if (variableRef.Object is VariableReference varRef)
             {
                 i = varRef.Index;
                 value.Object = varRef;
@@ -429,7 +424,7 @@ namespace OpenH2.Core.Scripting.Execution
             CompleteFrame(ref state);
         }
 
-        private void Not(ScenarioTag.ScriptSyntaxNode node, ref State state)
+        private void Not(ref State state)
         {
             ref var frame = ref state.TopFrame;
 
@@ -441,13 +436,13 @@ namespace OpenH2.Core.Scripting.Execution
             CompleteFrame(Result.From(!operand.Boolean), ref state);
         }
 
-        private void And (ScenarioTag.ScriptSyntaxNode node, ref State state)
+        private void And(ref State state)
         {
             ref var frame = ref state.TopFrame;
 
             var argPending = PrepareNextArgument(ref state);
 
-            if(frame.Locals.Count > 0)
+            if (frame.Locals.Count > 0)
             {
                 var operand = frame.Locals.Dequeue();
                 Debug.Assert(operand.DataType == ScriptDataType.Boolean);
@@ -465,7 +460,7 @@ namespace OpenH2.Core.Scripting.Execution
             }
         }
 
-        private void Or (ScenarioTag.ScriptSyntaxNode node, ref State state)
+        private void Or(ref State state)
         {
             ref var frame = ref state.TopFrame;
 
@@ -489,13 +484,13 @@ namespace OpenH2.Core.Scripting.Execution
             }
         }
 
-        private void Add (ScenarioTag.ScriptSyntaxNode node, ref State state)
+        private void Add(ref State state)
         {
             ref var frame = ref state.TopFrame;
 
             var firstOp = frame.Locals.Dequeue();
 
-            while(frame.Locals.Count > 0)
+            while (frame.Locals.Count > 0)
             {
                 var operand = frame.Locals.Dequeue();
 
@@ -505,13 +500,13 @@ namespace OpenH2.Core.Scripting.Execution
             CompleteFrame(firstOp, ref state);
         }
 
-        private void Subtract (ScenarioTag.ScriptSyntaxNode node, ref State state)
+        private void Subtract(ref State state)
         {
             ref var frame = ref state.TopFrame;
 
             var firstOp = frame.Locals.Dequeue();
 
-            while(frame.Locals.Count > 0)
+            while (frame.Locals.Count > 0)
             {
                 var operand = frame.Locals.Dequeue();
 
@@ -521,13 +516,13 @@ namespace OpenH2.Core.Scripting.Execution
             CompleteFrame(firstOp, ref state);
         }
 
-        private void Multiply (ScenarioTag.ScriptSyntaxNode node, ref State state)
+        private void Multiply(ref State state)
         {
             ref var frame = ref state.TopFrame;
 
             var firstOp = frame.Locals.Dequeue();
 
-            while(frame.Locals.Count > 0)
+            while (frame.Locals.Count > 0)
             {
                 var operand = frame.Locals.Dequeue();
 
@@ -537,13 +532,13 @@ namespace OpenH2.Core.Scripting.Execution
             CompleteFrame(firstOp, ref state);
         }
 
-        private void Divide (ScenarioTag.ScriptSyntaxNode node, ref State state)
+        private void Divide(ref State state)
         {
             ref var frame = ref state.TopFrame;
 
             var firstOp = frame.Locals.Dequeue();
 
-            while(frame.Locals.Count > 0)
+            while (frame.Locals.Count > 0)
             {
                 var operand = frame.Locals.Dequeue();
 
@@ -553,13 +548,13 @@ namespace OpenH2.Core.Scripting.Execution
             CompleteFrame(firstOp, ref state);
         }
 
-        private void Min (ScenarioTag.ScriptSyntaxNode node, ref State state)
+        private void Min(ref State state)
         {
             ref var frame = ref state.TopFrame;
 
             var firstOp = frame.Locals.Dequeue();
 
-            while(frame.Locals.Count > 0)
+            while (frame.Locals.Count > 0)
             {
                 var operand = frame.Locals.Dequeue();
 
@@ -569,13 +564,13 @@ namespace OpenH2.Core.Scripting.Execution
             CompleteFrame(firstOp, ref state);
         }
 
-        private void Max (ScenarioTag.ScriptSyntaxNode node, ref State state)
+        private void Max(ref State state)
         {
             ref var frame = ref state.TopFrame;
 
             var firstOp = frame.Locals.Dequeue();
 
-            while(frame.Locals.Count > 0)
+            while (frame.Locals.Count > 0)
             {
                 var operand = frame.Locals.Dequeue();
 
@@ -585,7 +580,7 @@ namespace OpenH2.Core.Scripting.Execution
             CompleteFrame(firstOp, ref state);
         }
 
-        private void ValueEquals (ScenarioTag.ScriptSyntaxNode node, ref State state)
+        private void ValueEquals(ref State state)
         {
             ref var frame = ref state.TopFrame;
 
@@ -606,7 +601,7 @@ namespace OpenH2.Core.Scripting.Execution
             CompleteFrame(result, ref state);
         }
 
-        private void GreaterThan (ScenarioTag.ScriptSyntaxNode node, ref State state)
+        private void GreaterThan(ref State state)
         {
             ref var frame = ref state.TopFrame;
 
@@ -624,7 +619,7 @@ namespace OpenH2.Core.Scripting.Execution
             CompleteFrame(result, ref state);
         }
 
-        private void GreaterThanOrEquals (ScenarioTag.ScriptSyntaxNode node, ref State state)
+        private void GreaterThanOrEquals(ref State state)
         {
             ref var frame = ref state.TopFrame;
 
@@ -642,7 +637,7 @@ namespace OpenH2.Core.Scripting.Execution
             CompleteFrame(result, ref state);
         }
 
-        private void LessThan (ScenarioTag.ScriptSyntaxNode node, ref State state)
+        private void LessThan(ref State state)
         {
             ref var frame = ref state.TopFrame;
 
@@ -660,7 +655,7 @@ namespace OpenH2.Core.Scripting.Execution
             CompleteFrame(result, ref state);
         }
 
-        private void LessThanOrEquals (ScenarioTag.ScriptSyntaxNode node, ref State state)
+        private void LessThanOrEquals(ref State state)
         {
             ref var frame = ref state.TopFrame;
 
@@ -734,5 +729,16 @@ namespace OpenH2.Core.Scripting.Execution
         {
             var completedFrame = state.Pop();
         }
+
+        /*
+         * Source generator for each IScriptEngine method that creates an Invoke_{Method} that
+         * does {number of arguments} Locals.Dequeue() to collect arguments and finally calls the 
+         * IScriptEngine instance method with the arguments. Value is produced with CompleteFrame(...)
+         * Then this DispatchMethodOrOperator method can be generated with a switch to each invoke, bypassing
+         * the static dictionary altogether, removing array allocations for MethodInfo.Invoke and call overhead
+         * 
+         * Warning in IDE will show, but build will pass as the code is generated at compile-time
+         */
+        private partial void DispatchMethod(ref State state);
     }
 }
