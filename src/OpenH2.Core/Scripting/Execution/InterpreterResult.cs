@@ -62,6 +62,17 @@ namespace OpenH2.Core.Scripting.Execution
         public int FrameCount => TopOfStack+1;
     }
 
+    public struct VariableReference
+    {
+        public int Index;
+
+        public VariableReference(int i)
+        {
+            this.Index = i;
+        }
+    }
+
+
     [StructLayout(LayoutKind.Explicit)]
     public struct InterpreterResult
     {

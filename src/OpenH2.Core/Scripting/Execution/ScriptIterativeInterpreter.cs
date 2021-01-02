@@ -48,10 +48,18 @@ namespace OpenH2.Core.Scripting.Execution
             for (int i = 0; i < this.scenario.ScriptVariables.Length; i++)
             {
                 var variable = this.scenario.ScriptVariables[i];
-                CreateState(variable.Value_H16, out var state);
-                var completed = Interpret(ref state);
+                var completed = Interpret(variable.Value_H16, out var state);
                 Debug.Assert(completed);
-                variables[i] = state.Result;
+
+                var result = state.Result;
+
+                // Hack to store variable data and index in same result, should probably find a better way
+                if (result.Object == null)
+                    result.Object = new VariableReference(i);
+                else
+                    result.Int = i;
+
+                variables[i] = result;
             }
         }
 
@@ -264,7 +272,9 @@ namespace OpenH2.Core.Scripting.Execution
 
         private void InterpretVariableAccess(ScenarioTag.ScriptSyntaxNode node, ref State state)
         {
-            // TODO, handle GET and SET cases
+            var result = this.variables[node.NodeData_H16];
+            state.TopFrame.Locals.Enqueue(result);
+            state.TopFrame.Current = node;
         }
 
         private void InterpretBuiltinInvocation(ScenarioTag.ScriptSyntaxNode node, ref State state)
@@ -279,7 +289,7 @@ namespace OpenH2.Core.Scripting.Execution
                 case ScriptOps.If: this.If(node, ref state); return;
                 case ScriptOps.And: this.And(node, ref state); return;
                 case ScriptOps.Or: this.Or(node, ref state); return;
-                //case ScriptOps.Set: this.Set(node); return;
+                case ScriptOps.Set: this.Set(node, ref state); return;
                 default: break;
             };
 
@@ -306,13 +316,13 @@ namespace OpenH2.Core.Scripting.Execution
                 case ScriptOps.Min: this.Min(node, ref state); break;
                 case ScriptOps.Max: this.Max(node, ref state); break;
 
-                default: throw new NotSupportedException($"Operation {node.OperationId} not supported");
                 //_: this.DispatchMethod(node)
-
+                default: throw new NotSupportedException($"Operation {node.OperationId} not supported");
                 case ScriptOps.Print: this.Print(node, ref state); break;
             }
         }
 
+        // TODO: remove, rely on generator
         private void Print(ScenarioTag.ScriptSyntaxNode node, ref State state)
         {
             this.scriptEngine.print((string)state.TopFrame.Locals.Dequeue().Object);
@@ -364,12 +374,13 @@ namespace OpenH2.Core.Scripting.Execution
                 Debug.Assert(condition.DataType == ScriptDataType.Boolean);
 
                 var remainingArgs = PrepareNextArgument(ref state);
+                Debug.Assert(remainingArgs, "If requires a corresponding expression");
 
                 if (condition.Boolean == false)
                 {
                     // If the condition is false, we need to skip the 'true' expression
-                    Debug.Assert(remainingArgs, "A 'false' condition requires a corresponding expression");
                     var trueExp = this.scenario.ScriptSyntaxNodes[state.TopFrame.Next];
+                    Debug.Assert(trueExp.NextIndex != ushort.MaxValue, "A 'false' condition requries a corresponding expression");
                     state.TopFrame.Next = trueExp.NextIndex;
                 }
             }
@@ -388,6 +399,34 @@ namespace OpenH2.Core.Scripting.Execution
                     CompleteFrame(result, ref state);
                 }
             }
+        }
+
+        private void Set(ScenarioTag.ScriptSyntaxNode node, ref State state)
+        {
+            if(state.TopFrame.Locals.Count != 2)
+            {
+                PrepareNextArgument(ref state);
+                return;
+            }
+
+            var variableRef = state.TopFrame.Locals.Dequeue();
+            var value = state.TopFrame.Locals.Dequeue();
+
+            int i;
+
+            if(variableRef.Object is VariableReference varRef)
+            {
+                i = varRef.Index;
+                value.Object = varRef;
+            }
+            else
+            {
+                i = variableRef.Int;
+                value.Int = i;
+            }
+
+            this.variables[i] = value;
+            CompleteFrame(ref state);
         }
 
         private void Not(ScenarioTag.ScriptSyntaxNode node, ref State state)

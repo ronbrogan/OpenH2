@@ -249,14 +249,13 @@ namespace OpenH2.Core.Tests.Scripting.Execution
             {
                 ScriptVariables = new ScenarioTag.ScriptVariableDefinition[3]
                 {
-                    new ScenarioTag.ScriptVariableDefinition(){ DataType = ScriptDataType.Int, Value_32 = 2 },
-                    new ScenarioTag.ScriptVariableDefinition(){ DataType = ScriptDataType.Float, Value_32 = 3 },
-                    new ScenarioTag.ScriptVariableDefinition(){ DataType = ScriptDataType.Boolean, Value_32 = 4 }
+                    new ScenarioTag.ScriptVariableDefinition(){ DataType = ScriptDataType.Int, Value_32 = 1 },
+                    new ScenarioTag.ScriptVariableDefinition(){ DataType = ScriptDataType.Float, Value_32 = 2 },
+                    new ScenarioTag.ScriptVariableDefinition(){ DataType = ScriptDataType.Boolean, Value_32 = 3 }
                 },
                 ScriptSyntaxNodes = new ScenarioTag.ScriptSyntaxNode[]
                 {
-                    ScopeNode(ScriptDataType.Float, op: 6, child: 1),
-                        Node(NodeType.VariableAccess, ScriptDataType.Float, op: 6, data: 1),
+                    Node(NodeType.VariableAccess, ScriptDataType.Float, op: 6, data: 1),
 
                     Node(NodeType.Expression, ScriptDataType.Int, op: 8, data: 123),
                     Node(NodeType.Expression, ScriptDataType.Float, op: 6, data: From(12f)),
@@ -297,8 +296,7 @@ namespace OpenH2.Core.Tests.Scripting.Execution
                     Node(NodeType.Expression, ScriptDataType.Float, op: 6, data: From(12f)),
                     Node(NodeType.Expression, ScriptDataType.Boolean, op: 5, data: 1),
 
-                    ScopeNode(ScriptDataType.Float, op: 6, child: 8),
-                        Node(NodeType.VariableAccess, ScriptDataType.Float, op: 6, data: 1),
+                    Node(NodeType.VariableAccess, ScriptDataType.Float, op: 6, data: 1),
                 }
             };
 
