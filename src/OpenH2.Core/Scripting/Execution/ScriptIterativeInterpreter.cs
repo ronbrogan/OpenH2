@@ -74,7 +74,27 @@ namespace OpenH2.Core.Scripting.Execution
             }
             else
             {
-                // Create synthetic frame and set next?
+                var invocation = new ScenarioTag.ScriptSyntaxNode()
+                {
+                    NodeType = NodeType.BuiltinInvocation,
+                    DataType = node.DataType,
+                    NextIndex = ushort.MaxValue,
+                };
+
+                var begin = new ScenarioTag.ScriptSyntaxNode()
+                {
+                    NodeType = NodeType.Expression,
+                    DataType = ScriptDataType.MethodOrOperator,
+                    NextIndex = (ushort)nodeIndex,
+                };
+
+                state.Push(new StackFrame()
+                {
+                    Locals = new(6),
+                    OriginatingNode = invocation,
+                    Current = begin,
+                    Next = ushort.MaxValue
+                });
             }
         }
 
@@ -171,11 +191,17 @@ namespace OpenH2.Core.Scripting.Execution
             if(invocationNode.DataType != ScriptDataType.MethodOrOperator) Throw.InterpreterException($"BuiltinInvocation's first child must be of type {ScriptDataType.MethodOrOperator}");
             if(node.OperationId != invocationNode.OperationId) Throw.InterpreterException($"BuiltinInvocation's OperationId must match the OperationId of its first child");
 
+            if(state.FrameCount > 0)
+            {
+                // Set top frame's next to resume at the proper node
+                state.TopFrame.Current = node;
+            }
+
             state.Push(new StackFrame()
             {
                 Locals = new(6),
                 OriginatingNode = node,
-                Previous = invocationNode,
+                Current = invocationNode,
                 Next = ushort.MaxValue
             });
         }
@@ -233,7 +259,7 @@ namespace OpenH2.Core.Scripting.Execution
 
             ref var frame = ref state.TopFrame;
             frame.Locals.Enqueue(result);
-            frame.Previous = node;
+            frame.Current = node;
         }
 
         private void InterpretVariableAccess(ScenarioTag.ScriptSyntaxNode node, ref State state)
@@ -248,8 +274,8 @@ namespace OpenH2.Core.Scripting.Execution
             // Handle methods that special-case arguments
             switch(node.OperationId)
             {
-                //case ScriptOps.Begin: this.Begin(node, ref state); return;
-                //case ScriptOps.BeginRandom: this.BeginRandom(node, ref state); return;
+                case ScriptOps.Begin: this.Begin(node, ref state); return;
+                case ScriptOps.BeginRandom: this.BeginRandom(node, ref state); return;
                 //case ScriptOps.If: this.If(node, ref state); return;
                 case ScriptOps.And: this.And(node, ref state); return;
                 case ScriptOps.Or: this.Or(node, ref state); return;
@@ -282,29 +308,47 @@ namespace OpenH2.Core.Scripting.Execution
 
                 default: throw new NotSupportedException($"Operation {node.OperationId} not supported");
                 //_: this.DispatchMethod(node)
+
+                case ScriptOps.Print: this.Print(node, ref state); break;
             }
         }
 
-        //private Result Begin(ScenarioTag.ScriptSyntaxNode node, ref State state)
-        //{
-        //    next = node.NextIndex;
-        //
-        //    Result result = default;
-        //
-        //    while (interruptRequested == false && next != ushort.MaxValue)
-        //    {
-        //        result = Interpret(this.scenario.ScriptSyntaxNodes[next], out next);
-        //    }
-        //
-        //    return result;
-        //}
-        //
-        //// TODO: not random!
-        //private void BeginRandom(ScenarioTag.ScriptSyntaxNode node, ref State state)
-        //{
-        //    Begin(node, ref state);
-        //}
-        //
+        private void Print(ScenarioTag.ScriptSyntaxNode node, ref State state)
+        {
+            this.scriptEngine.print((string)state.TopFrame.Locals.Dequeue().Object);
+            CompleteFrame(ref state);
+        }
+
+        private void Begin(ScenarioTag.ScriptSyntaxNode node, ref State state)
+        {
+            var remainingExpressions = PrepareNextArgument(ref state);
+
+            Result result = default;
+
+            if(state.TopFrame.Locals.Count > 0)
+            {
+                result = state.TopFrame.Locals.Dequeue();
+            }
+
+            if(remainingExpressions == false)
+            {
+                if(node.DataType == ScriptDataType.Void)
+                {
+                    CompleteFrame(ref state);
+                }
+                else
+                {
+                    CompleteFrame(result, ref state);
+                }
+            }
+        }
+
+        // TODO: not random!
+        private void BeginRandom(ScenarioTag.ScriptSyntaxNode node, ref State state)
+        {
+            Begin(node, ref state);
+        }
+
         //private void If(ScenarioTag.ScriptSyntaxNode node, ref State state)
         //{
         //    ref var frame = ref state.TopFrame;
@@ -334,7 +378,7 @@ namespace OpenH2.Core.Scripting.Execution
             var operand = frame.Locals.Dequeue();
             Debug.Assert(operand.DataType == ScriptDataType.Boolean);
 
-            ProduceResult(Result.From(!operand.Boolean), ref state);
+            CompleteFrame(Result.From(!operand.Boolean), ref state);
         }
 
         private void And (ScenarioTag.ScriptSyntaxNode node, ref State state)
@@ -350,14 +394,14 @@ namespace OpenH2.Core.Scripting.Execution
 
                 if (operand.Boolean == false)
                 {
-                    ProduceResult(Result.From(false), ref state);
+                    CompleteFrame(Result.From(false), ref state);
                     return;
                 }
             }
 
             if (!argPending)
             {
-                ProduceResult(Result.From(true), ref state);
+                CompleteFrame(Result.From(true), ref state);
             }
         }
 
@@ -374,14 +418,14 @@ namespace OpenH2.Core.Scripting.Execution
 
                 if (operand.Boolean)
                 {
-                    ProduceResult(Result.From(true), ref state);
+                    CompleteFrame(Result.From(true), ref state);
                     return;
                 }
             }
 
             if (!argPending)
             {
-                ProduceResult(Result.From(false), ref state);
+                CompleteFrame(Result.From(false), ref state);
             }
         }
 
@@ -398,7 +442,7 @@ namespace OpenH2.Core.Scripting.Execution
                 firstOp.Add(operand);
             }
 
-            ProduceResult(firstOp, ref state);
+            CompleteFrame(firstOp, ref state);
         }
 
         private void Subtract (ScenarioTag.ScriptSyntaxNode node, ref State state)
@@ -414,7 +458,7 @@ namespace OpenH2.Core.Scripting.Execution
                 firstOp.Subtract(operand);
             }
 
-            ProduceResult(firstOp, ref state);
+            CompleteFrame(firstOp, ref state);
         }
 
         private void Multiply (ScenarioTag.ScriptSyntaxNode node, ref State state)
@@ -430,7 +474,7 @@ namespace OpenH2.Core.Scripting.Execution
                 firstOp.Multiply(operand);
             }
 
-            ProduceResult(firstOp, ref state);
+            CompleteFrame(firstOp, ref state);
         }
 
         private void Divide (ScenarioTag.ScriptSyntaxNode node, ref State state)
@@ -446,7 +490,7 @@ namespace OpenH2.Core.Scripting.Execution
                 firstOp.Divide(operand);
             }
 
-            ProduceResult(firstOp, ref state);
+            CompleteFrame(firstOp, ref state);
         }
 
         private void Min (ScenarioTag.ScriptSyntaxNode node, ref State state)
@@ -462,7 +506,7 @@ namespace OpenH2.Core.Scripting.Execution
                 firstOp = Result.Min(firstOp, operand);
             }
 
-            ProduceResult(firstOp, ref state);
+            CompleteFrame(firstOp, ref state);
         }
 
         private void Max (ScenarioTag.ScriptSyntaxNode node, ref State state)
@@ -478,7 +522,7 @@ namespace OpenH2.Core.Scripting.Execution
                 firstOp = Result.Max(firstOp, operand);
             }
 
-            ProduceResult(firstOp, ref state);
+            CompleteFrame(firstOp, ref state);
         }
 
         private void ValueEquals (ScenarioTag.ScriptSyntaxNode node, ref State state)
@@ -499,7 +543,7 @@ namespace OpenH2.Core.Scripting.Execution
                 _ => throw new InterpreterException($"Equality comparison for {left.DataType} is not supported")
             };
 
-            ProduceResult(result, ref state);
+            CompleteFrame(result, ref state);
         }
 
         private void GreaterThan (ScenarioTag.ScriptSyntaxNode node, ref State state)
@@ -517,7 +561,7 @@ namespace OpenH2.Core.Scripting.Execution
                 _ => throw new InterpreterException($"Equality comparison for {left.DataType} is not supported")
             };
 
-            ProduceResult(result, ref state);
+            CompleteFrame(result, ref state);
         }
 
         private void GreaterThanOrEquals (ScenarioTag.ScriptSyntaxNode node, ref State state)
@@ -535,7 +579,7 @@ namespace OpenH2.Core.Scripting.Execution
                 _ => throw new InterpreterException($"Equality comparison for {left.DataType} is not supported")
             };
 
-            ProduceResult(result, ref state);
+            CompleteFrame(result, ref state);
         }
 
         private void LessThan (ScenarioTag.ScriptSyntaxNode node, ref State state)
@@ -553,7 +597,7 @@ namespace OpenH2.Core.Scripting.Execution
                 _ => throw new InterpreterException($"Equality comparison for {left.DataType} is not supported")
             };
 
-            ProduceResult(result, ref state);
+            CompleteFrame(result, ref state);
         }
 
         private void LessThanOrEquals (ScenarioTag.ScriptSyntaxNode node, ref State state)
@@ -571,24 +615,24 @@ namespace OpenH2.Core.Scripting.Execution
                 _ => throw new InterpreterException($"Equality comparison for {left.DataType} is not supported")
             };
 
-            ProduceResult(result, ref state);
+            CompleteFrame(result, ref state);
         }
 
         private bool PrepareNextArgument(ref State state)
         {
             ref var top = ref state.TopFrame;
-            if (top.Previous.NextIndex == ushort.MaxValue)
+            if (top.Current.NextIndex == ushort.MaxValue)
             {
                 return false;
             }
             else
             {
-                top.Next = top.Previous.NextIndex;
+                top.Next = top.Current.NextIndex;
                 return true;
             }
         }
 
-        private void ProduceResult(InterpreterResult value, ref State state)
+        private void CompleteFrame(InterpreterResult value, ref State state)
         {
             var completedFrame = state.Pop();
 
@@ -624,6 +668,11 @@ namespace OpenH2.Core.Scripting.Execution
             {
                 state.TopFrame.Locals.Enqueue(value);
             }
+        }
+
+        private void CompleteFrame(ref State state)
+        {
+            var completedFrame = state.Pop();
         }
     }
 }

@@ -1,4 +1,5 @@
-﻿using OpenH2.Core.Tags.Scenario;
+﻿using OpenH2.Core.Exceptions;
+using OpenH2.Core.Tags.Scenario;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -11,7 +12,7 @@ namespace OpenH2.Core.Scripting.Execution
     {
         public Queue<InterpreterResult> Locals;
         public ScenarioTag.ScriptSyntaxNode OriginatingNode;
-        public ScenarioTag.ScriptSyntaxNode Previous;
+        public ScenarioTag.ScriptSyntaxNode Current;
         public ushort Next;
     }
 
@@ -42,7 +43,7 @@ namespace OpenH2.Core.Scripting.Execution
             }
             catch (IndexOutOfRangeException)
             {
-                throw new Exception("Interpreter CallStack has exceeded the allowed depth");
+                Throw.InterpreterException("Interpreter CallStack has exceeded the allowed depth");
             }
         }
 

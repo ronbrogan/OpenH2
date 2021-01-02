@@ -96,12 +96,9 @@ namespace OpenH2.Core.Tests.Scripting.Execution
                 {
                     ScopeNode(ScriptDataType.Float, op: ScriptOps.Begin, child: 1),
                         Node(NodeType.Expression, ScriptDataType.MethodOrOperator, op: ScriptOps.Begin, next: 2),
-                            ScopeNode(ScriptDataType.Float, op:6, child: 3, next: 4),
-                                Node(NodeType.Expression, ScriptDataType.Float, op: 6, data: From(1f)),
-                            ScopeNode(ScriptDataType.Float, op:6, child: 5, next: 6),
-                                Node(NodeType.Expression, ScriptDataType.Float, op: 6, data: From(2f)),
-                            ScopeNode(ScriptDataType.Float, op:6, child: 7),
-                                Node(NodeType.Expression, ScriptDataType.Float, op: 6, data: From(3f)),
+                            Node(NodeType.Expression, ScriptDataType.Float, op: 6, data: From(1f), next: 3),
+                                Node(NodeType.Expression, ScriptDataType.Float, op: 6, data: From(2f), next: 4),
+                                    Node(NodeType.Expression, ScriptDataType.Float, op: 6, data: From(3f)),
                 }
             };
 
@@ -692,7 +689,7 @@ namespace OpenH2.Core.Tests.Scripting.Execution
             {
                 ScriptSyntaxNodes = new ScenarioTag.ScriptSyntaxNode[]
                 {
-                    ScopeNode(ScriptDataType.Boolean, op: 5, child: 1),
+                    ScopeNode(ScriptDataType.Boolean, op: ScriptOps.LessThan, child: 1),
                         Node(NodeType.Expression, ScriptDataType.MethodOrOperator, op: ScriptOps.LessThan, next: 2),
                             Node(NodeType.Expression, ScriptDataType.Short, op: 7, data: 1, next: 3),
                                 Node(NodeType.Expression, ScriptDataType.Short, op: 7, data: 2)
