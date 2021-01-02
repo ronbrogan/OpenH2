@@ -49,7 +49,14 @@ namespace OpenH2.Core.Scripting.Execution
 
         public ref StackFrame Pop()
         {
-            return ref this.CallStack[this.TopOfStack--];
+            try
+            {
+                return ref this.CallStack[this.TopOfStack--];
+            }
+            catch (IndexOutOfRangeException)
+            {
+                throw new InterpreterException("Interpreter CallStack is already empty");
+            }
         }
 
         public int FrameCount => TopOfStack+1;

@@ -41,28 +41,6 @@ namespace OpenH2.Core.Tests.Scripting.Execution
         }
 
         [Fact]
-        public void Interpret_ScopeReturnsResult()
-        {
-            var scen = new ScenarioTag(0)
-            {
-                ScriptSyntaxNodes = new ScenarioTag.ScriptSyntaxNode[]
-                {
-                    ScopeNode(ScriptDataType.Float, op: 6, child: 1),
-                        Node(NodeType.Expression, ScriptDataType.Float, op: 6, data: From(2f)),
-                }
-            };
-
-            var interpreter = new ScriptIterativeInterpreter(scen, Mock.Of<IScriptEngine>());
-
-            var terminated = interpreter.Interpret(0, out var state);
-            var result = state.Result;
-
-            Assert.Equal(ScriptDataType.Float, result.DataType);
-            Assert.Equal(2f, result.Float);
-            Assert.True(terminated);
-        }
-
-        [Fact]
         public void Interpret_ScopeCast()
         {
             var scen = new ScenarioTag(0)
@@ -159,12 +137,9 @@ namespace OpenH2.Core.Tests.Scripting.Execution
                 {
                     ScopeNode(ScriptDataType.Float, op: ScriptOps.If, child: 1),
                         Node(NodeType.Expression, ScriptDataType.MethodOrOperator, op: ScriptOps.If, next: 2),
-                            ScopeNode(ScriptDataType.Boolean, op:5, child: 3, next: 4),
-                                Node(NodeType.Expression, ScriptDataType.Boolean, op: 5, data: 1),
-                            ScopeNode(ScriptDataType.Float, op:6, child: 5, next: 6),
-                                Node(NodeType.Expression, ScriptDataType.Float, op: 6, data: From(2f)),
-                            ScopeNode(ScriptDataType.Float, op:6, child: 7),
-                                Node(NodeType.Expression, ScriptDataType.Float, op: 6, data: From(3f)),
+                                Node(NodeType.Expression, ScriptDataType.Boolean, op: 5, data: 1, next: 3),
+                                    Node(NodeType.Expression, ScriptDataType.Float, op: 6, data: From(2f), next: 4),
+                                        Node(NodeType.Expression, ScriptDataType.Float, op: 6, data: From(3f)),
                 }
             };
 
@@ -187,12 +162,9 @@ namespace OpenH2.Core.Tests.Scripting.Execution
                 {
                     ScopeNode(ScriptDataType.Float, op: ScriptOps.If, child: 1),
                         Node(NodeType.Expression, ScriptDataType.MethodOrOperator, op: ScriptOps.If, next: 2),
-                            ScopeNode(ScriptDataType.Boolean, op:5, child: 3, next: 4),
-                                Node(NodeType.Expression, ScriptDataType.Boolean, op: 5, data: 0),
-                            ScopeNode(ScriptDataType.Float, op:6, child: 5, next: 6),
-                                Node(NodeType.Expression, ScriptDataType.Float, op: 6, data: From(2f)),
-                            ScopeNode(ScriptDataType.Float, op:6, child: 7),
-                                Node(NodeType.Expression, ScriptDataType.Float, op: 6, data: From(3f)),
+                                Node(NodeType.Expression, ScriptDataType.Boolean, op: 5, data: 0, next: 3),
+                                    Node(NodeType.Expression, ScriptDataType.Float, op: 6, data: From(2f), next: 4),
+                                        Node(NodeType.Expression, ScriptDataType.Float, op: 6, data: From(3f)),
                 }
             };
 

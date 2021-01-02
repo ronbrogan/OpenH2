@@ -193,7 +193,7 @@ namespace OpenH2.Core.Scripting.Execution
 
             if(state.FrameCount > 0)
             {
-                // Set top frame's next to resume at the proper node
+                // Set top frame's Current to resume at the proper node
                 state.TopFrame.Current = node;
             }
 
@@ -276,7 +276,7 @@ namespace OpenH2.Core.Scripting.Execution
             {
                 case ScriptOps.Begin: this.Begin(node, ref state); return;
                 case ScriptOps.BeginRandom: this.BeginRandom(node, ref state); return;
-                //case ScriptOps.If: this.If(node, ref state); return;
+                case ScriptOps.If: this.If(node, ref state); return;
                 case ScriptOps.And: this.And(node, ref state); return;
                 case ScriptOps.Or: this.Or(node, ref state); return;
                 //case ScriptOps.Set: this.Set(node); return;
@@ -349,25 +349,46 @@ namespace OpenH2.Core.Scripting.Execution
             Begin(node, ref state);
         }
 
-        //private void If(ScenarioTag.ScriptSyntaxNode node, ref State state)
-        //{
-        //    ref var frame = ref state.TopFrame;
-        //
-        //    var condition = Interpret(this.scenario.ScriptSyntaxNodes[argNext], ref state);
-        //    Debug.Assert(condition.DataType == ScriptDataType.Boolean);
-        //
-        //    var trueExp = this.scenario.ScriptSyntaxNodes[argNext];
-        //
-        //    if (condition.Boolean)
-        //    {
-        //        return Interpret(trueExp, out _);
-        //    }
-        //    else
-        //    {
-        //        var falseExp = this.scenario.ScriptSyntaxNodes[trueExp.NextIndex];
-        //        return Interpret(falseExp, out _);
-        //    }
-        //}
+        private void If(ScenarioTag.ScriptSyntaxNode node, ref State state)
+        {
+            // Make sure first expression is evaluated to use as condition
+            if(state.TopFrame.Locals.Count == 0)
+            {
+                var remainingArgs = PrepareNextArgument(ref state);
+                Debug.Assert(remainingArgs);
+                return;
+            }
+            else if(state.TopFrame.Locals.Count == 1)
+            {
+                var condition = state.TopFrame.Locals.Peek();
+                Debug.Assert(condition.DataType == ScriptDataType.Boolean);
+
+                var remainingArgs = PrepareNextArgument(ref state);
+
+                if (condition.Boolean == false)
+                {
+                    // If the condition is false, we need to skip the 'true' expression
+                    Debug.Assert(remainingArgs, "A 'false' condition requires a corresponding expression");
+                    var trueExp = this.scenario.ScriptSyntaxNodes[state.TopFrame.Next];
+                    state.TopFrame.Next = trueExp.NextIndex;
+                }
+            }
+            else
+            {
+                Debug.Assert(state.TopFrame.Locals.Count == 2, "Only 'condition' and corresponding result should be stored");
+
+                if (node.DataType == ScriptDataType.Void)
+                {
+                    CompleteFrame(ref state);
+                }
+                else
+                {
+                    var condition = state.TopFrame.Locals.Dequeue();
+                    var result = state.TopFrame.Locals.Dequeue();
+                    CompleteFrame(result, ref state);
+                }
+            }
+        }
 
         private void Not(ScenarioTag.ScriptSyntaxNode node, ref State state)
         {
