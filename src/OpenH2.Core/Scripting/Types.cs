@@ -18,6 +18,11 @@
 
         public ushort GetId() => id;
 
+        public ScriptMethodReference(ushort id)
+        {
+            this.id = id;
+        }
+
         public ScriptMethodReference(ScriptMethod method)
         {
             var attr = method.Method.GetCustomAttribute<ScriptMethodAttribute>();

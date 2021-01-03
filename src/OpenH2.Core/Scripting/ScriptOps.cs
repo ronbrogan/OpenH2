@@ -22,6 +22,7 @@
         public const ushort Sleep = 19;
         public const ushort SleepForever = 20;
         public const ushort SleepUntil = 21;
+        public const ushort Wake = 22;
         public const ushort Not = 25;
         public const ushort Print = 27;
         public const ushort GameIsPlaytest = 569;

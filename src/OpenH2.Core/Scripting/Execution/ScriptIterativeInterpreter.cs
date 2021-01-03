@@ -95,20 +95,18 @@ namespace OpenH2.Core.Scripting.Execution
 
         private void PushFrame(ScenarioTag.ScriptSyntaxNode node, ref State state)
         {
-            if (node.NodeType == NodeType.BuiltinInvocation)
+            if (node.NodeType == NodeType.BuiltinInvocation || node.NodeType == NodeType.ScriptInvocation)
             {
-                PushBuiltinInvocation(node, ref state);
-            }
-            else if (node.NodeType == NodeType.ScriptInvocation)
-            {
-
+                PushInvocation(node, ref state);
             }
             else
             {
+                // If root node isn't an invocation, we'll synthesize Begin call
                 var invocation = new ScenarioTag.ScriptSyntaxNode()
                 {
                     NodeType = NodeType.BuiltinInvocation,
                     DataType = node.DataType,
+                    OperationId = ScriptOps.Begin,
                     NextIndex = ushort.MaxValue,
                 };
 
@@ -116,6 +114,7 @@ namespace OpenH2.Core.Scripting.Execution
                 {
                     NodeType = NodeType.Expression,
                     DataType = ScriptDataType.MethodOrOperator,
+                    OperationId = ScriptOps.Begin,
                     NextIndex = (ushort)state.OriginalNodeIndex,
                 };
 
@@ -182,29 +181,48 @@ namespace OpenH2.Core.Scripting.Execution
 
         private void InterpretScriptFrame(ScenarioTag.ScriptSyntaxNode node, ref State state)
         {
-            // Need to defer to implementation, pre-gather all arguments? even support arguments for this?
+            ref var top = ref state.TopFrame;
+            if (top.Next == ushort.MaxValue)
+            {
+                // ScriptInvocation doesn't support arguments, just set as next
+                var method = this.scenario.ScriptMethods[state.TopFrame.Current.OperationId];
+                var methodFirstNode = this.scenario.ScriptSyntaxNodes[method.SyntaxNodeIndex];
+                top.Next = method.SyntaxNodeIndex;
+                Interpret(methodFirstNode, ref state);
+            }
+            else
+            {
+                if (state.TopFrame.OriginatingNode.DataType == ScriptDataType.Void)
+                {
+                    CompleteFrame(ref state);
+                }
+                else
+                {
+                    CompleteFrame(top.Locals.Dequeue(), ref state);
+                }
+            }
         }
 
         private void Interpret(ScenarioTag.ScriptSyntaxNode node, ref State state)
         {
             switch (node.NodeType)
             {
-                case NodeType.BuiltinInvocation: PushBuiltinInvocation(node, ref state); break;
-                //case NodeType.ScriptInvocation: PushScriptInvocation(node, ref state); break;
+                case NodeType.BuiltinInvocation: PushInvocation(node, ref state); break;
+                case NodeType.ScriptInvocation: PushInvocation(node, ref state); break;
                 case NodeType.Expression: InterpretExpression(node, ref state); break;
                 case NodeType.VariableAccess: InterpretVariableAccess(node, ref state); break;
                 default: Throw.NotSupported($"NodeType {node.NodeType} is not supported"); break;
-            };
+            }
         }
 
-        private void PushBuiltinInvocation(ScenarioTag.ScriptSyntaxNode node, ref State state)
+        private void PushInvocation(ScenarioTag.ScriptSyntaxNode node, ref State state)
         {
-            Debug.Assert(node.NodeType == NodeType.BuiltinInvocation);
+            Debug.Assert(node.NodeType == NodeType.BuiltinInvocation || node.NodeType == NodeType.ScriptInvocation);
 
             var invocationNode = this.scenario.ScriptSyntaxNodes[node.NodeData_H16];
-            if (invocationNode.NodeType != NodeType.Expression) Throw.InterpreterException("BuiltinInvocation's first child must be an expression", state);
-            if (invocationNode.DataType != ScriptDataType.MethodOrOperator) Throw.InterpreterException($"BuiltinInvocation's first child must be of type {ScriptDataType.MethodOrOperator}", state);
-            if (node.OperationId != invocationNode.OperationId) Throw.InterpreterException($"BuiltinInvocation's OperationId must match the OperationId of its first child", state);
+            if (invocationNode.NodeType != NodeType.Expression) Throw.InterpreterException("Invocation's first child must be an expression", state);
+            if (invocationNode.DataType != ScriptDataType.MethodOrOperator) Throw.InterpreterException($"Invocation's first child must be of type {ScriptDataType.MethodOrOperator}", state);
+            if (node.OperationId != invocationNode.OperationId) Throw.InterpreterException($"Invocation's OperationId must match the OperationId of its first child", state);
 
             if (state.FrameCount > 0)
             {
@@ -234,7 +252,7 @@ namespace OpenH2.Core.Scripting.Execution
                 ScriptDataType.Int => Result.From(node.NodeData_32),
                 ScriptDataType.VehicleSeat => new Result(),
                 ScriptDataType.String => Result.From(SpanByteExtensions.ReadStringStarting(this.scenario.ScriptStrings, node.NodeString)),
-                ScriptDataType.ScriptReference => new Result(),
+                ScriptDataType.ScriptReference => Result.From(new ScriptMethodReference(node.NodeData_H16)),
                 ScriptDataType.StringId => new Result(),
                 ScriptDataType.Trigger => Result.From(this.scenario.TriggerVolumes[node.NodeData_H16].GameObject),
                 ScriptDataType.LocationFlag => Result.From(this.scenario.LocationFlagDefinitions[node.NodeData_H16].GameObject),

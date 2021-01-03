@@ -316,6 +316,121 @@ namespace OpenH2.Core.Tests.Scripting.Execution
         }
 
         [Fact]
+        public void Interpret_ScriptReferenceValue()
+        {
+            var scen = new ScenarioTag(0)
+            {
+                ScriptSyntaxNodes = new ScenarioTag.ScriptSyntaxNode[]
+                {
+                    BuiltinNode(ScriptDataType.Void, op: ScriptOps.Wake, child: 1),
+                        Node(NodeType.Expression, ScriptDataType.MethodOrOperator, op: ScriptOps.Wake, next: 2),
+                            Node(NodeType.Expression, ScriptDataType.ScriptReference, op: 10, data: 24)
+                }
+            };
+
+            var engine = new Mock<IScriptEngine>();
+            engine.Setup(e => e.wake(It.IsAny<IScriptMethodReference>())).Callback((IScriptMethodReference s) => Assert.Equal(24, s.GetId()));
+
+            var interpreter = new ScriptIterativeInterpreter(scen, engine.Object, Mock.Of<IScriptExecutor>());
+
+            interpreter.Interpret(0, out var n);
+            engine.Verify(e => e.wake(It.IsAny<IScriptMethodReference>()), Times.Once);
+        }
+
+        [Fact]
+        public void Interpret_ScriptInvocation()
+        {
+            var scen = new ScenarioTag(0)
+            {
+                ScriptStrings = Encoding.UTF8.GetBytes("hi\0hey\0hello\0"),
+                ScriptMethods = new ScenarioTag.ScriptMethodDefinition[]
+                {
+                    new()
+                    {
+                        Description = "Zero"
+                    },
+                    new()
+                    {
+                        Description = "One",
+                        SyntaxNodeIndex = 7
+                    }
+                },
+                ScriptSyntaxNodes = new ScenarioTag.ScriptSyntaxNode[]
+                {
+                    BuiltinNode(ScriptDataType.Void, op: ScriptOps.Begin, child: 1),
+                        Node(NodeType.Expression, ScriptDataType.MethodOrOperator, op: ScriptOps.Begin, next: 2),
+                            ScriptNode(ScriptDataType.Void, op: 1, child: 3, next: 4),
+                                Node(NodeType.Expression, ScriptDataType.MethodOrOperator, op: 1),
+                            BuiltinNode(ScriptDataType.Void, op:ScriptOps.Print, child: 5),
+                               Node(NodeType.Expression, ScriptDataType.MethodOrOperator, op: ScriptOps.Print, next: 6),
+                                  Node(NodeType.Expression, ScriptDataType.String, op: 9, stringIndex: 0),
+
+                    BuiltinNode(ScriptDataType.Void, op:ScriptOps.Print, child: 8),
+                        Node(NodeType.Expression, ScriptDataType.MethodOrOperator, op: ScriptOps.Print, next: 9),
+                            Node(NodeType.Expression, ScriptDataType.String, op: 9, stringIndex: 3),
+                }
+            };
+
+            var engine = new Mock<IScriptEngine>();
+            engine.Setup(e => e.print(It.IsAny<string>())).Callback((string s) => output.WriteLine(s));
+
+            var interpreter = new ScriptIterativeInterpreter(scen, engine.Object, Mock.Of<IScriptExecutor>());
+
+            interpreter.Interpret(0, out var n);
+            engine.Verify(e => e.print("hi"), Times.Once);
+            engine.Verify(e => e.print("hey"), Times.Once);
+        }
+
+        [Fact]
+        public void Interpret_ScriptInvocationReturnsValue()
+        {
+            var scen = new ScenarioTag(0)
+            {
+                ScriptStrings = Encoding.UTF8.GetBytes("hi\0hey\0hello\0"),
+                ScriptMethods = new ScenarioTag.ScriptMethodDefinition[]
+                {
+                    new()
+                    {
+                        Description = "Zero"
+                    },
+                    new()
+                    {
+                        Description = "One",
+                        SyntaxNodeIndex = 9
+                    }
+                },
+                ScriptSyntaxNodes = new ScenarioTag.ScriptSyntaxNode[]
+                {
+                    BuiltinNode(ScriptDataType.Boolean, op: ScriptOps.Begin, child: 1),
+                        Node(NodeType.Expression, ScriptDataType.MethodOrOperator, op: ScriptOps.Begin, next: 2),
+                            ScriptNode(ScriptDataType.Boolean, op: 1, child: 3, next: 4),
+                                Node(NodeType.Expression, ScriptDataType.MethodOrOperator, op: 1),
+                            BuiltinNode(ScriptDataType.Void, op:ScriptOps.Print, child: 5, next: 7),
+                               Node(NodeType.Expression, ScriptDataType.MethodOrOperator, op: ScriptOps.Print, next: 6),
+                                  Node(NodeType.Expression, ScriptDataType.String, op: 9, stringIndex: 0),
+                            ScriptNode(ScriptDataType.Boolean, op: 1, child: 8),
+                                Node(NodeType.Expression, ScriptDataType.MethodOrOperator, op: 1),
+
+                    BuiltinNode(ScriptDataType.Boolean, op:ScriptOps.GameIsPlaytest, child: 10),
+                        Node(NodeType.Expression, ScriptDataType.MethodOrOperator, op: ScriptOps.GameIsPlaytest)
+                }
+            };
+
+            var engine = new Mock<IScriptEngine>();
+            engine.Setup(e => e.game_is_playtest()).Returns(true);
+            engine.Setup(e => e.print(It.IsAny<string>())).Callback((string s) => output.WriteLine(s));
+
+            var interpreter = new ScriptIterativeInterpreter(scen, engine.Object, Mock.Of<IScriptExecutor>());
+
+            interpreter.Interpret(0, out var state);
+            engine.Verify(e => e.print("hi"), Times.Once);
+            engine.Verify(e => e.game_is_playtest(), Times.Exactly(2));
+
+            Assert.Equal(ScriptDataType.Boolean, state.Result.DataType);
+            Assert.True(state.Result.Boolean);
+        }
+
+        [Fact]
         public void Interpret_Add()
         {
             var scen = new ScenarioTag(0)
@@ -1293,6 +1408,11 @@ namespace OpenH2.Core.Tests.Scripting.Execution
         private ScenarioTag.ScriptSyntaxNode BuiltinNode(ScriptDataType dt, ushort op, ushort child, ushort next = 65535)
         {
             return Node(NodeType.BuiltinInvocation, dt, op, next, child);
+        }
+
+        private ScenarioTag.ScriptSyntaxNode ScriptNode(ScriptDataType dt, ushort op, ushort child, ushort next = 65535)
+        {
+            return Node(NodeType.ScriptInvocation, dt, op, next, child);
         }
 
         private ScenarioTag.ScriptSyntaxNode Node(NodeType nt, ScriptDataType dt, ushort op, ushort next = 65535, uint data = 0, ushort stringIndex = 0)
