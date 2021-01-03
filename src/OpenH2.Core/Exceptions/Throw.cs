@@ -1,4 +1,5 @@
-﻿using System;
+﻿using OpenH2.Core.Scripting.Execution;
+using System;
 
 namespace OpenH2.Core.Exceptions
 {
@@ -9,9 +10,9 @@ namespace OpenH2.Core.Exceptions
             throw new Exception(description);
         }
 
-        public static void InterpreterException(string description)
+        public static void InterpreterException(string description, InterpreterState state)
         {
-            throw new InterpreterException(description);
+            throw new InterpreterException(description + Environment.NewLine + state.SerializeCallStack());
         }
 
         public static void NotSupported(string description)

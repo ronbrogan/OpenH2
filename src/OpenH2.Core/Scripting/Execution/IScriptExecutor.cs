@@ -8,12 +8,11 @@ namespace OpenH2.Core.Scripting.Execution
         void Execute();
 
         void SetStatus(ScriptStatus desiredStatus);
-        void SetStatus(string methodName, ScriptStatus desiredStatus);
-        void SleepUntil(string methodName, DateTimeOffset offset);
+        void SetStatus(ushort methodId, ScriptStatus desiredStatus);
 
         /// <summary>
         /// Creates a task that will take the specified number of updates to complete
         /// </summary>
-        Task Delay(int ticks);
+        ValueTask Delay(int ticks);
     }
 }

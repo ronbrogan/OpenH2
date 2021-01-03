@@ -368,7 +368,7 @@ namespace OpenH2.Core.Scripting.Generation
             constructorStatements.Add(ExpressionStatement(assignment));
         }
 
-        public void AddMethod(ScenarioTag.ScriptMethodDefinition scriptMethod)
+        public void AddMethod(int i, ScenarioTag.ScriptMethodDefinition scriptMethod)
         {
             var modifiers = SyntaxTokenList.Create(Token(SyntaxKind.PublicKeyword))
                 .Add(Token(SyntaxKind.AsyncKeyword));
@@ -395,10 +395,12 @@ namespace OpenH2.Core.Scripting.Generation
             methods.Add(method.WithBody(Block(block.GetInnerStatements()))
                 .AddAttributeLists(AttributeList(SeparatedList(new[] {
                     Attribute(IdentifierName(nameof(ScriptMethodAttribute).Replace("Attribute", "")))
-                        .AddArgumentListArguments(AttributeArgument(MemberAccessExpression(
-                            SyntaxKind.SimpleMemberAccessExpression,
-                            IdentifierName(nameof(Lifecycle)),
-                            IdentifierName(scriptMethod.Lifecycle.ToString()))))
+                        .AddArgumentListArguments(
+                            AttributeArgument(SyntaxUtil.LiteralExpression(i)),
+                            AttributeArgument(MemberAccessExpression(
+                                SyntaxKind.SimpleMemberAccessExpression,
+                                IdentifierName(nameof(Lifecycle)),
+                                IdentifierName(scriptMethod.Lifecycle.ToString()))))
                 }))));
         }
 
@@ -528,8 +530,9 @@ namespace OpenH2.Core.Scripting.Generation
                 case ScriptDataType.Vehicle:
                 case ScriptDataType.List:
                     return new EntityGetContext(scenario, node, nameRepo);
-                case ScriptDataType.AIScript:
                 case ScriptDataType.ScriptReference:
+                    return new ScriptMethodReferenceContext(scenario, node, nameRepo);
+                case ScriptDataType.AIScript:
                 case ScriptDataType.Trigger:
                 case ScriptDataType.LocationFlag:
                 case ScriptDataType.DeviceGroup:

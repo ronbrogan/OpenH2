@@ -1,4 +1,5 @@
 using OpenH2.Core.GameObjects;
+using OpenH2.Core.Scripting.Execution;
 using OpenH2.Core.Tags;
 using System;
 using System.Threading.Tasks;
@@ -7,6 +8,8 @@ namespace OpenH2.Core.Scripting
 {
     public interface IScriptEngine
     {
+        short TicksPerSecond { get; }
+
         /// <summary>activates a nav point type <string> attached to a team anchored to a flag with a vertical offset <real>. If the player is not local to the machine, this will fail</summary>
         [ScriptImplementation(639)]
         void activate_team_nav_point_flag(INavigationPoint navpoint, ITeam team, ILocationFlag cutscene_flag, float real);
@@ -1327,7 +1330,7 @@ namespace OpenH2.Core.Scripting
         void sleep_forever();
 
         /// <summary>pauses execution of another script forever.</summary>
-        void sleep_forever(ScriptReference script);
+        void sleep_forever(IScriptMethodReference script);
 
         /// <summary>pauses execution of this script until the specified condition is true, checking once per second unless a different number of ticks is specified.</summary>
         Task sleep_until(Func<Task<bool>> condition, int ticks = 60, int timeout = -1);
@@ -1580,7 +1583,7 @@ namespace OpenH2.Core.Scripting
 
         /// <summary>wakes a sleeping script in the next update.</summary>
         [ScriptImplementation(22)]
-        void wake(ScriptReference script_name);
+        void wake(IScriptMethodReference script_name);
 
         /// <summary>turns the trigger for a weapon  on/off</summary>
         [ScriptImplementation(252)]

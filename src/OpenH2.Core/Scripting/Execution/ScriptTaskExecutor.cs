@@ -133,46 +133,31 @@ namespace OpenH2.Core.Scripting.Execution
         {
             var currentName = currentScript.Value;
 
-            SetStatus(currentName, desiredStatus);
-        }
-
-        public void SetStatus(string methodName, ScriptStatus desiredStatus)
-        {
             for (var i = 0; i < executionStates.Length; i++)
             {
                 var state = executionStates[i];
 
-                if (state.Description == methodName)
+                if (state.Description == currentName)
                 {
-                    if(state.Status == ScriptStatus.Terminated)
-                    {
-                        Logger.Log($"[SCRIPT] Trying to set terminated lifecycle to {desiredStatus}", Logger.Color.Red);
-                        return;
-                    }
-
-                    state.Status = desiredStatus;
-                    Logger.LogInfo($"[SCRIPT] ({methodName}) -> {desiredStatus}");
+                    SetStatus((ushort)i, desiredStatus);
                 }
 
                 executionStates[i] = state;
             }
         }
 
-        public void SleepUntil(string methodName, DateTimeOffset offset)
+        public void SetStatus(ushort methodId, ScriptStatus desiredStatus)
         {
-            for (var i = 0; i < executionStates.Length; i++)
+            ref var state = ref executionStates[methodId];
+
+            if (state.Status == ScriptStatus.Terminated)
             {
-                var state = executionStates[i];
-
-                if (state.Description == methodName)
-                {
-                    Logger.LogInfo($"[SCRIPT] ({methodName}) @ {(offset - DateTimeOffset.UtcNow).TotalMilliseconds}");
-                    state.Status = ScriptStatus.Sleeping;
-                    state.SleepUntil = offset;
-                }
-
-                executionStates[i] = state;
+                Logger.Log($"[SCRIPT] Trying to set terminated lifecycle to {desiredStatus}", Logger.Color.Red);
+                return;
             }
+
+            state.Status = desiredStatus;
+            Logger.LogInfo($"[SCRIPT] ({state.Description}) -> {desiredStatus}");
         }
 
         private struct ExecutionState
@@ -187,7 +172,7 @@ namespace OpenH2.Core.Scripting.Execution
         /// <summary>
         /// Creates a task that will take the specified number of updates to complete
         /// </summary>
-        public Task Delay(int ticks)
+        public ValueTask Delay(int ticks)
         {
             var t = new TaskCompletionSource<object>();
 
@@ -196,7 +181,7 @@ namespace OpenH2.Core.Scripting.Execution
                 tasks.AddLast(new EngineTickTask { expiry = CurrentTick + (ulong)ticks, tcs = t });
             }
 
-            return t.Task;
+            return new ValueTask(t.Task);
         }
 
         private LinkedList<EngineTickTask> tasks = new LinkedList<EngineTickTask>();

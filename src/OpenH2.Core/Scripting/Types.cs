@@ -2,14 +2,28 @@
 {
     using OpenH2.Core.Enums;
     using OpenH2.Core.GameObjects;
-    using OpenH2.Core.Tags.Scenario;
+    using OpenH2.Core.Scripting.Execution;
     using System;
     using System.Collections;
     using System.Collections.Generic;
+    using System.Reflection;
     using System.Threading.Tasks;
 
-    public delegate Task ScriptReference();
+    public delegate Task ScriptMethod();
     public delegate Task AIScript();
+
+    public class ScriptMethodReference : IScriptMethodReference
+    {
+        private ushort id;
+
+        public ushort GetId() => id;
+
+        public ScriptMethodReference(ScriptMethod method)
+        {
+            var attr = method.Method.GetCustomAttribute<ScriptMethodAttribute>();
+            this.id = attr.Id;
+        }
+    }
 
     public interface IEntityIdentifier 
     {

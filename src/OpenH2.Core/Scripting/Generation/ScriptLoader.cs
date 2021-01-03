@@ -138,9 +138,9 @@ namespace OpenH2.Core.Scripting.Generation
                 classGen.AddGlobalVariable(variable);
             }
 
-            foreach (var script in scnr.ScriptMethods)
+            for (int i = 0; i < scnr.ScriptMethods.Length; i++)
             {
-                classGen.AddMethod(script);
+                classGen.AddMethod(i, scnr.ScriptMethods[i]);
             }
 
             this.AddCode($"{scenarioParts.Last()}.cs", classGen.Generate());

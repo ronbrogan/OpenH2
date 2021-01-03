@@ -1,5 +1,6 @@
 ﻿using OpenH2.Core.Maps;
 using OpenH2.Core.Tags.Scenario;
+using OpenH2.Foundation.Logging;
 using System;
 using System.Threading.Tasks;
 
@@ -11,7 +12,8 @@ namespace OpenH2.Core.Scripting.Execution
         private readonly ScenarioTag scenario;
         private readonly IScriptEngine scriptEngine;
         private ExecutionState[] executionStates;
-        private ScriptInterpreter interpreter;
+        private ScriptIterativeInterpreter interpreter;
+        private int currentMethod;
 
         public InterpretingScriptExecutor(IH2Map map, ScenarioTag scenario, IScriptEngine scriptEngine)
         {
@@ -19,7 +21,7 @@ namespace OpenH2.Core.Scripting.Execution
             this.scenario = scenario;
             this.scriptEngine = scriptEngine;
             this.executionStates = new ExecutionState[scenario.ScriptMethods.Length];
-            this.interpreter = new ScriptInterpreter(scenario, scriptEngine);
+            this.interpreter = new ScriptIterativeInterpreter(scenario, scriptEngine, this);
 
             for (int i = 0; i < scenario.ScriptMethods.Length; i++)
             {
@@ -27,7 +29,7 @@ namespace OpenH2.Core.Scripting.Execution
                 var initialStatus = method.Lifecycle switch
                 {
                     Lifecycle.Startup => ScriptStatus.RunOnce,
-                    Lifecycle.Dormant => ScriptStatus.Sleeping,
+                    Lifecycle.Dormant => ScriptStatus.Terminated,
                     Lifecycle.Continuous => ScriptStatus.RunContinuous,
                     Lifecycle.Static => ScriptStatus.Terminated,
                     Lifecycle.Stub => ScriptStatus.Terminated,
@@ -35,11 +37,14 @@ namespace OpenH2.Core.Scripting.Execution
                     _ => throw new NotImplementedException()
                 };
 
+                this.interpreter.CreateState(method.SyntaxNodeIndex, out var interpreterState);
+
                 var state = new ExecutionState
                 {
                     MethodId = i,
                     Status = initialStatus,
-                    CurrentInstruction = method.SyntaxNodeIndex,
+                    InterpreterState = interpreterState,
+                    Description = method.Description
                 };
 
                 executionStates[i] = state;
@@ -50,48 +55,78 @@ namespace OpenH2.Core.Scripting.Execution
         {
             for (int i = 0; i < this.executionStates.Length; i++)
             {
+                currentMethod = i;
                 ref var state = ref this.executionStates[i];
 
                 if (state.Status == ScriptStatus.RunContinuous || state.Status == ScriptStatus.RunOnce)
                 {
-                    Run(ref state);
+                    var terminated = this.interpreter.Interpret(ref state.InterpreterState);
+
+                    if(terminated)
+                    {
+                        interpreter.ResetState(ref state.InterpreterState);
+
+                        if(state.Status == ScriptStatus.RunOnce)
+                            state.Status = ScriptStatus.Terminated;
+                    }
+                }
+
+                
+                if (state.Status == ScriptStatus.Sleeping && --state.SleepTicksRemaining <= 0)
+                {
+                    Logger.LogInfo($"[SCRIPT] ({state.Description}) - waking up");
+                    state.Status = ScriptStatus.RunOnce;
                 }
             }
         }
 
-        public Task Delay(int ticks)
+        public ValueTask Delay(int ticks)
         {
-            return Task.CompletedTask;
+            ref var s = ref this.executionStates[currentMethod];
+            s.SleepTicksRemaining = ticks;
+            s.Status = ScriptStatus.Sleeping;
+            s.InterpreterState.Yield = true;
+
+            return new ValueTask();
+        }
+
+        public ValueTask Delay(string methodName, int ticks)
+        {
+            for (var i = 0; i < this.executionStates.Length; i++)
+            {
+                ref var state = ref this.executionStates[i];
+
+                if (state.Description == methodName)
+                {
+                    state.SleepTicksRemaining = ticks;
+                    state.Status = ScriptStatus.Sleeping;
+                    state.InterpreterState.Yield = true;
+                }
+            }
+
+            return new ValueTask();
         }
 
         public void SetStatus(ScriptStatus desiredStatus)
         {
+            SetStatus((ushort)currentMethod, desiredStatus);
         }
 
-        public void SetStatus(string methodName, ScriptStatus desiredStatus)
+        public void SetStatus(ushort id, ScriptStatus desiredStatus)
         {
-        }
+            ref var state = ref this.executionStates[id];
 
-        public void SleepUntil(string methodName, DateTimeOffset offset)
-        {
-        }
-
-        private void Run(ref ExecutionState state)
-        {
-            while (state.CurrentInstruction != ushort.MaxValue)
-            {
-                var node = this.scenario.ScriptSyntaxNodes[state.CurrentInstruction];
-
-                // Top level methods shouldn't return any value, discarding result
-                _ = this.interpreter.Interpret(node, out state.CurrentInstruction);
-            }
+            state.Status = desiredStatus;
+            Logger.LogInfo($"[SCRIPT] ({state.Description}) -> {desiredStatus}");
         }
 
         private struct ExecutionState
         {
             public int MethodId;
-            public ushort CurrentInstruction;
             public ScriptStatus Status;
+            public int SleepTicksRemaining;
+            public string Description;
+            public InterpreterState InterpreterState;
         }
     }
 }

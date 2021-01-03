@@ -11,7 +11,6 @@ namespace OpenH2.Core.Scripting.Execution
     /*
      * TODO
      *  - ScriptInvocation
-     *  - Implement, test continuations
      *  - Remove allocations
      * 
      */
@@ -24,15 +23,17 @@ namespace OpenH2.Core.Scripting.Execution
     {
         private readonly ScenarioTag scenario;
         private readonly IScriptEngine scriptEngine;
+        private readonly IScriptExecutor executor;
         private readonly Result[] variables;
 
         public ScriptIterativeInterpreter(
             ScenarioTag scenario,
-            IScriptEngine scriptEngine)
+            IScriptEngine scriptEngine,
+            IScriptExecutor executor)
         {
             this.scenario = scenario;
             this.scriptEngine = scriptEngine;
-
+            this.executor = executor;
             if (scenario.ScriptVariables?.Length > 0)
             {
                 this.variables = new Result[scenario.ScriptVariables.Length];
@@ -75,10 +76,25 @@ namespace OpenH2.Core.Scripting.Execution
         /// </summary>
         public void CreateState(int nodeIndex, out State state)
         {
-            state = State.Create();
+            state = State.Create(nodeIndex);
 
-            var node = this.scenario.ScriptSyntaxNodes[nodeIndex];
+            ResetState(ref state);
+        }
 
+        /// <summary>
+        /// Used to (re)set the provided state to it's initial configuration to allow (re-)execution
+        /// </summary>
+        public void ResetState(ref State state)
+        {
+            state.Reset();
+
+            var node = this.scenario.ScriptSyntaxNodes[state.OriginalNodeIndex];
+
+            PushFrame(node, ref state);
+        }
+
+        private void PushFrame(ScenarioTag.ScriptSyntaxNode node, ref State state)
+        {
             if (node.NodeType == NodeType.BuiltinInvocation)
             {
                 PushBuiltinInvocation(node, ref state);
@@ -100,7 +116,7 @@ namespace OpenH2.Core.Scripting.Execution
                 {
                     NodeType = NodeType.Expression,
                     DataType = ScriptDataType.MethodOrOperator,
-                    NextIndex = (ushort)nodeIndex,
+                    NextIndex = (ushort)state.OriginalNodeIndex,
                 };
 
                 state.Push(new StackFrame()
@@ -117,13 +133,7 @@ namespace OpenH2.Core.Scripting.Execution
         {
             CreateState(nodeIndex, out state);
 
-            while (state.FrameCount > 0 && state.Yield == false)
-            {
-                // Always defer interpretation to the invocation that created the frame, it knows what to do
-                InterpretFrame(state.TopFrame.OriginatingNode, ref state);
-            }
-
-            return true;
+            return Interpret(ref state);
         }
 
         /// <summary>
@@ -133,13 +143,14 @@ namespace OpenH2.Core.Scripting.Execution
         /// <returns>True if completed, false if yielded for continuation. Caller should eventually call again if return value is false</returns>
         public bool Interpret(ref State state)
         {
-            while (state.Yield == false)
+            state.Yield = false;
+            while (state.FrameCount > 0 && state.Yield == false)
             {
                 // Always defer interpretation to the invocation that created the frame, it knows what to do
                 InterpretFrame(state.TopFrame.OriginatingNode, ref state);
             }
 
-            return true;
+            return !state.Yield;
         }
 
         private void InterpretFrame(ScenarioTag.ScriptSyntaxNode node, ref State state)
@@ -165,20 +176,13 @@ namespace OpenH2.Core.Scripting.Execution
             else
             {
                 // Need to defer to implementation, allowing implementation to indicate that arguments are needed
-
                 InterpretBuiltinInvocation(ref state);
-
-                // If implementation terminates, we need to pop current frame and push result onto next frame's Locals?
-                // If we pop frame and push to locals, how do we handle the bottom-most frame?
             }
         }
 
         private void InterpretScriptFrame(ScenarioTag.ScriptSyntaxNode node, ref State state)
         {
             // Need to defer to implementation, pre-gather all arguments? even support arguments for this?
-
-            // If implementation terminates, we need to pop current frame and push result onto next frame's Locals?
-            // If we pop frame and push to locals, how do we handle the bottom-most frame?
         }
 
         private void Interpret(ScenarioTag.ScriptSyntaxNode node, ref State state)
@@ -198,9 +202,9 @@ namespace OpenH2.Core.Scripting.Execution
             Debug.Assert(node.NodeType == NodeType.BuiltinInvocation);
 
             var invocationNode = this.scenario.ScriptSyntaxNodes[node.NodeData_H16];
-            if (invocationNode.NodeType != NodeType.Expression) Throw.InterpreterException("BuiltinInvocation's first child must be an expression");
-            if (invocationNode.DataType != ScriptDataType.MethodOrOperator) Throw.InterpreterException($"BuiltinInvocation's first child must be of type {ScriptDataType.MethodOrOperator}");
-            if (node.OperationId != invocationNode.OperationId) Throw.InterpreterException($"BuiltinInvocation's OperationId must match the OperationId of its first child");
+            if (invocationNode.NodeType != NodeType.Expression) Throw.InterpreterException("BuiltinInvocation's first child must be an expression", state);
+            if (invocationNode.DataType != ScriptDataType.MethodOrOperator) Throw.InterpreterException($"BuiltinInvocation's first child must be of type {ScriptDataType.MethodOrOperator}", state);
+            if (node.OperationId != invocationNode.OperationId) Throw.InterpreterException($"BuiltinInvocation's OperationId must match the OperationId of its first child", state);
 
             if (state.FrameCount > 0)
             {
@@ -294,6 +298,7 @@ namespace OpenH2.Core.Scripting.Execution
                 case ScriptOps.And: this.And(ref state); return;
                 case ScriptOps.Or: this.Or(ref state); return;
                 case ScriptOps.Set: this.Set(ref state); return;
+                case ScriptOps.SleepUntil: this.SleepUntil(ref state); return;
                 default: break;
             };
 
@@ -306,6 +311,7 @@ namespace OpenH2.Core.Scripting.Execution
 
             switch (opId)
             {
+                case ScriptOps.Sleep: this.Sleep(ref state); break;
                 case ScriptOps.Not: this.Not(ref state); break;
                 case ScriptOps.Equals: this.ValueEquals(ref state); break;
                 case ScriptOps.GreaterThan: this.GreaterThan(ref state); break;
@@ -321,6 +327,53 @@ namespace OpenH2.Core.Scripting.Execution
                 case ScriptOps.Max: this.Max(ref state); break;
 
                 default: this.DispatchMethod(ref state); break;
+            }
+        }
+
+        private void Sleep(ref State state)
+        {
+            var frequency = state.TopFrame.Locals.Dequeue();
+            state.Yield = true;
+            this.executor.Delay(frequency.Short);
+            CompleteFrame(ref state);
+        }
+
+        private void SleepUntil(ref State state)
+        {
+            var argsRemain = PrepareNextArgument(ref state);
+
+            if (argsRemain)
+            {
+                return;
+            }
+
+            var args = state.TopFrame.Locals;
+            var condition = args.Dequeue();
+            var frequency = this.scriptEngine.TicksPerSecond;
+            var timeout = -1;
+
+            if (args.Count > 0)
+                frequency = args.Dequeue().Short;
+
+            if (args.Count > 0)
+                timeout = args.Dequeue().Int;
+
+            if (condition.Boolean)
+            {
+                CompleteFrame(ref state);
+            }
+            else
+            {
+                // If the condition isn't true we need to reset the current frame to re-evaluate entirely
+                var sleepUntilNode = state.TopFrame.OriginatingNode;
+                var deadFrame = state.Pop();
+                PushFrame(sleepUntilNode, ref state);
+
+                // We also need to yield and instruct the executor to delay by 'frequency' ticks
+                state.Yield = true;
+                this.executor.Delay(frequency);
+
+                // TODO: And somehow handle the timeout
             }
         }
 

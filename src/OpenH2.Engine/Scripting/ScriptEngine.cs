@@ -13,7 +13,8 @@ namespace OpenH2.Engine.Scripting
 
     public partial class ScriptEngine : IScriptEngine
     {
-        public const short TicksPerSecond = 30;
+        private const short ticksPerSecond = 30;
+        public short TicksPerSecond => ticksPerSecond;
         private readonly Scene scene;
         private readonly IScriptExecutor executionOrchestrator;
         private readonly AudioSystem audioSystem;
@@ -462,13 +463,13 @@ namespace OpenH2.Engine.Scripting
         }
 
         /// <summary>pauses execution of this script (or, optionally, another script) forever.</summary>
-        public void sleep_forever(ScriptReference script)
+        public void sleep_forever(IScriptMethodReference script)
         {
-            this.executionOrchestrator.SetStatus(script.Method.Name, ScriptStatus.Sleeping);
+            this.executionOrchestrator.SetStatus(script.GetId(), ScriptStatus.Sleeping);
         }
 
         /// <summary>pauses execution of this script until the specified condition is true, checking once per second unless a different number of ticks is specified.</summary>
-        public async Task sleep_until(Func<Task<bool>> condition, int ticks = TicksPerSecond, int timeout = -1)
+        public async Task sleep_until(Func<Task<bool>> condition, int ticks = ticksPerSecond, int timeout = -1)
         {
             var start = DateTimeOffset.Now;
             var timeoutOffset = DateTimeOffset.MaxValue;
@@ -632,9 +633,9 @@ namespace OpenH2.Engine.Scripting
         }
 
         /// <summary>wakes a sleeping script in the next update.</summary>
-        public void wake(ScriptReference script_name)
+        public void wake(IScriptMethodReference script_name)
         {
-            this.executionOrchestrator.SetStatus(script_name.Method.Name, ScriptStatus.RunOnce);
+            this.executionOrchestrator.SetStatus(script_name.GetId(), ScriptStatus.RunOnce);
         }
 
         /// <summary>turns the trigger for a weapon  on/off</summary>

@@ -1,6 +1,4 @@
-﻿using OpenH2.Core.Exceptions;
-using OpenH2.Core.Tags.Scenario;
-using System;
+﻿using OpenH2.Core.Tags.Scenario;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
@@ -8,71 +6,6 @@ using System.Runtime.InteropServices;
 
 namespace OpenH2.Core.Scripting.Execution
 {
-    public struct StackFrame
-    {
-        public Queue<InterpreterResult> Locals;
-        public ScenarioTag.ScriptSyntaxNode OriginatingNode;
-        public ScenarioTag.ScriptSyntaxNode Current;
-        public ushort Next;
-    }
-
-    public struct InterpreterState
-    {
-        private int TopOfStack;
-        private StackFrame[] CallStack;
-        public bool Yield;
-
-        public InterpreterResult Result;
-
-        public static InterpreterState Create()
-        {
-            var s = new InterpreterState();
-            s.TopOfStack = -1;
-            s.CallStack = new StackFrame[32];
-            s.Result = InterpreterResult.From();
-            return s;
-        }
-
-        public ref StackFrame TopFrame => ref this.CallStack[this.TopOfStack];
-
-        public void Push(StackFrame frame)
-        {
-            try
-            {
-                this.CallStack[++this.TopOfStack] = frame;
-            }
-            catch (IndexOutOfRangeException)
-            {
-                Throw.InterpreterException("Interpreter CallStack has exceeded the allowed depth");
-            }
-        }
-
-        public ref StackFrame Pop()
-        {
-            try
-            {
-                return ref this.CallStack[this.TopOfStack--];
-            }
-            catch (IndexOutOfRangeException)
-            {
-                throw new InterpreterException("Interpreter CallStack is already empty");
-            }
-        }
-
-        public int FrameCount => TopOfStack+1;
-    }
-
-    public struct VariableReference
-    {
-        public int Index;
-
-        public VariableReference(int i)
-        {
-            this.Index = i;
-        }
-    }
-
-
     [StructLayout(LayoutKind.Explicit)]
     public struct InterpreterResult
     {

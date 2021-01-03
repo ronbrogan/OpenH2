@@ -5,10 +5,12 @@ namespace OpenH2.Core.Scripting
     public class ScriptMethodAttribute : Attribute
     {
         public Lifecycle Lifecycle { get; }
+        public ushort Id { get; }
 
-        public ScriptMethodAttribute(Lifecycle lifecycle)
+        public ScriptMethodAttribute(ushort id, Lifecycle lifecycle)
         {
             this.Lifecycle = lifecycle;
+            this.Id = id;
         }
     }
 
