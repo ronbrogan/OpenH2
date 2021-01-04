@@ -14,5 +14,7 @@ namespace OpenH2.Core.Scripting.Execution
         /// Creates a task that will take the specified number of updates to complete
         /// </summary>
         ValueTask Delay(int ticks);
+
+        ValueTask Delay(ushort methodId, int ticks);
     }
 }

@@ -79,27 +79,15 @@ namespace OpenH2.Core.Scripting.Execution
 
         public ValueTask Delay(int ticks)
         {
-            ref var s = ref this.executionStates[currentMethod];
-            s.SleepTicksRemaining = ticks;
-            s.Status = ScriptStatus.Sleeping;
-            s.InterpreterState.Yield = true;
-
-            return new ValueTask();
+            return Delay((ushort)currentMethod, ticks);
         }
 
-        public ValueTask Delay(string methodName, int ticks)
+        public ValueTask Delay(ushort methodId, int ticks)
         {
-            for (var i = 0; i < this.executionStates.Length; i++)
-            {
-                ref var state = ref this.executionStates[i];
-
-                if (state.Description == methodName)
-                {
-                    state.SleepTicksRemaining = ticks;
-                    state.Status = ScriptStatus.Sleeping;
-                    state.InterpreterState.Yield = true;
-                }
-            }
+            ref var state = ref this.executionStates[methodId];
+            state.SleepTicksRemaining = ticks;
+            state.Status = ScriptStatus.Sleeping;
+            state.InterpreterState.Yield = true;
 
             return new ValueTask();
         }

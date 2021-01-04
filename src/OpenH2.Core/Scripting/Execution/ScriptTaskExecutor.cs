@@ -184,6 +184,12 @@ namespace OpenH2.Core.Scripting.Execution
             return new ValueTask(t.Task);
         }
 
+        public ValueTask Delay(ushort methodId, int ticks)
+        {
+            // Sleeping another script is not supported
+            return new ValueTask(); 
+        }
+
         private LinkedList<EngineTickTask> tasks = new LinkedList<EngineTickTask>();
 
         private struct EngineTickTask { public ulong expiry; public TaskCompletionSource<object> tcs; }

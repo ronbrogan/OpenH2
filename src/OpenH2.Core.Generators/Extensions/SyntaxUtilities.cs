@@ -1,4 +1,6 @@
 ﻿using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 using System;
 using System.Linq;
 
@@ -33,6 +35,23 @@ namespace OpenH2.Core.Generators.Extensions
             }
 
             return found;
+        }
+
+        public static LiteralExpressionSyntax LiteralExpression(object value)
+        {
+            return value switch
+            {
+                int i => SyntaxFactory.LiteralExpression(SyntaxKind.NumericLiteralExpression, SyntaxFactory.Literal(i)),
+                uint i => SyntaxFactory.LiteralExpression(SyntaxKind.NumericLiteralExpression, SyntaxFactory.Literal(i)),
+                short s => SyntaxFactory.LiteralExpression(SyntaxKind.NumericLiteralExpression, SyntaxFactory.Literal(s)),
+                ushort s => SyntaxFactory.LiteralExpression(SyntaxKind.NumericLiteralExpression, SyntaxFactory.Literal(s)),
+                float f => SyntaxFactory.LiteralExpression(SyntaxKind.NumericLiteralExpression, SyntaxFactory.Literal(f)),
+                string s => SyntaxFactory.LiteralExpression(SyntaxKind.StringLiteralExpression, SyntaxFactory.Literal(s)),
+                true => SyntaxFactory.LiteralExpression(SyntaxKind.TrueLiteralExpression),
+                false => SyntaxFactory.LiteralExpression(SyntaxKind.FalseLiteralExpression),
+
+                _ => SyntaxFactory.LiteralExpression(SyntaxKind.NullLiteralExpression)
+            };
         }
     }
 }

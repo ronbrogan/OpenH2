@@ -450,22 +450,31 @@ namespace OpenH2.Engine.Scripting
         }
 
         /// <summary>pauses execution of this script (or, optionally, another script) for the specified number of ticks.</summary>
-        public async Task sleep(short ticks)
+        public async Task sleep(short ticks, IScriptMethodReference script = null)
         {
             if (ticks <= 0) ticks = 1;
-            await this.executionOrchestrator.Delay(ticks);
+
+            if (script == null)
+            {
+                await this.executionOrchestrator.Delay(ticks);
+            }
+            else
+            {
+                await this.executionOrchestrator.Delay(script.GetId(), ticks);
+            }
         }
 
         /// <summary>pauses execution of this script (or, optionally, another script) forever.</summary>
-        public void sleep_forever()
+        public void sleep_forever(IScriptMethodReference script = null)
         {
-            this.executionOrchestrator.SetStatus(ScriptStatus.Sleeping);
-        }
-
-        /// <summary>pauses execution of this script (or, optionally, another script) forever.</summary>
-        public void sleep_forever(IScriptMethodReference script)
-        {
-            this.executionOrchestrator.SetStatus(script.GetId(), ScriptStatus.Sleeping);
+            if(script == null)
+            {
+                this.executionOrchestrator.SetStatus(ScriptStatus.Terminated);
+            }
+            else
+            {
+                this.executionOrchestrator.SetStatus(script.GetId(), ScriptStatus.Terminated);
+            }
         }
 
         /// <summary>pauses execution of this script until the specified condition is true, checking once per second unless a different number of ticks is specified.</summary>

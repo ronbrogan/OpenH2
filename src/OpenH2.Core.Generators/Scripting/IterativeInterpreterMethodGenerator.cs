@@ -2,6 +2,7 @@
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Text;
+using OpenH2.Core.Generators.Extensions;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
@@ -71,19 +72,53 @@ namespace OpenH2.Core.Generators.Scripting
                 var body = new List<StatementSyntax>();
 
                 // Dequeue argument expressions from TopFrame's locals
+                var paramCount = 0;
                 foreach(var param in mem.Parameters)
                 {
-                    body.Add(LocalDeclarationStatement(VariableDeclaration(IdentifierName("var")).WithVariables(
-                        SingletonSeparatedList(VariableDeclarator(Identifier(param.Name))
-                            .WithInitializer(EqualsValueClause(
-                                InvocationExpression(
+                    paramCount++;
+                    if (param.HasExplicitDefaultValue)
+                    {
+                        body.Add(LocalDeclarationStatement(VariableDeclaration(ParseTypeName("InterpreterResult")).WithVariables(
+                            SingletonSeparatedList(VariableDeclarator(Identifier(param.Name))
+                                .WithInitializer(EqualsValueClause(LiteralExpression(
+                                    SyntaxKind.DefaultLiteralExpression,
+                                    Token(SyntaxKind.DefaultKeyword))))))));
+
+                        body.Add(IfStatement(
+                                BinaryExpression(SyntaxKind.GreaterThanOrEqualExpression,
                                     MemberAccessExpression(SyntaxKind.SimpleMemberAccessExpression,
                                         MemberAccessExpression(SyntaxKind.SimpleMemberAccessExpression,
                                             MemberAccessExpression(SyntaxKind.SimpleMemberAccessExpression,
                                                 IdentifierName("state"),
                                                 IdentifierName("TopFrame")),
                                             IdentifierName("Locals")),
-                                        IdentifierName("Dequeue")))))))));
+                                        IdentifierName("Count")),
+                                    SyntaxUtilities.LiteralExpression(paramCount)),
+                                ExpressionStatement(AssignmentExpression(SyntaxKind.SimpleAssignmentExpression, IdentifierName(param.Name),
+                                    InvocationExpression(
+                                        MemberAccessExpression(SyntaxKind.SimpleMemberAccessExpression,
+                                            MemberAccessExpression(SyntaxKind.SimpleMemberAccessExpression,
+                                                MemberAccessExpression(SyntaxKind.SimpleMemberAccessExpression,
+                                                    IdentifierName("state"),
+                                                    IdentifierName("TopFrame")),
+                                                IdentifierName("Locals")),
+                                            IdentifierName("Dequeue")))))
+                            ));
+                    }
+                    else
+                    {
+                        body.Add(LocalDeclarationStatement(VariableDeclaration(IdentifierName("var")).WithVariables(
+                            SingletonSeparatedList(VariableDeclarator(Identifier(param.Name))
+                                .WithInitializer(EqualsValueClause(
+                                    InvocationExpression(
+                                        MemberAccessExpression(SyntaxKind.SimpleMemberAccessExpression,
+                                            MemberAccessExpression(SyntaxKind.SimpleMemberAccessExpression,
+                                                MemberAccessExpression(SyntaxKind.SimpleMemberAccessExpression,
+                                                    IdentifierName("state"),
+                                                    IdentifierName("TopFrame")),
+                                                IdentifierName("Locals")),
+                                            IdentifierName("Dequeue")))))))));
+                    }
                 }
 
                 // Ensure that we're done with the available arguments
