@@ -1,5 +1,6 @@
 ﻿using OpenBlam.Core.Extensions;
 using OpenH2.Core.Exceptions;
+using OpenH2.Core.GameObjects;
 using OpenH2.Core.Tags;
 using OpenH2.Core.Tags.Scenario;
 using System;
@@ -22,21 +23,27 @@ namespace OpenH2.Core.Scripting.Execution
     public partial class ScriptIterativeInterpreter
     {
         private readonly ScenarioTag scenario;
-        private readonly IScriptEngine scriptEngine;
         private readonly IScriptExecutor executor;
-        private readonly Result[] variables;
+        private Result[] variables;
+        private IScriptEngine scriptEngine;
+
+        public GlobalVariableSet GlobalVariableSet { get; } = new();
 
         public ScriptIterativeInterpreter(
             ScenarioTag scenario,
-            IScriptEngine scriptEngine,
             IScriptExecutor executor)
         {
             this.scenario = scenario;
-            this.scriptEngine = scriptEngine;
             this.executor = executor;
-            if (scenario.ScriptVariables?.Length > 0)
+        }
+
+        public void Initialize(IScriptEngine engine)
+        {
+            this.scriptEngine = engine;
+
+            if (this.scenario.ScriptVariables?.Length > 0)
             {
-                this.variables = new Result[scenario.ScriptVariables.Length];
+                this.variables = new Result[this.scenario.ScriptVariables.Length];
 
                 InitializeVariables();
             }
@@ -53,7 +60,7 @@ namespace OpenH2.Core.Scripting.Execution
 
         private void InitializeVariables()
         {
-            for (int i = 0; i < this.scenario.ScriptVariables.Length; i++)
+            for (ushort i = 0; i < this.scenario.ScriptVariables.Length; i++)
             {
                 var variable = this.scenario.ScriptVariables[i];
                 var completed = Interpret(variable.Value_H16, out var state);
@@ -61,11 +68,7 @@ namespace OpenH2.Core.Scripting.Execution
 
                 var result = state.Result;
 
-                // Hack to store variable data and index in same result, should probably find a better way
-                if (result.Object == null)
-                    result.Object = new VariableReference(i);
-                else
-                    result.Int = i;
+                result.VariableIndex = i;
 
                 variables[i] = result;
             }
@@ -267,7 +270,7 @@ namespace OpenH2.Core.Scripting.Execution
                 ScriptDataType.Bsp => Result.From(this.scenario.Terrains[node.NodeData_H16]),
                 ScriptDataType.NavigationPoint => Result.From(node.NodeData_H16),
                 ScriptDataType.SpatialPoint => Result.From(this.scenario.SpatialPointStuffs[0].SpatialPointCollections[node.NodeData_L16].SpatialPoints[node.NodeData_H16]),
-                ScriptDataType.List => Result.From(new GameObjectList(new[] { this.scenario.WellKnownItems[node.NodeData_H16].GameObject })),
+                ScriptDataType.List => Result.From(new GameObjectList(new[] { (IGameObject?)GetEntityResult(node).Object })),
                 ScriptDataType.Sound => Result.From(this.scriptEngine.GetTag<SoundTag>(null, node.NodeData_32)),
                 ScriptDataType.Effect => Result.From(this.scriptEngine.GetTag<EffectTag>(null, node.NodeData_32)),
                 ScriptDataType.DamageEffect => Result.From(this.scriptEngine.GetTag<DamageEffectTag>(null, node.NodeData_32)),
@@ -278,12 +281,12 @@ namespace OpenH2.Core.Scripting.Execution
                 ScriptDataType.GameDifficulty => Result.From(new GameDifficulty((short)node.NodeData_H16)),
                 ScriptDataType.Team => Result.From(node.NodeData_H16),
                 ScriptDataType.DamageState => Result.From(node.NodeData_H16),
-                ScriptDataType.Entity => Result.From(this.scenario.WellKnownItems[node.NodeData_H16].GameObject),
-                ScriptDataType.Unit => Result.From(this.scenario.WellKnownItems[node.NodeData_H16].GameObject),
-                ScriptDataType.Vehicle => Result.From(this.scenario.WellKnownItems[node.NodeData_H16].GameObject),
-                ScriptDataType.WeaponReference => Result.From(this.scenario.WellKnownItems[node.NodeData_H16].GameObject),
-                ScriptDataType.Device => Result.From(this.scenario.WellKnownItems[node.NodeData_H16].GameObject),
-                ScriptDataType.Scenery => Result.From(this.scenario.WellKnownItems[node.NodeData_H16].GameObject),
+                ScriptDataType.Entity => GetEntityResult(node),
+                ScriptDataType.Unit => GetEntityResult(node),
+                ScriptDataType.Vehicle => GetEntityResult(node),
+                ScriptDataType.WeaponReference => GetEntityResult(node),
+                ScriptDataType.Device => GetEntityResult(node),
+                ScriptDataType.Scenery => GetEntityResult(node),
                 ScriptDataType.EntityIdentifier => Result.From(new EntityIdentifier(node.NodeData_H16)),
                 _ => throw Throw.InterpreterException("Expression type not supported", state),
             };
@@ -296,11 +299,11 @@ namespace OpenH2.Core.Scripting.Execution
 
             Result GetAiResult(ScenarioTag.ScriptSyntaxNode node)
             {
-                if(node.NodeData_B0 == 192)
+                if (node.NodeData_B0 == 192)
                 {
                     return Result.From(this.scenario.AiSquadDefinitions[node.NodeData_B1].StartingLocations[node.NodeData_H16]);
                 }
-                else if(node.NodeData_B0 == 64)
+                else if (node.NodeData_B0 == 64)
                 {
                     return Result.From(this.scenario.AiSquadGroupDefinitions[node.NodeData_H16]);
                 }
@@ -309,11 +312,33 @@ namespace OpenH2.Core.Scripting.Execution
                     return Result.From(this.scenario.AiSquadDefinitions[node.NodeData_H16]);
                 }
             }
+
+            Result GetEntityResult(ScenarioTag.ScriptSyntaxNode node)
+            {
+                if (node.NodeData_H16 == ushort.MaxValue)
+                {
+                    return Result.From(null);
+                }
+                else
+                {
+                    return Result.From(this.scenario.WellKnownItems[node.NodeData_H16].GameObject);
+                }
+            }
         }
 
         private void InterpretVariableAccess(ScenarioTag.ScriptSyntaxNode node, ref State state)
         {
-            var result = this.variables[node.NodeData_H16];
+            Result result = default;
+
+            if (node.NodeData_L16 == ushort.MaxValue)
+            {
+                result = this.GlobalVariableSet[node.NodeData_H16];
+            }
+            else
+            {
+                result = this.variables[node.NodeData_H16];
+            }
+
             state.TopFrame.Locals.Enqueue(result);
             state.TopFrame.Current = node;
         }
@@ -458,12 +483,25 @@ namespace OpenH2.Core.Scripting.Execution
                 var remainingArgs = PrepareNextArgument(ref state);
                 Debug.Assert(remainingArgs, "If requires a corresponding expression");
 
+                if (state.TopFrame.OriginatingNode.DataType == ScriptDataType.Void)
+                {
+                    // HACK: Pushing a dummy local when Void to ensure subsequent execution falls into the else
+                    state.TopFrame.Locals.Enqueue(Result.From());
+                }
+
                 if (condition.Boolean == false)
                 {
                     // If the condition is false, we need to skip the 'true' expression
                     var trueExp = this.scenario.ScriptSyntaxNodes[state.TopFrame.Next];
-                    Debug.Assert(trueExp.NextIndex != ushort.MaxValue, "A 'false' condition requries a corresponding expression");
-                    state.TopFrame.Next = trueExp.NextIndex;
+                    if (trueExp.NextIndex != ushort.MaxValue)
+                    {
+                        state.TopFrame.Next = trueExp.NextIndex;
+                    }
+                    else
+                    {
+                        Debug.Assert(state.TopFrame.OriginatingNode.DataType == ScriptDataType.Void, "A non-void evaluating expression must have a false condition expression");
+                        CompleteFrame(ref state);
+                    }
                 }
             }
             else
@@ -494,20 +532,15 @@ namespace OpenH2.Core.Scripting.Execution
             var variableRef = state.TopFrame.Locals.Dequeue();
             var value = state.TopFrame.Locals.Dequeue();
 
-            int i;
-
-            if (variableRef.Object is VariableReference varRef)
+            if (((short)variableRef.VariableIndex) < 0)
             {
-                i = varRef.Index;
-                value.Object = varRef;
+                this.GlobalVariableSet[variableRef.VariableIndex] = value;
             }
             else
             {
-                i = variableRef.Int;
-                value.Int = i;
+                this.variables[variableRef.VariableIndex] = value;
             }
 
-            this.variables[i] = value;
             CompleteFrame(ref state);
         }
 
@@ -795,6 +828,13 @@ namespace OpenH2.Core.Scripting.Execution
                     case ScriptDataType.Short:
                         value.Short = value.GetShort();
                         value.DataType = ScriptDataType.Short;
+                        break;
+                    case ScriptDataType.List:
+                        value.Object = new GameObjectList(new[] { (IGameObject?)value.Object });
+                        value.DataType = ScriptDataType.List;
+                        break;
+                    case ScriptDataType.Entity:
+                        value.DataType = ScriptDataType.Entity;
                         break;
                     default:
                         Debug.Fail($"No configured cast from {value.DataType} to {destType}");

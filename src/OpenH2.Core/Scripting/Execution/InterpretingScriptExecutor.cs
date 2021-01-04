@@ -8,20 +8,14 @@ namespace OpenH2.Core.Scripting.Execution
 {
     public partial class InterpretingScriptExecutor : IScriptExecutor
     {
-        private readonly IH2Map map;
-        private readonly ScenarioTag scenario;
-        private readonly IScriptEngine scriptEngine;
         private ExecutionState[] executionStates;
         private ScriptIterativeInterpreter interpreter;
         private int currentMethod;
 
-        public InterpretingScriptExecutor(IH2Map map, ScenarioTag scenario, IScriptEngine scriptEngine)
+        public InterpretingScriptExecutor(ScenarioTag scenario)
         {
-            this.map = map;
-            this.scenario = scenario;
-            this.scriptEngine = scriptEngine;
             this.executionStates = new ExecutionState[scenario.ScriptMethods.Length];
-            this.interpreter = new ScriptIterativeInterpreter(scenario, scriptEngine, this);
+            this.interpreter = new ScriptIterativeInterpreter(scenario, this);
 
             for (int i = 0; i < scenario.ScriptMethods.Length; i++)
             {
@@ -51,6 +45,11 @@ namespace OpenH2.Core.Scripting.Execution
             }
         }
 
+        public void Initialize(IScriptEngine scriptEngine)
+        {
+            this.interpreter.Initialize(scriptEngine);
+        }
+
         public void Execute()
         {
             for (int i = 0; i < this.executionStates.Length; i++)
@@ -71,10 +70,8 @@ namespace OpenH2.Core.Scripting.Execution
                     }
                 }
 
-                
                 if (state.Status == ScriptStatus.Sleeping && --state.SleepTicksRemaining <= 0)
                 {
-                    Logger.LogInfo($"[SCRIPT] ({state.Description}) - waking up");
                     state.Status = ScriptStatus.RunOnce;
                 }
             }

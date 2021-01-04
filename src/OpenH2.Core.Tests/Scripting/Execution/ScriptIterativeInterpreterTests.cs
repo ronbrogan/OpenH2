@@ -31,7 +31,8 @@ namespace OpenH2.Core.Tests.Scripting.Execution
                 }
             };
 
-            var interpreter = new ScriptIterativeInterpreter(scen, Mock.Of<IScriptEngine>(), Mock.Of<IScriptExecutor>());
+            var interpreter = new ScriptIterativeInterpreter(scen, Mock.Of<IScriptExecutor>());
+            interpreter.Initialize(Mock.Of<IScriptEngine>());
 
             var terminated = interpreter.Interpret(0, out var state);
             var result = state.Result;
@@ -56,7 +57,8 @@ namespace OpenH2.Core.Tests.Scripting.Execution
                 }
             };
 
-            var interpreter = new ScriptIterativeInterpreter(scen, Mock.Of<IScriptEngine>(), Mock.Of<IScriptExecutor>());
+            var interpreter = new ScriptIterativeInterpreter(scen, Mock.Of<IScriptExecutor>());
+            interpreter.Initialize(Mock.Of<IScriptEngine>());
 
             var terminated = interpreter.Interpret(0, out var state);
             var result = state.Result;
@@ -81,7 +83,8 @@ namespace OpenH2.Core.Tests.Scripting.Execution
                 }
             };
 
-            var interpreter = new ScriptIterativeInterpreter(scen, Mock.Of<IScriptEngine>(), Mock.Of<IScriptExecutor>());
+            var interpreter = new ScriptIterativeInterpreter(scen, Mock.Of<IScriptExecutor>());
+            interpreter.Initialize(Mock.Of<IScriptEngine>());
 
             var terminated = interpreter.Interpret(0, out var state);
             var result = state.Result;
@@ -116,7 +119,8 @@ namespace OpenH2.Core.Tests.Scripting.Execution
             var engine = new Mock<IScriptEngine>();
             engine.Setup(e => e.print(It.IsAny<string>())).Callback((string s) => output.WriteLine(s));
 
-            var interpreter = new ScriptIterativeInterpreter(scen, engine.Object, Mock.Of<IScriptExecutor>());
+            var interpreter = new ScriptIterativeInterpreter(scen, Mock.Of<IScriptExecutor>());
+            interpreter.Initialize(engine.Object);
 
             var terminated = interpreter.Interpret(0, out var state);
             var result = state.Result;
@@ -144,7 +148,8 @@ namespace OpenH2.Core.Tests.Scripting.Execution
                 }
             };
 
-            var interpreter = new ScriptIterativeInterpreter(scen, Mock.Of<IScriptEngine>(), Mock.Of<IScriptExecutor>());
+            var interpreter = new ScriptIterativeInterpreter(scen, Mock.Of<IScriptExecutor>());
+            interpreter.Initialize(Mock.Of<IScriptEngine>());
 
             var terminated = interpreter.Interpret(0, out var state);
             var result = state.Result;
@@ -169,7 +174,8 @@ namespace OpenH2.Core.Tests.Scripting.Execution
                 }
             };
 
-            var interpreter = new ScriptIterativeInterpreter(scen, Mock.Of<IScriptEngine>(), Mock.Of<IScriptExecutor>());
+            var interpreter = new ScriptIterativeInterpreter(scen, Mock.Of<IScriptExecutor>());
+            interpreter.Initialize(Mock.Of<IScriptEngine>());
 
             var terminated = interpreter.Interpret(0, out var state);
             var result = state.Result;
@@ -177,6 +183,76 @@ namespace OpenH2.Core.Tests.Scripting.Execution
             Assert.Equal(ScriptDataType.Float, result.DataType);
             Assert.Equal(3f, result.Float);
             Assert.True(terminated);
+        }
+
+        [Fact]
+        public void Interpret_IfTrueExecutesFirst()
+        {
+            var scen = new ScenarioTag(0)
+            {
+                ScriptStrings = Encoding.UTF8.GetBytes("hi\0hey\0hello\0"),
+                ScriptSyntaxNodes = new ScenarioTag.ScriptSyntaxNode[]
+                {
+                    BuiltinNode(ScriptDataType.Void, op: ScriptOps.If, child: 1),
+                        Node(NodeType.Expression, ScriptDataType.MethodOrOperator, op: ScriptOps.If, next: 2),
+                            Node(NodeType.Expression, ScriptDataType.Boolean, op: 5, data: 1, next: 3),
+                                BuiltinNode(ScriptDataType.Void, op:ScriptOps.Print, child: 4, next: 6),
+                                    Node(NodeType.Expression, ScriptDataType.MethodOrOperator, op: ScriptOps.Print, next: 5),
+                                        Node(NodeType.Expression, ScriptDataType.String, op: 9, stringIndex: 0),
+                                BuiltinNode(ScriptDataType.Void, op:ScriptOps.Print, child: 7),
+                                    Node(NodeType.Expression, ScriptDataType.MethodOrOperator, op: ScriptOps.Print, next: 8),
+                                        Node(NodeType.Expression, ScriptDataType.String, op: 9, stringIndex: 3),
+                }
+            };
+
+            var engine = new Mock<IScriptEngine>();
+            engine.Setup(e => e.print(It.IsAny<string>())).Callback((string s) => output.WriteLine(s));
+
+            var interpreter = new ScriptIterativeInterpreter(scen, Mock.Of<IScriptExecutor>());
+            interpreter.Initialize(engine.Object);
+
+            var terminated = interpreter.Interpret(0, out var state);
+            var result = state.Result;
+
+            Assert.Equal(ScriptDataType.Void, result.DataType);
+            Assert.True(terminated);
+            engine.Verify(e => e.print(It.IsAny<string>()), Times.Once);
+            engine.Verify(e => e.print("hi"), Times.Once);
+        }
+
+        [Fact]
+        public void Interpret_IfFalseExecutesLast()
+        {
+            var scen = new ScenarioTag(0)
+            {
+                ScriptStrings = Encoding.UTF8.GetBytes("hi\0hey\0hello\0"),
+                ScriptSyntaxNodes = new ScenarioTag.ScriptSyntaxNode[]
+                {
+                    BuiltinNode(ScriptDataType.Void, op: ScriptOps.If, child: 1),
+                        Node(NodeType.Expression, ScriptDataType.MethodOrOperator, op: ScriptOps.If, next: 2),
+                            Node(NodeType.Expression, ScriptDataType.Boolean, op: 5, data: 0, next: 3),
+                                BuiltinNode(ScriptDataType.Void, op:ScriptOps.Print, child: 4, next: 6),
+                                    Node(NodeType.Expression, ScriptDataType.MethodOrOperator, op: ScriptOps.Print, next: 5),
+                                        Node(NodeType.Expression, ScriptDataType.String, op: 9, stringIndex: 0),
+                                BuiltinNode(ScriptDataType.Void, op:ScriptOps.Print, child: 7),
+                                    Node(NodeType.Expression, ScriptDataType.MethodOrOperator, op: ScriptOps.Print, next: 8),
+                                        Node(NodeType.Expression, ScriptDataType.String, op: 9, stringIndex: 3),
+                }
+            };
+
+            var engine = new Mock<IScriptEngine>();
+            engine.Setup(e => e.print(It.IsAny<string>())).Callback((string s) => output.WriteLine(s));
+
+            var interpreter = new ScriptIterativeInterpreter(scen, Mock.Of<IScriptExecutor>());
+            interpreter.Initialize(engine.Object);
+
+            var terminated = interpreter.Interpret(0, out var state);
+            var result = state.Result;
+
+            Assert.Equal(ScriptDataType.Void, result.DataType);
+            Assert.True(terminated);
+            engine.Verify(e => e.print(It.IsAny<string>()), Times.Once);
+            engine.Verify(e => e.print("hey"), Times.Once);
         }
 
         [Fact]
@@ -198,7 +274,8 @@ namespace OpenH2.Core.Tests.Scripting.Execution
                 }
             };
 
-            var interpreter = new ScriptIterativeInterpreter(scen, Mock.Of<IScriptEngine>(), Mock.Of<IScriptExecutor>());
+            var interpreter = new ScriptIterativeInterpreter(scen, Mock.Of<IScriptExecutor>());
+            interpreter.Initialize(Mock.Of<IScriptEngine>());
 
             Assert.Equal(ScriptDataType.Int, interpreter.GetVariable(0).DataType);
             Assert.Equal(123, interpreter.GetVariable(0).Int);
@@ -234,7 +311,8 @@ namespace OpenH2.Core.Tests.Scripting.Execution
                 }
             };
 
-            var interpreter = new ScriptIterativeInterpreter(scen, Mock.Of<IScriptEngine>(), Mock.Of<IScriptExecutor>());
+            var interpreter = new ScriptIterativeInterpreter(scen, Mock.Of<IScriptExecutor>());
+            interpreter.Initialize(Mock.Of<IScriptEngine>());
 
             Assert.Equal(12f, interpreter.GetVariable(1));
 
@@ -264,7 +342,8 @@ namespace OpenH2.Core.Tests.Scripting.Execution
                 }
             };
 
-            var interpreter = new ScriptIterativeInterpreter(scen, Mock.Of<IScriptEngine>(), Mock.Of<IScriptExecutor>());
+            var interpreter = new ScriptIterativeInterpreter(scen, Mock.Of<IScriptExecutor>());
+            interpreter.Initialize(Mock.Of<IScriptEngine>());
 
             Assert.Equal(12f, interpreter.GetVariable(1));
 
@@ -301,7 +380,8 @@ namespace OpenH2.Core.Tests.Scripting.Execution
                 }
             };
 
-            var interpreter = new ScriptIterativeInterpreter(scen, Mock.Of<IScriptEngine>(), Mock.Of<IScriptExecutor>());
+            var interpreter = new ScriptIterativeInterpreter(scen, Mock.Of<IScriptExecutor>());
+            interpreter.Initialize(Mock.Of<IScriptEngine>());
 
             // Ensure initialization worked
             Assert.Equal(12f, interpreter.GetVariable(1));
@@ -331,7 +411,8 @@ namespace OpenH2.Core.Tests.Scripting.Execution
             var engine = new Mock<IScriptEngine>();
             engine.Setup(e => e.wake(It.IsAny<IScriptMethodReference>())).Callback((IScriptMethodReference s) => Assert.Equal(24, s.GetId()));
 
-            var interpreter = new ScriptIterativeInterpreter(scen, engine.Object, Mock.Of<IScriptExecutor>());
+            var interpreter = new ScriptIterativeInterpreter(scen, Mock.Of<IScriptExecutor>());
+            interpreter.Initialize(engine.Object);
 
             interpreter.Interpret(0, out var n);
             engine.Verify(e => e.wake(It.IsAny<IScriptMethodReference>()), Times.Once);
@@ -374,7 +455,8 @@ namespace OpenH2.Core.Tests.Scripting.Execution
             var engine = new Mock<IScriptEngine>();
             engine.Setup(e => e.print(It.IsAny<string>())).Callback((string s) => output.WriteLine(s));
 
-            var interpreter = new ScriptIterativeInterpreter(scen, engine.Object, Mock.Of<IScriptExecutor>());
+            var interpreter = new ScriptIterativeInterpreter(scen, Mock.Of<IScriptExecutor>());
+            interpreter.Initialize(engine.Object);
 
             interpreter.Interpret(0, out var n);
             engine.Verify(e => e.print("hi"), Times.Once);
@@ -420,7 +502,8 @@ namespace OpenH2.Core.Tests.Scripting.Execution
             engine.Setup(e => e.game_is_playtest()).Returns(true);
             engine.Setup(e => e.print(It.IsAny<string>())).Callback((string s) => output.WriteLine(s));
 
-            var interpreter = new ScriptIterativeInterpreter(scen, engine.Object, Mock.Of<IScriptExecutor>());
+            var interpreter = new ScriptIterativeInterpreter(scen, Mock.Of<IScriptExecutor>());
+            interpreter.Initialize(engine.Object);
 
             interpreter.Interpret(0, out var state);
             engine.Verify(e => e.print("hi"), Times.Once);
@@ -445,7 +528,8 @@ namespace OpenH2.Core.Tests.Scripting.Execution
                 }
             };
 
-            var interpreter = new ScriptIterativeInterpreter(scen, Mock.Of<IScriptEngine>(), Mock.Of<IScriptExecutor>());
+            var interpreter = new ScriptIterativeInterpreter(scen, Mock.Of<IScriptExecutor>());
+            interpreter.Initialize(Mock.Of<IScriptEngine>());
 
             var terminated = interpreter.Interpret(0, out var state);
             var result = state.Result;
@@ -469,7 +553,8 @@ namespace OpenH2.Core.Tests.Scripting.Execution
                 }
             };
 
-            var interpreter = new ScriptIterativeInterpreter(scen, Mock.Of<IScriptEngine>(), Mock.Of<IScriptExecutor>());
+            var interpreter = new ScriptIterativeInterpreter(scen, Mock.Of<IScriptExecutor>());
+            interpreter.Initialize(Mock.Of<IScriptEngine>());
 
             var terminated = interpreter.Interpret(0, out var state);
             var result = state.Result;
@@ -494,7 +579,8 @@ namespace OpenH2.Core.Tests.Scripting.Execution
                 }
             };
 
-            var interpreter = new ScriptIterativeInterpreter(scen, Mock.Of<IScriptEngine>(), Mock.Of<IScriptExecutor>());
+            var interpreter = new ScriptIterativeInterpreter(scen, Mock.Of<IScriptExecutor>());
+            interpreter.Initialize(Mock.Of<IScriptEngine>());
 
             var terminated = interpreter.Interpret(0, out var state);
             var result = state.Result;
@@ -518,7 +604,8 @@ namespace OpenH2.Core.Tests.Scripting.Execution
                 }
             };
 
-            var interpreter = new ScriptIterativeInterpreter(scen, Mock.Of<IScriptEngine>(), Mock.Of<IScriptExecutor>());
+            var interpreter = new ScriptIterativeInterpreter(scen, Mock.Of<IScriptExecutor>());
+            interpreter.Initialize(Mock.Of<IScriptEngine>());
 
             var terminated = interpreter.Interpret(0, out var state);
             var result = state.Result;
@@ -542,7 +629,8 @@ namespace OpenH2.Core.Tests.Scripting.Execution
                 }
             };
 
-            var interpreter = new ScriptIterativeInterpreter(scen, Mock.Of<IScriptEngine>(), Mock.Of<IScriptExecutor>());
+            var interpreter = new ScriptIterativeInterpreter(scen, Mock.Of<IScriptExecutor>());
+            interpreter.Initialize(Mock.Of<IScriptEngine>());
 
             var terminated = interpreter.Interpret(0, out var state);
             var result = state.Result;
@@ -566,7 +654,8 @@ namespace OpenH2.Core.Tests.Scripting.Execution
                 }
             };
 
-            var interpreter = new ScriptIterativeInterpreter(scen, Mock.Of<IScriptEngine>(), Mock.Of<IScriptExecutor>());
+            var interpreter = new ScriptIterativeInterpreter(scen, Mock.Of<IScriptExecutor>());
+            interpreter.Initialize(Mock.Of<IScriptEngine>());
 
             var terminated = interpreter.Interpret(0, out var state);
             var result = state.Result;
@@ -590,7 +679,8 @@ namespace OpenH2.Core.Tests.Scripting.Execution
                 }
             };
 
-            var interpreter = new ScriptIterativeInterpreter(scen, Mock.Of<IScriptEngine>(), Mock.Of<IScriptExecutor>());
+            var interpreter = new ScriptIterativeInterpreter(scen, Mock.Of<IScriptExecutor>());
+            interpreter.Initialize(Mock.Of<IScriptEngine>());
 
             var terminated = interpreter.Interpret(0, out var state);
             var result = state.Result;
@@ -614,7 +704,8 @@ namespace OpenH2.Core.Tests.Scripting.Execution
                 }
             };
 
-            var interpreter = new ScriptIterativeInterpreter(scen, Mock.Of<IScriptEngine>(), Mock.Of<IScriptExecutor>());
+            var interpreter = new ScriptIterativeInterpreter(scen, Mock.Of<IScriptExecutor>());
+            interpreter.Initialize(Mock.Of<IScriptEngine>());
 
             var terminated = interpreter.Interpret(0, out var state);
             var result = state.Result;
@@ -638,7 +729,8 @@ namespace OpenH2.Core.Tests.Scripting.Execution
                 }
             };
 
-            var interpreter = new ScriptIterativeInterpreter(scen, Mock.Of<IScriptEngine>(), Mock.Of<IScriptExecutor>());
+            var interpreter = new ScriptIterativeInterpreter(scen, Mock.Of<IScriptExecutor>());
+            interpreter.Initialize(Mock.Of<IScriptEngine>());
 
             var terminated = interpreter.Interpret(0, out var state);
             var result = state.Result;
@@ -662,7 +754,8 @@ namespace OpenH2.Core.Tests.Scripting.Execution
                 }
             };
 
-            var interpreter = new ScriptIterativeInterpreter(scen, Mock.Of<IScriptEngine>(), Mock.Of<IScriptExecutor>());
+            var interpreter = new ScriptIterativeInterpreter(scen, Mock.Of<IScriptExecutor>());
+            interpreter.Initialize(Mock.Of<IScriptEngine>());
 
             var terminated = interpreter.Interpret(0, out var state);
             var result = state.Result;
@@ -686,7 +779,8 @@ namespace OpenH2.Core.Tests.Scripting.Execution
                 }
             };
 
-            var interpreter = new ScriptIterativeInterpreter(scen, Mock.Of<IScriptEngine>(), Mock.Of<IScriptExecutor>());
+            var interpreter = new ScriptIterativeInterpreter(scen, Mock.Of<IScriptExecutor>());
+            interpreter.Initialize(Mock.Of<IScriptEngine>());
 
             var terminated = interpreter.Interpret(0, out var state);
             var result = state.Result;
@@ -710,7 +804,8 @@ namespace OpenH2.Core.Tests.Scripting.Execution
                 }
             };
 
-            var interpreter = new ScriptIterativeInterpreter(scen, Mock.Of<IScriptEngine>(), Mock.Of<IScriptExecutor>());
+            var interpreter = new ScriptIterativeInterpreter(scen, Mock.Of<IScriptExecutor>());
+            interpreter.Initialize(Mock.Of<IScriptEngine>());
 
             var terminated = interpreter.Interpret(0, out var state);
             var result = state.Result;
@@ -734,7 +829,8 @@ namespace OpenH2.Core.Tests.Scripting.Execution
                 }
             };
 
-            var interpreter = new ScriptIterativeInterpreter(scen, Mock.Of<IScriptEngine>(), Mock.Of<IScriptExecutor>());
+            var interpreter = new ScriptIterativeInterpreter(scen, Mock.Of<IScriptExecutor>());
+            interpreter.Initialize(Mock.Of<IScriptEngine>());
 
             var terminated = interpreter.Interpret(0, out var state);
             var result = state.Result;
@@ -758,7 +854,8 @@ namespace OpenH2.Core.Tests.Scripting.Execution
                 }
             };
 
-            var interpreter = new ScriptIterativeInterpreter(scen, Mock.Of<IScriptEngine>(), Mock.Of<IScriptExecutor>());
+            var interpreter = new ScriptIterativeInterpreter(scen, Mock.Of<IScriptExecutor>());
+            interpreter.Initialize(Mock.Of<IScriptEngine>());
 
             var terminated = interpreter.Interpret(0, out var state);
             var result = state.Result;
@@ -782,7 +879,8 @@ namespace OpenH2.Core.Tests.Scripting.Execution
                 }
             };
 
-            var interpreter = new ScriptIterativeInterpreter(scen, Mock.Of<IScriptEngine>(), Mock.Of<IScriptExecutor>());
+            var interpreter = new ScriptIterativeInterpreter(scen, Mock.Of<IScriptExecutor>());
+            interpreter.Initialize(Mock.Of<IScriptEngine>());
 
             var terminated = interpreter.Interpret(0, out var state);
             var result = state.Result;
@@ -806,7 +904,8 @@ namespace OpenH2.Core.Tests.Scripting.Execution
                 }
             };
 
-            var interpreter = new ScriptIterativeInterpreter(scen, Mock.Of<IScriptEngine>(), Mock.Of<IScriptExecutor>());
+            var interpreter = new ScriptIterativeInterpreter(scen, Mock.Of<IScriptExecutor>());
+            interpreter.Initialize(Mock.Of<IScriptEngine>());
 
             var terminated = interpreter.Interpret(0, out var state);
             var result = state.Result;
@@ -830,7 +929,8 @@ namespace OpenH2.Core.Tests.Scripting.Execution
                 }
             };
 
-            var interpreter = new ScriptIterativeInterpreter(scen, Mock.Of<IScriptEngine>(), Mock.Of<IScriptExecutor>());
+            var interpreter = new ScriptIterativeInterpreter(scen, Mock.Of<IScriptExecutor>());
+            interpreter.Initialize(Mock.Of<IScriptEngine>());
 
             var terminated = interpreter.Interpret(0, out var state);
             var result = state.Result;
@@ -854,7 +954,8 @@ namespace OpenH2.Core.Tests.Scripting.Execution
                 }
             };
 
-            var interpreter = new ScriptIterativeInterpreter(scen, Mock.Of<IScriptEngine>(), Mock.Of<IScriptExecutor>());
+            var interpreter = new ScriptIterativeInterpreter(scen, Mock.Of<IScriptExecutor>());
+            interpreter.Initialize(Mock.Of<IScriptEngine>());
 
             var terminated = interpreter.Interpret(0, out var state);
             var result = state.Result;
@@ -878,7 +979,8 @@ namespace OpenH2.Core.Tests.Scripting.Execution
                 }
             };
 
-            var interpreter = new ScriptIterativeInterpreter(scen, Mock.Of<IScriptEngine>(), Mock.Of<IScriptExecutor>());
+            var interpreter = new ScriptIterativeInterpreter(scen, Mock.Of<IScriptExecutor>());
+            interpreter.Initialize(Mock.Of<IScriptEngine>());
 
             var terminated = interpreter.Interpret(0, out var state);
             var result = state.Result;
@@ -902,7 +1004,8 @@ namespace OpenH2.Core.Tests.Scripting.Execution
                 }
             };
 
-            var interpreter = new ScriptIterativeInterpreter(scen, Mock.Of<IScriptEngine>(), Mock.Of<IScriptExecutor>());
+            var interpreter = new ScriptIterativeInterpreter(scen, Mock.Of<IScriptExecutor>());
+            interpreter.Initialize(Mock.Of<IScriptEngine>());
 
             var terminated = interpreter.Interpret(0, out var state);
             var result = state.Result;
@@ -926,7 +1029,8 @@ namespace OpenH2.Core.Tests.Scripting.Execution
                 }
             };
 
-            var interpreter = new ScriptIterativeInterpreter(scen, Mock.Of<IScriptEngine>(), Mock.Of<IScriptExecutor>());
+            var interpreter = new ScriptIterativeInterpreter(scen, Mock.Of<IScriptExecutor>());
+            interpreter.Initialize(Mock.Of<IScriptEngine>());
 
             var terminated = interpreter.Interpret(0, out var state);
             var result = state.Result;
@@ -950,7 +1054,8 @@ namespace OpenH2.Core.Tests.Scripting.Execution
                 }
             };
 
-            var interpreter = new ScriptIterativeInterpreter(scen, Mock.Of<IScriptEngine>(), Mock.Of<IScriptExecutor>());
+            var interpreter = new ScriptIterativeInterpreter(scen, Mock.Of<IScriptExecutor>());
+            interpreter.Initialize(Mock.Of<IScriptEngine>());
 
             var terminated = interpreter.Interpret(0, out var state);
             var result = state.Result;
@@ -974,7 +1079,8 @@ namespace OpenH2.Core.Tests.Scripting.Execution
                 }
             };
 
-            var interpreter = new ScriptIterativeInterpreter(scen, Mock.Of<IScriptEngine>(), Mock.Of<IScriptExecutor>());
+            var interpreter = new ScriptIterativeInterpreter(scen, Mock.Of<IScriptExecutor>());
+            interpreter.Initialize(Mock.Of<IScriptEngine>());
 
             var terminated = interpreter.Interpret(0, out var state);
             var result = state.Result;
@@ -998,7 +1104,8 @@ namespace OpenH2.Core.Tests.Scripting.Execution
                 }
             };
 
-            var interpreter = new ScriptIterativeInterpreter(scen, Mock.Of<IScriptEngine>(), Mock.Of<IScriptExecutor>());
+            var interpreter = new ScriptIterativeInterpreter(scen, Mock.Of<IScriptExecutor>());
+            interpreter.Initialize(Mock.Of<IScriptEngine>());
 
             var terminated = interpreter.Interpret(0, out var state);
             var result = state.Result;
@@ -1022,7 +1129,8 @@ namespace OpenH2.Core.Tests.Scripting.Execution
                 }
             };
 
-            var interpreter = new ScriptIterativeInterpreter(scen, Mock.Of<IScriptEngine>(), Mock.Of<IScriptExecutor>());
+            var interpreter = new ScriptIterativeInterpreter(scen, Mock.Of<IScriptExecutor>());
+            interpreter.Initialize(Mock.Of<IScriptEngine>());
 
             var terminated = interpreter.Interpret(0, out var state);
             var result = state.Result;
@@ -1046,7 +1154,8 @@ namespace OpenH2.Core.Tests.Scripting.Execution
                 }
             };
 
-            var interpreter = new ScriptIterativeInterpreter(scen, Mock.Of<IScriptEngine>(), Mock.Of<IScriptExecutor>());
+            var interpreter = new ScriptIterativeInterpreter(scen, Mock.Of<IScriptExecutor>());
+            interpreter.Initialize(Mock.Of<IScriptEngine>());
 
             var terminated = interpreter.Interpret(0, out var state);
             var result = state.Result;
@@ -1070,7 +1179,8 @@ namespace OpenH2.Core.Tests.Scripting.Execution
                 }
             };
 
-            var interpreter = new ScriptIterativeInterpreter(scen, Mock.Of<IScriptEngine>(), Mock.Of<IScriptExecutor>());
+            var interpreter = new ScriptIterativeInterpreter(scen, Mock.Of<IScriptExecutor>());
+            interpreter.Initialize(Mock.Of<IScriptEngine>());
 
             var terminated = interpreter.Interpret(0, out var state);
             var result = state.Result;
@@ -1094,7 +1204,8 @@ namespace OpenH2.Core.Tests.Scripting.Execution
                 }
             };
 
-            var interpreter = new ScriptIterativeInterpreter(scen, Mock.Of<IScriptEngine>(), Mock.Of<IScriptExecutor>());
+            var interpreter = new ScriptIterativeInterpreter(scen, Mock.Of<IScriptExecutor>());
+            interpreter.Initialize(Mock.Of<IScriptEngine>());
 
             var terminated = interpreter.Interpret(0, out var state);
             var result = state.Result;
@@ -1118,7 +1229,8 @@ namespace OpenH2.Core.Tests.Scripting.Execution
                 }
             };
 
-            var interpreter = new ScriptIterativeInterpreter(scen, Mock.Of<IScriptEngine>(), Mock.Of<IScriptExecutor>());
+            var interpreter = new ScriptIterativeInterpreter(scen, Mock.Of<IScriptExecutor>());
+            interpreter.Initialize(Mock.Of<IScriptEngine>());
 
             var terminated = interpreter.Interpret(0, out var state);
             var result = state.Result;
@@ -1142,7 +1254,8 @@ namespace OpenH2.Core.Tests.Scripting.Execution
                 }
             };
 
-            var interpreter = new ScriptIterativeInterpreter(scen, Mock.Of<IScriptEngine>(), Mock.Of<IScriptExecutor>());
+            var interpreter = new ScriptIterativeInterpreter(scen, Mock.Of<IScriptExecutor>());
+            interpreter.Initialize(Mock.Of<IScriptEngine>());
 
             var terminated = interpreter.Interpret(0, out var state);
             var result = state.Result;
@@ -1167,7 +1280,8 @@ namespace OpenH2.Core.Tests.Scripting.Execution
                 }
             };
 
-            var interpreter = new ScriptIterativeInterpreter(scen, Mock.Of<IScriptEngine>(), Mock.Of<IScriptExecutor>());
+            var interpreter = new ScriptIterativeInterpreter(scen, Mock.Of<IScriptExecutor>());
+            interpreter.Initialize(Mock.Of<IScriptEngine>());
 
             var terminated = interpreter.Interpret(0, out var state);
             var result = state.Result;
@@ -1192,7 +1306,8 @@ namespace OpenH2.Core.Tests.Scripting.Execution
                 }
             };
 
-            var interpreter = new ScriptIterativeInterpreter(scen, Mock.Of<IScriptEngine>(), Mock.Of<IScriptExecutor>());
+            var interpreter = new ScriptIterativeInterpreter(scen, Mock.Of<IScriptExecutor>());
+            interpreter.Initialize(Mock.Of<IScriptEngine>());
 
             var terminated = interpreter.Interpret(0, out var state);
             var result = state.Result;
@@ -1217,7 +1332,8 @@ namespace OpenH2.Core.Tests.Scripting.Execution
                 }
             };
 
-            var interpreter = new ScriptIterativeInterpreter(scen, Mock.Of<IScriptEngine>(), Mock.Of<IScriptExecutor>());
+            var interpreter = new ScriptIterativeInterpreter(scen, Mock.Of<IScriptExecutor>());
+            interpreter.Initialize(Mock.Of<IScriptEngine>());
 
             var terminated = interpreter.Interpret(0, out var state);
             var result = state.Result;
@@ -1242,7 +1358,8 @@ namespace OpenH2.Core.Tests.Scripting.Execution
                 }
             };
 
-            var interpreter = new ScriptIterativeInterpreter(scen, Mock.Of<IScriptEngine>(), Mock.Of<IScriptExecutor>());
+            var interpreter = new ScriptIterativeInterpreter(scen, Mock.Of<IScriptExecutor>());
+            interpreter.Initialize(Mock.Of<IScriptEngine>());
 
             var terminated = interpreter.Interpret(0, out var state);
             var result = state.Result;
@@ -1267,7 +1384,8 @@ namespace OpenH2.Core.Tests.Scripting.Execution
                 }
             };
 
-            var interpreter = new ScriptIterativeInterpreter(scen, Mock.Of<IScriptEngine>(), Mock.Of<IScriptExecutor>());
+            var interpreter = new ScriptIterativeInterpreter(scen, Mock.Of<IScriptExecutor>());
+            interpreter.Initialize(Mock.Of<IScriptEngine>());
 
             var terminated = interpreter.Interpret(0, out var state);
             var result = state.Result;
@@ -1290,7 +1408,8 @@ namespace OpenH2.Core.Tests.Scripting.Execution
                 }
             };
 
-            var interpreter = new ScriptIterativeInterpreter(scen, Mock.Of<IScriptEngine>(), Mock.Of<IScriptExecutor>());
+            var interpreter = new ScriptIterativeInterpreter(scen, Mock.Of<IScriptExecutor>());
+            interpreter.Initialize(Mock.Of<IScriptEngine>());
 
             var terminated = interpreter.Interpret(0, out var state);
 
@@ -1314,7 +1433,8 @@ namespace OpenH2.Core.Tests.Scripting.Execution
                 }
             };
 
-            var interpreter = new ScriptIterativeInterpreter(scen, Mock.Of<IScriptEngine>(), Mock.Of<IScriptExecutor>());
+            var interpreter = new ScriptIterativeInterpreter(scen, Mock.Of<IScriptExecutor>());
+            interpreter.Initialize(Mock.Of<IScriptEngine>());
 
             var terminated = interpreter.Interpret(0, out var state);
             var result = state.Result;
@@ -1346,7 +1466,8 @@ namespace OpenH2.Core.Tests.Scripting.Execution
             var engine = new Mock<IScriptEngine>();
             engine.Setup(e => e.print(It.IsAny<string>())).Callback((string s) => output.WriteLine(s));
 
-            var interpreter = new ScriptIterativeInterpreter(scen, engine.Object, Mock.Of<IScriptExecutor>());
+            var interpreter = new ScriptIterativeInterpreter(scen, Mock.Of<IScriptExecutor>());
+            interpreter.Initialize(engine.Object);
 
             var terminated = interpreter.Interpret(0, out var state);
             Assert.False(terminated);
@@ -1383,7 +1504,8 @@ namespace OpenH2.Core.Tests.Scripting.Execution
             engine.Setup(e => e.print(It.IsAny<string>())).Callback((string s) => output.WriteLine(s));
             engine.Setup(e => e.game_is_playtest()).Returns(() => isPlaytest);
 
-            var interpreter = new ScriptIterativeInterpreter(scen, engine.Object, Mock.Of<IScriptExecutor>());
+            var interpreter = new ScriptIterativeInterpreter(scen, Mock.Of<IScriptExecutor>());
+            interpreter.Initialize(engine.Object);
 
             // Should yield at sleep_until
             var terminated = interpreter.Interpret(0, out var state);

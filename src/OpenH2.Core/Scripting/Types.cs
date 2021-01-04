@@ -10,7 +10,6 @@
     using System.Threading.Tasks;
 
     public delegate Task ScriptMethod();
-    public delegate Task AIScript();
 
     public class ScriptMethodReference : IScriptMethodReference
     {

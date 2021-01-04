@@ -19,9 +19,8 @@ namespace OpenH2.Engine.Systems
         private readonly AudioSystem audioSystem;
         private readonly CameraSystem cameraSystem;
         private bool run = false;
-        private ScriptTaskExecutor executor;
+        private InterpretingScriptExecutor executor;
         private ScriptEngine engine;
-        private ScenarioScriptBase scripts;
         private Stopwatch stopwatch;
         private InputStore inputStore;
 
@@ -38,28 +37,14 @@ namespace OpenH2.Engine.Systems
             this.inputStore = this.world.GetGlobalResource<InputStore>();
             var scenario = scene.Map.Scenario;
 
-            var loader = new ScriptLoader();
-            Logger.LogInfo("Generating script code");
-            loader.Load(scenario);
-            Logger.LogInfo("Compiling scripts");
-            var assembly = loader.CompileScripts();
 
-            var scriptType = assembly.GetTypes().Select(t => new
-            {
-                Type = t,
-                Attr = t.GetCustomAttribute<OriginScenarioAttribute>()
-            })
-            .First(a => a.Attr.ScenarioId == scenario.Name).Type;
-
-            this.executor = new ScriptTaskExecutor();
+            this.executor = new InterpretingScriptExecutor(scenario);
             this.engine = new ScriptEngine(scene, 
                 this.executor, 
                 this.audioSystem,
                 this.cameraSystem);
 
-            this.scripts = (ScenarioScriptBase)Activator.CreateInstance(scriptType, new object[] { this.engine });
-            scripts.InitializeData(scenario, scene);
-            this.executor.Setup(scripts);
+            this.executor.Initialize(this.engine);
             this.stopwatch = new Stopwatch();
             this.stopwatch.Start();
 

@@ -96,7 +96,7 @@ namespace OpenH2.Engine.Scripting
         }
 
         /// <summary>loads textures/geometry/sounds necessary to present objects that are about to come on-screen</summary>
-        public void objects_predict_high(IGameObject entity)
+        public void objects_predict_high(GameObjectList entity)
         {
         }
 

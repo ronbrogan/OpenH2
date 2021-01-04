@@ -160,11 +160,11 @@ namespace OpenH2.Core.Scripting
 
         /// <summary>Start the named scene, with the named command script on the named squad</summary>
         [ScriptImplementation(363)]
-        bool ai_scene(string scene_name, AIScript ai_command_script, IAiActorDefinition ai);
+        bool ai_scene(string scene_name, IScriptMethodReference ai_command_script, IAiActorDefinition ai);
 
         /// <summary>Start the named scene, with the named command script on the named squad</summary>
         [ScriptImplementation(364)]
-        bool ai_scene(string scene_name, AIScript ai_command_script, IAiActorDefinition ai, IAiActorDefinition ai1);
+        bool ai_scene(string scene_name, IScriptMethodReference ai_command_script, IAiActorDefinition ai, IAiActorDefinition ai1);
 
         /// <summary>Turn on active camoflage on actor/squad/squad-group</summary>
         [ScriptImplementation(307)]
@@ -428,11 +428,11 @@ namespace OpenH2.Core.Scripting
 
         /// <summary>Returns true if the command script is in the ai's cs queue</summary>
         [ScriptImplementation(372)]
-        bool cs_command_script_queued(IAiActorDefinition ai, AIScript ai_command_script);
+        bool cs_command_script_queued(IAiActorDefinition ai, IScriptMethodReference ai_command_script);
 
         /// <summary>Returns true if the ai is running the command script in question</summary>
         [ScriptImplementation(371)]
-        bool cs_command_script_running(IAiActorDefinition ai, AIScript ai_command_script);
+        bool cs_command_script_running(IAiActorDefinition ai, IScriptMethodReference ai_command_script);
 
         /// <summary>Actor crouches for the remainder of the command script, or until overridden</summary>
         [ScriptImplementation(423)]
@@ -580,11 +580,11 @@ namespace OpenH2.Core.Scripting
 
         /// <summary>Add a command script onto the end of an actor's command script queue</summary>
         [ScriptImplementation(367)]
-        void cs_queue_command_script(IAiActorDefinition ai, AIScript ai_command_script);
+        void cs_queue_command_script(IAiActorDefinition ai, IScriptMethodReference ai_command_script);
 
         /// <summary>Causes the specified actor(s) to start executing a command script immediately (discarding any other command scripts in the queue)</summary>
         [ScriptImplementation(366)]
-        void cs_run_command_script(IAiActorDefinition ai, AIScript ai_command_script);
+        void cs_run_command_script(IAiActorDefinition ai, IScriptMethodReference ai_command_script);
 
         /// <summary>Actor performs the indicated behavior</summary>
         [ScriptImplementation(427)]
@@ -604,7 +604,7 @@ namespace OpenH2.Core.Scripting
 
         /// <summary>Push a command script to the top of the actor's command script queue</summary>
         [ScriptImplementation(368)]
-        void cs_stack_command_script(IAiActorDefinition ai, AIScript ai_command_script);
+        void cs_stack_command_script(IAiActorDefinition ai, IScriptMethodReference ai_command_script);
 
         /// <summary></summary>
         [ScriptImplementation(431)]
@@ -979,7 +979,7 @@ namespace OpenH2.Core.Scripting
 
         /// <summary>loads textures/geometry/sounds necessary to present objects that are about to come on-screen</summary>
         [ScriptImplementation(100)]
-        void objects_predict_high(IGameObject entity);
+        void objects_predict_high(GameObjectList entity);
 
         [ScriptImplementation(75)]
         IGameObject object_at_marker(IGameObject entity, string stringId);

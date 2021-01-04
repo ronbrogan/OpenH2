@@ -1,6 +1,4 @@
-﻿using OpenH2.Core.Tags.Scenario;
-using System.Collections.Generic;
-using System.Diagnostics;
+﻿using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
@@ -23,6 +21,9 @@ namespace OpenH2.Core.Scripting.Execution
 
         [FieldOffset(4)]
         public ScriptDataType DataType;
+
+        [FieldOffset(6)]
+        public ushort VariableIndex;
 
         [FieldOffset(8)]
         public object? Object;
@@ -56,30 +57,34 @@ namespace OpenH2.Core.Scripting.Execution
 
         public void Add(InterpreterResult operand)
         {
-            Debug.Assert(this.DataType == ScriptDataType.Float);
-
-            this.Float += operand.GetFloat();
+            if (DataType == ScriptDataType.Float)
+                this.Float = this.GetFloat() + operand.GetFloat();
+            else
+                this.Short = (short)(this.GetShort() + operand.GetShort());
         }
 
         public void Subtract(InterpreterResult operand)
         {
-            Debug.Assert(this.DataType == ScriptDataType.Float);
-
-            this.Float -= operand.GetFloat();
+            if (DataType == ScriptDataType.Float)
+                this.Float = this.GetFloat() - operand.GetFloat();
+            else
+                this.Short = (short)(this.GetShort() - operand.GetShort());
         }
 
         public void Multiply(InterpreterResult operand)
         {
-            Debug.Assert(this.DataType == ScriptDataType.Float);
-
-            this.Float *= operand.GetFloat();
+            if (DataType == ScriptDataType.Float)
+                this.Float = this.GetFloat() * operand.GetFloat();
+            else
+                this.Short = (short)(this.GetShort() * operand.GetShort());
         }
 
         public void Divide(InterpreterResult operand)
         {
-            Debug.Assert(this.DataType == ScriptDataType.Float);
-
-            this.Float /= operand.GetFloat();
+            if (DataType == ScriptDataType.Float)
+                this.Float = this.GetFloat() / operand.GetFloat();
+            else
+                this.Short = (short)(this.GetShort() / operand.GetShort());
         }
 
         public static InterpreterResult Min(InterpreterResult left, InterpreterResult right)

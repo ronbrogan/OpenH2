@@ -1,5 +1,6 @@
 ﻿using OpenH2.Core.GameObjects;
 using OpenH2.Core.Scripting;
+using OpenH2.Core.Scripting.Execution;
 using OpenH2.Core.Tags.Scenario;
 using OpenH2.Engine.Entities;
 using OpenH2.Engine.EntityFactories;
@@ -251,19 +252,13 @@ namespace OpenH2.Engine.Scripting
         }
 
         /// <summary>Start the named scene, with the named command script on the named squad</summary>
-        public bool ai_scene(string /*id*/ string_id, AIScript ai_command_script, IAiActorDefinition ai)
+        public bool ai_scene(string /*id*/ string_id, IScriptMethodReference ai_command_script, IAiActorDefinition ai)
         {
             return default(bool);
         }
 
         /// <summary>Start the named scene, with the named command script on the named set of squads</summary>
-        public bool ai_scene(string /*id*/ string_id, AIScript ai_command_script, IAiActorDefinition ai, IAiActorDefinition ai1)
-        {
-            return default(bool);
-        }
-
-        /// <summary>Start the named scene, with the named command script on the named squad</summary>
-        public bool ai_scene(string /*id*/ emotion, AIScript aiScript)
+        public bool ai_scene(string /*id*/ string_id, IScriptMethodReference ai_command_script, IAiActorDefinition ai, IAiActorDefinition ai1)
         {
             return default(bool);
         }
