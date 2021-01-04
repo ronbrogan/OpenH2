@@ -10,7 +10,7 @@ namespace OpenH2.Core.Exceptions
             throw new Exception(description);
         }
 
-        public static void InterpreterException(string description, InterpreterState state)
+        public static Exception InterpreterException(string description, InterpreterState state)
         {
             throw new InterpreterException(description + Environment.NewLine + state.SerializeCallStack());
         }

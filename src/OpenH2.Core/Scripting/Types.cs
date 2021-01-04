@@ -39,12 +39,12 @@
     {
         public static GameObjectList Empty => new GameObjectList(Array.Empty<IGameObject>());
 
-        public GameObjectList(IGameObject[] objects)
+        public GameObjectList(IGameObject?[] objects)
         {
             this.Objects = objects;
         }
 
-        public IGameObject[] Objects { get; set; }
+        public IGameObject?[] Objects { get; set; }
 
         public IEnumerator<IGameObject> GetEnumerator()
         {
@@ -110,9 +110,19 @@
         ushort BspIndex { get; set; }
     }
 
+    public class EntityIdentifier : IEntityIdentifier
+    {
+        public int Identifier { get; private set; }
+
+        public EntityIdentifier(int id)
+        {
+            this.Identifier = id;
+        }
+    }
+
     public struct ScenarioEntity<TItem> : IEntityIdentifier 
     {
-        public ScenarioEntity(int id, IGameObjectDefinition<object> item)
+        public ScenarioEntity(int id, IGameObjectDefinition<IGameObject> item)
         {
             if (item == null) throw new ArgumentNullException(nameof(item));
 
@@ -120,7 +130,7 @@
             this.reference = item;
         }
 
-        private IGameObjectDefinition<object> reference;
+        private IGameObjectDefinition<IGameObject> reference;
         public int Identifier { get; }
         public TItem? Entity => reference.GameObject == null 
             ? default(TItem)

@@ -126,7 +126,7 @@ namespace OpenH2.Core.Tags.Scenario
         }
 
         [FixedLength(36)]
-        public class EntityReference : IGameObjectDefinition<object>
+        public class EntityReference : IGameObjectDefinition<IGameObject>
         {
             [StringValue(0, 32)]
             public string Identifier { get; set; }
@@ -138,7 +138,7 @@ namespace OpenH2.Core.Tags.Scenario
             public ushort Index { get; set; }
 
             [JsonIgnore]
-            public object GameObject => this.ItemType switch
+            public IGameObject? GameObject => this.ItemType switch
             {
                 WellKnownVarType.Biped => scenario.BipedInstances[Index].GameObject,
                 WellKnownVarType.Vehicle => scenario.VehicleInstances[Index].GameObject,
@@ -370,7 +370,7 @@ namespace OpenH2.Core.Tags.Scenario
 
 
                 [FixedLength(60)]
-                public class SpatialPointDefinition
+                public class SpatialPointDefinition : ISpatialPoint
                 {
                     [StringValue(0, 32)]
                     public string Description { get; set; }

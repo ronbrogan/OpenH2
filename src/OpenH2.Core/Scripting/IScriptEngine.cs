@@ -858,7 +858,7 @@ namespace OpenH2.Core.Scripting
 
         T GetReference<T>(string reference);
 
-        T GetTag<T>(string name, uint id) where T : BaseTag;
+        T GetTag<T>(string? name, uint id) where T : BaseTag;
 
         /// <summary>parameter 1 is how, parameter 2 is when</summary>
         [ScriptImplementation(625)]

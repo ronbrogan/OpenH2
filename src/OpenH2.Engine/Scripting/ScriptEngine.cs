@@ -38,7 +38,7 @@ namespace OpenH2.Engine.Scripting
             return default(T);
         }
 
-        public T GetTag<T>(string name, uint id) where T: BaseTag
+        public T GetTag<T>(string? name, uint id) where T: BaseTag
         {
             return scene.Map.GetTag<T>(id);
         }

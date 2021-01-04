@@ -1,5 +1,6 @@
 ﻿using OpenBlam.Core.Extensions;
 using OpenH2.Core.Exceptions;
+using OpenH2.Core.Tags;
 using OpenH2.Core.Tags.Scenario;
 using System;
 using System.Diagnostics;
@@ -10,7 +11,6 @@ namespace OpenH2.Core.Scripting.Execution
 {
     /*
      * TODO
-     *  - ScriptInvocation
      *  - Remove allocations
      * 
      */
@@ -158,8 +158,8 @@ namespace OpenH2.Core.Scripting.Execution
             {
                 case NodeType.BuiltinInvocation: InterpretBuiltinFrame(ref state); break;
                 case NodeType.ScriptInvocation: InterpretScriptFrame(node, ref state); break;
-                default: Throw.Exception("Non-invocation node provided to InterpretInvocation"); break;
-            };
+                default: Throw.InterpreterException("Non-invocation node provided to InterpretInvocation", state); break;
+            }
         }
 
         private void InterpretBuiltinFrame(ref State state)
@@ -211,7 +211,7 @@ namespace OpenH2.Core.Scripting.Execution
                 case NodeType.ScriptInvocation: PushInvocation(node, ref state); break;
                 case NodeType.Expression: InterpretExpression(node, ref state); break;
                 case NodeType.VariableAccess: InterpretVariableAccess(node, ref state); break;
-                default: Throw.NotSupported($"NodeType {node.NodeType} is not supported"); break;
+                default: Throw.InterpreterException($"NodeType {node.NodeType} is not supported", state); break;
             }
         }
 
@@ -250,42 +250,42 @@ namespace OpenH2.Core.Scripting.Execution
                 ScriptDataType.Float => Result.From(node.NodeData_32),
                 ScriptDataType.Short => Result.From(node.NodeData_H16),
                 ScriptDataType.Int => Result.From(node.NodeData_32),
-                ScriptDataType.VehicleSeat => new Result(),
+                ScriptDataType.VehicleSeat => Result.From(node.NodeData_32),
                 ScriptDataType.String => Result.From(SpanByteExtensions.ReadStringStarting(this.scenario.ScriptStrings, node.NodeString)),
                 ScriptDataType.ScriptReference => Result.From(new ScriptMethodReference(node.NodeData_H16)),
-                ScriptDataType.StringId => new Result(),
+                ScriptDataType.StringId => Result.From(node.NodeData_32),
                 ScriptDataType.Trigger => Result.From(this.scenario.TriggerVolumes[node.NodeData_H16].GameObject),
                 ScriptDataType.LocationFlag => Result.From(this.scenario.LocationFlagDefinitions[node.NodeData_H16].GameObject),
-                ScriptDataType.CameraPathTarget => new Result(),
-                ScriptDataType.CinematicTitle => new Result(),
-                ScriptDataType.DeviceGroup => new Result(),
-                ScriptDataType.AI => new Result(),
-                ScriptDataType.AIScript => new Result(),
-                ScriptDataType.AIBehavior => new Result(),
+                ScriptDataType.CameraPathTarget => Result.From(this.scenario.CameraPathTargets[node.NodeData_H16].GameObject),
+                ScriptDataType.CinematicTitle => Result.From(this.scenario.CinematicTitleDefinitions[node.NodeData_H16].GameObject),
+                ScriptDataType.DeviceGroup => Result.From(this.scenario.DeviceGroupDefinitions[node.NodeData_H16].GameObject),
+                ScriptDataType.AI => GetAiResult(node),
+                ScriptDataType.AIScript => Result.From(new ScriptMethodReference(node.NodeData_H16)),
+                ScriptDataType.AIBehavior => Result.From(node.NodeData_H16),
                 ScriptDataType.AIOrders => Result.From(this.scenario.AiOrderDefinitions[node.NodeData_H16].GameObject),
                 ScriptDataType.StartingProfile => Result.From(this.scenario.StartingProfileDefinitions[node.NodeData_H16].GameObject),
-                ScriptDataType.Bsp => new Result(),
-                ScriptDataType.NavigationPoint => new Result(),
-                ScriptDataType.SpatialPoint => new Result(),
-                ScriptDataType.List => new Result(),
-                ScriptDataType.Sound => new Result(),
-                ScriptDataType.Effect => new Result(),
-                ScriptDataType.DamageEffect => new Result(),
-                ScriptDataType.LoopingSound => new Result(),
-                ScriptDataType.TagReference => new Result(),
-                ScriptDataType.Animation => new Result(),
-                ScriptDataType.Model => new Result(),
-                ScriptDataType.GameDifficulty => new Result(),
-                ScriptDataType.Team => new Result(),
-                ScriptDataType.DamageState => new Result(),
-                ScriptDataType.Entity => new Result(),
-                ScriptDataType.Unit => new Result(),
-                ScriptDataType.Vehicle => new Result(),
-                ScriptDataType.WeaponReference => new Result(),
-                ScriptDataType.Device => new Result(),
-                ScriptDataType.Scenery => new Result(),
-                ScriptDataType.EntityIdentifier => new Result(),
-                _ => throw new NotImplementedException(),
+                ScriptDataType.Bsp => Result.From(this.scenario.Terrains[node.NodeData_H16]),
+                ScriptDataType.NavigationPoint => Result.From(node.NodeData_H16),
+                ScriptDataType.SpatialPoint => Result.From(this.scenario.SpatialPointStuffs[0].SpatialPointCollections[node.NodeData_L16].SpatialPoints[node.NodeData_H16]),
+                ScriptDataType.List => Result.From(new GameObjectList(new[] { this.scenario.WellKnownItems[node.NodeData_H16].GameObject })),
+                ScriptDataType.Sound => Result.From(this.scriptEngine.GetTag<SoundTag>(null, node.NodeData_32)),
+                ScriptDataType.Effect => Result.From(this.scriptEngine.GetTag<EffectTag>(null, node.NodeData_32)),
+                ScriptDataType.DamageEffect => Result.From(this.scriptEngine.GetTag<DamageEffectTag>(null, node.NodeData_32)),
+                ScriptDataType.LoopingSound => Result.From(this.scriptEngine.GetTag<LoopingSoundTag>(null, node.NodeData_32)),
+                ScriptDataType.TagReference => Result.From(this.scriptEngine.GetTag<BaseTag>(null, node.NodeData_32)),
+                ScriptDataType.Animation => Result.From(this.scriptEngine.GetTag<AnimationGraphTag>(null, node.NodeData_32)),
+                ScriptDataType.Model => Result.From(this.scriptEngine.GetTag<RenderModelTag>(null, node.NodeData_32)),
+                ScriptDataType.GameDifficulty => Result.From(new GameDifficulty((short)node.NodeData_H16)),
+                ScriptDataType.Team => Result.From(node.NodeData_H16),
+                ScriptDataType.DamageState => Result.From(node.NodeData_H16),
+                ScriptDataType.Entity => Result.From(this.scenario.WellKnownItems[node.NodeData_H16].GameObject),
+                ScriptDataType.Unit => Result.From(this.scenario.WellKnownItems[node.NodeData_H16].GameObject),
+                ScriptDataType.Vehicle => Result.From(this.scenario.WellKnownItems[node.NodeData_H16].GameObject),
+                ScriptDataType.WeaponReference => Result.From(this.scenario.WellKnownItems[node.NodeData_H16].GameObject),
+                ScriptDataType.Device => Result.From(this.scenario.WellKnownItems[node.NodeData_H16].GameObject),
+                ScriptDataType.Scenery => Result.From(this.scenario.WellKnownItems[node.NodeData_H16].GameObject),
+                ScriptDataType.EntityIdentifier => Result.From(new EntityIdentifier(node.NodeData_H16)),
+                _ => throw Throw.InterpreterException("Expression type not supported", state),
             };
 
             result.DataType = node.DataType;
@@ -293,6 +293,22 @@ namespace OpenH2.Core.Scripting.Execution
             ref var frame = ref state.TopFrame;
             frame.Locals.Enqueue(result);
             frame.Current = node;
+
+            Result GetAiResult(ScenarioTag.ScriptSyntaxNode node)
+            {
+                if(node.NodeData_B0 == 192)
+                {
+                    return Result.From(this.scenario.AiSquadDefinitions[node.NodeData_B1].StartingLocations[node.NodeData_H16]);
+                }
+                else if(node.NodeData_B0 == 64)
+                {
+                    return Result.From(this.scenario.AiSquadGroupDefinitions[node.NodeData_H16]);
+                }
+                else
+                {
+                    return Result.From(this.scenario.AiSquadDefinitions[node.NodeData_H16]);
+                }
+            }
         }
 
         private void InterpretVariableAccess(ScenarioTag.ScriptSyntaxNode node, ref State state)
@@ -666,7 +682,7 @@ namespace OpenH2.Core.Scripting.Execution
                 ScriptDataType.Short => Result.From(left.GetShort() == right.GetShort()),
                 ScriptDataType.Int => Result.From(left.GetInt() == right.GetInt()),
                 ScriptDataType.GameDifficulty => Result.From(left.GetShort() == right.GetShort()),
-                _ => throw new InterpreterException($"Equality comparison for {left.DataType} is not supported")
+                _ => throw Throw.InterpreterException($"Equality comparison for {left.DataType} is not supported", state)
             };
 
             CompleteFrame(result, ref state);
@@ -684,7 +700,7 @@ namespace OpenH2.Core.Scripting.Execution
             {
                 ScriptDataType.Float => Result.From(left.GetFloat() > right.GetFloat()),
                 ScriptDataType.Short => Result.From(left.GetShort() > right.GetShort()),
-                _ => throw new InterpreterException($"Equality comparison for {left.DataType} is not supported")
+                _ => throw Throw.InterpreterException($"Equality comparison for {left.DataType} is not supported", state)
             };
 
             CompleteFrame(result, ref state);
@@ -702,7 +718,7 @@ namespace OpenH2.Core.Scripting.Execution
             {
                 ScriptDataType.Float => Result.From(left.GetFloat() >= right.GetFloat()),
                 ScriptDataType.Short => Result.From(left.GetShort() >= right.GetShort()),
-                _ => throw new InterpreterException($"Equality comparison for {left.DataType} is not supported")
+                _ => throw Throw.InterpreterException($"Equality comparison for {left.DataType} is not supported", state)
             };
 
             CompleteFrame(result, ref state);
@@ -720,7 +736,7 @@ namespace OpenH2.Core.Scripting.Execution
             {
                 ScriptDataType.Float => Result.From(left.GetFloat() < right.GetFloat()),
                 ScriptDataType.Short => Result.From(left.GetShort() < right.GetShort()),
-                _ => throw new InterpreterException($"Equality comparison for {left.DataType} is not supported")
+                _ => throw Throw.InterpreterException($"Equality comparison for {left.DataType} is not supported", state)
             };
 
             CompleteFrame(result, ref state);
@@ -738,7 +754,7 @@ namespace OpenH2.Core.Scripting.Execution
             {
                 ScriptDataType.Float => Result.From(left.GetFloat() <= right.GetFloat()),
                 ScriptDataType.Short => Result.From(left.GetShort() <= right.GetShort()),
-                _ => throw new InterpreterException($"Equality comparison for {left.DataType} is not supported")
+                _ => throw Throw.InterpreterException($"Equality comparison for {left.DataType} is not supported", state)
             };
 
             CompleteFrame(result, ref state);

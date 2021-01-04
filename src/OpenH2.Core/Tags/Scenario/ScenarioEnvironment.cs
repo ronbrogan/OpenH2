@@ -17,7 +17,7 @@ namespace OpenH2.Core.Tags.Scenario
         }
 
         [FixedLength(68)]
-        public class Terrain
+        public class Terrain : IBsp
         {
             [PrimitiveValue(20)]
             public TagRef<BspTag> Bsp { get; set; }
