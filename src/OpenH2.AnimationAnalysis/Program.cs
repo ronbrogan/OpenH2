@@ -10,6 +10,7 @@ using System.Linq.Expressions;
 using System.Numerics;
 using System.Text;
 using OpenH2.Core.Maps.Vista;
+using OpenH2.Core.Animation;
 
 namespace OpenH2.AnimationAnalysis
 {
@@ -34,41 +35,51 @@ namespace OpenH2.AnimationAnalysis
                 throw new NotSupportedException("Only Vista maps are supported in this tool");
             }
 
-            var animation = map.GetTag<AnimationGraphTag>(4070576426);
+            var proc = JmadDataProcessor.GetProcessor();
             var animations = map.GetLocalTagsOfType<AnimationGraphTag>();
 
-            //Write($"Animation Tags: {animations.Count}");
-            Write($"Animation Tracks: {animation.Animations.Count()}");
+            var types = new HashSet<JmadDataType>();
 
-            animations.WriteInfo(a => a.Bones.Length);
-            animations.WriteInfo(a => a.Animations.Length);
-            animations.WriteInfo(a => a.Sounds.Length);
-            animations.SelectMany(a => a.Animations).WriteInfo(t => t.FrameCount);
-            animations.SelectMany(a => a.Animations).WriteInfo(t => t.BoneCount);
-
-
-            animations.SelectMany(a => a.Animations).WriteInfo(t => t.AnimationType);
-            animations.SelectMany(a => a.Animations).WriteInfo(t => t.ValueC);
-            animations.SelectMany(a => a.Animations).WriteInfo(t => t.ValueD);
-            animations.SelectMany(a => a.Animations).WriteInfo(t => t.ValueE);
-            animations.SelectMany(a => a.Animations).WriteInfo(t => t.ValueF);
-            animations.SelectMany(a => a.Animations).WriteInfo(t => t.ValueG);
-            animations.SelectMany(a => a.Animations).WriteInfo(t => t.ValueH);
-            animations.SelectMany(a => a.Animations).WriteInfo(t => t.ValueO);
-
-            for (var i = 0; i < 32; i++)
+            foreach(var tag in animations)
             {
-                var trackType = typeof(AnimationGraphTag.Animation);
-                var arg = Expression.Parameter(trackType, "t");
-                var access = Expression.ArrayAccess(
-                    Expression.MakeMemberAccess(arg, trackType.GetProperty(nameof(AnimationGraphTag.Animation.Data))), Expression.Constant(i));
+                foreach(var anim in tag.Animations)
+                {
+                    Write($"{tag.Name} {anim.Description}, T{anim.AnimationType}, F{anim.FrameCount}, B{anim.BoneCount}");
 
-                var lambda = Expression.Lambda<Func<AnimationGraphTag.Animation, byte>>(access, arg);
+                    Span<byte> data = anim.Data;
 
-                //animations.SelectMany(a => a.Tracks).WriteInfo(lambda);
+                    var zeroHeader = proc.ReadHeader(data);
+                    if(zeroHeader.Type != JmadDataType.Flat)
+                    {
+                        Write(zeroHeader);
+                        types.Add(zeroHeader.Type);
+                    }
+
+                    var innerHeader = proc.ReadHeader(data.Slice(anim.SizeE));
+                    if (innerHeader.Type != JmadDataType.Flat)
+                    {
+                        Write(innerHeader);
+                        types.Add(innerHeader.Type);
+                    }
+                        
+
+                    Write("=====================");
+                }
             }
 
+            Write($" Encountered Data Types: {string.Join(",", types)}");
+
             TextCopy.ClipboardService.SetText(outb.ToString());
+
+            
+        }
+
+        static void Write(JmadDataHeader header)
+        {
+            Write($"Type: {header.Type}");
+            Write($"  OrientationCount: {header.OrientationCount}");
+            Write($"  TranslationCount: {header.TranslationCount}");
+            Write($"  ScaleCount: {header.ScaleCount}");
         }
 
         private static void WriteInfo<TItem, TProp>(this TItem val, Expression<Func<TItem, TProp>> accessor)

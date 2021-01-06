@@ -134,7 +134,7 @@ namespace OpenH2.Core.Scripting.Execution
                 ScriptDataType.ScriptReference => new Result(),
                 ScriptDataType.StringId => new Result(),
                 ScriptDataType.Trigger => Result.From(this.scenario.TriggerVolumes[node.NodeData_H16].GameObject),
-                ScriptDataType.LocationFlag => Result.From(this.scenario.LocationFlagDefinitions[node.NodeData_H16].GameObject),
+                ScriptDataType.LocationFlag => Result.From(this.scenario.LocationFlagDefinitions[node.NodeData_H16]),
                 ScriptDataType.CameraPathTarget => new Result(),
                 ScriptDataType.CinematicTitle => new Result(),
                 ScriptDataType.DeviceGroup => new Result(),

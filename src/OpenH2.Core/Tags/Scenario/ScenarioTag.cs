@@ -388,7 +388,7 @@ namespace OpenH2.Core.Tags.Scenario
         }
 
         [FixedLength(56)]
-        public class LocationFlagDefinition : IGameObjectDefinition<ILocationFlag>
+        public class LocationFlagDefinition : ILocationFlag
         {
             [PrimitiveValue(0)]
             public uint Value { get; set; }
@@ -401,12 +401,10 @@ namespace OpenH2.Core.Tags.Scenario
 
             [PrimitiveValue(48)]
             public float Param { get; set; }
-
-            public ILocationFlag? GameObject { get; set; }
         }
 
         [FixedLength(64)]
-        public class CameraPathTarget : IGameObjectDefinition<ICameraPathTarget>
+        public class CameraPathTarget : ICameraPathTarget
         {
             [PrimitiveValue(0)]
             public uint Value { get; set; }
@@ -422,8 +420,6 @@ namespace OpenH2.Core.Tags.Scenario
 
             [PrimitiveValue(60)]
             public float FieldOfView { get; set; }
-
-            public ICameraPathTarget? GameObject { get; set; }
         }
 
 

@@ -6,6 +6,7 @@
     using System;
     using System.Collections;
     using System.Collections.Generic;
+    using System.Numerics;
     using System.Reflection;
     using System.Threading.Tasks;
 
@@ -68,7 +69,11 @@
     public interface IAIBehavior { }
     public interface IDamage { }
     public interface IDamageState { }
-    public interface ISpatialPoint { }
+    public interface ISpatialPoint 
+    {
+        Vector3 Position { get; }
+    }
+
     public interface ISound : IGameObject { }
     public interface IGameDifficulty 
     { 

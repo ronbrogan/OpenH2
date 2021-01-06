@@ -10,7 +10,11 @@ namespace OpenH2.Core.Animation
     {
         Flat = 1,
         Three = 3,
-        Six = 6
+        Four = 4,
+        Five = 5,
+        Six = 6,
+        Seven = 7,
+        Eight = 8
     }
 
     public struct JmadDataHeader
@@ -36,7 +40,7 @@ namespace OpenH2.Core.Animation
         private delegate int TranslationFrameSetCount(Span<byte> data);
 
         private JmadDataProcessor() { }
-        public static IAnimationProcessor GetProcessor()
+        public static JmadDataProcessor GetProcessor()
         {
             var processor = new JmadDataProcessor();
 
@@ -99,7 +103,7 @@ namespace OpenH2.Core.Animation
         private static float Decompress(short v) => v / 32768.0f;
 
 
-        private JmadDataHeader ReadHeader(Span<byte> data)
+        public JmadDataHeader ReadHeader(Span<byte> data)
         {
             var header = new JmadDataHeader
             {
@@ -127,7 +131,7 @@ namespace OpenH2.Core.Animation
                     header.ScaleOffset = data.ReadInt32At(40);
                     break;
                 default:
-                    Debug.Fail("Unsupported data type");
+                    //Debug.Fail("Unsupported data type");
                     break;
             }
 
