@@ -2,11 +2,12 @@
 using OpenH2.Core.Tags.Scenario;
 using OpenH2.Foundation.Logging;
 using System;
+using System.Diagnostics;
 using System.Threading.Tasks;
 
 namespace OpenH2.Core.Scripting.Execution
 {
-    public partial class InterpretingScriptExecutor : IScriptExecutor
+    public partial class InterpretingScriptExecutor : BaseScriptExecutor
     {
         private ExecutionState[] executionStates;
         private ScriptIterativeInterpreter interpreter;
@@ -50,7 +51,7 @@ namespace OpenH2.Core.Scripting.Execution
             this.interpreter.Initialize(scriptEngine);
         }
 
-        public void Execute()
+        public override void Execute()
         {
             for (int i = 0; i < this.executionStates.Length; i++)
             {
@@ -77,12 +78,12 @@ namespace OpenH2.Core.Scripting.Execution
             }
         }
 
-        public ValueTask Delay(int ticks)
+        public override ValueTask Delay(int ticks)
         {
             return Delay((ushort)currentMethod, ticks);
         }
 
-        public ValueTask Delay(ushort methodId, int ticks)
+        public override ValueTask Delay(ushort methodId, int ticks)
         {
             ref var state = ref this.executionStates[methodId];
             state.SleepTicksRemaining = ticks;
@@ -92,12 +93,12 @@ namespace OpenH2.Core.Scripting.Execution
             return new ValueTask();
         }
 
-        public void SetStatus(ScriptStatus desiredStatus)
+        public override void SetStatus(ScriptStatus desiredStatus)
         {
             SetStatus((ushort)currentMethod, desiredStatus);
         }
 
-        public void SetStatus(ushort id, ScriptStatus desiredStatus)
+        public override void SetStatus(ushort id, ScriptStatus desiredStatus)
         {
             ref var state = ref this.executionStates[id];
 

@@ -3,6 +3,11 @@ using System.Threading.Tasks;
 
 namespace OpenH2.Core.Scripting.Execution
 {
+    public enum ScriptExecutionMetric
+    {
+        MethodTiming,
+    }
+
     public interface IScriptExecutor
     {
         void Execute();
@@ -16,5 +21,7 @@ namespace OpenH2.Core.Scripting.Execution
         ValueTask Delay(int ticks);
 
         ValueTask Delay(ushort methodId, int ticks);
+
+        void RecordMetric(ScriptExecutionMetric metric, string dimension, long value);
     }
 }

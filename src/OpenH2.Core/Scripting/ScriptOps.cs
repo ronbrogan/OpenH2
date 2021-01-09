@@ -1,7 +1,41 @@
-﻿namespace OpenH2.Core.Scripting
+﻿using System.Collections.Generic;
+using System.Linq;
+using System.Reflection;
+
+namespace OpenH2.Core.Scripting
 {
     public static class ScriptOps
     {
+        private static string[] opToName;
+
+        static ScriptOps()
+        {
+            var map = new Dictionary<int, string>();
+
+            foreach(var method in typeof(IScriptEngine).GetMethods())
+            {
+                var attr = method.GetCustomAttribute<ScriptImplementationAttribute>();
+                if (attr != null)
+                {
+                    map[attr.Id] = method.Name;
+                }
+            }
+
+            var largest = map.Keys.Max();
+
+            opToName = new string[largest + 1];
+
+            foreach(var (op,name) in map)
+            {
+                opToName[op] = name;
+            }
+        }
+
+        public static string GetName(int operationId)
+        {
+            return opToName[operationId];
+        }
+
         public const ushort Begin = 0;
         public const ushort BeginRandom = 1;
         public const ushort If = 2;

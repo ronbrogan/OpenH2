@@ -26,6 +26,7 @@ namespace OpenH2.Core.Scripting.Execution
         private readonly IScriptExecutor executor;
         private Result[] variables;
         private IScriptEngine scriptEngine;
+        private Stopwatch methodStopwatch = new();
 
         public GlobalVariableSet GlobalVariableSet { get; } = new();
 
@@ -368,6 +369,8 @@ namespace OpenH2.Core.Scripting.Execution
                 return;
             }
 
+            methodStopwatch.Start();
+
             switch (opId)
             {
                 case ScriptOps.Sleep: this.Sleep(ref state); break;
@@ -387,6 +390,9 @@ namespace OpenH2.Core.Scripting.Execution
 
                 default: this.DispatchMethod(ref state); break;
             }
+
+            this.executor.RecordMetric(ScriptExecutionMetric.MethodTiming, $"{ScriptOps.GetName(opId)} [{opId}]", ((long)methodStopwatch.ElapsedTicks * 1000000 / Stopwatch.Frequency));
+            methodStopwatch.Reset();
         }
 
         private void Sleep(ref State state)

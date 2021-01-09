@@ -20,6 +20,7 @@ namespace OpenH2.Engine
 
             var audioSystem = new AudioSystem(this, audioAdapter);
             var cameraSystem = new CameraSystem(this, graphicsHost);
+            var actorSystem = new ActorSystem(this);
             // new up systems, order here will be order of update
             Systems.Add(new OpenTKInputSystem(this, window));
             Systems.Add(new BspSystem(this));
@@ -27,7 +28,8 @@ namespace OpenH2.Engine
             Systems.Add(new MoverSystem(this));
             Systems.Add(cameraSystem);
             Systems.Add(audioSystem);
-            Systems.Add(new ScriptSystem(this, audioSystem, cameraSystem));
+            Systems.Add(actorSystem);
+            Systems.Add(new ScriptSystem(this, audioSystem, cameraSystem, actorSystem));
             Systems.Add(new RenderCollectorSystem(this, graphics));
 
             RenderSystems.Add(new RenderPipelineSystem(this, graphics));

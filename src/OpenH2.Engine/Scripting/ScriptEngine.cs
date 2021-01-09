@@ -19,17 +19,20 @@ namespace OpenH2.Engine.Scripting
         private readonly IScriptExecutor executionOrchestrator;
         private readonly AudioSystem audioSystem;
         private readonly CameraSystem cameraSystem;
+        private readonly ActorSystem actorSystem;
         private readonly Random rng;
 
         public ScriptEngine(Scene scene, 
             IScriptExecutor executionOrchestrator,
             AudioSystem audioSystem,
-            CameraSystem cameraSystem)
+            CameraSystem cameraSystem,
+            ActorSystem actorSystem)
         {
             this.scene = scene;
             this.executionOrchestrator = executionOrchestrator;
             this.audioSystem = audioSystem;
             this.cameraSystem = cameraSystem;
+            this.actorSystem = actorSystem;
             this.rng = new Random(42);
         }
 

@@ -1,5 +1,6 @@
 ﻿using OpenH2.Core.Enums;
 using OpenH2.Core.Maps.Vista;
+using OpenH2.Core.Metrics;
 using OpenH2.Core.Scripting;
 using OpenH2.Core.Tags.Scenario;
 using System;
@@ -21,11 +22,25 @@ namespace OpenH2.Core.Architecture
         public Dictionary<Guid, Entity> Entities { get; private set; } = new();
         private ConcurrentQueue<Entity> addedEntities = new();
         private ConcurrentQueue<Entity> removedEntities = new();
+        private ConcurrentBag<IMetricSource> metricSources = new();
 
         public Scene(H2vMap map, IEntityCreator entityCreator)
         {
             this.Map = map;
             this.EntityCreator = entityCreator;
+        }
+
+        public void RegisterMetricSource(IMetricSource source)
+        {
+            metricSources.Add(source);
+        }
+
+        public void UseMetricSink(IMetricSink sink)
+        {
+            foreach(var source in metricSources)
+            {
+                source.Enable(sink);
+            }
         }
 
         // Queue Add to not mutate current frame's data

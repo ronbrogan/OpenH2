@@ -18,6 +18,7 @@ namespace OpenH2.Engine.Systems
     {
         private readonly AudioSystem audioSystem;
         private readonly CameraSystem cameraSystem;
+        private readonly ActorSystem actorSystem;
         private bool run = false;
         private InterpretingScriptExecutor executor;
         private ScriptEngine engine;
@@ -26,10 +27,12 @@ namespace OpenH2.Engine.Systems
 
         public ScriptSystem(World world, 
             AudioSystem audioSystem,
-            CameraSystem cameraSystem) : base(world)
+            CameraSystem cameraSystem,
+            ActorSystem actorSystem) : base(world)
         {
             this.audioSystem = audioSystem;
             this.cameraSystem = cameraSystem;
+            this.actorSystem = actorSystem;
         }
 
         public override void Initialize(Scene scene)
@@ -42,11 +45,13 @@ namespace OpenH2.Engine.Systems
             this.engine = new ScriptEngine(scene, 
                 this.executor, 
                 this.audioSystem,
-                this.cameraSystem);
+                this.cameraSystem,
+                this.actorSystem);
 
             this.executor.Initialize(this.engine);
             this.stopwatch = new Stopwatch();
             this.stopwatch.Start();
+            scene.RegisterMetricSource(this.executor);
 
             base.Initialize(scene);
         }

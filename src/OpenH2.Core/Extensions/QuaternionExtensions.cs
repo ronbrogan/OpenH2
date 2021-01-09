@@ -39,6 +39,7 @@ namespace OpenH2.Core.Extensions
         {
             /*
              * This method is mathematically equivalent to these operations
+             *
              * var q1 = Quaternion.CreateFromAxisAngle(new Vector3(0, 0, 1), orient.X);
              * var q2 = Quaternion.CreateFromAxisAngle(new Vector3(0, -1, 0), orient.Y);
              * var q3 = Quaternion.CreateFromAxisAngle(new Vector3(1, 0, 0), orient.Z);

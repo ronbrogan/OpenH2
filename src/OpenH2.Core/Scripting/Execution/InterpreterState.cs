@@ -84,7 +84,7 @@ namespace OpenH2.Core.Scripting.Execution
             for(var i = 0; i < FrameCount; i++)
             {
                 var frame = CallStack[i];
-                sb.AppendLine($"  At Op:{frame.OriginatingNode.OperationId} consuming Op:{frame.Current.OperationId} and next of {frame.Next}");
+                sb.AppendLine($"  At Op:{ScriptOps.GetName(frame.OriginatingNode.OperationId)} consuming Op:{ScriptOps.GetName(frame.Current.OperationId)} and next of {frame.Next}");
             }
 
             return sb.ToString();

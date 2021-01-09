@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace OpenH2.Core.Scripting.Execution
 {
-    public class ScriptTaskExecutor : IScriptExecutor
+    public class ScriptTaskExecutor : BaseScriptExecutor
     {
         private delegate Task OrchestratedScript();
         public ulong CurrentTick { get; private set; } = 0;
@@ -79,7 +79,7 @@ namespace OpenH2.Core.Scripting.Execution
             this.executionStates = execStates.ToArray();
         }
 
-        public void Execute()
+        public override void Execute()
         {
             CurrentTick++;
 
@@ -129,7 +129,7 @@ namespace OpenH2.Core.Scripting.Execution
             }
         }
 
-        public void SetStatus(ScriptStatus desiredStatus)
+        public override void SetStatus(ScriptStatus desiredStatus)
         {
             var currentName = currentScript.Value;
 
@@ -146,7 +146,7 @@ namespace OpenH2.Core.Scripting.Execution
             }
         }
 
-        public void SetStatus(ushort methodId, ScriptStatus desiredStatus)
+        public override void SetStatus(ushort methodId, ScriptStatus desiredStatus)
         {
             ref var state = ref executionStates[methodId];
 
@@ -172,7 +172,7 @@ namespace OpenH2.Core.Scripting.Execution
         /// <summary>
         /// Creates a task that will take the specified number of updates to complete
         /// </summary>
-        public ValueTask Delay(int ticks)
+        public override ValueTask Delay(int ticks)
         {
             var t = new TaskCompletionSource<object>();
 
@@ -184,7 +184,7 @@ namespace OpenH2.Core.Scripting.Execution
             return new ValueTask(t.Task);
         }
 
-        public ValueTask Delay(ushort methodId, int ticks)
+        public override ValueTask Delay(ushort methodId, int ticks)
         {
             // Sleeping another script is not supported
             return new ValueTask(); 

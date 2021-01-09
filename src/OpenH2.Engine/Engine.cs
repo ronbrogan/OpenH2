@@ -4,6 +4,7 @@ using OpenH2.Core.Configuration;
 using OpenH2.Core.Extensions;
 using OpenH2.Core.Factories;
 using OpenH2.Core.Maps.Vista;
+using OpenH2.Core.Metrics;
 using OpenH2.Engine.Components;
 using OpenH2.Engine.Entities;
 using OpenH2.Foundation;
@@ -105,6 +106,13 @@ namespace OpenH2.Engine
             scene.AddEntity(player);
 
             world.LoadScene(scene);
+
+            var timestamp = DateTime.Now.ToString("yy-MM-ddTHH-mm");
+            var sinkPath = Path.Combine(Environment.CurrentDirectory, "diagnostics", $"{timestamp}-metrics.csv");
+            Directory.CreateDirectory(Path.GetDirectoryName(sinkPath));
+            var sink = new FlatFileMetricSink(sinkPath);
+            scene.UseMetricSink(sink);
+            sink.Start();
         }
 
         private void PlaceLights(Scene destination)
