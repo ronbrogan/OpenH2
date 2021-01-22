@@ -1,7 +1,7 @@
 ﻿#version 450
 
 layout (triangles) in;
-layout (line_strip, max_vertices=3) out;
+layout (line_strip, max_vertices=4) out;
 
 layout(std140, binding = 0) uniform GlobalUniform
 {
@@ -43,15 +43,17 @@ layout(location = 0) out vec4 out_color;
 
 void main(void)
 {
-    int i;
-    for (i = 0; i < gl_in.length(); i++)
-    {
-        frag_in.texcoord = vert_out[i].texcoord;
-        frag_in.world_pos = vert_out[i].world_pos;
-        frag_in.world_normal = vert_out[i].world_normal;
-        gl_Position = gl_in[i].gl_Position;
-        EmitVertex();
-    }
+    gl_Position = gl_in[0].gl_Position;
+    EmitVertex();
+
+    gl_Position = gl_in[1].gl_Position;
+    EmitVertex();
+
+    gl_Position = gl_in[2].gl_Position;
+    EmitVertex();
+
+    gl_Position = gl_in[0].gl_Position;
+    EmitVertex();
 
     EndPrimitive();
 }

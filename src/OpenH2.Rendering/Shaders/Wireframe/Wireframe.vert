@@ -43,4 +43,7 @@ void main() {
 	vert_out.world_pos = (modelView * vec4(local_position, 1)).xyz;
 
 	gl_Position = Globals.ProjectionMatrix * modelView * vec4(local_position, 1);
+
+	// Nudge closer to camera as this is typically used to overlay a mesh and the lines z-fight
+	gl_Position.z -= 0.0001;
 }
