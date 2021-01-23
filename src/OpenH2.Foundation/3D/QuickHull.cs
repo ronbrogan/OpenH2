@@ -22,12 +22,13 @@ namespace OpenH2.Foundation._3D
         private class Face
         {
             public HalfEdge he0;
-            public Vector3 normal;
+
+            private Vector3 normal;
             public double area;
-            public Vector3 centroid;
-            public double planeOffset;
-            public int index;
-            public int numVertices;
+            private Vector3 centroid;
+            double planeOffset;
+            int index;
+            int numVerts;
 
             public Face next;
 
@@ -49,7 +50,7 @@ namespace OpenH2.Foundation._3D
                     he = he.next;
                 }
                 while (he != he0);
-                Vector3.Multiply(centroid, 1f / numVertices);
+                centroid = Vector3.Multiply(centroid, 1f / numVerts);
             }
 
             public void computeNormal(ref Vector3 normal, double minArea)
@@ -66,7 +67,7 @@ namespace OpenH2.Foundation._3D
                     HalfEdge hedge = he0;
                     do
                     {
-                        double lenSqr = hedge.LengthSquared();
+                        double lenSqr = hedge.lengthSquared();
                         if (lenSqr > lenSqrMax)
                         {
                             hedgeMax = hedge;
@@ -78,11 +79,11 @@ namespace OpenH2.Foundation._3D
 
                     Vector3 p2 = hedgeMax.head().pnt;
                     Vector3 p1 = hedgeMax.tail().pnt;
-                    float lenMax = (float)Math.Sqrt(lenSqrMax);
-                    float ux = (p2.X - p1.X) / lenMax;
-                    float uy = (p2.Y - p1.Y) / lenMax;
-                    float uz = (p2.Z - p1.Z) / lenMax;
-                    float dot = normal.X * ux + normal.Y * uy + normal.Z * uz;
+                    double lenMax = Math.Sqrt(lenSqrMax);
+                    float ux = (float)((p2.X - p1.X) / lenMax);
+                    float uy = (float)((p2.Y - p1.Y) / lenMax);
+                    float uz = (float)((p2.Z - p1.Z) / lenMax);
+                    float dot = (float)(normal.X * ux + normal.Y * uy + normal.Z * uz);
                     normal.X -= dot * ux;
                     normal.Y -= dot * uy;
                     normal.Z -= dot * uz;
@@ -105,7 +106,7 @@ namespace OpenH2.Foundation._3D
 
                 normal = Vector3.Zero;
 
-                numVertices = 2;
+                numVerts = 2;
 
                 while (he2 != he0)
                 {
@@ -124,15 +125,10 @@ namespace OpenH2.Foundation._3D
 
                     he1 = he2;
                     he2 = he2.next;
-                    numVertices++;
+                    numVerts++;
                 }
-                area = norm(normal);
-                normal = Vector3.Multiply(normal, 1 / (float)area);
-
-                double norm(Vector3 v)
-                {
-                    return Math.Sqrt(v.X * v.X + v.Y * v.Y + v.Z * v.Z);
-                }
+                area = Vector3.Distance(normal, Vector3.Zero);
+                normal = Vector3.Multiply(normal, (float)(1 / area));
             }
 
             private void computeNormalAndCentroid()
@@ -142,17 +138,15 @@ namespace OpenH2.Foundation._3D
                 planeOffset = Vector3.Dot(normal, centroid);
                 int numv = 0;
                 HalfEdge he = he0;
-
                 do
                 {
                     numv++;
                     he = he.next;
                 }
                 while (he != he0);
-
-                if (numv != numVertices)
+                if (numv != numVerts)
                 {
-                    throw new Exception("face " + getVertexString() + " numVerts=" + numVertices + " should be " + numv);
+                    throw new Exception("face " + getVertexString() + " numVerts=" + numVerts + " should be " + numv);
                 }
             }
 
@@ -175,8 +169,7 @@ namespace OpenH2.Foundation._3D
              * @param v1 second vertex
              * @param v2 third vertex
              */
-            public static Face createTriangle(Vertex v0, Vertex v1, Vertex v2,
-                               double minArea)
+            public static Face createTriangle(Vertex v0, Vertex v1, Vertex v2, double minArea)
             {
                 Face face = new Face();
                 HalfEdge he0 = new HalfEdge(v0, face);
@@ -225,8 +218,6 @@ namespace OpenH2.Foundation._3D
 
             public Face()
             {
-                normal = new Vector3();
-                centroid = new Vector3();
                 mark = VISIBLE;
             }
 
@@ -292,6 +283,26 @@ namespace OpenH2.Foundation._3D
                 return normal.X * p.X + normal.Y * p.Y + normal.Z * p.Z - planeOffset;
             }
 
+            /**
+             * Returns the normal of the plane associated with this face.
+             *
+             * @return the planar normal
+             */
+            public Vector3 getNormal()
+            {
+                return normal;
+            }
+
+            public Vector3 getCentroid()
+            {
+                return centroid;
+            }
+
+            public int numVertices()
+            {
+                return numVerts;
+            }
+
             public String getVertexString()
             {
                 String s = null;
@@ -324,8 +335,7 @@ namespace OpenH2.Foundation._3D
                 while (he != he0);
             }
 
-            private Face connectHalfEdges(
-               HalfEdge hedgePrev, HalfEdge hedge)
+            private Face connectHalfEdges(HalfEdge hedgePrev, HalfEdge hedge)
             {
                 Face discardedFace = null;
 
@@ -339,7 +349,7 @@ namespace OpenH2.Foundation._3D
                     {
                         he0 = hedge;
                     }
-                    if (oppFace.numVertices == 3)
+                    if (oppFace.numVertices() == 3)
                     { // then we can get rid of the opposite face altogether
                         hedgeOpp = hedge.getOpposite().prev.getOpposite();
 
@@ -381,7 +391,7 @@ namespace OpenH2.Foundation._3D
                 double maxd = 0;
                 int numv = 0;
 
-                if (numVertices < 3)
+                if (numVerts < 3)
                 {
                     throw new Exception("degenerate face: " + getVertexString());
                 }
@@ -391,38 +401,38 @@ namespace OpenH2.Foundation._3D
                     if (hedgeOpp == null)
                     {
                         throw new Exception(
-                           "face " + getVertexString() + ": " +
-                           "unreflected half edge " + hedge.getVertexString());
+                       "face " + getVertexString() + ": " +
+                       "unreflected half edge " + hedge.getVertexString());
                     }
                     else if (hedgeOpp.getOpposite() != hedge)
                     {
                         throw new Exception(
-                           "face " + getVertexString() + ": " +
-                           "opposite half edge " + hedgeOpp.getVertexString() +
-                           " has opposite " +
-                           hedgeOpp.getOpposite().getVertexString());
+                       "face " + getVertexString() + ": " +
+                       "opposite half edge " + hedgeOpp.getVertexString() +
+                       " has opposite " +
+                       hedgeOpp.getOpposite().getVertexString());
                     }
                     if (hedgeOpp.head() != hedge.tail() ||
                     hedge.head() != hedgeOpp.tail())
                     {
                         throw new Exception(
-                           "face " + getVertexString() + ": " +
-                           "half edge " + hedge.getVertexString() +
-                            " reflected by " + hedgeOpp.getVertexString());
+                       "face " + getVertexString() + ": " +
+                       "half edge " + hedge.getVertexString() +
+                       " reflected by " + hedgeOpp.getVertexString());
                     }
                     Face oppFace = hedgeOpp.face;
                     if (oppFace == null)
                     {
                         throw new Exception(
-                           "face " + getVertexString() + ": " +
-                           "no face on half edge " + hedgeOpp.getVertexString());
+                       "face " + getVertexString() + ": " +
+                       "no face on half edge " + hedgeOpp.getVertexString());
                     }
                     else if (oppFace.mark == DELETED)
                     {
                         throw new Exception(
-                           "face " + getVertexString() + ": " +
-                           "opposite face " + oppFace.getVertexString() +
-                           " not on hull");
+                       "face " + getVertexString() + ": " +
+                       "opposite face " + oppFace.getVertexString() +
+                       " not on hull");
                     }
                     double d = Math.Abs(distanceToPlane(hedge.head().pnt));
                     if (d > maxd)
@@ -434,14 +444,15 @@ namespace OpenH2.Foundation._3D
                 }
                 while (hedge != he0);
 
-                if (numv != numVertices)
+                if (numv != numVerts)
                 {
-                    throw new Exception("face " + getVertexString() + " numVerts=" + numVertices + " should be " + numv);
+                    throw new Exception("face " + getVertexString() + " numVerts=" + numVerts + " should be " + numv);
                 }
 
             }
 
-            public int mergeAdjacentFace(HalfEdge hedgeAdj, Face[] discarded)
+            public int mergeAdjacentFace(HalfEdge hedgeAdj,
+                              Face[] discarded)
             {
                 Face oppFace = hedgeAdj.oppositeFace();
                 int numDiscarded = 0;
@@ -531,7 +542,7 @@ namespace OpenH2.Foundation._3D
             {
                 HalfEdge hedge;
 
-                if (numVertices < 4)
+                if (numVertices() < 4)
                 {
                     return;
                 }
@@ -572,8 +583,10 @@ namespace OpenH2.Foundation._3D
                 {
                     face.checkConsistency();
                 }
+
             }
         }
+
 
         private class HalfEdge
         {
@@ -766,7 +779,7 @@ namespace OpenH2.Foundation._3D
              *
              * @return half-edge length squared
              */
-            public double LengthSquared()
+            public double lengthSquared()
             {
                 if (tail() != null)
                 {
@@ -835,7 +848,7 @@ namespace OpenH2.Foundation._3D
 
         protected double explicitTolerance = AUTOMATIC_TOLERANCE;
         protected double tolerance;
-        private const double DOUBLE_PREC = 2.2204460492503131e-16;
+        private const double DOUBLE_PREC = 2.2204460492503131e-8;
 
 
         /**
@@ -848,7 +861,7 @@ namespace OpenH2.Foundation._3D
          * points, but it can be set explicitly by the application.
          *
          * @return distance tolerance
-         * @see QuickHull3D#setExplicitDistanceTolerance
+         * @see QuickHull#setExplicitDistanceTolerance
          */
         public double getDistanceTolerance()
         {
@@ -908,7 +921,6 @@ namespace OpenH2.Foundation._3D
                     face.outside = null;
                 }
             }
-
             claimed.delete(vtx);
         }
 
@@ -921,15 +933,13 @@ namespace OpenH2.Foundation._3D
                 {
                     end = end.next;
                 }
-
                 claimed.delete(face.outside, end);
-
                 end.next = null;
                 return face.outside;
             }
             else
             {
-                return default;
+                return null;
             }
         }
 
@@ -940,19 +950,35 @@ namespace OpenH2.Foundation._3D
         {
         }
 
+        /**
+         * Creates a convex hull object and initializes it to the convex hull
+         * of a set of points whose coordinates are given by an
+         * array of doubles.
+         *
+         * @param coords x, y, and z coordinates of each input
+         * point. The length of this array will be three times
+         * the the number of input points.
+         * @throws IllegalArgumentException the number of input points is less
+         * than four, or the points appear to be coincident, colinear, or
+         * coplanar.
+         */
+        public QuickHull(double[] coords)
+        {
+            build(coords, coords.Length / 3);
+        }
 
         /**
          * Creates a convex hull object and initializes it to the convex hull
          * of a set of points.
          *
          * @param points input points.
-         * @throws ArgumentException the number of input points is less
+         * @throws IllegalArgumentException the number of input points is less
          * than four, or the points appear to be coincident, colinear, or
          * coplanar.
          */
         public QuickHull(Vector3[] points)
         {
-            build(points);
+            build(points, points.Length);
         }
 
         private HalfEdge findHalfEdge(Vertex tail, Vertex head)
@@ -969,7 +995,8 @@ namespace OpenH2.Foundation._3D
             return null;
         }
 
-        protected void setHull(double[] coords, int nump, int[][] faceIndices, int numf)
+        protected void setHull(double[] coords, int nump,
+                                int[][] faceIndices, int numf)
         {
             initBuffers(nump);
             setPoints(coords, nump);
@@ -992,8 +1019,6 @@ namespace OpenH2.Foundation._3D
             }
         }
 
-
-
         private void printPoints(StringBuilder ps)
         {
             for (int i = 0; i < numPoints; i++)
@@ -1003,6 +1028,21 @@ namespace OpenH2.Foundation._3D
             }
         }
 
+        /**
+         * Constructs the convex hull of a set of points whose
+         * coordinates are given by an array of doubles.
+         *
+         * @param coords x, y, and z coordinates of each input
+         * point. The length of this array will be three times
+         * the number of input points.
+         * @throws IllegalArgumentException the number of input points is less
+         * than four, or the points appear to be coincident, colinear, or
+         * coplanar.
+         */
+        public void build(double[] coords)
+        {
+            build(coords, coords.Length / 3);
+        }
 
         /**
          * Constructs the convex hull of a set of points whose
@@ -1012,7 +1052,7 @@ namespace OpenH2.Foundation._3D
          * point. The length of this array must be at least three times
          * <code>nump</code>.
          * @param nump number of input points
-         * @throws ArgumentException the number of input points is less
+         * @throws IllegalArgumentException the number of input points is less
          * than four or greater than 1/3 the length of <code>coords</code>,
          * or the points appear to be coincident, colinear, or
          * coplanar.
@@ -1027,7 +1067,6 @@ namespace OpenH2.Foundation._3D
             {
                 throw new ArgumentException("Coordinate array too small for specified number of points");
             }
-
             initBuffers(nump);
             setPoints(coords, nump);
             buildHull();
@@ -1037,7 +1076,7 @@ namespace OpenH2.Foundation._3D
          * Constructs the convex hull of a set of points.
          *
          * @param points input points
-         * @throws ArgumentException the number of input points is less
+         * @throws IllegalArgumentException the number of input points is less
          * than four, or the points appear to be coincident, colinear, or
          * coplanar.
          */
@@ -1051,7 +1090,7 @@ namespace OpenH2.Foundation._3D
          *
          * @param points input points
          * @param nump number of input points
-         * @throws ArgumentException the number of input points is less
+         * @throws IllegalArgumentException the number of input points is less
          * than four or greater then the length of <code>points</code>, or the
          * points appear to be coincident, colinear, or coplanar.
          */
@@ -1088,12 +1127,21 @@ namespace OpenH2.Foundation._3D
                     // splitFace (face);
                 }
             }
-
             for (Face face = newFaces.first(); face != null; face = face.next)
             {
                 faces.Add(face);
             }
         }
+
+        //      private void splitFace (Face face)
+        //       {
+        //         Face newFace = face.split();
+        //         if (newFace != null)
+        //          { newFaces.add (newFace);
+        //            splitFace (newFace);
+        //            splitFace (face);
+        //          }
+        //       }
 
         protected void initBuffers(int nump)
         {
@@ -1223,7 +1271,8 @@ namespace OpenH2.Foundation._3D
             {
                 throw new ArgumentException("Input points appear to be coincident");
             }
-            Vertex[] vtx = new Vertex[4];
+            Vertex[]
+            vtx = new Vertex[4];
             // set first two vertices to be those with the greatest
             // one dimensional separation
 
@@ -1232,16 +1281,16 @@ namespace OpenH2.Foundation._3D
 
             // set third vertex to be the vertex farthest from
             // the line between vtx0 and vtx1
+            Vector3 u01 = new Vector3();
             Vector3 nrml = new Vector3();
+            Vector3 xprod = new Vector3();
             double maxSqr = 0;
-            var u01 = Vector3.Normalize(vtx[1].pnt - vtx[0].pnt);
+            u01 = Vector3.Normalize(vtx[1].pnt - vtx[0].pnt);
 
             for (int i = 0; i < numPoints; i++)
             {
-                var diff02 = pointBuffer[i].pnt - vtx[0].pnt;
-                var xprod = Vector3.Cross(u01, diff02);
-                double lenSqr = normSquared(xprod);
-
+                xprod = Vector3.Cross(u01, pointBuffer[i].pnt - vtx[0].pnt);
+                double lenSqr = Vector3.DistanceSquared(xprod, Vector3.Zero);
                 if (lenSqr > maxSqr &&
                     pointBuffer[i] != vtx[0] &&  // paranoid
                     pointBuffer[i] != vtx[1])
@@ -1255,14 +1304,13 @@ namespace OpenH2.Foundation._3D
             {
                 throw new ArgumentException("Input points appear to be colinear");
             }
-
             nrml = Vector3.Normalize(nrml);
 
             // recompute nrml to make sure it is normal to u10 - otherwise could
             // be errors in case vtx[2] is close to u10
-            Vector3 res = Vector3.Multiply(Vector3.Dot(nrml, u01), u01);
+            Vector3 res = new Vector3();
+            res = Vector3.Multiply(Vector3.Dot(nrml, u01), u01); // component of nrml along u01
             nrml -= res;
-
             nrml = Vector3.Normalize(nrml);
 
             double maxDist = 0;
@@ -1281,12 +1329,13 @@ namespace OpenH2.Foundation._3D
             }
             if (Math.Abs(maxDist) <= 100 * tolerance)
             {
-                throw new Exception("Input points appear to be coplanar");
+                throw new ArgumentException("Input points appear to be coplanar");
             }
+
 
             Face[] tris = new Face[4];
 
-            if ((Vector3.Dot(vtx[3].pnt, nrml) - d0) < 0)
+            if (Vector3.Dot(vtx[3].pnt, nrml) - d0 < 0)
             {
                 tris[0] = Face.createTriangle(vtx[0], vtx[1], vtx[2]);
                 tris[1] = Face.createTriangle(vtx[3], vtx[1], vtx[0]);
@@ -1346,11 +1395,6 @@ namespace OpenH2.Foundation._3D
                     addPointToFace(v, maxFace);
                 }
             }
-
-            double normSquared(Vector3 v)
-            {
-                return v.X * v.X + v.Y * v.Y + v.Z * v.Z;
-            }
         }
 
         /**
@@ -1367,8 +1411,8 @@ namespace OpenH2.Foundation._3D
          * Returns the vertex points in this hull.
          *
          * @return array of vertex points
-         * @see QuickHull3D#getVertices(double[])
-         * @see QuickHull3D#getFaces()
+         * @see QuickHull#getVertices(double[])
+         * @see QuickHull#getFaces()
          */
         public Vector3[] getVertices()
         {
@@ -1387,8 +1431,8 @@ namespace OpenH2.Foundation._3D
          * This length of this array must be at least three times
          * the number of vertices.
          * @return the number of vertices
-         * @see QuickHull3D#getVertices()
-         * @see QuickHull3D#getFaces()
+         * @see QuickHull#getVertices()
+         * @see QuickHull#getFaces()
          */
         public int getVertices(double[] coords)
         {
@@ -1441,8 +1485,8 @@ namespace OpenH2.Foundation._3D
          *
          * @return array of integer arrays, giving the vertex
          * indices for each face.
-         * @see QuickHull3D#getVertices()
-         * @see QuickHull3D#getFaces(int)
+         * @see QuickHull#getVertices()
+         * @see QuickHull#getFaces(int)
          */
         public int[][] getFaces()
         {
@@ -1464,7 +1508,7 @@ namespace OpenH2.Foundation._3D
          * in the default)
          * @return array of integer arrays, giving the vertex
          * indices for each face.
-         * @see QuickHull3D#getVertices()
+         * @see QuickHull#getVertices()
          */
         public int[][] getFaces(int indexFlags)
         {
@@ -1472,7 +1516,7 @@ namespace OpenH2.Foundation._3D
             int k = 0;
             foreach (var face in faces)
             {
-                allFaces[k] = new int[face.numVertices];
+                allFaces[k] = new int[face.numVertices()];
                 getFaceIndices(allFaces[k], face, indexFlags);
                 k++;
             }
@@ -1496,9 +1540,9 @@ namespace OpenH2.Foundation._3D
          * {@link #print(StringBuilder,int) print(ps,indexFlags)}.
          *
          * @param ps stream used for printing
-         * @see QuickHull3D#print(StringBuilder,int)
-         * @see QuickHull3D#getVertices()
-         * @see QuickHull3D#getFaces()
+         * @see QuickHull#print(StringBuilder,int)
+         * @see QuickHull#getVertices()
+         * @see QuickHull#getFaces()
          */
         public void print(StringBuilder ps)
         {
@@ -1523,8 +1567,8 @@ namespace OpenH2.Foundation._3D
          * @param ps stream used for printing
          * @param indexFlags specifies index characteristics
          * (0 results in the default).
-         * @see QuickHull3D#getVertices()
-         * @see QuickHull3D#getFaces()
+         * @see QuickHull#getVertices()
+         * @see QuickHull#getFaces()
          */
         public void print(StringBuilder ps, int indexFlags)
         {
@@ -1539,7 +1583,7 @@ namespace OpenH2.Foundation._3D
             }
             foreach (var face in faces)
             {
-                int[] indices = new int[face.numVertices];
+                int[] indices = new int[face.numVertices()];
                 getFaceIndices(indices, face, indexFlags);
 
                 ps.Append("f");
@@ -1578,8 +1622,6 @@ namespace OpenH2.Foundation._3D
 
         private void resolveUnclaimedPoints(FaceList newFaces)
         {
-            if (unclaimed.isEmpty()) return;
-
             Vertex vtxNext = unclaimed.first();
             for (Vertex vtx = vtxNext; vtx != null; vtx = vtxNext)
             {
@@ -1587,7 +1629,8 @@ namespace OpenH2.Foundation._3D
 
                 double maxDist = tolerance;
                 Face maxFace = null;
-                for (Face newFace = newFaces.first(); newFace != null; newFace = newFace.next)
+                for (Face newFace = newFaces.first(); newFace != null;
+                     newFace = newFace.next)
                 {
                     if (newFace.mark == Face.VISIBLE)
                     {
@@ -1644,7 +1687,7 @@ namespace OpenH2.Foundation._3D
 
         private double oppFaceDistance(HalfEdge he)
         {
-            return he.face.distanceToPlane(he.opposite.face.centroid);
+            return he.face.distanceToPlane(he.opposite.face.getCentroid());
         }
 
         private bool doAdjacentMerge(Face face, int mergeType)
@@ -1696,12 +1739,13 @@ namespace OpenH2.Foundation._3D
 
                 if (merge)
                 {
+
                     int numd = face.mergeAdjacentFace(hedge, discardedFaces);
                     for (int i = 0; i < numd; i++)
                     {
                         deleteFacePoints(discardedFaces[i], face);
                     }
-                    
+
                     return true;
                 }
                 hedge = hedge.next;
@@ -1716,9 +1760,10 @@ namespace OpenH2.Foundation._3D
 
         private void calculateHorizon(Vector3 eyePnt, HalfEdge edge0, Face face)
         {
+            //         oldFaces.add (face);
             deleteFacePoints(face, null);
             face.mark = Face.DELETED;
-            
+
             HalfEdge edge;
             if (edge0 == null)
             {
@@ -1729,7 +1774,6 @@ namespace OpenH2.Foundation._3D
             {
                 edge = edge0.getNext();
             }
-
             do
             {
                 Face oppFace = edge.oppositeFace();
@@ -1751,7 +1795,8 @@ namespace OpenH2.Foundation._3D
 
         private HalfEdge addAdjoiningFace(Vertex eyeVtx, HalfEdge he)
         {
-            Face face = Face.createTriangle(eyeVtx, he.tail(), he.head());
+            Face face = Face.createTriangle(
+               eyeVtx, he.tail(), he.head());
             faces.Add(face);
             face.getEdge(-1).setOpposite(he.getOpposite());
             return face.getEdge(0);
@@ -1764,10 +1809,10 @@ namespace OpenH2.Foundation._3D
             HalfEdge hedgeSidePrev = null;
             HalfEdge hedgeSideBegin = null;
 
-            foreach(var horizonHe in horizon)
+            foreach (var horizonHe in horizon)
             {
                 HalfEdge hedgeSide = addAdjoiningFace(eyeVtx, horizonHe);
-                
+
                 if (hedgeSidePrev != null)
                 {
                     hedgeSide.next.setOpposite(hedgeSidePrev);
@@ -1855,9 +1900,7 @@ namespace OpenH2.Foundation._3D
             {
                 addPointToHull(eyeVtx);
                 cnt++;
-                
             }
-
             reindexFacesAndVertices();
         }
 
@@ -1881,13 +1924,15 @@ namespace OpenH2.Foundation._3D
             }
             // remove inactive faces and mark active vertices
             numFaces = 0;
-            for (int i = 0; i < faces.Count; i++)
+            var facesToProcess = faces.Count;
+            for (int i = 0; i < facesToProcess; i++)
             {
                 Face face = faces[i];
-
                 if (face.mark != Face.VISIBLE)
                 {
-                    faces.RemoveAt(i--);
+                    faces.RemoveAt(i);
+                    i--;
+                    facesToProcess--;
                 }
                 else
                 {
@@ -1895,7 +1940,6 @@ namespace OpenH2.Foundation._3D
                     numFaces++;
                 }
             }
-
             // reindex vertices
             numVertices = 0;
             for (int i = 0; i < numPoints; i++)
@@ -1972,15 +2016,15 @@ namespace OpenH2.Foundation._3D
 
         /**
          * Checks the correctness of the hull using the distance tolerance
-         * returned by {@link QuickHull3D#getDistanceTolerance
+         * returned by {@link QuickHull#getDistanceTolerance
          * getDistanceTolerance}; see
-         * {@link QuickHull3D#check(StringBuilder,double)
+         * {@link QuickHull#check(StringBuilder,double)
          * check(StringBuilder,double)} for details.
          *
          * @param ps print stream for diagnostic messages; may be
          * set to <code>null</code> if no messages are desired.
          * @return true if the hull is valid
-         * @see QuickHull3D#check(StringBuilder,double)
+         * @see QuickHull#check(StringBuilder,double)
          */
         public bool check(StringBuilder ps)
         {
@@ -2005,7 +2049,7 @@ namespace OpenH2.Foundation._3D
          * set to <code>null</code> if no messages are desired.
          * @param tol distance tolerance
          * @return true if the hull is valid
-         * @see QuickHull3D#check(StringBuilder)
+         * @see QuickHull#check(StringBuilder)
          */
         public bool check(StringBuilder ps, double tol)
 

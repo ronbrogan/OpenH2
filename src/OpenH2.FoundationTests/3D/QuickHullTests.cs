@@ -225,6 +225,17 @@ namespace OpenH2.Foundation.Tests._3D
             pnt.Z += (float)(tol * (rand.NextDouble() - 0.5));
         }
 
+        private Vector3 getRandom(float lower, float upper)
+        {
+            var range = upper - lower;
+            return new Vector3
+            {
+                X = (float)(rand.NextDouble() * range + lower),
+                Y = (float)(rand.NextDouble() * range + lower),
+                Z = (float)(rand.NextDouble() * range + lower)
+            };
+        }
+
         /**
          * Returns the coordinates for <code>num</code> randomly
          * chosen points which are degenerate which respect
@@ -240,7 +251,7 @@ namespace OpenH2.Foundation.Tests._3D
             double[] coords = new double[num * 3];
             Vector3 pnt = new Vector3();
 
-            Vector3 baseV = new Vector3(rand.Next(-1, 1), rand.Next(-1, 1), rand.Next(-1, 1));
+            Vector3 baseV = getRandom(-1, 1);
 
             double tol = DOUBLE_PREC;
 
@@ -257,7 +268,7 @@ namespace OpenH2.Foundation.Tests._3D
             }
             else if (dimen == 1)
             {
-                Vector3 u = Vector3.Normalize(new Vector3(rand.Next(-1, 1), rand.Next(-1, 1), rand.Next(-1, 1)));
+                Vector3 u = Vector3.Normalize(getRandom(-1, 1));
 
                 for (int i = 0; i < num; i++)
                 {
@@ -272,12 +283,12 @@ namespace OpenH2.Foundation.Tests._3D
             }
             else // dimen == 2
             {
-                Vector3 nrm = Vector3.Normalize(new Vector3(rand.Next(-1, 1), rand.Next(-1, 1), rand.Next(-1, 1)));
+                Vector3 nrm = Vector3.Normalize(getRandom(-1, 1));
 
                 for (int i = 0; i < num; i++)
                 { // compute a random point and project it to the plane
                     Vector3 perp = new Vector3();
-                    pnt = new Vector3(rand.Next(-1, 1), rand.Next(-1, 1), rand.Next(-1, 1));
+                    pnt = getRandom(-1, 1);
 
                     perp = Vector3.Multiply(Vector3.Dot(pnt, nrm), nrm);
                     pnt -= perp;
@@ -612,7 +623,7 @@ namespace OpenH2.Foundation.Tests._3D
                 this.output.WriteLine("Got exception " + ex.Message);
                 this.output.WriteLine("Input pnts:");
                 printCoords(coords);
-                Assert.False(true, "Expected exception " + msg);
+                Assert.False(true, "Expected exception " + msg + " \r\nGot exception " + ex.Message);
             }
         }
 

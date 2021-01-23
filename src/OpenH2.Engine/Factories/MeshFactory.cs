@@ -2,6 +2,7 @@
 using OpenH2.Core.Maps.Vista;
 using OpenH2.Core.Tags;
 using OpenH2.Foundation;
+using OpenH2.Foundation._3D;
 using OpenH2.Physics.Colliders;
 using System;
 using System.Collections.Concurrent;
@@ -143,20 +144,26 @@ namespace OpenH2.Engine.Factories
                 verts[i] = new VertexFormat(convexPoints[i], new Vector2(), new Vector3());
             }
 
-            var triCount = convexPoints.Length - 2;
-            var indices = new int[triCount];
+            var qhull = new QuickHull();
+            qhull.build(convexPoints);
+            qhull.triangulate();
 
-            for(var i = 0; i < triCount-2; i++)
+            var faces = qhull.getFaces(QuickHull.CLOCKWISE);
+
+            var indices = new List<int>();
+
+            foreach(var face in faces)
             {
-                indices[i] = i;
-                indices[i+1] = i+1;
-                indices[i+2] = i+2;
+                foreach(var i in face)
+                {
+                    indices.Add(i);
+                }
             }
 
             var mesh = new Mesh<BitmapTag>()
             {
                 ElementType = MeshElementType.TriangleList,
-                Indicies = indices,
+                Indicies = indices.ToArray(),
                 Note = "ConvexMeshCollider",
                 Verticies = verts,
                 Material = new Material<BitmapTag>() { DiffuseColor = color }
