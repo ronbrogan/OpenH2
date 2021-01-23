@@ -113,6 +113,27 @@ namespace OpenH2.Engine.EntityFactories
             if(body != null)
             {
                 components.Add(body);
+                
+                if (body.Collider is TriangleMeshCollider triMeshCollider)
+                {
+                    components.Add(new RenderModelComponent(scenery, new Model<BitmapTag>
+                    {
+                        Note = $"scenery//{scenery.FriendlyName}-collision",
+                        Meshes = MeshFactory.GetRenderModel(triMeshCollider, new Vector4(0.9f, 0.5f, .24f, 1f)),
+                        Flags = ModelFlags.Wireframe | ModelFlags.IsStatic,
+                        RenderLayer = RenderLayers.Collision
+                    }));
+                }
+                else if (body.Collider is TriangleModelCollider triCollider)
+                {
+                    components.Add(new RenderModelComponent(scenery, new Model<BitmapTag>
+                    {
+                        Note = $"scenery//{scenery.FriendlyName}-collision",
+                        Meshes = MeshFactory.GetRenderModel(triCollider, new Vector4(0.9f, 0.5f, .24f, 1f)),
+                        Flags = ModelFlags.Wireframe | ModelFlags.IsStatic,
+                        RenderLayer = RenderLayers.Collision
+                    }));
+                }
             }
 
             scenery.SetComponents(xform, components.ToArray());

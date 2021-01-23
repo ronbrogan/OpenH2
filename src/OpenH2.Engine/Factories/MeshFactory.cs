@@ -1,5 +1,4 @@
-﻿using OpenH2.Core.Extensions;
-using OpenH2.Core.Maps;
+﻿using OpenH2.Core.Maps;
 using OpenH2.Core.Maps.Vista;
 using OpenH2.Core.Tags;
 using OpenH2.Foundation;
@@ -7,6 +6,7 @@ using OpenH2.Physics.Colliders;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Linq;
 using System.Numerics;
 
 namespace OpenH2.Engine.Factories
@@ -15,8 +15,8 @@ namespace OpenH2.Engine.Factories
     {
         private static Mesh<BitmapTag>[] EmptyModel = Array.Empty<Mesh<BitmapTag>>();
 
-        private static ConcurrentDictionary<ulong, Mesh<BitmapTag>[]> meshes = new ConcurrentDictionary<ulong, Mesh<BitmapTag>[]>();
-        private static ConcurrentDictionary<TriangleMeshCollider, Mesh<BitmapTag>[]> colliderMeshes = new ConcurrentDictionary<TriangleMeshCollider, Mesh<BitmapTag>[]>();
+        private static ConcurrentDictionary<ulong, Mesh<BitmapTag>[]> meshes = new();
+        private static ConcurrentDictionary<object, Mesh<BitmapTag>[]> colliderModels = new();
 
         private static Material<BitmapTag> BoneMaterial = new Material<BitmapTag>() { DiffuseColor = new Vector4(1f, 0, 0, 1f) };
 
@@ -34,7 +34,37 @@ namespace OpenH2.Engine.Factories
                 color = new Vector4(0f, 1f, 0f, 1f);
             }
 
-            return colliderMeshes.GetOrAdd(collider, c => Create(c, color));
+            return colliderModels.GetOrAdd(collider, _ => new Mesh<BitmapTag>[] { Create(collider, color) });
+        }
+
+        public static Mesh<BitmapTag>[] GetRenderModel(TriangleModelCollider collider, Vector4 color = default)
+        {
+            if (color == default)
+            {
+                color = new Vector4(0f, 1f, 0f, 1f);
+            }
+
+            return colliderModels.GetOrAdd(collider, _ => collider.MeshColliders.Select(m => Create(m, color)).ToArray());
+        }
+
+        public static Mesh<BitmapTag>[] GetRenderModel(ConvexMeshCollider collider, Vector4 color = default)
+        {
+            if (color == default)
+            {
+                color = new Vector4(0f, 1f, 0f, 1f);
+            }
+
+            return colliderModels.GetOrAdd(collider, _ => new Mesh<BitmapTag>[] { Create(collider.Vertices, color) });
+        }
+
+        public static Mesh<BitmapTag>[] GetRenderModel(ConvexModelCollider collider, Vector4 color = default)
+        {
+            if (color == default)
+            {
+                color = new Vector4(0f, 1f, 0f, 1f);
+            }
+
+            return colliderModels.GetOrAdd(collider, _ => collider.Meshes.Select(m => Create(m, color)).ToArray());
         }
 
         public static Mesh<BitmapTag>[] GetBonesModel(H2vMap map, TagRef<HaloModelTag> hlmtReference, int damageLevel = 0)
@@ -83,7 +113,7 @@ namespace OpenH2.Engine.Factories
             return renderModelMeshes.ToArray();
         }
 
-        private static Mesh<BitmapTag>[] Create(TriangleMeshCollider collider, Vector4 color)
+        private static Mesh<BitmapTag> Create(TriangleMeshCollider collider, Vector4 color)
         {
             var verts = new VertexFormat[collider.Vertices.Length];
 
@@ -101,7 +131,38 @@ namespace OpenH2.Engine.Factories
                 Material = new Material<BitmapTag>() { DiffuseColor = color }
             };
 
-            return new Mesh<BitmapTag>[] { mesh };
+            return mesh;
+        }
+
+        private static Mesh<BitmapTag> Create(Vector3[] convexPoints, Vector4 color)
+        {
+            var verts = new VertexFormat[convexPoints.Length];
+
+            for (int i = 0; i < convexPoints.Length; i++)
+            {
+                verts[i] = new VertexFormat(convexPoints[i], new Vector2(), new Vector3());
+            }
+
+            var triCount = convexPoints.Length - 2;
+            var indices = new int[triCount];
+
+            for(var i = 0; i < triCount-2; i++)
+            {
+                indices[i] = i;
+                indices[i+1] = i+1;
+                indices[i+2] = i+2;
+            }
+
+            var mesh = new Mesh<BitmapTag>()
+            {
+                ElementType = MeshElementType.TriangleList,
+                Indicies = indices,
+                Note = "ConvexMeshCollider",
+                Verticies = verts,
+                Material = new Material<BitmapTag>() { DiffuseColor = color }
+            };
+
+            return mesh;
         }
 
         private static Mesh<BitmapTag>[] CreateBoneMeshes(H2vMap map, TagRef<HaloModelTag> hlmtReference, int damageLevel)

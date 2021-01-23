@@ -8,5 +8,15 @@ namespace OpenH2.Foundation.Extensions
         {
             return Math.Min(max, Math.Max(value, min));
         }
+
+        public static double ToRadians(double degrees)
+        {
+            return (degrees / 180.0 * Math.PI);
+        }
+
+        public static double ToDegrees(double radians)
+        {
+            return (radians * 180.0 / Math.PI);
+        }
     }
 }

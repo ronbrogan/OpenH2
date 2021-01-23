@@ -7,8 +7,10 @@ using OpenH2.Engine.Components;
 using OpenH2.Engine.Entities;
 using OpenH2.Engine.Factories;
 using OpenH2.Foundation;
+using OpenH2.Physics.Colliders;
 using System;
 using System.Collections.Generic;
+using System.Numerics;
 
 namespace OpenH2.Engine.EntityFactories
 {
@@ -56,6 +58,25 @@ namespace OpenH2.Engine.EntityFactories
                 if (body != null)
                 {
                     components.Add(body);
+
+                    if(body.Collider is TriangleModelCollider triCollider)
+                    {
+                        components.Add(new RenderModelComponent(scenery, new Model<BitmapTag>
+                        {
+                            Meshes = MeshFactory.GetRenderModel(triCollider, new Vector4(1f, 0f, 1f, 1f)),
+                            Flags = ModelFlags.Wireframe | ModelFlags.IsStatic,
+                            RenderLayer = RenderLayers.Collision
+                        }));
+                    }
+                    else if(body.Collider is TriangleMeshCollider triMeshCollider)
+                    {
+                        components.Add(new RenderModelComponent(scenery, new Model<BitmapTag>
+                        {
+                            Meshes = MeshFactory.GetRenderModel(triMeshCollider, new Vector4(1f, 0f, 1f, 1f)),
+                            Flags = ModelFlags.Wireframe | ModelFlags.IsStatic,
+                            RenderLayer = RenderLayers.Collision
+                        }));
+                    }
                 }
             }
 
