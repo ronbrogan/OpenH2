@@ -1,12 +1,13 @@
 ﻿using OpenH2.Foundation.Extensions;
 using System;
+using System.Buffers;
 using System.Collections.Generic;
 using System.Numerics;
 using System.Text;
 
 namespace OpenH2.Foundation._3D
 {
-    public class QuickHull
+    public class QuickHull : IDisposable
     {
         private class Vertex
         {
@@ -809,9 +810,13 @@ namespace OpenH2.Foundation._3D
         private readonly VertexList unclaimed = new VertexList();
         private readonly VertexList claimed = new VertexList();
 
-        private Vertex[] pointBuffer = new Vertex[0];
-        private int[] vertexPointIndices = new int[0];
+        private static ArrayPool<Vertex> pointPool = ArrayPool<Vertex>.Create();
+        private static ArrayPool<int> indexPool = ArrayPool<int>.Create();
+
+        private Vertex[] pointBuffer;
+        private int[] vertexPointIndices;
         private Face[] discardedFaces = new Face[3];
+        
 
         /// <summary>
         /// Specifies that (on output) vertex indices for a face should be
@@ -978,8 +983,8 @@ namespace OpenH2.Foundation._3D
 
         protected void InitBuffers(int nump)
         {
-            Vertex[] newBuffer = new Vertex[nump];
-            vertexPointIndices = new int[nump];
+            Vertex[] newBuffer = pointPool.Rent(nump);
+            vertexPointIndices = indexPool.Rent(nump);
             
             for (int i = 0; i < nump; i++)
             {
@@ -1361,6 +1366,32 @@ namespace OpenH2.Foundation._3D
             }
         }
 
+        private Vertex NextPointToAdd()
+        {
+            if (claimed.isEmpty())
+            {
+                return null;
+            }
+            else
+            {
+                Face eyeFace = claimed.first().face;
+                Vertex eyeVtx = null;
+                double maxDist = 0;
+                for (Vertex vtx = eyeFace.outside;
+                     vtx != null && vtx.face == eyeFace;
+                     vtx = vtx.next)
+                {
+                    double dist = eyeFace.distanceToPlane(vtx.pnt);
+                    if (dist > maxDist)
+                    {
+                        maxDist = dist;
+                        eyeVtx = vtx;
+                    }
+                }
+                return eyeVtx;
+            }
+        }
+
         private HalfEdge FindHalfEdge(Vertex tail, Vertex head)
         {
             // brute force ... OK, since setHull is not used much
@@ -1527,32 +1558,6 @@ namespace OpenH2.Foundation._3D
             hedgeSideBegin.next.setOpposite(hedgeSidePrev);
         }
 
-        private Vertex NextPointToAdd()
-        {
-            if (claimed.isEmpty())
-            {
-                return null;
-            }
-            else
-            {
-                Face eyeFace = claimed.first().face;
-                Vertex eyeVtx = null;
-                double maxDist = 0;
-                for (Vertex vtx = eyeFace.outside;
-                     vtx != null && vtx.face == eyeFace;
-                     vtx = vtx.next)
-                {
-                    double dist = eyeFace.distanceToPlane(vtx.pnt);
-                    if (dist > maxDist)
-                    {
-                        maxDist = dist;
-                        eyeVtx = vtx;
-                    }
-                }
-                return eyeVtx;
-            }
-        }
-
         private void AddPointToHull(Vertex eyeVtx)
         {
             horizon.Clear();
@@ -1712,6 +1717,30 @@ namespace OpenH2.Foundation._3D
                 }
             }
             return convex;
+        }
+
+        private bool disposedValue;
+        protected virtual void Dispose(bool disposing)
+        {
+            if (!disposedValue)
+            {
+                if (disposing)
+                {
+                    pointPool?.Return(this.pointBuffer);
+                    indexPool?.Return(this.vertexPointIndices);
+                }
+
+                this.pointBuffer = null;
+                this.vertexPointIndices = null;
+                disposedValue = true;
+            }
+        }
+
+        public void Dispose()
+        {
+            // Do not change this code. Put cleanup code in 'Dispose(bool disposing)' method
+            Dispose(disposing: true);
+            GC.SuppressFinalize(this);
         }
 
         private class VertexList
@@ -1891,6 +1920,5 @@ namespace OpenH2.Foundation._3D
                 return head == null;
             }
         }
-
     }
 }

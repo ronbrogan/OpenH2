@@ -479,7 +479,7 @@ namespace OpenH2.Foundation.Tests._3D
 
         void singleTest(double[] coords, int[][] checkFaces)
         {
-            QuickHull hull = new QuickHull(coords);
+            using var hull = new QuickHull(coords);
 
             if (triangulate)
             {
@@ -542,7 +542,7 @@ namespace OpenH2.Foundation.Tests._3D
         {
             double[] coordsx = addDegeneracy(degeneracyTest, coords, hull);
 
-            QuickHull xhull = new QuickHull(coordsx);
+            using var xhull = new QuickHull(coordsx);
 
             if (triangulate)
             {
@@ -595,7 +595,7 @@ namespace OpenH2.Foundation.Tests._3D
 
         void testException(double[] coords, string msg)
         {
-            QuickHull hull;
+            QuickHull hull = null;
             Exception ex = null;
             try
             {
@@ -604,6 +604,10 @@ namespace OpenH2.Foundation.Tests._3D
             catch (Exception e)
             {
                 ex = e;
+            }
+            finally
+            {
+                hull?.Dispose();
             }
             if (ex == null)
             {

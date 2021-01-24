@@ -144,7 +144,7 @@ namespace OpenH2.Engine.Factories
                 verts[i] = new VertexFormat(convexPoints[i], new Vector2(), new Vector3());
             }
 
-            var qhull = new QuickHull(convexPoints);
+            using var qhull = new QuickHull(convexPoints);
             qhull.Triangulate();
 
             var faces = qhull.GetFaces(QuickHull.CLOCKWISE);
