@@ -11,242 +11,297 @@ namespace OpenH2.Foundation._3D
     {
         private class Vertex
         {
-            public Vector3 pnt { get; set; }
-            public int index { get; set; }
+            public Vector3 Point { get; set; }
+            public int Index { get; set; }
+            public Face Face { get; set; }
+            public Vertex NextVertex { get; set; }
+            public Vertex PreviousVertex { get; set; }
+        }
 
-            public Face face { get; set; }
+        private class HalfEdge
+        {
+            /// <summary>
+            /// The vertex associated with the head of this half-edge.
+            /// </summary>
+            public Vertex HeadVertex;
+            public Vertex TailVertex => PreviousEdge != null ? PreviousEdge.HeadVertex : null;
 
-            public Vertex next { get; set; }
-            public Vertex prev { get; set; }
+            /// <summary>
+            /// Triangular face associated with this half-edge.
+            /// </summary>
+            public Face Face { get; set; }
+
+            /// <summary>
+            /// Returns the opposite triangular face associated with this half-edge.
+            /// </summary>
+            public Face OppositeFace => OppositeEdge != null ? OppositeEdge.Face : null;
+
+            /// <summary>
+            /// Next half-edge in the triangle.
+            /// </summary>
+            public HalfEdge NextEdge { get; set; }
+
+            /// <summary>
+            /// Previous half-edge in the triangle.
+            /// </summary>
+            public HalfEdge PreviousEdge { get; set; }
+
+            /// <summary>
+            /// Half-edge associated with the opposite triangle adjacent to this edge.
+            /// </summary>
+            public HalfEdge OppositeEdge { get; private set; }
+
+            /// <summary>
+            /// Constructs a HalfEdge with head vertex <code>v</code> and
+            /// left-hand triangular face <code>f</code>.
+            /// </summary>
+            public HalfEdge(Vertex v, Face f)
+            {
+                HeadVertex = v;
+                Face = f;
+            }
+
+            /// <summary>
+            /// Sets the half-edge opposite to this half-edge.
+            /// </summary>
+            /// <param name="edge"></param>
+            public void SetOpposite(HalfEdge edge)
+            {
+                OppositeEdge = edge;
+                edge.OppositeEdge = this;
+            }
+
+            /**
+             * Produces a string identifying this half-edge by the point
+             * index values of its tail and head vertices.
+             *
+             * @return identifying string
+             */
+            public string getVertexString()
+            {
+                if (TailVertex != null)
+                {
+                    return "" +
+                   TailVertex.Index + "-" +
+                   HeadVertex.Index;
+                }
+                else
+                {
+                    return "?-" + HeadVertex.Index;
+                }
+            }
+
+            /**
+             * Returns the length squared of this half-edge.
+             *
+             * @return half-edge length squared
+             */
+            public double LengthSquared()
+            {
+                if (TailVertex != null)
+                {
+                    return Vector3.DistanceSquared(HeadVertex.Point, TailVertex.Point);
+                }
+                else
+                {
+                    return -1;
+                }
+            }
         }
 
         private class Face
         {
-            public HalfEdge he0;
-
-            private Vector3 normal;
-            public double area;
-            private Vector3 centroid;
-            double planeOffset;
-            int index;
-            int numVerts;
-
-            public Face next;
-
             public const int VISIBLE = 1;
             public const int NON_CONVEX = 2;
             public const int DELETED = 3;
 
-            public int mark = VISIBLE;
+            private double planeOffset;
+            public Vector3 Normal { get; private set; }
+            public int VertexCount { get; private set; }
+            public Vector3 Centroid { get; private set; }
+            public HalfEdge HalfEdge { get; private set; }
+            public double Area { get; private set; }
+            public Face Next { get; set; }
+            public int Mark { get; set; } = VISIBLE;
+            public Vertex Outside { get; set; }
 
-            public Vertex outside;
-
-            public void computeCentroid(ref Vector3 centroid)
+            public Face()
             {
-                centroid = Vector3.Zero;
-                HalfEdge he = he0;
-                do
-                {
-                    centroid += he.head().pnt;
-                    he = he.next;
-                }
-                while (he != he0);
-                centroid = Vector3.Multiply(centroid, 1f / numVerts);
+                Mark = VISIBLE;
             }
 
-            public void computeNormal(ref Vector3 normal, double minArea)
+            public void ComputeCentroid()
             {
-                computeNormal(ref normal);
+                Centroid = Vector3.Zero;
+                HalfEdge he = HalfEdge;
+                do
+                {
+                    Centroid += he.HeadVertex.Point;
+                    he = he.NextEdge;
+                }
+                while (he != HalfEdge);
+                Centroid = Vector3.Multiply(Centroid, 1f / VertexCount);
+            }
 
-                if (area < minArea)
+            public void ComputeNormal(double minArea)
+            {
+                ComputeNormal();
+
+                if (Area < minArea)
                 {
                     // make the normal more robust by removing
                     // components parallel to the longest edge
 
                     HalfEdge hedgeMax = null;
                     double lenSqrMax = 0;
-                    HalfEdge hedge = he0;
+                    HalfEdge hedge = HalfEdge;
                     do
                     {
-                        double lenSqr = hedge.lengthSquared();
+                        double lenSqr = hedge.LengthSquared();
                         if (lenSqr > lenSqrMax)
                         {
                             hedgeMax = hedge;
                             lenSqrMax = lenSqr;
                         }
-                        hedge = hedge.next;
+                        hedge = hedge.NextEdge;
                     }
-                    while (hedge != he0);
+                    while (hedge != HalfEdge);
 
-                    Vector3 p2 = hedgeMax.head().pnt;
-                    Vector3 p1 = hedgeMax.tail().pnt;
+                    Vector3 p2 = hedgeMax.HeadVertex.Point;
+                    Vector3 p1 = hedgeMax.TailVertex.Point;
                     double lenMax = Math.Sqrt(lenSqrMax);
                     float ux = (float)((p2.X - p1.X) / lenMax);
                     float uy = (float)((p2.Y - p1.Y) / lenMax);
                     float uz = (float)((p2.Z - p1.Z) / lenMax);
-                    float dot = (float)(normal.X * ux + normal.Y * uy + normal.Z * uz);
-                    normal.X -= dot * ux;
-                    normal.Y -= dot * uy;
-                    normal.Z -= dot * uz;
+                    float dot = (float)(this.Normal.X * ux + this.Normal.Y * uy + this.Normal.Z * uz);
 
-                    normal = Vector3.Normalize(normal);
+                    var n = new Vector3();
+                    n.X -= dot * ux;
+                    n.Y -= dot * uy;
+                    n.Z -= dot * uz;
+
+                    this.Normal = Vector3.Normalize(n);
                 }
             }
 
-            public void computeNormal(ref Vector3 normal)
+            public void ComputeNormal()
             {
-                HalfEdge he1 = he0.next;
-                HalfEdge he2 = he1.next;
+                HalfEdge he1 = HalfEdge.NextEdge;
+                HalfEdge he2 = he1.NextEdge;
 
-                Vector3 p0 = he0.head().pnt;
-                Vector3 p2 = he1.head().pnt;
+                Vector3 p0 = HalfEdge.HeadVertex.Point;
+                Vector3 p2 = he1.HeadVertex.Point;
 
                 double d2x = p2.X - p0.X;
                 double d2y = p2.Y - p0.Y;
                 double d2z = p2.Z - p0.Z;
 
-                normal = Vector3.Zero;
+                var n = new Vector3();
 
-                numVerts = 2;
+                VertexCount = 2;
 
-                while (he2 != he0)
+                while (he2 != HalfEdge)
                 {
                     double d1x = d2x;
                     double d1y = d2y;
                     double d1z = d2z;
 
-                    p2 = he2.head().pnt;
+                    p2 = he2.HeadVertex.Point;
                     d2x = p2.X - p0.X;
                     d2y = p2.Y - p0.Y;
                     d2z = p2.Z - p0.Z;
 
-                    normal.X += (float)(d1y * d2z - d1z * d2y);
-                    normal.Y += (float)(d1z * d2x - d1x * d2z);
-                    normal.Z += (float)(d1x * d2y - d1y * d2x);
+                    n.X += (float)(d1y * d2z - d1z * d2y);
+                    n.Y += (float)(d1z * d2x - d1x * d2z);
+                    n.Z += (float)(d1x * d2y - d1y * d2x);
 
                     he1 = he2;
-                    he2 = he2.next;
-                    numVerts++;
+                    he2 = he2.NextEdge;
+                    VertexCount++;
                 }
-                area = Vector3.Distance(normal, Vector3.Zero);
-                normal = Vector3.Multiply(normal, (float)(1 / area));
+
+                this.Area = Vector3.Distance(n, Vector3.Zero);
+                this.Normal = Vector3.Multiply(n, (float)(1 / this.Area));
             }
 
-            private void computeNormalAndCentroid()
+            private void ComputeNormalAndCentroid()
             {
-                computeNormal(ref normal);
-                computeCentroid(ref centroid);
-                planeOffset = Vector3.Dot(normal, centroid);
+                ComputeNormal();
+                ComputeCentroid();
+                planeOffset = Vector3.Dot(Normal, Centroid);
                 int numv = 0;
-                HalfEdge he = he0;
+                HalfEdge he = HalfEdge;
                 do
                 {
                     numv++;
-                    he = he.next;
+                    he = he.NextEdge;
                 }
-                while (he != he0);
-                if (numv != numVerts)
+                while (he != HalfEdge);
+                if (numv != VertexCount)
                 {
-                    throw new Exception("face " + getVertexString() + " numVerts=" + numVerts + " should be " + numv);
+                    throw new Exception("face " + GetVertexString() + " numVerts=" + VertexCount + " should be " + numv);
                 }
             }
 
-            private void computeNormalAndCentroid(double minArea)
+            private void ComputeNormalAndCentroid(double minArea)
             {
-                computeNormal(ref normal, minArea);
-                computeCentroid(ref centroid);
-                planeOffset = Vector3.Dot(normal, centroid);
+                ComputeNormal(minArea);
+                ComputeCentroid();
+                planeOffset = Vector3.Dot(Normal, Centroid);
             }
 
-            public static Face createTriangle(Vertex v0, Vertex v1, Vertex v2)
+            public static Face CreateTriangle(Vertex v0, Vertex v1, Vertex v2)
             {
-                return createTriangle(v0, v1, v2, 0);
+                return CreateTriangle(v0, v1, v2, 0);
             }
 
-            /**
-             * Constructs a triangule Face from vertices v0, v1, and v2.
-             *
-             * @param v0 first vertex
-             * @param v1 second vertex
-             * @param v2 third vertex
-             */
-            public static Face createTriangle(Vertex v0, Vertex v1, Vertex v2, double minArea)
+            public static Face CreateTriangle(Vertex v0, Vertex v1, Vertex v2, double minArea)
             {
                 Face face = new Face();
                 HalfEdge he0 = new HalfEdge(v0, face);
                 HalfEdge he1 = new HalfEdge(v1, face);
                 HalfEdge he2 = new HalfEdge(v2, face);
 
-                he0.prev = he2;
-                he0.next = he1;
-                he1.prev = he0;
-                he1.next = he2;
-                he2.prev = he1;
-                he2.next = he0;
+                he0.PreviousEdge = he2;
+                he0.NextEdge = he1;
+                he1.PreviousEdge = he0;
+                he1.NextEdge = he2;
+                he2.PreviousEdge = he1;
+                he2.NextEdge = he0;
 
-                face.he0 = he0;
+                face.HalfEdge = he0;
 
                 // compute the normal and offset
-                face.computeNormalAndCentroid(minArea);
+                face.ComputeNormalAndCentroid(minArea);
                 return face;
             }
 
-            public static Face create(Vertex[] vtxArray, int[] indices)
-            {
-                Face face = new Face();
-                HalfEdge hePrev = null;
-                for (int i = 0; i < indices.Length; i++)
-                {
-                    HalfEdge he = new HalfEdge(vtxArray[indices[i]], face);
-                    if (hePrev != null)
-                    {
-                        he.setPrev(hePrev);
-                        hePrev.setNext(he);
-                    }
-                    else
-                    {
-                        face.he0 = he;
-                    }
-                    hePrev = he;
-                }
-                face.he0.setPrev(hePrev);
-                hePrev.setNext(face.he0);
-
-                // compute the normal and offset
-                face.computeNormalAndCentroid();
-                return face;
-            }
-
-            public Face()
-            {
-                mark = VISIBLE;
-            }
-
+            
             /**
              * Gets the i-th half-edge associated with the face.
              * 
              * @param i the half-edge index, in the range 0-2.
              * @return the half-edge
              */
-            public HalfEdge getEdge(int i)
+            public HalfEdge GetEdge(int i)
             {
-                HalfEdge he = he0;
+                HalfEdge he = HalfEdge;
                 while (i > 0)
                 {
-                    he = he.next;
+                    he = he.NextEdge;
                     i--;
                 }
                 while (i < 0)
                 {
-                    he = he.prev;
+                    he = he.PreviousEdge;
                     i++;
                 }
                 return he;
             }
 
-            public HalfEdge getFirstEdge()
+            public HalfEdge GetFirstEdge()
             {
-                return he0;
+                return HalfEdge;
             }
 
             /**
@@ -257,18 +312,18 @@ namespace OpenH2.Foundation._3D
              * @param vh head point
              * @return the half-edge, or null if none is found.
              */
-            public HalfEdge findEdge(Vertex vt, Vertex vh)
+            public HalfEdge FindEdge(Vertex vt, Vertex vh)
             {
-                HalfEdge he = he0;
+                HalfEdge he = HalfEdge;
                 do
                 {
-                    if (he.head() == vh && he.tail() == vt)
+                    if (he.HeadVertex == vh && he.TailVertex == vt)
                     {
                         return he;
                     }
-                    he = he.next;
+                    he = he.NextEdge;
                 }
-                while (he != he0);
+                while (he != HalfEdge);
                 return null;
             }
 
@@ -279,519 +334,270 @@ namespace OpenH2.Foundation._3D
              * @param p the point
              * @return distance from the point to the plane
              */
-            public double distanceToPlane(Vector3 p)
+            public double DistanceToPlane(Vector3 p)
             {
-                return normal.X * p.X + normal.Y * p.Y + normal.Z * p.Z - planeOffset;
+                return Normal.X * p.X + Normal.Y * p.Y + Normal.Z * p.Z - planeOffset;
             }
 
-            /**
-             * Returns the normal of the plane associated with this face.
-             *
-             * @return the planar normal
-             */
-            public Vector3 getNormal()
+            public string GetVertexString()
             {
-                return normal;
-            }
-
-            public Vector3 getCentroid()
-            {
-                return centroid;
-            }
-
-            public int numVertices()
-            {
-                return numVerts;
-            }
-
-            public String getVertexString()
-            {
-                String s = null;
-                HalfEdge he = he0;
+                string s = null;
+                HalfEdge he = HalfEdge;
                 do
                 {
                     if (s == null)
                     {
-                        s = "" + he.head().index;
+                        s = "" + he.HeadVertex.Index;
                     }
                     else
                     {
-                        s += " " + he.head().index;
+                        s += " " + he.HeadVertex.Index;
                     }
-                    he = he.next;
+                    he = he.NextEdge;
                 }
-                while (he != he0);
+                while (he != HalfEdge);
                 return s;
             }
 
-            public void getVertexIndices(int[] idxs)
+            public void GetVertexIndices(int[] idxs)
             {
-                HalfEdge he = he0;
+                HalfEdge he = HalfEdge;
                 int i = 0;
                 do
                 {
-                    idxs[i++] = he.head().index;
-                    he = he.next;
+                    idxs[i++] = he.HeadVertex.Index;
+                    he = he.NextEdge;
                 }
-                while (he != he0);
+                while (he != HalfEdge);
             }
 
-            private Face connectHalfEdges(HalfEdge hedgePrev, HalfEdge hedge)
+            private Face ConnectHalfEdges(HalfEdge hedgePrev, HalfEdge hedge)
             {
                 Face discardedFace = null;
 
-                if (hedgePrev.oppositeFace() == hedge.oppositeFace())
+                if (hedgePrev.OppositeFace == hedge.OppositeFace)
                 { // then there is a redundant edge that we can get rid off
 
-                    Face oppFace = hedge.oppositeFace();
+                    Face oppFace = hedge.OppositeFace;
                     HalfEdge hedgeOpp;
 
-                    if (hedgePrev == he0)
+                    if (hedgePrev == HalfEdge)
                     {
-                        he0 = hedge;
+                        HalfEdge = hedge;
                     }
-                    if (oppFace.numVertices() == 3)
+                    if (oppFace.VertexCount == 3)
                     { // then we can get rid of the opposite face altogether
-                        hedgeOpp = hedge.getOpposite().prev.getOpposite();
+                        hedgeOpp = hedge.OppositeEdge.PreviousEdge.OppositeEdge;
 
-                        oppFace.mark = DELETED;
+                        oppFace.Mark = DELETED;
                         discardedFace = oppFace;
                     }
                     else
                     {
-                        hedgeOpp = hedge.getOpposite().next;
+                        hedgeOpp = hedge.OppositeEdge.NextEdge;
 
-                        if (oppFace.he0 == hedgeOpp.prev)
+                        if (oppFace.HalfEdge == hedgeOpp.PreviousEdge)
                         {
-                            oppFace.he0 = hedgeOpp;
+                            oppFace.HalfEdge = hedgeOpp;
                         }
-                        hedgeOpp.prev = hedgeOpp.prev.prev;
-                        hedgeOpp.prev.next = hedgeOpp;
+                        hedgeOpp.PreviousEdge = hedgeOpp.PreviousEdge.PreviousEdge;
+                        hedgeOpp.PreviousEdge.NextEdge = hedgeOpp;
                     }
-                    hedge.prev = hedgePrev.prev;
-                    hedge.prev.next = hedge;
+                    hedge.PreviousEdge = hedgePrev.PreviousEdge;
+                    hedge.PreviousEdge.NextEdge = hedge;
 
-                    hedge.opposite = hedgeOpp;
-                    hedgeOpp.opposite = hedge;
+                    hedge.SetOpposite(hedgeOpp);
+                    hedgeOpp.SetOpposite(hedge);
 
                     // oppFace was modified, so need to recompute
-                    oppFace.computeNormalAndCentroid();
+                    oppFace.ComputeNormalAndCentroid();
                 }
                 else
                 {
-                    hedgePrev.next = hedge;
-                    hedge.prev = hedgePrev;
+                    hedgePrev.NextEdge = hedge;
+                    hedge.PreviousEdge = hedgePrev;
                 }
                 return discardedFace;
             }
 
-            public void checkConsistency()
+            public void CheckConsistency()
             {
                 // do a sanity check on the face
-                HalfEdge hedge = he0;
+                HalfEdge hedge = HalfEdge;
                 double maxd = 0;
                 int numv = 0;
 
-                if (numVerts < 3)
+                if (VertexCount < 3)
                 {
-                    throw new Exception("degenerate face: " + getVertexString());
+                    throw new Exception("degenerate face: " + GetVertexString());
                 }
                 do
                 {
-                    HalfEdge hedgeOpp = hedge.getOpposite();
+                    HalfEdge hedgeOpp = hedge.OppositeEdge;
                     if (hedgeOpp == null)
                     {
                         throw new Exception(
-                       "face " + getVertexString() + ": " +
+                       "face " + GetVertexString() + ": " +
                        "unreflected half edge " + hedge.getVertexString());
                     }
-                    else if (hedgeOpp.getOpposite() != hedge)
+                    else if (hedgeOpp.OppositeEdge != hedge)
                     {
                         throw new Exception(
-                       "face " + getVertexString() + ": " +
+                       "face " + GetVertexString() + ": " +
                        "opposite half edge " + hedgeOpp.getVertexString() +
                        " has opposite " +
-                       hedgeOpp.getOpposite().getVertexString());
+                       hedgeOpp.OppositeEdge.getVertexString());
                     }
-                    if (hedgeOpp.head() != hedge.tail() ||
-                    hedge.head() != hedgeOpp.tail())
+                    if (hedgeOpp.HeadVertex != hedge.TailVertex ||
+                    hedge.HeadVertex != hedgeOpp.TailVertex)
                     {
                         throw new Exception(
-                       "face " + getVertexString() + ": " +
+                       "face " + GetVertexString() + ": " +
                        "half edge " + hedge.getVertexString() +
                        " reflected by " + hedgeOpp.getVertexString());
                     }
-                    Face oppFace = hedgeOpp.face;
+                    Face oppFace = hedgeOpp.Face;
                     if (oppFace == null)
                     {
                         throw new Exception(
-                       "face " + getVertexString() + ": " +
+                       "face " + GetVertexString() + ": " +
                        "no face on half edge " + hedgeOpp.getVertexString());
                     }
-                    else if (oppFace.mark == DELETED)
+                    else if (oppFace.Mark == DELETED)
                     {
                         throw new Exception(
-                       "face " + getVertexString() + ": " +
-                       "opposite face " + oppFace.getVertexString() +
+                       "face " + GetVertexString() + ": " +
+                       "opposite face " + oppFace.GetVertexString() +
                        " not on hull");
                     }
-                    double d = Math.Abs(distanceToPlane(hedge.head().pnt));
+                    double d = Math.Abs(DistanceToPlane(hedge.HeadVertex.Point));
                     if (d > maxd)
                     {
                         maxd = d;
                     }
                     numv++;
-                    hedge = hedge.next;
+                    hedge = hedge.NextEdge;
                 }
-                while (hedge != he0);
+                while (hedge != HalfEdge);
 
-                if (numv != numVerts)
+                if (numv != VertexCount)
                 {
-                    throw new Exception("face " + getVertexString() + " numVerts=" + numVerts + " should be " + numv);
+                    throw new Exception("face " + GetVertexString() + " numVerts=" + VertexCount + " should be " + numv);
                 }
 
             }
 
-            public int mergeAdjacentFace(HalfEdge hedgeAdj,
-                              Face[] discarded)
+            public int MergeAdjacentFace(HalfEdge hedgeAdj, Face[] discarded)
             {
-                Face oppFace = hedgeAdj.oppositeFace();
+                Face oppFace = hedgeAdj.OppositeFace;
                 int numDiscarded = 0;
 
                 discarded[numDiscarded++] = oppFace;
-                oppFace.mark = DELETED;
+                oppFace.Mark = DELETED;
 
-                HalfEdge hedgeOpp = hedgeAdj.getOpposite();
+                HalfEdge hedgeOpp = hedgeAdj.OppositeEdge;
 
-                HalfEdge hedgeAdjPrev = hedgeAdj.prev;
-                HalfEdge hedgeAdjNext = hedgeAdj.next;
-                HalfEdge hedgeOppPrev = hedgeOpp.prev;
-                HalfEdge hedgeOppNext = hedgeOpp.next;
+                HalfEdge hedgeAdjPrev = hedgeAdj.PreviousEdge;
+                HalfEdge hedgeAdjNext = hedgeAdj.NextEdge;
+                HalfEdge hedgeOppPrev = hedgeOpp.PreviousEdge;
+                HalfEdge hedgeOppNext = hedgeOpp.NextEdge;
 
-                while (hedgeAdjPrev.oppositeFace() == oppFace)
+                while (hedgeAdjPrev.OppositeFace == oppFace)
                 {
-                    hedgeAdjPrev = hedgeAdjPrev.prev;
-                    hedgeOppNext = hedgeOppNext.next;
+                    hedgeAdjPrev = hedgeAdjPrev.PreviousEdge;
+                    hedgeOppNext = hedgeOppNext.NextEdge;
                 }
 
-                while (hedgeAdjNext.oppositeFace() == oppFace)
+                while (hedgeAdjNext.OppositeFace == oppFace)
                 {
-                    hedgeOppPrev = hedgeOppPrev.prev;
-                    hedgeAdjNext = hedgeAdjNext.next;
+                    hedgeOppPrev = hedgeOppPrev.PreviousEdge;
+                    hedgeAdjNext = hedgeAdjNext.NextEdge;
                 }
 
                 HalfEdge hedge;
 
-                for (hedge = hedgeOppNext; hedge != hedgeOppPrev.next; hedge = hedge.next)
+                for (hedge = hedgeOppNext; hedge != hedgeOppPrev.NextEdge; hedge = hedge.NextEdge)
                 {
-                    hedge.face = this;
+                    hedge.Face = this;
                 }
 
-                if (hedgeAdj == he0)
+                if (hedgeAdj == HalfEdge)
                 {
-                    he0 = hedgeAdjNext;
+                    HalfEdge = hedgeAdjNext;
                 }
 
                 // handle the half edges at the head
                 Face discardedFace;
 
-                discardedFace = connectHalfEdges(hedgeOppPrev, hedgeAdjNext);
+                discardedFace = ConnectHalfEdges(hedgeOppPrev, hedgeAdjNext);
                 if (discardedFace != null)
                 {
                     discarded[numDiscarded++] = discardedFace;
                 }
 
                 // handle the half edges at the tail
-                discardedFace = connectHalfEdges(hedgeAdjPrev, hedgeOppNext);
+                discardedFace = ConnectHalfEdges(hedgeAdjPrev, hedgeOppNext);
                 if (discardedFace != null)
                 {
                     discarded[numDiscarded++] = discardedFace;
                 }
 
-                computeNormalAndCentroid();
-                checkConsistency();
+                ComputeNormalAndCentroid();
+                CheckConsistency();
 
                 return numDiscarded;
             }
 
-            private double areaSquared(HalfEdge hedge0, HalfEdge hedge1)
-            {
-                // return the squared area of the triangle defined
-                // by the half edge hedge0 and the point at the
-                // head of hedge1.
 
-                Vector3 p0 = hedge0.tail().pnt;
-                Vector3 p1 = hedge0.head().pnt;
-                Vector3 p2 = hedge1.head().pnt;
-
-                double dx1 = p1.X - p0.X;
-                double dy1 = p1.Y - p0.Y;
-                double dz1 = p1.Z - p0.Z;
-
-                double dx2 = p2.X - p0.X;
-                double dy2 = p2.Y - p0.Y;
-                double dz2 = p2.Z - p0.Z;
-
-                double x = dy1 * dz2 - dz1 * dy2;
-                double y = dz1 * dx2 - dx1 * dz2;
-                double z = dx1 * dy2 - dy1 * dx2;
-
-                return x * x + y * y + z * z;
-            }
-
-            public void triangulate(FaceList newFaces, double minArea)
+            public void Triangulate(FaceList newFaces, double minArea)
             {
                 HalfEdge hedge;
 
-                if (numVertices() < 4)
+                if (VertexCount < 4)
                 {
                     return;
                 }
 
-                Vertex v0 = he0.head();
+                Vertex v0 = HalfEdge.HeadVertex;
                 Face prevFace = null;
 
-                hedge = he0.next;
-                HalfEdge oppPrev = hedge.opposite;
+                hedge = HalfEdge.NextEdge;
+                HalfEdge oppPrev = hedge.OppositeEdge;
                 Face face0 = null;
 
-                for (hedge = hedge.next; hedge != he0.prev; hedge = hedge.next)
+                for (hedge = hedge.NextEdge; hedge != HalfEdge.PreviousEdge; hedge = hedge.NextEdge)
                 {
                     Face face =
-                   createTriangle(v0, hedge.prev.head(), hedge.head(), minArea);
-                    face.he0.next.setOpposite(oppPrev);
-                    face.he0.prev.setOpposite(hedge.opposite);
-                    oppPrev = face.he0;
-                    newFaces.add(face);
+                   CreateTriangle(v0, hedge.PreviousEdge.HeadVertex, hedge.HeadVertex, minArea);
+                    face.HalfEdge.NextEdge.SetOpposite(oppPrev);
+                    face.HalfEdge.PreviousEdge.SetOpposite(hedge.OppositeEdge);
+                    oppPrev = face.HalfEdge;
+                    newFaces.Add(face);
                     if (face0 == null)
                     {
                         face0 = face;
                     }
                 }
-                hedge = new HalfEdge(he0.prev.prev.head(), this);
-                hedge.setOpposite(oppPrev);
+                hedge = new HalfEdge(HalfEdge.PreviousEdge.PreviousEdge.HeadVertex, this);
+                hedge.SetOpposite(oppPrev);
 
-                hedge.prev = he0;
-                hedge.prev.next = hedge;
+                hedge.PreviousEdge = HalfEdge;
+                hedge.PreviousEdge.NextEdge = hedge;
 
-                hedge.next = he0.prev;
-                hedge.next.prev = hedge;
+                hedge.NextEdge = HalfEdge.PreviousEdge;
+                hedge.NextEdge.PreviousEdge = hedge;
 
-                computeNormalAndCentroid(minArea);
-                checkConsistency();
+                ComputeNormalAndCentroid(minArea);
+                CheckConsistency();
 
-                for (Face face = face0; face != null; face = face.next)
+                for (Face face = face0; face != null; face = face.Next)
                 {
-                    face.checkConsistency();
-                }
-
-            }
-        }
-
-        private class HalfEdge
-        {
-            /**
-             * The vertex associated with the head of this half-edge.
-             */
-            public Vertex vertex;
-
-            /**
-             * Triangular face associated with this half-edge.
-             */
-            public Face face;
-
-            /**
-             * Next half-edge in the triangle.
-             */
-            public HalfEdge next;
-
-            /**
-             * Previous half-edge in the triangle.
-             */
-            public HalfEdge prev;
-
-            /**
-             * Half-edge associated with the opposite triangle
-             * adjacent to this edge.
-             */
-            public HalfEdge opposite;
-
-            /**
-             * Constructs a HalfEdge with head vertex <code>v</code> and
-             * left-hand triangular face <code>f</code>.
-             *
-             * @param v head vertex
-             * @param f left-hand triangular face
-             */
-            public HalfEdge(Vertex v, Face f)
-            {
-                vertex = v;
-                face = f;
-            }
-
-            public HalfEdge()
-            {
-            }
-
-            /**
-             * Sets the value of the next edge adjacent
-             * (counter-clockwise) to this one within the triangle.
-             *
-             * @param edge next adjacent edge */
-            public void setNext(HalfEdge edge)
-            {
-                next = edge;
-            }
-
-            /**
-             * Gets the value of the next edge adjacent
-             * (counter-clockwise) to this one within the triangle.
-             *
-             * @return next adjacent edge */
-            public HalfEdge getNext()
-            {
-                return next;
-            }
-
-            /**
-             * Sets the value of the previous edge adjacent (clockwise) to
-             * this one within the triangle.
-             *
-             * @param edge previous adjacent edge */
-            public void setPrev(HalfEdge edge)
-            {
-                prev = edge;
-            }
-
-            /**
-             * Gets the value of the previous edge adjacent (clockwise) to
-             * this one within the triangle.
-             *
-             * @return previous adjacent edge
-             */
-            public HalfEdge getPrev()
-            {
-                return prev;
-            }
-
-            /**
-             * Returns the triangular face located to the left of this
-             * half-edge.
-             *
-             * @return left-hand triangular face
-             */
-            public Face getFace()
-            {
-                return face;
-            }
-
-            /**
-             * Returns the half-edge opposite to this half-edge.
-             *
-             * @return opposite half-edge
-             */
-            public HalfEdge getOpposite()
-            {
-                return opposite;
-            }
-
-            /**
-             * Sets the half-edge opposite to this half-edge.
-             *
-             * @param edge opposite half-edge
-             */
-            public void setOpposite(HalfEdge edge)
-            {
-                opposite = edge;
-                edge.opposite = this;
-            }
-
-            /**
-             * Returns the head vertex associated with this half-edge.
-             *
-             * @return head vertex
-             */
-            public Vertex head()
-            {
-                return vertex;
-            }
-
-            /**
-             * Returns the tail vertex associated with this half-edge.
-             *
-             * @return tail vertex
-             */
-            public Vertex tail()
-            {
-                return prev != null ? prev.vertex : null;
-            }
-
-            /**
-             * Returns the opposite triangular face associated with this
-             * half-edge.
-             *
-             * @return opposite triangular face
-             */
-            public Face oppositeFace()
-            {
-                return opposite != null ? opposite.face : null;
-            }
-
-            /**
-             * Produces a string identifying this half-edge by the point
-             * index values of its tail and head vertices.
-             *
-             * @return identifying string
-             */
-            public String getVertexString()
-            {
-                if (tail() != null)
-                {
-                    return "" +
-                   tail().index + "-" +
-                   head().index;
-                }
-                else
-                {
-                    return "?-" + head().index;
-                }
-            }
-
-            /**
-             * Returns the length of this half-edge.
-             *
-             * @return half-edge length
-             */
-            public double length()
-            {
-                if (tail() != null)
-                {
-                    return Vector3.Distance(head().pnt, tail().pnt);
-                }
-                else
-                {
-                    return -1;
-                }
-            }
-
-            /**
-             * Returns the length squared of this half-edge.
-             *
-             * @return half-edge length squared
-             */
-            public double lengthSquared()
-            {
-                if (tail() != null)
-                {
-                    return Vector3.DistanceSquared(head().pnt, tail().pnt);
-                }
-                else
-                {
-                    return -1;
+                    face.CheckConsistency();
                 }
             }
         }
 
+        
         private const double AUTOMATIC_TOLERANCE = -1;
         private const double PRECISION = 2.2204460492503131e-8;
         // estimated size of the point set
@@ -901,13 +707,13 @@ namespace OpenH2.Foundation._3D
 
             foreach (var face in faces)
             {
-                if (face.mark == Face.VISIBLE)
+                if (face.Mark == Face.VISIBLE)
                 {
-                    face.triangulate(newFaces, minArea);
+                    face.Triangulate(newFaces, minArea);
                 }
             }
 
-            for (Face face = newFaces.first(); face != null; face = face.next)
+            for (Face face = newFaces.First(); face != null; face = face.Next)
             {
                 faces.Add(face);
             }
@@ -974,7 +780,7 @@ namespace OpenH2.Foundation._3D
             int k = 0;
             foreach (var face in faces)
             {
-                allFaces[k] = new int[face.numVertices()];
+                allFaces[k] = new int[face.VertexCount];
                 GetFaceIndices(allFaces[k], face, indexFlags);
                 k++;
             }
@@ -1002,8 +808,8 @@ namespace OpenH2.Foundation._3D
             for (int i = 0; i < nump; i++)
             {
                 Vertex vtx = pointBuffer[i];
-                vtx.pnt = new Vector3((float)coords[i * 3 + 0], (float)coords[i * 3 + 1], (float)coords[i * 3 + 2]);
-                vtx.index = i;
+                vtx.Point = new Vector3((float)coords[i * 3 + 0], (float)coords[i * 3 + 1], (float)coords[i * 3 + 2]);
+                vtx.Index = i;
             }
         }
 
@@ -1012,8 +818,8 @@ namespace OpenH2.Foundation._3D
             for (int i = 0; i < nump; i++)
             {
                 Vertex vtx = pointBuffer[i];
-                vtx.pnt = pnts[i];
-                vtx.index = i;
+                vtx.Point = pnts[i];
+                vtx.Index = i;
             }
         }
 
@@ -1027,7 +833,7 @@ namespace OpenH2.Foundation._3D
 
             for (int i = 0; i < 3; i++)
             {
-                double diff = maxVtxs[i].pnt.Get(i) - minVtxs[i].pnt.Get(i);
+                double diff = maxVtxs[i].Point.Get(i) - minVtxs[i].Point.Get(i);
                 if (diff > max)
                 {
                     max = diff;
@@ -1053,11 +859,11 @@ namespace OpenH2.Foundation._3D
             Vector3 nrml = new Vector3();
             Vector3 xprod = new Vector3();
             double maxSqr = 0;
-            u01 = Vector3.Normalize(vtx[1].pnt - vtx[0].pnt);
+            u01 = Vector3.Normalize(vtx[1].Point - vtx[0].Point);
 
             for (int i = 0; i < numPoints; i++)
             {
-                xprod = Vector3.Cross(u01, pointBuffer[i].pnt - vtx[0].pnt);
+                xprod = Vector3.Cross(u01, pointBuffer[i].Point - vtx[0].Point);
                 double lenSqr = Vector3.DistanceSquared(xprod, Vector3.Zero);
                 if (lenSqr > maxSqr &&
                     pointBuffer[i] != vtx[0] &&  // paranoid
@@ -1080,10 +886,10 @@ namespace OpenH2.Foundation._3D
             nrml = Vector3.Normalize(nrml);
 
             double maxDist = 0;
-            double d0 = Vector3.Dot(vtx[2].pnt, nrml);
+            double d0 = Vector3.Dot(vtx[2].Point, nrml);
             for (int i = 0; i < numPoints; i++)
             {
-                double dist = Math.Abs(Vector3.Dot(pointBuffer[i].pnt, nrml) - d0);
+                double dist = Math.Abs(Vector3.Dot(pointBuffer[i].Point, nrml) - d0);
                 if (dist > maxDist &&
                     pointBuffer[i] != vtx[0] &&  // paranoid
                     pointBuffer[i] != vtx[1] &&
@@ -1101,32 +907,32 @@ namespace OpenH2.Foundation._3D
 
             var tris = new Face[4];
 
-            if (Vector3.Dot(vtx[3].pnt, nrml) - d0 < 0)
+            if (Vector3.Dot(vtx[3].Point, nrml) - d0 < 0)
             {
-                tris[0] = Face.createTriangle(vtx[0], vtx[1], vtx[2]);
-                tris[1] = Face.createTriangle(vtx[3], vtx[1], vtx[0]);
-                tris[2] = Face.createTriangle(vtx[3], vtx[2], vtx[1]);
-                tris[3] = Face.createTriangle(vtx[3], vtx[0], vtx[2]);
+                tris[0] = Face.CreateTriangle(vtx[0], vtx[1], vtx[2]);
+                tris[1] = Face.CreateTriangle(vtx[3], vtx[1], vtx[0]);
+                tris[2] = Face.CreateTriangle(vtx[3], vtx[2], vtx[1]);
+                tris[3] = Face.CreateTriangle(vtx[3], vtx[0], vtx[2]);
 
                 for (int i = 0; i < 3; i++)
                 {
                     int k = (i + 1) % 3;
-                    tris[i + 1].getEdge(1).setOpposite(tris[k + 1].getEdge(0));
-                    tris[i + 1].getEdge(2).setOpposite(tris[0].getEdge(k));
+                    tris[i + 1].GetEdge(1).SetOpposite(tris[k + 1].GetEdge(0));
+                    tris[i + 1].GetEdge(2).SetOpposite(tris[0].GetEdge(k));
                 }
             }
             else
             {
-                tris[0] = Face.createTriangle(vtx[0], vtx[2], vtx[1]);
-                tris[1] = Face.createTriangle(vtx[3], vtx[0], vtx[1]);
-                tris[2] = Face.createTriangle(vtx[3], vtx[1], vtx[2]);
-                tris[3] = Face.createTriangle(vtx[3], vtx[2], vtx[0]);
+                tris[0] = Face.CreateTriangle(vtx[0], vtx[2], vtx[1]);
+                tris[1] = Face.CreateTriangle(vtx[3], vtx[0], vtx[1]);
+                tris[2] = Face.CreateTriangle(vtx[3], vtx[1], vtx[2]);
+                tris[3] = Face.CreateTriangle(vtx[3], vtx[2], vtx[0]);
 
                 for (int i = 0; i < 3; i++)
                 {
                     int k = (i + 1) % 3;
-                    tris[i + 1].getEdge(0).setOpposite(tris[k + 1].getEdge(1));
-                    tris[i + 1].getEdge(2).setOpposite(tris[0].getEdge((3 - i) % 3));
+                    tris[i + 1].GetEdge(0).SetOpposite(tris[k + 1].GetEdge(1));
+                    tris[i + 1].GetEdge(2).SetOpposite(tris[0].GetEdge((3 - i) % 3));
                 }
             }
 
@@ -1149,7 +955,7 @@ namespace OpenH2.Foundation._3D
 
                 for (int k = 0; k < 4; k++)
                 {
-                    double dist = tris[k].distanceToPlane(v.pnt);
+                    double dist = tris[k].DistanceToPlane(v.Point);
                     if (dist > maxDist)
                     {
                         maxFace = tris[k];
@@ -1174,12 +980,12 @@ namespace OpenH2.Foundation._3D
                 maxVtxs[i] = minVtxs[i] = pointBuffer[0];
             }
 
-            max = pointBuffer[0].pnt;
-            min = pointBuffer[0].pnt;
+            max = pointBuffer[0].Point;
+            min = pointBuffer[0].Point;
 
             for (int i = 1; i < numPoints; i++)
             {
-                Vector3 pnt = pointBuffer[i].pnt;
+                Vector3 pnt = pointBuffer[i].Point;
                 if (pnt.X > max.X)
                 {
                     max.X = pnt.X;
@@ -1236,36 +1042,36 @@ namespace OpenH2.Foundation._3D
             bool ccw = ((flags & CLOCKWISE) == 0);
             bool pointRelative = ((flags & POINT_RELATIVE) != 0);
 
-            HalfEdge hedge = face.he0;
+            HalfEdge hedge = face.HalfEdge;
             int k = 0;
             do
             {
-                int idx = hedge.head().index;
+                int idx = hedge.HeadVertex.Index;
                 if (pointRelative)
                 {
                     idx = vertexPointIndices[idx];
                 }
                 indices[k++] = idx;
-                hedge = (ccw ? hedge.next : hedge.prev);
+                hedge = (ccw ? hedge.NextEdge : hedge.PreviousEdge);
             }
-            while (hedge != face.he0);
+            while (hedge != face.HalfEdge);
         }
 
         private void ResolveUnclaimedPoints(FaceList newFaces)
         {
-            Vertex vtxNext = unclaimed.first();
+            Vertex vtxNext = unclaimed.First();
             for (Vertex vtx = vtxNext; vtx != null; vtx = vtxNext)
             {
-                vtxNext = vtx.next;
+                vtxNext = vtx.NextVertex;
 
                 double maxDist = Tolerance;
                 Face maxFace = null;
-                for (Face newFace = newFaces.first(); newFace != null;
-                     newFace = newFace.next)
+                for (Face newFace = newFaces.First(); newFace != null;
+                     newFace = newFace.Next)
                 {
-                    if (newFace.mark == Face.VISIBLE)
+                    if (newFace.Mark == Face.VISIBLE)
                     {
-                        double dist = newFace.distanceToPlane(vtx.pnt);
+                        double dist = newFace.DistanceToPlane(vtx.Point);
                         if (dist > maxDist)
                         {
                             maxDist = dist;
@@ -1291,22 +1097,22 @@ namespace OpenH2.Foundation._3D
             {
                 if (absorbingFace == null)
                 {
-                    unclaimed.addAll(faceVtxs);
+                    unclaimed.AddAll(faceVtxs);
                 }
                 else
                 {
                     Vertex vtxNext = faceVtxs;
                     for (Vertex vtx = vtxNext; vtx != null; vtx = vtxNext)
                     {
-                        vtxNext = vtx.next;
-                        double dist = absorbingFace.distanceToPlane(vtx.pnt);
+                        vtxNext = vtx.NextVertex;
+                        double dist = absorbingFace.DistanceToPlane(vtx.Point);
                         if (dist > Tolerance)
                         {
                             AddPointToFace(vtx, absorbingFace);
                         }
                         else
                         {
-                            unclaimed.add(vtx);
+                            unclaimed.Add(vtx);
                         }
                     }
                 }
@@ -1315,50 +1121,50 @@ namespace OpenH2.Foundation._3D
 
         private void AddPointToFace(Vertex vtx, Face face)
         {
-            vtx.face = face;
+            vtx.Face = face;
 
-            if(face.outside == null)
+            if(face.Outside == null)
             {
-                claimed.add(vtx);
+                claimed.Add(vtx);
             }
             else
             {
-                claimed.insertBefore(vtx, face.outside);
+                claimed.InsertBefore(vtx, face.Outside);
             }
 
-            face.outside = vtx;
+            face.Outside = vtx;
         }
 
         private void RemovePointFromFace(Vertex vtx, Face face)
         {
-            if (vtx == face.outside)
+            if (vtx == face.Outside)
             {
-                if (vtx.next != null && vtx.next.face == face)
+                if (vtx.NextVertex != null && vtx.NextVertex.Face == face)
                 {
-                    face.outside = vtx.next;
+                    face.Outside = vtx.NextVertex;
                 }
                 else
                 {
-                    face.outside = null;
+                    face.Outside = null;
                 }
             }
-            claimed.delete(vtx);
+            claimed.Delete(vtx);
         }
 
         private Vertex RemoveAllPointsFromFace(Face face)
         {
-            if (face.outside != null)
+            if (face.Outside != null)
             {
-                Vertex end = face.outside;
-                while (end.next != null && end.next.face == face)
+                Vertex end = face.Outside;
+                while (end.NextVertex != null && end.NextVertex.Face == face)
                 {
-                    end = end.next;
+                    end = end.NextVertex;
                 }
 
-                claimed.delete(face.outside, end);
+                claimed.Delete(face.Outside, end);
 
-                end.next = null;
-                return face.outside;
+                end.NextVertex = null;
+                return face.Outside;
             }
             else
             {
@@ -1374,14 +1180,14 @@ namespace OpenH2.Foundation._3D
             }
             else
             {
-                Face eyeFace = claimed.first().face;
+                Face eyeFace = claimed.First().Face;
                 Vertex eyeVtx = null;
                 double maxDist = 0;
-                for (Vertex vtx = eyeFace.outside;
-                     vtx != null && vtx.face == eyeFace;
-                     vtx = vtx.next)
+                for (Vertex vtx = eyeFace.Outside;
+                     vtx != null && vtx.Face == eyeFace;
+                     vtx = vtx.NextVertex)
                 {
-                    double dist = eyeFace.distanceToPlane(vtx.pnt);
+                    double dist = eyeFace.DistanceToPlane(vtx.Point);
                     if (dist > maxDist)
                     {
                         maxDist = dist;
@@ -1397,7 +1203,7 @@ namespace OpenH2.Foundation._3D
             // brute force ... OK, since setHull is not used much
             foreach (var face in faces)
             {
-                HalfEdge he = face.findEdge(tail, head);
+                HalfEdge he = face.FindEdge(tail, head);
                 if (he != null)
                 {
                     return he;
@@ -1412,20 +1218,20 @@ namespace OpenH2.Foundation._3D
 
         private double OppFaceDistance(HalfEdge he)
         {
-            return he.face.distanceToPlane(he.opposite.face.getCentroid());
+            return he.Face.DistanceToPlane(he.OppositeEdge.Face.Centroid);
         }
 
         private bool DoAdjacentMerge(Face face, int mergeType)
         {
-            HalfEdge hedge = face.he0;
+            HalfEdge hedge = face.HalfEdge;
 
             bool convex = true;
             do
             {
-                Face oppFace = hedge.oppositeFace();
+                Face oppFace = hedge.OppositeFace;
                 bool merge = false;
                 var hedgeDistance = OppFaceDistance(hedge);
-                var oppositeHedgeDistance = OppFaceDistance(hedge.opposite);
+                var oppositeHedgeDistance = OppFaceDistance(hedge.OppositeEdge);
 
                 if (mergeType == NONCONVEX)
                 {
@@ -1441,7 +1247,7 @@ namespace OpenH2.Foundation._3D
                     // merge faces if they are parallel or non-convex
                     // wrt to the larger face; otherwise, just mark
                     // the face non-convex for the second pass.
-                    if (face.area > oppFace.area)
+                    if (face.Area > oppFace.Area)
                     {
                         if (hedgeDistance > -Tolerance)
                         {
@@ -1468,7 +1274,7 @@ namespace OpenH2.Foundation._3D
                 if (merge)
                 {
 
-                    int numd = face.mergeAdjacentFace(hedge, discardedFaces);
+                    int numd = face.MergeAdjacentFace(hedge, discardedFaces);
                     for (int i = 0; i < numd; i++)
                     {
                         DeleteFacePoints(discardedFaces[i], face);
@@ -1476,13 +1282,13 @@ namespace OpenH2.Foundation._3D
 
                     return true;
                 }
-                hedge = hedge.next;
+                hedge = hedge.NextEdge;
             }
-            while (hedge != face.he0);
+            while (hedge != face.HalfEdge);
 
             if (!convex)
             {
-                face.mark = Face.NON_CONVEX;
+                face.Mark = Face.NON_CONVEX;
             }
 
             return false;
@@ -1491,45 +1297,45 @@ namespace OpenH2.Foundation._3D
         private void CalculateHorizon(Vector3 eyePnt, HalfEdge edge0, Face face)
         {
             DeleteFacePoints(face, null);
-            face.mark = Face.DELETED;
+            face.Mark = Face.DELETED;
 
             HalfEdge edge;
             if (edge0 == null)
             {
-                edge0 = face.getEdge(0);
+                edge0 = face.GetEdge(0);
                 edge = edge0;
             }
             else
             {
-                edge = edge0.getNext();
+                edge = edge0.NextEdge;
             }
 
             do
             {
-                Face oppFace = edge.oppositeFace();
-                if (oppFace.mark == Face.VISIBLE)
+                Face oppFace = edge.OppositeFace;
+                if (oppFace.Mark == Face.VISIBLE)
                 {
-                    if (oppFace.distanceToPlane(eyePnt) > Tolerance)
+                    if (oppFace.DistanceToPlane(eyePnt) > Tolerance)
                     {
-                        CalculateHorizon(eyePnt, edge.getOpposite(), oppFace);
+                        CalculateHorizon(eyePnt, edge.OppositeEdge, oppFace);
                     }
                     else
                     {
                         horizon.Add(edge);
                     }
                 }
-                edge = edge.getNext();
+                edge = edge.NextEdge;
             }
             while (edge != edge0);
         }
 
         private HalfEdge AddAdjoiningFace(Vertex eyeVtx, HalfEdge he)
         {
-            var face = Face.createTriangle(eyeVtx, he.tail(), he.head());
-            face.getEdge(-1).setOpposite(he.getOpposite());
+            var face = Face.CreateTriangle(eyeVtx, he.TailVertex, he.HeadVertex);
+            face.GetEdge(-1).SetOpposite(he.OppositeEdge);
 
             faces.Add(face);
-            return face.getEdge(0);
+            return face.GetEdge(0);
         }
 
         private void AddNewFaces(Vertex eyeVtx)
@@ -1545,17 +1351,17 @@ namespace OpenH2.Foundation._3D
 
                 if (hedgeSidePrev != null)
                 {
-                    hedgeSide.next.setOpposite(hedgeSidePrev);
+                    hedgeSide.NextEdge.SetOpposite(hedgeSidePrev);
                 }
                 else
                 {
                     hedgeSideBegin = hedgeSide;
                 }
 
-                this.newFaces.add(hedgeSide.getFace());
+                this.newFaces.Add(hedgeSide.Face);
                 hedgeSidePrev = hedgeSide;
             }
-            hedgeSideBegin.next.setOpposite(hedgeSidePrev);
+            hedgeSideBegin.NextEdge.SetOpposite(hedgeSidePrev);
         }
 
         private void AddPointToHull(Vertex eyeVtx)
@@ -1563,16 +1369,16 @@ namespace OpenH2.Foundation._3D
             horizon.Clear();
             unclaimed.Clear();
 
-            RemovePointFromFace(eyeVtx, eyeVtx.face);
-            CalculateHorizon(eyeVtx.pnt, null, eyeVtx.face);
+            RemovePointFromFace(eyeVtx, eyeVtx.Face);
+            CalculateHorizon(eyeVtx.Point, null, eyeVtx.Face);
             AddNewFaces(eyeVtx);
 
             // first merge pass ... merge faces which are non-convex
             // as determined by the larger face
 
-            for (Face face = newFaces.first(); face != null; face = face.next)
+            for (Face face = newFaces.First(); face != null; face = face.Next)
             {
-                if (face.mark == Face.VISIBLE)
+                if (face.Mark == Face.VISIBLE)
                 {
                     while (DoAdjacentMerge(face, NONCONVEX_WRT_LARGER_FACE))
                     { 
@@ -1581,11 +1387,11 @@ namespace OpenH2.Foundation._3D
             }
             // second merge pass ... merge faces which are non-convex
             // wrt either face      
-            for (Face face = newFaces.first(); face != null; face = face.next)
+            for (Face face = newFaces.First(); face != null; face = face.Next)
             {
-                if (face.mark == Face.NON_CONVEX)
+                if (face.Mark == Face.NON_CONVEX)
                 {
-                    face.mark = Face.VISIBLE;
+                    face.Mark = Face.VISIBLE;
 
                     while (DoAdjacentMerge(face, NONCONVEX))
                     {
@@ -1611,12 +1417,12 @@ namespace OpenH2.Foundation._3D
 
         private void MarkFaceVertices(Face face, int mark)
         {
-            HalfEdge he0 = face.getFirstEdge();
+            HalfEdge he0 = face.GetFirstEdge();
             HalfEdge he = he0;
             do
             {
-                he.head().index = mark;
-                he = he.next;
+                he.HeadVertex.Index = mark;
+                he = he.NextEdge;
             }
             while (he != he0);
         }
@@ -1625,7 +1431,7 @@ namespace OpenH2.Foundation._3D
         {
             for (int i = 0; i < numPoints; i++)
             {
-                pointBuffer[i].index = -1;
+                pointBuffer[i].Index = -1;
             }
 
             // remove inactive faces and mark active vertices
@@ -1633,7 +1439,7 @@ namespace OpenH2.Foundation._3D
             for (int i = 0; i < facesToProcess; i++)
             {
                 Face face = faces[i];
-                if (face.mark != Face.VISIBLE)
+                if (face.Mark != Face.VISIBLE)
                 {
                     faces.RemoveAt(i);
                     i--;
@@ -1650,10 +1456,10 @@ namespace OpenH2.Foundation._3D
             for (int i = 0; i < numPoints; i++)
             {
                 Vertex vtx = pointBuffer[i];
-                if (vtx.index == 0)
+                if (vtx.Index == 0)
                 {
                     vertexPointIndices[numVertices] = i;
-                    vtx.index = numVertices++;
+                    vtx.Index = numVertices++;
                 }
             }
         }
@@ -1661,10 +1467,10 @@ namespace OpenH2.Foundation._3D
         private bool CheckFaceConvexity(Face face, double tol, StringBuilder ps)
         {
             double dist;
-            HalfEdge he = face.he0;
+            HalfEdge he = face.HalfEdge;
             do
             {
-                face.checkConsistency();
+                face.CheckConsistency();
                 // make sure edge is convex
                 dist = OppFaceDistance(he);
                 if (dist > tol)
@@ -1676,29 +1482,29 @@ namespace OpenH2.Foundation._3D
                     }
                     return false;
                 }
-                dist = OppFaceDistance(he.opposite);
+                dist = OppFaceDistance(he.OppositeEdge);
                 if (dist > tol)
                 {
                     if (ps != null)
                     {
                         ps.AppendLine("Opposite edge " +
-                                    he.opposite.getVertexString() +
+                                    he.OppositeEdge.getVertexString() +
                                     " non-convex by " + dist);
                     }
                     return false;
                 }
-                if (he.next.oppositeFace() == he.oppositeFace())
+                if (he.NextEdge.OppositeFace == he.OppositeFace)
                 {
                     if (ps != null)
                     {
-                        ps.AppendLine("Redundant vertex " + he.head().index +
-                                    " in face " + face.getVertexString());
+                        ps.AppendLine("Redundant vertex " + he.HeadVertex.Index +
+                                    " in face " + face.GetVertexString());
                     }
                     return false;
                 }
-                he = he.next;
+                he = he.NextEdge;
             }
-            while (he != face.he0);
+            while (he != face.HalfEdge);
             return true;
         }
 
@@ -1708,7 +1514,7 @@ namespace OpenH2.Foundation._3D
             bool convex = true;
             foreach (var face in faces)
             {
-                if (face.mark == Face.VISIBLE)
+                if (face.Mark == Face.VISIBLE)
                 {
                     if (!CheckFaceConvexity(face, tol, ps))
                     {
@@ -1756,10 +1562,10 @@ namespace OpenH2.Foundation._3D
                 head = tail = null;
             }
 
-            /**
-             * Adds a vertex to the end of this list.
-             */
-            public void add(Vertex vtx)
+            /// <summary>
+            /// Adds a vertex to the end of this list.
+            /// </summary>
+            public void Add(Vertex vtx)
             {
                 if (head == null)
                 {
@@ -1767,17 +1573,17 @@ namespace OpenH2.Foundation._3D
                 }
                 else
                 {
-                    tail.next = vtx;
+                    tail.NextVertex = vtx;
                 }
-                vtx.prev = tail;
-                vtx.next = null;
+                vtx.PreviousVertex = tail;
+                vtx.NextVertex = null;
                 tail = vtx;
             }
 
-            /**
-             * Adds a chain of vertices to the end of this list.
-             */
-            public void addAll(Vertex vtx)
+            /// <summary>
+            /// Adds a chain of vertices to the end of this list.
+            /// </summary>
+            public void AddAll(Vertex vtx)
             {
                 if (head == null)
                 {
@@ -1785,92 +1591,93 @@ namespace OpenH2.Foundation._3D
                 }
                 else
                 {
-                    tail.next = vtx;
+                    tail.NextVertex = vtx;
                 }
-                vtx.prev = tail;
-                while (vtx.next != null)
+                vtx.PreviousVertex = tail;
+                while (vtx.NextVertex != null)
                 {
-                    vtx = vtx.next;
+                    vtx = vtx.NextVertex;
                 }
                 tail = vtx;
             }
 
-            /**
-             * Deletes a vertex from this list.
-             */
-            public void delete(Vertex vtx)
+            /// <summary>
+            /// Deletes a vertex from this list.
+            /// </summary>
+            public void Delete(Vertex vtx)
             {
-                if (vtx.prev == null)
+                if (vtx.PreviousVertex == null)
                 {
-                    head = vtx.next;
+                    head = vtx.NextVertex;
                 }
                 else
                 {
-                    vtx.prev.next = vtx.next;
+                    vtx.PreviousVertex.NextVertex = vtx.NextVertex;
                 }
-                if (vtx.next == null)
+                if (vtx.NextVertex == null)
                 {
-                    tail = vtx.prev;
+                    tail = vtx.PreviousVertex;
                 }
                 else
                 {
-                    vtx.next.prev = vtx.prev;
+                    vtx.NextVertex.PreviousVertex = vtx.PreviousVertex;
                 }
             }
 
-            /**
-             * Deletes a chain of vertices from this list.
-             */
-            public void delete(Vertex vtx1, Vertex vtx2)
+            /// <summary>
+            /// Deletes a chain of vertices from this list.
+            /// </summary>
+            public void Delete(Vertex from, Vertex to)
             {
-                if (vtx1.prev == null)
+                if (from.PreviousVertex == null)
                 {
-                    head = vtx2.next;
+                    head = to.NextVertex;
                 }
                 else
                 {
-                    vtx1.prev.next = vtx2.next;
+                    from.PreviousVertex.NextVertex = to.NextVertex;
                 }
-                if (vtx2.next == null)
+                if (to.NextVertex == null)
                 {
-                    tail = vtx1.prev;
+                    tail = from.PreviousVertex;
                 }
                 else
                 {
-                    vtx2.next.prev = vtx1.prev;
+                    to.NextVertex.PreviousVertex = from.PreviousVertex;
                 }
             }
 
-            /**
-             * Inserts a vertex into this list before another
-             * specificed vertex.
-             */
-            public void insertBefore(Vertex vtx, Vertex next)
+            /// <summary>
+            /// Inserts a vertex into this list before another specificed vertex.
+            /// </summary>
+            public void InsertBefore(Vertex vtx, Vertex next)
             {
-                vtx.prev = next.prev;
-                if (next.prev == null)
+                vtx.PreviousVertex = next.PreviousVertex;
+                if (next.PreviousVertex == null)
                 {
                     head = vtx;
                 }
                 else
                 {
-                    next.prev.next = vtx;
+                    next.PreviousVertex.NextVertex = vtx;
                 }
-                vtx.next = next;
-                next.prev = vtx;
+                vtx.NextVertex = next;
+                next.PreviousVertex = vtx;
             }
 
-            /**
-             * Returns the first element in this list.
-             */
-            public Vertex first()
+            /// <summary>
+            /// Returns the first element in this list.
+            /// </summary>
+            /// <returns></returns>
+            public Vertex First()
             {
                 return head;
             }
 
-            /**
-             * Returns true if this list is empty.
-             */
+            /// <summary>
+            /// Returns true if this list is empty.
+            /// </summary>
+            /// <returns></returns>
             public bool isEmpty()
             {
                 return head == null;
@@ -1882,18 +1689,19 @@ namespace OpenH2.Foundation._3D
             private Face head;
             private Face tail;
 
-            /**
-             * Clears this list.
-             */
+            /// <summary>
+            /// Clears this list.
+            /// </summary>
             public void Clear()
             {
                 head = tail = null;
             }
 
-            /**
-             * Adds a vertex to the end of this list.
-             */
-            public void add(Face vtx)
+            /// <summary>
+            /// Adds a vertex to the end of this list.
+            /// </summary>
+            /// <param name="vtx"></param>
+            public void Add(Face vtx)
             {
                 if (head == null)
                 {
@@ -1901,21 +1709,21 @@ namespace OpenH2.Foundation._3D
                 }
                 else
                 {
-                    tail.next = vtx;
+                    tail.Next = vtx;
                 }
-                vtx.next = null;
+                vtx.Next = null;
                 tail = vtx;
             }
 
-            public Face first()
+            public Face First()
             {
                 return head;
             }
 
-            /**
-             * Returns true if this list is empty.
-             */
-            public bool isEmpty()
+            /// <summary>
+            /// Returns true if this list is empty.
+            /// </summary>
+            public bool IsEmpty()
             {
                 return head == null;
             }
