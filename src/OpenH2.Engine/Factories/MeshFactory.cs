@@ -144,11 +144,10 @@ namespace OpenH2.Engine.Factories
                 verts[i] = new VertexFormat(convexPoints[i], new Vector2(), new Vector3());
             }
 
-            var qhull = new QuickHull();
-            qhull.build(convexPoints);
-            qhull.triangulate();
+            var qhull = new QuickHull(convexPoints);
+            qhull.Triangulate();
 
-            var faces = qhull.getFaces(QuickHull.CLOCKWISE);
+            var faces = qhull.GetFaces(QuickHull.CLOCKWISE);
 
             var indices = new List<int>();
 

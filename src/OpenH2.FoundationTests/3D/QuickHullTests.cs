@@ -431,15 +431,14 @@ namespace OpenH2.Foundation.Tests._3D
 
         void explicitFaceCheck(QuickHull hull, int[][] checkFaces)
         {
-            int[][] faceIndices = hull.getFaces();
+            int[][] faceIndices = hull.GetFaces();
             if (faceIndices.Length != checkFaces.Length)
             {
                 throw new Exception("Error: " + faceIndices.Length + " faces vs. " + checkFaces.Length);
             }
 
             // translate face indices back into original indices
-            Vector3[] pnts = hull.getVertices();
-            int[] vtxIndices = hull.getVertexPointIndices();
+            int[] vtxIndices = hull.GetVertexPointIndices();
 
             for (int j = 0; j < faceIndices.Length; j++)
             {
@@ -480,12 +479,11 @@ namespace OpenH2.Foundation.Tests._3D
 
         void singleTest(double[] coords, int[][] checkFaces)
         {
-            QuickHull hull = new QuickHull();
+            QuickHull hull = new QuickHull(coords);
 
-            hull.build(coords, coords.Length / 3);
             if (triangulate)
             {
-                hull.triangulate();
+                hull.Triangulate();
             }
 
             if (checkFaces != null)
@@ -501,7 +499,7 @@ namespace OpenH2.Foundation.Tests._3D
         double[] addDegeneracy(int type, double[] coords, QuickHull hull)
         {
             int numv = coords.Length / 3;
-            int[][] faces = hull.getFaces();
+            int[][] faces = hull.GetFaces();
             double[] coordsx = new double[coords.Length + faces.Length * 3];
             for (int i = 0; i < coords.Length; i++)
             {
@@ -509,7 +507,7 @@ namespace OpenH2.Foundation.Tests._3D
             }
 
             double[] lam = new double[3];
-            double eps = hull.getDistanceTolerance();
+            double eps = hull.Tolerance;
 
             for (int i = 0; i < faces.Length; i++)
             {
@@ -544,12 +542,11 @@ namespace OpenH2.Foundation.Tests._3D
         {
             double[] coordsx = addDegeneracy(degeneracyTest, coords, hull);
 
-            QuickHull xhull = new QuickHull();
+            QuickHull xhull = new QuickHull(coordsx);
 
-            xhull.build(coordsx, coordsx.Length / 3);
             if (triangulate)
             {
-                xhull.triangulate();
+                xhull.Triangulate();
             }
         }
 
@@ -598,11 +595,11 @@ namespace OpenH2.Foundation.Tests._3D
 
         void testException(double[] coords, string msg)
         {
-            QuickHull hull = new QuickHull();
+            QuickHull hull;
             Exception ex = null;
             try
             {
-                hull.build(coords, coords.Length / 3);
+                hull = new QuickHull(coords);
             }
             catch (Exception e)
             {

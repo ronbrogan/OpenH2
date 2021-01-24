@@ -587,7 +587,6 @@ namespace OpenH2.Foundation._3D
             }
         }
 
-
         private class HalfEdge
         {
             /**
@@ -792,380 +791,208 @@ namespace OpenH2.Foundation._3D
             }
         }
 
-
-        /**
-         * Specifies that (on output) vertex indices for a face should be
-         * listed in clockwise order.
-         */
-        public const int CLOCKWISE = 0x1;
-
-        /**
-         * Specifies that (on output) the vertex indices for a face should be
-         * numbered starting from 1.
-         */
-        public const int INDEXED_FROM_ONE = 0x2;
-
-        /**
-         * Specifies that (on output) the vertex indices for a face should be
-         * numbered starting from 0.
-         */
-        public const int INDEXED_FROM_ZERO = 0x4;
-
-        /**
-         * Specifies that (on output) the vertex indices for a face should be
-         * numbered with respect to the original input points.
-         */
-        public const int POINT_RELATIVE = 0x8;
-
-        /**
-         * Specifies that the distance tolerance should be
-         * computed automatically from the input point data.
-         */
-        public const double AUTOMATIC_TOLERANCE = -1;
-
-        protected int findIndex = -1;
-
+        private const double AUTOMATIC_TOLERANCE = -1;
+        private const double PRECISION = 2.2204460492503131e-8;
         // estimated size of the point set
-        protected double charLength;
+        private double charLength;
+
+        private int numVertices;
+        private int numPoints;
+
+        private readonly Vertex[] maxVtxs = new Vertex[3];
+        private readonly Vertex[] minVtxs = new Vertex[3];
+
+        private readonly List<Face> faces = new List<Face>(16);
+        private readonly List<HalfEdge> horizon = new List<HalfEdge>(16);
+
+        private readonly FaceList newFaces = new FaceList();
+        private readonly VertexList unclaimed = new VertexList();
+        private readonly VertexList claimed = new VertexList();
 
         private Vertex[] pointBuffer = new Vertex[0];
-        protected int[] vertexPointIndices = new int[0];
+        private int[] vertexPointIndices = new int[0];
         private Face[] discardedFaces = new Face[3];
 
-        private Vertex[] maxVtxs = new Vertex[3];
-        private Vertex[] minVtxs = new Vertex[3];
+        /// <summary>
+        /// Specifies that (on output) vertex indices for a face should be
+        /// listed in clockwise order.
+        /// </summary>
+        public const int CLOCKWISE = 0x1;
 
-        private List<Face> faces = new List<Face>(16);
-        private List<HalfEdge> horizon = new List<HalfEdge>(16);
+        /// <summary>
+        /// Specifies that (on output) the vertex indices for a face should be
+        /// numbered with respect to the original input points.
+        /// </summary>
+        public const int POINT_RELATIVE = 0x8;
 
-        private FaceList newFaces = new FaceList();
-        private VertexList unclaimed = new VertexList();
-        private VertexList claimed = new VertexList();
+        /// <summary>
+        /// Sets an explicit distance tolerance for convexity tests.
+        /// If {@link #AUTOMATIC_TOLERANCE AUTOMATIC_TOLERANCE}
+        /// is specified (the default), then the tolerance will be computed
+        /// automatically from the point data.
+        /// </summary>
+        public double ExplicitTolerance { get; private set; } = AUTOMATIC_TOLERANCE;
 
-        protected int numVertices;
-        protected int numFaces;
-        protected int numPoints;
+        /// <summary>
+        /// Returns the distance tolerance that was used for the most recently
+        /// computed hull. The distance tolerance is used to determine when
+        /// faces are unambiguously convex with respect to each other, and when
+        /// points are unambiguously above or below a face plane, in the
+        /// presence of numerical imprecision. Normally,
+        /// this tolerance is computed automatically for each set of input
+        /// points, but it can be set explicitly by the application.
+        /// </summary>
+        public double Tolerance { get; private set; }
 
-        protected double explicitTolerance = AUTOMATIC_TOLERANCE;
-        protected double tolerance;
-        private const double DOUBLE_PREC = 2.2204460492503131e-8;
-
-
-        /**
-         * Returns the distance tolerance that was used for the most recently
-         * computed hull. The distance tolerance is used to determine when
-         * faces are unambiguously convex with respect to each other, and when
-         * points are unambiguously above or below a face plane, in the
-         * presence of <a href=#distTol>numerical imprecision</a>. Normally,
-         * this tolerance is computed automatically for each set of input
-         * points, but it can be set explicitly by the application.
-         *
-         * @return distance tolerance
-         * @see QuickHull#setExplicitDistanceTolerance
-         */
-        public double getDistanceTolerance()
-        {
-            return tolerance;
-        }
-
-        /**
-         * Sets an explicit distance tolerance for convexity tests.
-         * If {@link #AUTOMATIC_TOLERANCE AUTOMATIC_TOLERANCE}
-         * is specified (the default), then the tolerance will be computed
-         * automatically from the point data.
-         *
-         * @param tol explicit tolerance
-         * @see #getDistanceTolerance
-         */
-        public void setExplicitDistanceTolerance(double tol)
-        {
-            explicitTolerance = tol;
-        }
-
-        /**
-         * Returns the explicit distance tolerance.
-         *
-         * @return explicit tolerance
-         * @see #setExplicitDistanceTolerance
-         */
-        public double getExplicitDistanceTolerance()
-        {
-            return explicitTolerance;
-        }
-
-        private void addPointToFace(Vertex vtx, Face face)
-        {
-            vtx.face = face;
-
-            if (face.outside == null)
-            {
-                claimed.add(vtx);
-            }
-            else
-            {
-                claimed.insertBefore(vtx, face.outside);
-            }
-            face.outside = vtx;
-        }
-
-        private void removePointFromFace(Vertex vtx, Face face)
-        {
-            if (vtx == face.outside)
-            {
-                if (vtx.next != null && vtx.next.face == face)
-                {
-                    face.outside = vtx.next;
-                }
-                else
-                {
-                    face.outside = null;
-                }
-            }
-            claimed.delete(vtx);
-        }
-
-        private Vertex removeAllPointsFromFace(Face face)
-        {
-            if (face.outside != null)
-            {
-                Vertex end = face.outside;
-                while (end.next != null && end.next.face == face)
-                {
-                    end = end.next;
-                }
-                claimed.delete(face.outside, end);
-                end.next = null;
-                return face.outside;
-            }
-            else
-            {
-                return null;
-            }
-        }
-
-        /**
-         * Creates an empty convex hull object.
-         */
-        public QuickHull()
-        {
-        }
-
-        /**
-         * Creates a convex hull object and initializes it to the convex hull
-         * of a set of points whose coordinates are given by an
-         * array of doubles.
-         *
-         * @param coords x, y, and z coordinates of each input
-         * point. The length of this array will be three times
-         * the the number of input points.
-         * @throws IllegalArgumentException the number of input points is less
-         * than four, or the points appear to be coincident, colinear, or
-         * coplanar.
-         */
+        /// <summary>
+        /// Creates a convex hull object and initializes it to the convex hull
+        /// of a set of points whose coordinates are given by an
+        /// array of doubles.
+        /// </summary>
+        /// <param name="coords"></param>
         public QuickHull(double[] coords)
         {
-            build(coords, coords.Length / 3);
+            var numPoints = coords.Length / 3;
+
+            if (numPoints < 4)
+            {
+                throw new ArgumentException("Less than four input points specified");
+            }
+
+            InitBuffers(numPoints);
+            SetPoints(coords, numPoints);
+            BuildHull();
         }
 
-        /**
-         * Creates a convex hull object and initializes it to the convex hull
-         * of a set of points.
-         *
-         * @param points input points.
-         * @throws IllegalArgumentException the number of input points is less
-         * than four, or the points appear to be coincident, colinear, or
-         * coplanar.
-         */
+        /// <summary>
+        /// Creates a convex hull object and initializes it to the convex hull
+        /// of a set of points.
+        /// </summary>
+        /// <param name="points"></param>
         public QuickHull(Vector3[] points)
         {
-            build(points, points.Length);
-        }
+            var numPoints = points.Length;
 
-        private HalfEdge findHalfEdge(Vertex tail, Vertex head)
-        {
-            // brute force ... OK, since setHull is not used much
-            foreach (var face in faces)
-            {
-                HalfEdge he = face.findEdge(tail, head);
-                if (he != null)
-                {
-                    return he;
-                }
-            }
-            return null;
-        }
-
-        protected void setHull(double[] coords, int nump,
-                                int[][] faceIndices, int numf)
-        {
-            initBuffers(nump);
-            setPoints(coords, nump);
-            computeMaxAndMin();
-            for (int i = 0; i < numf; i++)
-            {
-                Face face = Face.create(pointBuffer, faceIndices[i]);
-                HalfEdge he = face.he0;
-                do
-                {
-                    HalfEdge heOpp = findHalfEdge(he.head(), he.tail());
-                    if (heOpp != null)
-                    {
-                        he.setOpposite(heOpp);
-                    }
-                    he = he.next;
-                }
-                while (he != face.he0);
-                faces.Add(face);
-            }
-        }
-
-        private void printPoints(StringBuilder ps)
-        {
-            for (int i = 0; i < numPoints; i++)
-            {
-                Vector3 pnt = pointBuffer[i].pnt;
-                ps.AppendLine(pnt.X + ", " + pnt.Y + ", " + pnt.Z + ",");
-            }
-        }
-
-        /**
-         * Constructs the convex hull of a set of points whose
-         * coordinates are given by an array of doubles.
-         *
-         * @param coords x, y, and z coordinates of each input
-         * point. The length of this array will be three times
-         * the number of input points.
-         * @throws IllegalArgumentException the number of input points is less
-         * than four, or the points appear to be coincident, colinear, or
-         * coplanar.
-         */
-        public void build(double[] coords)
-        {
-            build(coords, coords.Length / 3);
-        }
-
-        /**
-         * Constructs the convex hull of a set of points whose
-         * coordinates are given by an array of doubles.
-         *
-         * @param coords x, y, and z coordinates of each input
-         * point. The length of this array must be at least three times
-         * <code>nump</code>.
-         * @param nump number of input points
-         * @throws IllegalArgumentException the number of input points is less
-         * than four or greater than 1/3 the length of <code>coords</code>,
-         * or the points appear to be coincident, colinear, or
-         * coplanar.
-         */
-        public void build(double[] coords, int nump)
-        {
-            if (nump < 4)
+            if (numPoints < 4)
             {
                 throw new ArgumentException("Less than four input points specified");
             }
-            if (coords.Length / 3 < nump)
-            {
-                throw new ArgumentException("Coordinate array too small for specified number of points");
-            }
-            initBuffers(nump);
-            setPoints(coords, nump);
-            buildHull();
+
+            InitBuffers(numPoints);
+            SetPoints(points, numPoints);
+            BuildHull();
         }
 
-        /**
-         * Constructs the convex hull of a set of points.
-         *
-         * @param points input points
-         * @throws IllegalArgumentException the number of input points is less
-         * than four, or the points appear to be coincident, colinear, or
-         * coplanar.
-         */
-        public void build(Vector3[] points)
+        /// <summary>
+        /// Triangulates any non-triangular hull faces. In some cases, due to
+        /// precision issues, the resulting triangles may be very thin or small,
+        /// and hence appear to be non-convex (this same limitation is present
+        /// in <a href=http://www.qhull.org>qhull</a>).
+        /// </summary>
+        public void Triangulate()
         {
-            build(points, points.Length);
-        }
+            double minArea = 1000 * charLength * PRECISION;
+            newFaces.Clear();
 
-        /**
-         * Constructs the convex hull of a set of points.
-         *
-         * @param points input points
-         * @param nump number of input points
-         * @throws IllegalArgumentException the number of input points is less
-         * than four or greater then the length of <code>points</code>, or the
-         * points appear to be coincident, colinear, or coplanar.
-         */
-        public void build(Vector3[] points, int nump)
-        {
-            if (nump < 4)
-            {
-                throw new ArgumentException("Less than four input points specified");
-            }
-            if (points.Length < nump)
-            {
-                throw new ArgumentException("Point array too small for specified number of points");
-            }
-            initBuffers(nump);
-            setPoints(points, nump);
-            buildHull();
-        }
-
-        /**
-         * Triangulates any non-triangular hull faces. In some cases, due to
-         * precision issues, the resulting triangles may be very thin or small,
-         * and hence appear to be non-convex (this same limitation is present
-         * in <a href=http://www.qhull.org>qhull</a>).
-         */
-        public void triangulate()
-        {
-            double minArea = 1000 * charLength * DOUBLE_PREC;
-            newFaces.clear();
             foreach (var face in faces)
             {
                 if (face.mark == Face.VISIBLE)
                 {
                     face.triangulate(newFaces, minArea);
-                    // splitFace (face);
                 }
             }
+
             for (Face face = newFaces.first(); face != null; face = face.next)
             {
                 faces.Add(face);
             }
         }
 
-        //      private void splitFace (Face face)
-        //       {
-        //         Face newFace = face.split();
-        //         if (newFace != null)
-        //          { newFaces.add (newFace);
-        //            splitFace (newFace);
-        //            splitFace (face);
-        //          }
-        //       }
-
-        protected void initBuffers(int nump)
+        /// <summary>
+        /// Returns an array specifing the index of each hull vertex
+        /// with respect to the original input points.
+        /// </summary>
+        /// <returns></returns>
+        public int[] GetVertexPointIndices()
         {
-            if (pointBuffer.Length < nump)
+            int[] indices = new int[numVertices];
+            for (int i = 0; i < numVertices; i++)
             {
-                Vertex[] newBuffer = new Vertex[nump];
-                vertexPointIndices = new int[nump];
-                for (int i = 0; i < pointBuffer.Length; i++)
-                {
-                    newBuffer[i] = pointBuffer[i];
-                }
-                for (int i = pointBuffer.Length; i < nump; i++)
-                {
-                    newBuffer[i] = new Vertex();
-                }
-                pointBuffer = newBuffer;
+                indices[i] = vertexPointIndices[i];
             }
+            return indices;
+        }
+
+        /// <summary>
+        /// Returns the number of faces in this hull.
+        /// </summary>
+        /// <returns></returns>
+        public int GetNumFaces()
+        {
+            return faces.Count;
+        }
+
+        /// <summary>
+        /// Returns the faces associated with this hull.
+        /// 
+        /// <p>Each face is represented by an integer array which gives the
+        /// indices of the vertices. These indices are numbered
+        /// relative to the
+        /// hull vertices, are zero-based,
+        /// and are arranged counter-clockwise. More control
+        /// over the index format can be obtained using
+        /// {@link #getFaces(int) getFaces(indexFlags)}.
+        /// </summary>
+        /// <returns></returns>
+        public int[][] GetFaces()
+        {
+            return GetFaces(0);
+        }
+
+        /// <summary>
+        /// Returns the faces associated with this hull.
+        /// 
+        /// <p>Each face is represented by an integer array which gives the
+        /// indices of the vertices. By default, these indices are numbered with
+        /// respect to the hull vertices (as opposed to the input points), are
+        /// zero-based, and are arranged counter-clockwise. However, this
+        /// can be changed by setting {@link #POINT_RELATIVE
+        /// POINT_RELATIVE}, {@link #INDEXED_FROM_ONE INDEXED_FROM_ONE}, or
+        /// {@link #CLOCKWISE CLOCKWISE} in the indexFlags parameter.
+        /// 
+        /// </summary>
+        /// <param name="indexFlags"></param>
+        /// <returns></returns>
+        public int[][] GetFaces(int indexFlags)
+        {
+            int[][] allFaces = new int[faces.Count][];
+            int k = 0;
+            foreach (var face in faces)
+            {
+                allFaces[k] = new int[face.numVertices()];
+                GetFaceIndices(allFaces[k], face, indexFlags);
+                k++;
+            }
+            return allFaces;
+        }
+
+        protected void InitBuffers(int nump)
+        {
+            Vertex[] newBuffer = new Vertex[nump];
+            vertexPointIndices = new int[nump];
+            
+            for (int i = 0; i < nump; i++)
+            {
+                newBuffer[i] = new Vertex();
+            }
+
+            pointBuffer = newBuffer;
+            
             faces.Clear();
-            claimed.clear();
-            numFaces = 0;
             numPoints = nump;
         }
 
-        protected void setPoints(double[] coords, int nump)
+        protected void SetPoints(double[] coords, int nump)
         {
             for (int i = 0; i < nump; i++)
             {
@@ -1175,7 +1002,7 @@ namespace OpenH2.Foundation._3D
             }
         }
 
-        protected void setPoints(Vector3[] pnts, int nump)
+        protected void SetPoints(Vector3[] pnts, int nump)
         {
             for (int i = 0; i < nump; i++)
             {
@@ -1185,74 +1012,10 @@ namespace OpenH2.Foundation._3D
             }
         }
 
-        protected void computeMaxAndMin()
-        {
-            Vector3 max = new Vector3();
-            Vector3 min = new Vector3();
-
-            for (int i = 0; i < 3; i++)
-            {
-                maxVtxs[i] = minVtxs[i] = pointBuffer[0];
-            }
-            max = pointBuffer[0].pnt;
-            min = pointBuffer[0].pnt;
-
-            for (int i = 1; i < numPoints; i++)
-            {
-                Vector3 pnt = pointBuffer[i].pnt;
-                if (pnt.X > max.X)
-                {
-                    max.X = pnt.X;
-                    maxVtxs[0] = pointBuffer[i];
-                }
-                else if (pnt.X < min.X)
-                {
-                    min.X = pnt.X;
-                    minVtxs[0] = pointBuffer[i];
-                }
-                if (pnt.Y > max.Y)
-                {
-                    max.Y = pnt.Y;
-                    maxVtxs[1] = pointBuffer[i];
-                }
-                else if (pnt.Y < min.Y)
-                {
-                    min.Y = pnt.Y;
-                    minVtxs[1] = pointBuffer[i];
-                }
-                if (pnt.Z > max.Z)
-                {
-                    max.Z = pnt.Z;
-                    maxVtxs[2] = pointBuffer[i];
-                }
-                else if (pnt.Z < min.Z)
-                {
-                    min.Z = pnt.Z;
-                    minVtxs[2] = pointBuffer[i];
-                }
-            }
-
-            // this epsilon formula comes from QuickHull, and I'm
-            // not about to quibble.
-            charLength = Math.Max(max.X - min.X, max.Y - min.Y);
-            charLength = Math.Max(max.Z - min.Z, charLength);
-            if (explicitTolerance == AUTOMATIC_TOLERANCE)
-            {
-                tolerance =
-                   3 * DOUBLE_PREC * (Math.Max(Math.Abs(max.X), Math.Abs(min.X)) +
-                                  Math.Max(Math.Abs(max.Y), Math.Abs(min.Y)) +
-                                  Math.Max(Math.Abs(max.Z), Math.Abs(min.Z)));
-            }
-            else
-            {
-                tolerance = explicitTolerance;
-            }
-        }
-
-        /**
-         * Creates the initial simplex from which the hull will be built.
-         */
-        protected void createInitialSimplex()
+        /// <summary>
+        /// Creates the initial simplex from which the hull will be built.
+        /// </summary>
+        protected void CreateInitialSimplex()
         {
             double max = 0;
             int imax = 0;
@@ -1267,12 +1030,12 @@ namespace OpenH2.Foundation._3D
                 }
             }
 
-            if (max <= tolerance)
+            if (max <= Tolerance)
             {
                 throw new ArgumentException("Input points appear to be coincident");
             }
-            Vertex[]
-            vtx = new Vertex[4];
+
+            var vtx = new Vertex[4];
             // set first two vertices to be those with the greatest
             // one dimensional separation
 
@@ -1300,7 +1063,7 @@ namespace OpenH2.Foundation._3D
                     nrml = xprod;
                 }
             }
-            if (Math.Sqrt(maxSqr) <= 100 * tolerance)
+            if (Math.Sqrt(maxSqr) <= 100 * Tolerance)
             {
                 throw new ArgumentException("Input points appear to be colinear");
             }
@@ -1308,9 +1071,7 @@ namespace OpenH2.Foundation._3D
 
             // recompute nrml to make sure it is normal to u10 - otherwise could
             // be errors in case vtx[2] is close to u10
-            Vector3 res = new Vector3();
-            res = Vector3.Multiply(Vector3.Dot(nrml, u01), u01); // component of nrml along u01
-            nrml -= res;
+            nrml -= Vector3.Multiply(Vector3.Dot(nrml, u01), u01); // component of nrml along u01
             nrml = Vector3.Normalize(nrml);
 
             double maxDist = 0;
@@ -1327,13 +1088,13 @@ namespace OpenH2.Foundation._3D
                     vtx[3] = pointBuffer[i];
                 }
             }
-            if (Math.Abs(maxDist) <= 100 * tolerance)
+
+            if (Math.Abs(maxDist) <= 100 * Tolerance)
             {
                 throw new ArgumentException("Input points appear to be coplanar");
             }
 
-
-            Face[] tris = new Face[4];
+            var tris = new Face[4];
 
             if (Vector3.Dot(vtx[3].pnt, nrml) - d0 < 0)
             {
@@ -1364,11 +1125,10 @@ namespace OpenH2.Foundation._3D
                 }
             }
 
-
-            for (int i = 0; i < 4; i++)
-            {
-                faces.Add(tris[i]);
-            }
+            faces.Add(tris[0]);
+            faces.Add(tris[1]);
+            faces.Add(tris[2]);
+            faces.Add(tris[3]);
 
             for (int i = 0; i < numPoints; i++)
             {
@@ -1379,8 +1139,9 @@ namespace OpenH2.Foundation._3D
                     continue;
                 }
 
-                maxDist = tolerance;
+                maxDist = Tolerance;
                 Face maxFace = null;
+
                 for (int k = 0; k < 4; k++)
                 {
                     double dist = tris[k].distanceToPlane(v.pnt);
@@ -1390,215 +1151,84 @@ namespace OpenH2.Foundation._3D
                         maxDist = dist;
                     }
                 }
+
                 if (maxFace != null)
                 {
-                    addPointToFace(v, maxFace);
+                    AddPointToFace(v, maxFace);
                 }
             }
         }
 
-        /**
-         * Returns the number of vertices in this hull.
-         *
-         * @return number of vertices
-         */
-        public int getNumVertices()
+        protected void ComputeMaxAndMin()
         {
-            return numVertices;
-        }
+            Vector3 max;
+            Vector3 min;
 
-        /**
-         * Returns the vertex points in this hull.
-         *
-         * @return array of vertex points
-         * @see QuickHull#getVertices(double[])
-         * @see QuickHull#getFaces()
-         */
-        public Vector3[] getVertices()
-        {
-            Vector3[] vtxs = new Vector3[numVertices];
-            for (int i = 0; i < numVertices; i++)
+            for (int i = 0; i < 3; i++)
             {
-                vtxs[i] = pointBuffer[vertexPointIndices[i]].pnt;
+                maxVtxs[i] = minVtxs[i] = pointBuffer[0];
             }
-            return vtxs;
-        }
 
-        /**
-         * Returns the coordinates of the vertex points of this hull.
-         *
-         * @param coords returns the x, y, z coordinates of each vertex.
-         * This length of this array must be at least three times
-         * the number of vertices.
-         * @return the number of vertices
-         * @see QuickHull#getVertices()
-         * @see QuickHull#getFaces()
-         */
-        public int getVertices(double[] coords)
-        {
-            for (int i = 0; i < numVertices; i++)
+            max = pointBuffer[0].pnt;
+            min = pointBuffer[0].pnt;
+
+            for (int i = 1; i < numPoints; i++)
             {
-                Vector3 pnt = pointBuffer[vertexPointIndices[i]].pnt;
-                coords[i * 3 + 0] = pnt.X;
-                coords[i * 3 + 1] = pnt.Y;
-                coords[i * 3 + 2] = pnt.Z;
-            }
-            return numVertices;
-        }
-
-        /**
-         * Returns an array specifing the index of each hull vertex
-         * with respect to the original input points.
-         *
-         * @return vertex indices with respect to the original points
-         */
-        public int[] getVertexPointIndices()
-        {
-            int[] indices = new int[numVertices];
-            for (int i = 0; i < numVertices; i++)
-            {
-                indices[i] = vertexPointIndices[i];
-            }
-            return indices;
-        }
-
-        /**
-         * Returns the number of faces in this hull.
-         *
-         * @return number of faces
-         */
-        public int getNumFaces()
-        {
-            return faces.Count;
-        }
-
-        /**
-         * Returns the faces associated with this hull.
-         *
-         * <p>Each face is represented by an integer array which gives the
-         * indices of the vertices. These indices are numbered
-         * relative to the
-         * hull vertices, are zero-based,
-         * and are arranged counter-clockwise. More control
-         * over the index format can be obtained using
-         * {@link #getFaces(int) getFaces(indexFlags)}.
-         *
-         * @return array of integer arrays, giving the vertex
-         * indices for each face.
-         * @see QuickHull#getVertices()
-         * @see QuickHull#getFaces(int)
-         */
-        public int[][] getFaces()
-        {
-            return getFaces(0);
-        }
-
-        /**
-         * Returns the faces associated with this hull.
-         *
-         * <p>Each face is represented by an integer array which gives the
-         * indices of the vertices. By default, these indices are numbered with
-         * respect to the hull vertices (as opposed to the input points), are
-         * zero-based, and are arranged counter-clockwise. However, this
-         * can be changed by setting {@link #POINT_RELATIVE
-         * POINT_RELATIVE}, {@link #INDEXED_FROM_ONE INDEXED_FROM_ONE}, or
-         * {@link #CLOCKWISE CLOCKWISE} in the indexFlags parameter.
-         *
-         * @param indexFlags specifies index characteristics (0 results
-         * in the default)
-         * @return array of integer arrays, giving the vertex
-         * indices for each face.
-         * @see QuickHull#getVertices()
-         */
-        public int[][] getFaces(int indexFlags)
-        {
-            int[][] allFaces = new int[faces.Count][];
-            int k = 0;
-            foreach (var face in faces)
-            {
-                allFaces[k] = new int[face.numVertices()];
-                getFaceIndices(allFaces[k], face, indexFlags);
-                k++;
-            }
-            return allFaces;
-        }
-
-        /**
-         * Prints the vertices and faces of this hull to the stream ps.
-         *
-         * <p>
-         * This is done using the Alias Wavefront .obj file
-         * format, with the vertices printed first (each preceding by
-         * the letter <code>v</code>), followed by the vertex indices
-         * for each face (each
-         * preceded by the letter <code>f</code>).
-         *
-         * <p>The face indices are numbered with respect to the hull vertices
-         * (as opposed to the input points), with a lowest index of 1, and are
-         * arranged counter-clockwise. More control over the index format can
-         * be obtained using
-         * {@link #print(StringBuilder,int) print(ps,indexFlags)}.
-         *
-         * @param ps stream used for printing
-         * @see QuickHull#print(StringBuilder,int)
-         * @see QuickHull#getVertices()
-         * @see QuickHull#getFaces()
-         */
-        public void print(StringBuilder ps)
-        {
-            print(ps, 0);
-        }
-
-        /**
-         * Prints the vertices and faces of this hull to the stream ps.
-         *
-         * <p> This is done using the Alias Wavefront .obj file format, with
-         * the vertices printed first (each preceding by the letter
-         * <code>v</code>), followed by the vertex indices for each face (each
-         * preceded by the letter <code>f</code>).
-         *
-         * <p>By default, the face indices are numbered with respect to the
-         * hull vertices (as opposed to the input points), with a lowest index
-         * of 1, and are arranged counter-clockwise. However, this
-         * can be changed by setting {@link #POINT_RELATIVE POINT_RELATIVE},
-         * {@link #INDEXED_FROM_ONE INDEXED_FROM_ZERO}, or {@link #CLOCKWISE
-         * CLOCKWISE} in the indexFlags parameter.
-         *
-         * @param ps stream used for printing
-         * @param indexFlags specifies index characteristics
-         * (0 results in the default).
-         * @see QuickHull#getVertices()
-         * @see QuickHull#getFaces()
-         */
-        public void print(StringBuilder ps, int indexFlags)
-        {
-            if ((indexFlags & INDEXED_FROM_ZERO) == 0)
-            {
-                indexFlags |= INDEXED_FROM_ONE;
-            }
-            for (int i = 0; i < numVertices; i++)
-            {
-                Vector3 pnt = pointBuffer[vertexPointIndices[i]].pnt;
-                ps.AppendLine("v " + pnt.X + " " + pnt.Y + " " + pnt.Z);
-            }
-            foreach (var face in faces)
-            {
-                int[] indices = new int[face.numVertices()];
-                getFaceIndices(indices, face, indexFlags);
-
-                ps.Append("f");
-                for (int k = 0; k < indices.Length; k++)
+                Vector3 pnt = pointBuffer[i].pnt;
+                if (pnt.X > max.X)
                 {
-                    ps.Append(" " + indices[k]);
+                    max.X = pnt.X;
+                    maxVtxs[0] = pointBuffer[i];
                 }
-                ps.AppendLine("");
+                else if (pnt.X < min.X)
+                {
+                    min.X = pnt.X;
+                    minVtxs[0] = pointBuffer[i];
+                }
+
+                if (pnt.Y > max.Y)
+                {
+                    max.Y = pnt.Y;
+                    maxVtxs[1] = pointBuffer[i];
+                }
+                else if (pnt.Y < min.Y)
+                {
+                    min.Y = pnt.Y;
+                    minVtxs[1] = pointBuffer[i];
+                }
+
+                if (pnt.Z > max.Z)
+                {
+                    max.Z = pnt.Z;
+                    maxVtxs[2] = pointBuffer[i];
+                }
+                else if (pnt.Z < min.Z)
+                {
+                    min.Z = pnt.Z;
+                    minVtxs[2] = pointBuffer[i];
+                }
+            }
+
+            // this epsilon formula comes from QuickHull, and I'm
+            // not about to quibble.
+            charLength = Math.Max(max.X - min.X, max.Y - min.Y);
+            charLength = Math.Max(max.Z - min.Z, charLength);
+            if (ExplicitTolerance == AUTOMATIC_TOLERANCE)
+            {
+                Tolerance =
+                   3 * PRECISION * (Math.Max(Math.Abs(max.X), Math.Abs(min.X)) +
+                                  Math.Max(Math.Abs(max.Y), Math.Abs(min.Y)) +
+                                  Math.Max(Math.Abs(max.Z), Math.Abs(min.Z)));
+            }
+            else
+            {
+                Tolerance = ExplicitTolerance;
             }
         }
 
-        private void getFaceIndices(int[] indices, Face face, int flags)
+        private void GetFaceIndices(int[] indices, Face face, int flags)
         {
             bool ccw = ((flags & CLOCKWISE) == 0);
-            bool indexedFromOne = ((flags & INDEXED_FROM_ONE) != 0);
             bool pointRelative = ((flags & POINT_RELATIVE) != 0);
 
             HalfEdge hedge = face.he0;
@@ -1610,24 +1240,20 @@ namespace OpenH2.Foundation._3D
                 {
                     idx = vertexPointIndices[idx];
                 }
-                if (indexedFromOne)
-                {
-                    idx++;
-                }
                 indices[k++] = idx;
                 hedge = (ccw ? hedge.next : hedge.prev);
             }
             while (hedge != face.he0);
         }
 
-        private void resolveUnclaimedPoints(FaceList newFaces)
+        private void ResolveUnclaimedPoints(FaceList newFaces)
         {
             Vertex vtxNext = unclaimed.first();
             for (Vertex vtx = vtxNext; vtx != null; vtx = vtxNext)
             {
                 vtxNext = vtx.next;
 
-                double maxDist = tolerance;
+                double maxDist = Tolerance;
                 Face maxFace = null;
                 for (Face newFace = newFaces.first(); newFace != null;
                      newFace = newFace.next)
@@ -1640,7 +1266,7 @@ namespace OpenH2.Foundation._3D
                             maxDist = dist;
                             maxFace = newFace;
                         }
-                        if (maxDist > 1000 * tolerance)
+                        if (maxDist > 1000 * Tolerance)
                         {
                             break;
                         }
@@ -1648,14 +1274,14 @@ namespace OpenH2.Foundation._3D
                 }
                 if (maxFace != null)
                 {
-                    addPointToFace(vtx, maxFace);
+                    AddPointToFace(vtx, maxFace);
                 }
             }
         }
 
-        private void deleteFacePoints(Face face, Face absorbingFace)
+        private void DeleteFacePoints(Face face, Face absorbingFace)
         {
-            Vertex faceVtxs = removeAllPointsFromFace(face);
+            Vertex faceVtxs = RemoveAllPointsFromFace(face);
             if (faceVtxs != null)
             {
                 if (absorbingFace == null)
@@ -1669,9 +1295,9 @@ namespace OpenH2.Foundation._3D
                     {
                         vtxNext = vtx.next;
                         double dist = absorbingFace.distanceToPlane(vtx.pnt);
-                        if (dist > tolerance)
+                        if (dist > Tolerance)
                         {
-                            addPointToFace(vtx, absorbingFace);
+                            AddPointToFace(vtx, absorbingFace);
                         }
                         else
                         {
@@ -1682,15 +1308,83 @@ namespace OpenH2.Foundation._3D
             }
         }
 
+        private void AddPointToFace(Vertex vtx, Face face)
+        {
+            vtx.face = face;
+
+            if(face.outside == null)
+            {
+                claimed.add(vtx);
+            }
+            else
+            {
+                claimed.insertBefore(vtx, face.outside);
+            }
+
+            face.outside = vtx;
+        }
+
+        private void RemovePointFromFace(Vertex vtx, Face face)
+        {
+            if (vtx == face.outside)
+            {
+                if (vtx.next != null && vtx.next.face == face)
+                {
+                    face.outside = vtx.next;
+                }
+                else
+                {
+                    face.outside = null;
+                }
+            }
+            claimed.delete(vtx);
+        }
+
+        private Vertex RemoveAllPointsFromFace(Face face)
+        {
+            if (face.outside != null)
+            {
+                Vertex end = face.outside;
+                while (end.next != null && end.next.face == face)
+                {
+                    end = end.next;
+                }
+
+                claimed.delete(face.outside, end);
+
+                end.next = null;
+                return face.outside;
+            }
+            else
+            {
+                return null;
+            }
+        }
+
+        private HalfEdge FindHalfEdge(Vertex tail, Vertex head)
+        {
+            // brute force ... OK, since setHull is not used much
+            foreach (var face in faces)
+            {
+                HalfEdge he = face.findEdge(tail, head);
+                if (he != null)
+                {
+                    return he;
+                }
+            }
+            return null;
+        }
+
+
         private const int NONCONVEX_WRT_LARGER_FACE = 1;
         private const int NONCONVEX = 2;
 
-        private double oppFaceDistance(HalfEdge he)
+        private double OppFaceDistance(HalfEdge he)
         {
             return he.face.distanceToPlane(he.opposite.face.getCentroid());
         }
 
-        private bool doAdjacentMerge(Face face, int mergeType)
+        private bool DoAdjacentMerge(Face face, int mergeType)
         {
             HalfEdge hedge = face.he0;
 
@@ -1699,38 +1393,41 @@ namespace OpenH2.Foundation._3D
             {
                 Face oppFace = hedge.oppositeFace();
                 bool merge = false;
-                double dist1, dist2;
+                var hedgeDistance = OppFaceDistance(hedge);
+                var oppositeHedgeDistance = OppFaceDistance(hedge.opposite);
 
                 if (mergeType == NONCONVEX)
-                { // then merge faces if they are definitively non-convex
-                    if (oppFaceDistance(hedge) > -tolerance ||
-                        oppFaceDistance(hedge.opposite) > -tolerance)
+                {
+                    // then merge faces if they are definitively non-convex
+                    if (hedgeDistance > -Tolerance ||
+                        oppositeHedgeDistance > -Tolerance)
                     {
                         merge = true;
                     }
                 }
                 else // mergeType == NONCONVEX_WRT_LARGER_FACE
-                { // merge faces if they are parallel or non-convex
-                  // wrt to the larger face; otherwise, just mark
-                  // the face non-convex for the second pass.
+                { 
+                    // merge faces if they are parallel or non-convex
+                    // wrt to the larger face; otherwise, just mark
+                    // the face non-convex for the second pass.
                     if (face.area > oppFace.area)
                     {
-                        if ((dist1 = oppFaceDistance(hedge)) > -tolerance)
+                        if (hedgeDistance > -Tolerance)
                         {
                             merge = true;
                         }
-                        else if (oppFaceDistance(hedge.opposite) > -tolerance)
+                        else if (oppositeHedgeDistance > -Tolerance)
                         {
                             convex = false;
                         }
                     }
                     else
                     {
-                        if (oppFaceDistance(hedge.opposite) > -tolerance)
+                        if (oppositeHedgeDistance > -Tolerance)
                         {
                             merge = true;
                         }
-                        else if (oppFaceDistance(hedge) > -tolerance)
+                        else if (hedgeDistance > -Tolerance)
                         {
                             convex = false;
                         }
@@ -1743,7 +1440,7 @@ namespace OpenH2.Foundation._3D
                     int numd = face.mergeAdjacentFace(hedge, discardedFaces);
                     for (int i = 0; i < numd; i++)
                     {
-                        deleteFacePoints(discardedFaces[i], face);
+                        DeleteFacePoints(discardedFaces[i], face);
                     }
 
                     return true;
@@ -1751,17 +1448,18 @@ namespace OpenH2.Foundation._3D
                 hedge = hedge.next;
             }
             while (hedge != face.he0);
+
             if (!convex)
             {
                 face.mark = Face.NON_CONVEX;
             }
+
             return false;
         }
 
-        private void calculateHorizon(Vector3 eyePnt, HalfEdge edge0, Face face)
+        private void CalculateHorizon(Vector3 eyePnt, HalfEdge edge0, Face face)
         {
-            //         oldFaces.add (face);
-            deleteFacePoints(face, null);
+            DeleteFacePoints(face, null);
             face.mark = Face.DELETED;
 
             HalfEdge edge;
@@ -1774,14 +1472,15 @@ namespace OpenH2.Foundation._3D
             {
                 edge = edge0.getNext();
             }
+
             do
             {
                 Face oppFace = edge.oppositeFace();
                 if (oppFace.mark == Face.VISIBLE)
                 {
-                    if (oppFace.distanceToPlane(eyePnt) > tolerance)
+                    if (oppFace.distanceToPlane(eyePnt) > Tolerance)
                     {
-                        calculateHorizon(eyePnt, edge.getOpposite(), oppFace);
+                        CalculateHorizon(eyePnt, edge.getOpposite(), oppFace);
                     }
                     else
                     {
@@ -1793,25 +1492,25 @@ namespace OpenH2.Foundation._3D
             while (edge != edge0);
         }
 
-        private HalfEdge addAdjoiningFace(Vertex eyeVtx, HalfEdge he)
+        private HalfEdge AddAdjoiningFace(Vertex eyeVtx, HalfEdge he)
         {
-            Face face = Face.createTriangle(
-               eyeVtx, he.tail(), he.head());
-            faces.Add(face);
+            var face = Face.createTriangle(eyeVtx, he.tail(), he.head());
             face.getEdge(-1).setOpposite(he.getOpposite());
+
+            faces.Add(face);
             return face.getEdge(0);
         }
 
-        private void addNewFaces(FaceList newFaces, Vertex eyeVtx)
+        private void AddNewFaces(Vertex eyeVtx)
         {
-            newFaces.clear();
+            this.newFaces.Clear();
 
             HalfEdge hedgeSidePrev = null;
             HalfEdge hedgeSideBegin = null;
 
             foreach (var horizonHe in horizon)
             {
-                HalfEdge hedgeSide = addAdjoiningFace(eyeVtx, horizonHe);
+                HalfEdge hedgeSide = AddAdjoiningFace(eyeVtx, horizonHe);
 
                 if (hedgeSidePrev != null)
                 {
@@ -1822,15 +1521,19 @@ namespace OpenH2.Foundation._3D
                     hedgeSideBegin = hedgeSide;
                 }
 
-                newFaces.add(hedgeSide.getFace());
+                this.newFaces.add(hedgeSide.getFace());
                 hedgeSidePrev = hedgeSide;
             }
             hedgeSideBegin.next.setOpposite(hedgeSidePrev);
         }
 
-        private Vertex nextPointToAdd()
+        private Vertex NextPointToAdd()
         {
-            if (!claimed.isEmpty())
+            if (claimed.isEmpty())
+            {
+                return null;
+            }
+            else
             {
                 Face eyeFace = claimed.first().face;
                 Vertex eyeVtx = null;
@@ -1848,21 +1551,16 @@ namespace OpenH2.Foundation._3D
                 }
                 return eyeVtx;
             }
-            else
-            {
-                return null;
-            }
         }
 
-        private void addPointToHull(Vertex eyeVtx)
+        private void AddPointToHull(Vertex eyeVtx)
         {
             horizon.Clear();
-            unclaimed.clear();
+            unclaimed.Clear();
 
-            removePointFromFace(eyeVtx, eyeVtx.face);
-            calculateHorizon(eyeVtx.pnt, null, eyeVtx.face);
-            newFaces.clear();
-            addNewFaces(newFaces, eyeVtx);
+            RemovePointFromFace(eyeVtx, eyeVtx.face);
+            CalculateHorizon(eyeVtx.pnt, null, eyeVtx.face);
+            AddNewFaces(eyeVtx);
 
             // first merge pass ... merge faces which are non-convex
             // as determined by the larger face
@@ -1871,8 +1569,9 @@ namespace OpenH2.Foundation._3D
             {
                 if (face.mark == Face.VISIBLE)
                 {
-                    while (doAdjacentMerge(face, NONCONVEX_WRT_LARGER_FACE))
-                        ;
+                    while (DoAdjacentMerge(face, NONCONVEX_WRT_LARGER_FACE))
+                    { 
+                    }
                 }
             }
             // second merge pass ... merge faces which are non-convex
@@ -1882,29 +1581,30 @@ namespace OpenH2.Foundation._3D
                 if (face.mark == Face.NON_CONVEX)
                 {
                     face.mark = Face.VISIBLE;
-                    while (doAdjacentMerge(face, NONCONVEX))
-                        ;
+
+                    while (DoAdjacentMerge(face, NONCONVEX))
+                    {
+                    }
                 }
             }
-            resolveUnclaimedPoints(newFaces);
+
+            ResolveUnclaimedPoints(newFaces);
         }
 
-        protected void buildHull()
+        protected void BuildHull()
         {
-            int cnt = 0;
             Vertex eyeVtx;
 
-            computeMaxAndMin();
-            createInitialSimplex();
-            while ((eyeVtx = nextPointToAdd()) != null)
+            ComputeMaxAndMin();
+            CreateInitialSimplex();
+            while ((eyeVtx = NextPointToAdd()) != null)
             {
-                addPointToHull(eyeVtx);
-                cnt++;
+                AddPointToHull(eyeVtx);
             }
-            reindexFacesAndVertices();
+            ReindexFacesAndVertices();
         }
 
-        private void markFaceVertices(Face face, int mark)
+        private void MarkFaceVertices(Face face, int mark)
         {
             HalfEdge he0 = face.getFirstEdge();
             HalfEdge he = he0;
@@ -1916,14 +1616,14 @@ namespace OpenH2.Foundation._3D
             while (he != he0);
         }
 
-        protected void reindexFacesAndVertices()
+        protected void ReindexFacesAndVertices()
         {
             for (int i = 0; i < numPoints; i++)
             {
                 pointBuffer[i].index = -1;
             }
+
             // remove inactive faces and mark active vertices
-            numFaces = 0;
             var facesToProcess = faces.Count;
             for (int i = 0; i < facesToProcess; i++)
             {
@@ -1936,10 +1636,10 @@ namespace OpenH2.Foundation._3D
                 }
                 else
                 {
-                    markFaceVertices(face, 0);
-                    numFaces++;
+                    MarkFaceVertices(face, 0);
                 }
             }
+
             // reindex vertices
             numVertices = 0;
             for (int i = 0; i < numPoints; i++)
@@ -1953,7 +1653,7 @@ namespace OpenH2.Foundation._3D
             }
         }
 
-        private bool checkFaceConvexity(Face face, double tol, StringBuilder ps)
+        private bool CheckFaceConvexity(Face face, double tol, StringBuilder ps)
         {
             double dist;
             HalfEdge he = face.he0;
@@ -1961,7 +1661,7 @@ namespace OpenH2.Foundation._3D
             {
                 face.checkConsistency();
                 // make sure edge is convex
-                dist = oppFaceDistance(he);
+                dist = OppFaceDistance(he);
                 if (dist > tol)
                 {
                     if (ps != null)
@@ -1971,7 +1671,7 @@ namespace OpenH2.Foundation._3D
                     }
                     return false;
                 }
-                dist = oppFaceDistance(he.opposite);
+                dist = OppFaceDistance(he.opposite);
                 if (dist > tol)
                 {
                     if (ps != null)
@@ -1997,7 +1697,7 @@ namespace OpenH2.Foundation._3D
             return true;
         }
 
-        protected bool checkFaces(double tol, StringBuilder ps)
+        protected bool CheckFaces(double tol, StringBuilder ps)
         {
             // check edge convexity
             bool convex = true;
@@ -2005,89 +1705,13 @@ namespace OpenH2.Foundation._3D
             {
                 if (face.mark == Face.VISIBLE)
                 {
-                    if (!checkFaceConvexity(face, tol, ps))
+                    if (!CheckFaceConvexity(face, tol, ps))
                     {
                         convex = false;
                     }
                 }
             }
             return convex;
-        }
-
-        /**
-         * Checks the correctness of the hull using the distance tolerance
-         * returned by {@link QuickHull#getDistanceTolerance
-         * getDistanceTolerance}; see
-         * {@link QuickHull#check(StringBuilder,double)
-         * check(StringBuilder,double)} for details.
-         *
-         * @param ps print stream for diagnostic messages; may be
-         * set to <code>null</code> if no messages are desired.
-         * @return true if the hull is valid
-         * @see QuickHull#check(StringBuilder,double)
-         */
-        public bool check(StringBuilder ps)
-        {
-            return check(ps, getDistanceTolerance());
-        }
-
-        /**
-         * Checks the correctness of the hull. This is done by making sure that
-         * no faces are non-convex and that no points are outside any face.
-         * These tests are performed using the distance tolerance <i>tol</i>.
-         * Faces are considered non-convex if any edge is non-convex, and an
-         * edge is non-convex if the centroid of either adjoining face is more
-         * than <i>tol</i> above the plane of the other face. Similarly,
-         * a point is considered outside a face if its distance to that face's
-         * plane is more than 10 times <i>tol</i>.
-         *
-         * <p>If the hull has been {@link #triangulate triangulated},
-         * then this routine may fail if some of the resulting
-         * triangles are very small or thin.
-         *
-         * @param ps print stream for diagnostic messages; may be
-         * set to <code>null</code> if no messages are desired.
-         * @param tol distance tolerance
-         * @return true if the hull is valid
-         * @see QuickHull#check(StringBuilder)
-         */
-        public bool check(StringBuilder ps, double tol)
-
-        {
-            // check to make sure all edges are fully connected
-            // and that the edges are convex
-            double dist;
-            double pointTol = 10 * tol;
-
-            if (!checkFaces(tolerance, ps))
-            {
-                return false;
-            }
-
-            // check point inclusion
-
-            for (int i = 0; i < numPoints; i++)
-            {
-                Vector3 pnt = pointBuffer[i].pnt;
-                foreach (var face in faces)
-                {
-                    if (face.mark == Face.VISIBLE)
-                    {
-                        dist = face.distanceToPlane(pnt);
-                        if (dist > pointTol)
-                        {
-                            if (ps != null)
-                            {
-                                ps.AppendLine(
-                                   "Point " + i + " " + dist + " above face " +
-                                   face.getVertexString());
-                            }
-                            return false;
-                        }
-                    }
-                }
-            }
-            return true;
         }
 
         private class VertexList
@@ -2098,7 +1722,7 @@ namespace OpenH2.Foundation._3D
             /**
              * Clears this list.
              */
-            public void clear()
+            public void Clear()
             {
                 head = tail = null;
             }
@@ -2232,7 +1856,7 @@ namespace OpenH2.Foundation._3D
             /**
              * Clears this list.
              */
-            public void clear()
+            public void Clear()
             {
                 head = tail = null;
             }
