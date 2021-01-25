@@ -63,16 +63,13 @@ namespace OpenH2.Engine.EntityFactories
                 var geom = PhysicsComponentFactory.CreateStaticGeometry(scenery, xform, def, bsp.Shaders);
                 comps.Add(geom);
 
-                if(geom.Collider is TriangleMeshCollider triCollider)
+                comps.Add(new RenderModelComponent(scenery, new Model<BitmapTag>
                 {
-                    comps.Add(new RenderModelComponent(scenery, new Model<BitmapTag>
-                    {
-                        Note = $"[{bsp.Id}] {bsp.Name}//instanced//{instance.Index}-collision",
-                        Meshes = MeshFactory.GetRenderModel(triCollider, new Vector4(0f, 1f, 1f, 1f)),
-                        Flags = ModelFlags.Wireframe | ModelFlags.IsStatic,
-                        RenderLayer = RenderLayers.Collision
-                    }));
-                }
+                    Note = $"[{bsp.Id}] {bsp.Name}//instanced//{instance.Index}-collision",
+                    Meshes = MeshFactory.GetRenderModel(geom.Collider, new Vector4(0f, 1f, 1f, 1f)),
+                    Flags = ModelFlags.Wireframe | ModelFlags.IsStatic,
+                    RenderLayer = RenderLayers.Collision
+                }));
             }
 
             xform.UpdateDerivedData();
@@ -113,27 +110,14 @@ namespace OpenH2.Engine.EntityFactories
             if(body != null)
             {
                 components.Add(body);
-                
-                if (body.Collider is TriangleMeshCollider triMeshCollider)
+
+                components.Add(new RenderModelComponent(scenery, new Model<BitmapTag>
                 {
-                    components.Add(new RenderModelComponent(scenery, new Model<BitmapTag>
-                    {
-                        Note = $"scenery//{scenery.FriendlyName}-collision",
-                        Meshes = MeshFactory.GetRenderModel(triMeshCollider, new Vector4(0.9f, 0.5f, .24f, 1f)),
-                        Flags = ModelFlags.Wireframe | ModelFlags.IsStatic,
-                        RenderLayer = RenderLayers.Collision
-                    }));
-                }
-                else if (body.Collider is TriangleModelCollider triCollider)
-                {
-                    components.Add(new RenderModelComponent(scenery, new Model<BitmapTag>
-                    {
-                        Note = $"scenery//{scenery.FriendlyName}-collision",
-                        Meshes = MeshFactory.GetRenderModel(triCollider, new Vector4(0.9f, 0.5f, .24f, 1f)),
-                        Flags = ModelFlags.Wireframe | ModelFlags.IsStatic,
-                        RenderLayer = RenderLayers.Collision
-                    }));
-                }
+                    Note = $"scenery//{scenery.FriendlyName}-collision",
+                    Meshes = MeshFactory.GetRenderModel(body.Collider, new Vector4(0.9f, 0.5f, .24f, 1f)),
+                    Flags = ModelFlags.Wireframe | ModelFlags.IsStatic,
+                    RenderLayer = RenderLayers.Collision
+                }));
             }
 
             scenery.SetComponents(xform, components.ToArray());

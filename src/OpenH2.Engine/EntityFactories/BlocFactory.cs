@@ -7,7 +7,6 @@ using OpenH2.Engine.Components;
 using OpenH2.Engine.Entities;
 using OpenH2.Engine.Factories;
 using OpenH2.Foundation;
-using OpenH2.Physics.Colliders;
 using System.Collections.Generic;
 using System.Numerics;
 
@@ -37,49 +36,17 @@ namespace OpenH2.Engine.EntityFactories
 
             var body = PhysicsComponentFactory.CreateDynamicRigidBody(scenery, xform, map, tag.PhysicalModel);
 
-
-            if (body.Collider is TriangleMeshCollider triMeshCollider)
+            if(body != null)
             {
+                components.Add(body);
                 components.Add(new RenderModelComponent(scenery, new Model<BitmapTag>
                 {
                     Note = $"bloc//{scenery.FriendlyName}-collision",
-                    Meshes = MeshFactory.GetRenderModel(triMeshCollider, new Vector4(0.19f, 0.47f, 0.15f, 1f)),
+                    Meshes = MeshFactory.GetRenderModel(body.Collider, new Vector4(0.19f, 0.47f, 0.15f, 1f)),
                     Flags = ModelFlags.Wireframe | ModelFlags.IsStatic,
                     RenderLayer = RenderLayers.Collision
                 }));
             }
-            else if (body.Collider is TriangleModelCollider triCollider)
-            {
-                components.Add(new RenderModelComponent(scenery, new Model<BitmapTag>
-                {
-                    Note = $"bloc//{scenery.FriendlyName}-collision",
-                    Meshes = MeshFactory.GetRenderModel(triCollider, new Vector4(0.19f, 0.47f, 0.15f, 1f)),
-                    Flags = ModelFlags.Wireframe | ModelFlags.IsStatic,
-                    RenderLayer = RenderLayers.Collision
-                }));
-            }
-            else if (body.Collider is ConvexModelCollider convexCollider)
-            {
-                components.Add(new RenderModelComponent(scenery, new Model<BitmapTag>
-                {
-                    Note = $"bloc//{scenery.FriendlyName}-collision",
-                    Meshes = MeshFactory.GetRenderModel(convexCollider, new Vector4(0.19f, 0.47f, 0.15f, 1f)),
-                    Flags = ModelFlags.Wireframe | ModelFlags.IsStatic,
-                    RenderLayer = RenderLayers.Collision
-                }));
-            }
-            else if (body.Collider is ConvexMeshCollider convexMeshCollider)
-            {
-                components.Add(new RenderModelComponent(scenery, new Model<BitmapTag>
-                {
-                    Note = $"bloc//{scenery.FriendlyName}-collision",
-                    Meshes = MeshFactory.GetRenderModel(convexMeshCollider, new Vector4(0.19f, 0.47f, 0.15f, 1f)),
-                    Flags = ModelFlags.Wireframe | ModelFlags.IsStatic,
-                    RenderLayer = RenderLayers.Collision
-                }));
-            }
-
-            components.Add(body);
 
             var comOffset = Vector3.Zero;
 

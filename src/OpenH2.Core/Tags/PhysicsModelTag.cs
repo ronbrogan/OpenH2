@@ -36,10 +36,10 @@ namespace OpenH2.Core.Tags
         public BoxDefinition[] BoxDefinitions { get; set; }
 
         [ReferenceArray(112)]
-        public MeshDefinition[] MeshDefinitions { get; set; }
+        public MeshDefinition[] PolyhedraDefinitions { get; set; }
 
         [ReferenceArray(120)]
-        public Obj120[] Obj120s { get; set; }
+        public Obj120[] PolyhedraAlternativeDefinitions { get; set; }
 
         [ReferenceArray(128)]
         // These seem like planes, first 3 floats appear to be unit vectors
@@ -256,7 +256,7 @@ namespace OpenH2.Core.Tags
             [PrimitiveValue(48)]
             public float FloatC { get; set; }
 
-            [PrimitiveValue(52)]
+            [PrimitiveValue(48)]
             public Vector3 HalfWidthsMaybe { get; set; }
 
             // other stuff, some floats, zeroes
@@ -290,15 +290,39 @@ namespace OpenH2.Core.Tags
             [PrimitiveArray(44, 7)]
             public float[] FloatsB { get; set; }
 
+            [PrimitiveValue(84)]
+            public short CountA { get; set; }
+
+            [PrimitiveValue(88)]
+            public short CountB { get; set; }
+
             [PrimitiveArray(96, 36)]
             public float[] FloatsC { get; set; }
+
+            [PrimitiveValue(240)]
+            public short CountC { get; set; }
+
+            [PrimitiveValue(244)]
+            public int ValueB{ get; set; }
+
+            [PrimitiveValue(248)]
+            public short CountD { get; set; }
         }
 
         [FixedLength(48)]
         public class Obj120
         {
             [PrimitiveArray(0, 4)]
-            public Vector3[] VertsMaybe { get; set; }
+            public float[] XValues { get; set; }
+
+            [PrimitiveArray(16, 4)]
+            public float[] YValues { get; set; }
+
+            [PrimitiveArray(32, 4)]
+            public float[] ZValues { get; set; }
+
+            [PrimitiveArray(0, 12)]
+            public float[] Floats { get; set; }
         }
 
         [FixedLength(16)]

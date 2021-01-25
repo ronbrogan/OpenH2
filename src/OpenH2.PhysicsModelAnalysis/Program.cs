@@ -38,7 +38,7 @@ namespace OpenH2.PhysicsModelAnalysis
                 foreach (var c in phmo.BoxDefinitions)
                     matRefs.Add(c.MaterialIndexMaybe);
 
-                foreach (var c in phmo.MeshDefinitions)
+                foreach (var c in phmo.PolyhedraDefinitions)
                     matRefs.Add(c.MaterialIndexMaybe);
             }
 
@@ -46,7 +46,7 @@ namespace OpenH2.PhysicsModelAnalysis
 
             foreach(var phmo in phmos)
             {
-                if(phmo.MeshDefinitions.Length > 0 && phmo.ColliderPlanes.Length == 0)
+                if(phmo.PolyhedraDefinitions.Length > 0 && phmo.ColliderPlanes.Length == 0)
                 {
                     meshWithoutPlanes = true;
                 }
@@ -90,7 +90,7 @@ namespace OpenH2.PhysicsModelAnalysis
 
             builder.AppendLine("o MeshBoxes");
 
-            foreach(var def in phymod.MeshDefinitions)
+            foreach(var def in phymod.PolyhedraDefinitions)
             {
                 for(var i = 0; i < 3; i++)
                 {

@@ -30,7 +30,7 @@ namespace OpenH2.Engine.Factories
                 var param = phmo.BodyParameters[0];
 
                 body = new RigidBodyComponent(parent, transform, param.InertiaTensor, param.Mass, param.CenterOfMass);
-                body.Collider = ColliderFactory.GetConvexColliderForHlmt(map, hlmt, damageLevel);
+                body.Collider = ColliderFactory.GetAggregateColliderForPhmo(map, phmo, damageLevel);
             }
             else
             {

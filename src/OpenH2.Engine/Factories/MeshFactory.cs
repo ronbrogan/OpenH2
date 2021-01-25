@@ -1,8 +1,10 @@
-﻿using OpenH2.Core.Maps;
+﻿using OpenH2.Core.Factories;
+using OpenH2.Core.Maps;
 using OpenH2.Core.Maps.Vista;
 using OpenH2.Core.Tags;
 using OpenH2.Foundation;
 using OpenH2.Foundation._3D;
+using OpenH2.Foundation.Physics;
 using OpenH2.Physics.Colliders;
 using System;
 using System.Collections.Concurrent;
@@ -27,6 +29,21 @@ namespace OpenH2.Engine.Factories
 
             return meshes.GetOrAdd(key, _ => Create(map, hlmtReference, damageLevel));
         }
+
+        public static Mesh<BitmapTag>[] GetRenderModel(ICollider collider, Vector4 color = default)
+        {
+            return collider switch
+            {
+                AggregateCollider aggCollider => aggCollider.ColliderComponents.SelectMany(c => GetRenderModel(c, color)).ToArray(),
+                TriangleMeshCollider triMesh => GetRenderModel(triMesh, color),
+                TriangleModelCollider triModel => GetRenderModel(triModel, color),
+                ConvexMeshCollider convMesh => GetRenderModel(convMesh, color),
+                ConvexModelCollider convModel => GetRenderModel(convModel, color),
+                BoxCollider box => GetRenderModel(new ConvexMeshCollider(IdentityTransform.Instance, box.GetTransformedVertices()), color),
+                _ => new[] { new Mesh<BitmapTag>() { Verticies = new VertexFormat[0], Indicies = new int[0] } }
+            };
+        }
+
 
         public static Mesh<BitmapTag>[] GetRenderModel(TriangleMeshCollider collider, Vector4 color = default)
         {

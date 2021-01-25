@@ -525,7 +525,12 @@ namespace OpenH2.Engine.Systems
 
         private void AddCollider(RigidActor actor, ICollider collider)
         {
-            if (collider is TriangleMeshCollider triCollider)
+            if(collider is AggregateCollider agg)
+            {
+                foreach (var c in agg.ColliderComponents)
+                    AddCollider(actor, c);
+            }
+            else if (collider is TriangleMeshCollider triCollider)
             {
                 var desc = triCollider.GetDescriptor(GetMaterialIndices);
 
@@ -557,10 +562,10 @@ namespace OpenH2.Engine.Systems
             else if (collider is IVertexBasedCollider vertCollider)
             {
                 var desc = new ConvexMeshDesc() { Flags = ConvexFlag.ComputeConvex };
-                desc.SetPositions(vertCollider.Vertices);
+                desc.SetPositions(vertCollider.GetTransformedVertices());
                 var mesh = this.physxPhysics.CreateConvexMesh(this.cooker, desc);
                 var geom = new ConvexMeshGeometry(mesh);
-                var mat = this.GetOrCreateMaterial(-1);
+                var mat = this.GetOrCreateMaterial(vertCollider.PhysicsMaterial);
                 // TODO: re-use shared shapes instead of creating exclusive
                 RigidActorExt.CreateExclusiveShape(actor, geom, mat);
             }
@@ -572,7 +577,7 @@ namespace OpenH2.Engine.Systems
                     desc.SetPositions(verts);
                     var mesh = this.physxPhysics.CreateConvexMesh(this.cooker, desc);
                     var geom = new ConvexMeshGeometry(mesh);
-                    var mat = this.GetOrCreateMaterial(-1);
+                    var mat = this.GetOrCreateMaterial(modelCollider.PhysicsMaterial);
                     // TODO: re-use shared shapes instead of creating exclusive
                     RigidActorExt.CreateExclusiveShape(actor, geom, mat);
                 }

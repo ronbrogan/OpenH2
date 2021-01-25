@@ -10,7 +10,7 @@ namespace OpenH2.Physics.Colliders
     public class ConvexModelCollider : ICollider
     {
         public List<Vector3[]> Meshes { get; private set; }
-        public int PhysicsMaterial => -1;
+        public int PhysicsMaterial { get; set; } = -1;
 
         public ConvexModelCollider(List<Vector3[]> vertexCollections)
         {

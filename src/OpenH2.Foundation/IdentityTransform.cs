@@ -10,14 +10,17 @@ namespace OpenH2.Foundation
     {
         private static IdentityTransform instance;
 
-        public static IdentityTransform Instance()
+        public static IdentityTransform Instance
         {
-            if(instance == null)
+            get
             {
-                instance = new IdentityTransform();
-            }
+                if (instance == null)
+                {
+                    instance = new IdentityTransform();
+                }
 
-            return instance;
+                return instance;
+            }
         }
 
         private IdentityTransform() { }
