@@ -4,6 +4,7 @@ using OpenH2.Rendering.Shaders;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Numerics;
 using PointLight = OpenH2.Foundation.PointLight;
 
 namespace OpenH2.Rendering.Pipelines
@@ -12,7 +13,9 @@ namespace OpenH2.Rendering.Pipelines
     {
         private readonly IGraphicsAdapter adapter;
 
+        private GlobalUniform Globals;
         private IList<DrawGroup> renderables = new List<DrawGroup>();
+        private IList<(float, DrawGroup)> transparentRenderables = new List<(float, DrawGroup)>();
         private List<PointLight> pointLights = new List<PointLight>();
 
         public ForwardRenderingPipeline(IGraphicsAdapter graphicsAdapter)
@@ -38,8 +41,9 @@ namespace OpenH2.Rendering.Pipelines
         public void DrawAndFlush()
         {
             drawElapsed.Restart();
+            transparentRenderables.Clear();
 
-            foreach(var light in pointLights)
+            foreach (var light in pointLights)
             {
                 this.adapter.AddLight(light);
             }
@@ -61,7 +65,12 @@ namespace OpenH2.Rendering.Pipelines
             for (var i = 0; i < renderables.Count; i++)
             {
                 var renderable = renderables[i];
-                if (RenderPasses.IsDiffuse(renderable))
+
+                if(RenderPasses.IsTransparent(renderable))
+                {
+                    this.InsertTransparentRenderable(renderable);
+                }
+                else if (RenderPasses.IsDiffuse(renderable))
                 {
                     this.adapter.UseTransform(renderable.Transform);
             
@@ -70,15 +79,13 @@ namespace OpenH2.Rendering.Pipelines
             }
 
             this.adapter.UseShader(Shader.Generic);
-            for (var i = 0; i < renderables.Count; i++)
+            for (var i = transparentRenderables.Count-1; i >= 0; i--)
             {
-                var renderable = renderables[i];
-                if (RenderPasses.IsTransparent(renderable))
-                {
-                    this.adapter.UseTransform(renderable.Transform);
+                var renderable = transparentRenderables[i].Item2;
 
-                    this.adapter.DrawMeshes(renderable.DrawCommands);
-                }
+                this.adapter.UseTransform(renderable.Transform);
+
+                this.adapter.DrawMeshes(renderable.DrawCommands);
             }
 
             this.adapter.UseShader(Shader.Wireframe);
@@ -98,6 +105,39 @@ namespace OpenH2.Rendering.Pipelines
             drawElapsed.Stop();
 
             //Console.WriteLine("RenderTime: " + drawElapsed.ElapsedMilliseconds + "ms");
+        }
+
+        private void InsertTransparentRenderable(DrawGroup renderable)
+        {
+            var distance = GetDistance(renderable);
+
+            for (int i = 0; i < transparentRenderables.Count; i++)
+            {
+                var cur = transparentRenderables[i].Item1;
+                
+                if(distance < cur)
+                {
+                    transparentRenderables.Insert(i, (distance, renderable));
+                    return;
+                }
+            }
+
+            transparentRenderables.Add((distance, renderable));
+
+            float GetDistance(DrawGroup renderable)
+            {
+                if(renderable.Transform.Translation == Vector3.Zero)
+                {
+                    return Vector3.DistanceSquared(this.Globals.ViewPosition, renderable.DrawCommands[0].Mesh.Verticies[0].Position);
+                }
+
+                return Vector3.DistanceSquared(this.Globals.ViewPosition, renderable.Transform.Translation);
+            }
+        }
+
+        public void SetGlobals(GlobalUniform matrices)
+        {
+            this.Globals = matrices;
         }
     }
 }

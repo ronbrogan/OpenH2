@@ -59,5 +59,9 @@ namespace OpenH2.Rendering.Pipelines
 
         public void AddTerrain(ScenarioTag.Terrain terrain) {}
         public void AddSkybox(object skybox) {}
+
+        public void SetGlobals(GlobalUniform matrices)
+        {
+        }
     }
 }

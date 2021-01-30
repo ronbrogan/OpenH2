@@ -48,6 +48,8 @@ namespace OpenH2.Engine.Systems
                 ViewPosition = pos
             };
 
+            RenderingPipeline.SetGlobals(matrices);
+
             graphics.BeginFrame(matrices);
 
             RenderingPipeline.DrawAndFlush();

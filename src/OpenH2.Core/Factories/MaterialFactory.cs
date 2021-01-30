@@ -118,6 +118,7 @@ namespace OpenH2.Core.Factories
             mat.EmissiveType = mapping.EmissiveType;
 
             mat.AlphaMap = args.GetBitmap(map, mapping.AlphaMapIndex);
+            mat.AlphaFromRed = mapping.AlphaFromRed;
 
             mat.SpecularMap = args.GetBitmap(map, mapping.SpecularMapIndex);
         }

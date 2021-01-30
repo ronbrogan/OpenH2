@@ -26,13 +26,14 @@ namespace OpenH2.Engine.EntityFactories
                 meshes.AddRange(chunk.Model.Meshes);
             }
 
+            var transparentMeshes = new List<Mesh<BitmapTag>>(meshes.Count);
             var renderModelMeshes = new List<Mesh<BitmapTag>>(meshes.Count);
 
             foreach (var mesh in meshes)
             {
                 var mat = map.CreateMaterial(mesh);
 
-                renderModelMeshes.Add(new Mesh<BitmapTag>()
+                var renderMesh = new Mesh<BitmapTag>()
                 {
                     Compressed = mesh.Compressed,
                     ElementType = mesh.ElementType,
@@ -42,28 +43,49 @@ namespace OpenH2.Engine.EntityFactories
                     Verticies = mesh.Verticies,
 
                     Material = mat
-                });
+                };
+
+                if (mat.AlphaMap == null)
+                {
+                    renderModelMeshes.Add(renderMesh);
+                }
+                else
+                {
+                    transparentMeshes.Add(renderMesh);
+                }
+
             }
 
-            var renderModel = new RenderModelComponent(terrain, new Model<BitmapTag>
+            var components = new List<Component>();
+
+            components.Add(new RenderModelComponent(terrain, new Model<BitmapTag>
             {
                 Meshes = renderModelMeshes.ToArray(),
                 Flags = ModelFlags.Diffuse | ModelFlags.ReceivesShadows | ModelFlags.IsStatic
-            });
+            }));
 
+            foreach(var mesh in transparentMeshes)
+            {
+                components.Add(new RenderModelComponent(terrain, new Model<BitmapTag>
+                {
+                    Meshes = new[] { mesh },
+                    Flags = ModelFlags.IsTransparent | ModelFlags.IsStatic
+                }));
+            }
 
             var collisionTerrain = PhysicsComponentFactory.CreateTerrain(terrain, tag.CollisionInfos, tag.Shaders);
+            components.Add(collisionTerrain);
 
-            var colliderRenderModel = new RenderModelComponent(terrain, new Model<BitmapTag>
+            components.Add(new RenderModelComponent(terrain, new Model<BitmapTag>
             {
                 Meshes = MeshFactory.GetRenderModel(collisionTerrain.Collider),
                 Flags = ModelFlags.Wireframe | ModelFlags.IsStatic,
                 RenderLayer = RenderLayers.Collision
-            });
+            }));
 
-            var xform = new TransformComponent(terrain, Vector3.Zero);
+            components.Add(new TransformComponent(terrain, Vector3.Zero));
 
-            terrain.SetComponents(new Component[] { renderModel, colliderRenderModel, xform, collisionTerrain });
+            terrain.SetComponents(components);
 
             return terrain;
         }

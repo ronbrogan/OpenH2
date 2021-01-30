@@ -15,6 +15,7 @@ namespace OpenH2.Foundation
         TTexture DiffuseMap { get; set; }
 
         TTexture AlphaMap { get; set; }
+        bool AlphaFromRed { get; set; }
 
         TTexture AnimationMap { get; set; }
 
@@ -43,6 +44,7 @@ namespace OpenH2.Foundation
         public TTexture DiffuseMap { get; set; }
 
         public TTexture AlphaMap { get; set; }
+        public bool AlphaFromRed { get; set; }
 
         public TTexture AnimationMap { get; set; }
 

@@ -27,6 +27,9 @@ namespace OpenH2.Core.Configuration
         public EmissiveType EmissiveType { get; set; } = EmissiveType.DiffuseBlended;
 
         public int? AlphaMapIndex { get; set; } = null;
+
+        public bool AlphaFromRed { get; set; }
+
         // TODO: implement animation map
         public int? AnimationMapIndex { get; set; } = null;
         public int? SpecularMapIndex { get; set; } = null;

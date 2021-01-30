@@ -34,6 +34,7 @@ namespace OpenH2.Rendering.Shaders.Generic
 
             AlphaHandle = bindings.AlphaHandle;
             UseAlpha = bindings.AlphaHandle != default;
+            AlphaChannel = new Vector4(material.AlphaFromRed ? 1f : 0f, 0, 0, material.AlphaFromRed ? 0f : 1f);
             AlphaAmount = 1f;
 
             UseEmissiveMap = bindings.EmissiveHandle != default;
@@ -61,6 +62,7 @@ namespace OpenH2.Rendering.Shaders.Generic
         public bool UseAlpha;
         public float AlphaAmount;
         public long AlphaHandle;
+        public Vector4 AlphaChannel;
 
         public bool UseSpecular;
         public float SpecularAmount;

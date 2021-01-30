@@ -25,13 +25,14 @@ namespace OpenH2.Engine.EntityFactories
 
             var def = bsp.InstancedGeometryDefinitions[instance.Index];
 
+            var transparentMeshes = new List<Mesh<BitmapTag>>(def.Model.Meshes.Length);
             var renderModelMeshes = new List<Mesh<BitmapTag>>(def.Model.Meshes.Length);
 
             foreach (var mesh in def.Model.Meshes)
             {
                 var mat = map.CreateMaterial(mesh);
 
-                renderModelMeshes.Add(new Mesh<BitmapTag>()
+                var renderMesh = new Mesh<BitmapTag>()
                 {
                     Compressed = mesh.Compressed,
                     ElementType = mesh.ElementType,
@@ -41,22 +42,43 @@ namespace OpenH2.Engine.EntityFactories
                     Verticies = mesh.Verticies,
 
                     Material = mat
-                });
+                };
+
+                if (mat.AlphaMap == null)
+                {
+                    renderModelMeshes.Add(renderMesh);
+                }
+                else
+                {
+                    transparentMeshes.Add(renderMesh);
+                }
             }
 
-            var renderModel = new RenderModelComponent(scenery, new Model<BitmapTag>
+            var comps = new List<Component>();
+
+            comps.Add(new RenderModelComponent(scenery, new Model<BitmapTag>
             {
                 Note = $"[{bsp.Id}] {bsp.Name}//instanced//{instance.Index}",
                 Meshes = renderModelMeshes.ToArray(),
-                Flags = ModelFlags.Diffuse | ModelFlags.CastsShadows | ModelFlags.ReceivesShadows
-            });
+                Flags = ModelFlags.Diffuse | ModelFlags.ReceivesShadows | ModelFlags.IsStatic
+            }));
+
+            foreach (var mesh in transparentMeshes)
+            {
+                comps.Add(new RenderModelComponent(scenery, new Model<BitmapTag>
+                {
+                    Note = $"[{bsp.Id}] {bsp.Name}//instanced//{instance.Index}",
+                    Meshes = new[] { mesh },
+                    Flags = ModelFlags.IsTransparent | ModelFlags.IsStatic
+                }));
+            }
 
             var xform = new TransformComponent(scenery, instance.Position, QuaternionExtensions.From3x3Mat(instance.RotationMatrix))
             {
                 Scale = new Vector3(instance.Scale),
             };
 
-            var comps = new List<Component> { renderModel, xform };
+            comps.Add(xform);
 
             if (def.Vertices.Length > 0)
             {

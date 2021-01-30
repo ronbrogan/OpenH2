@@ -25,6 +25,7 @@ layout(std140, binding = 1) uniform GenericUniform
 	bool UseAlpha;
     float AlphaAmount;
     sampler2D AlphaHandle;
+	vec4 AlphaChannel;
 
 	bool UseSpecularMap;
 	float SpecularAmount;
@@ -152,32 +153,43 @@ void main() {
 		finalColor += lightCalculation(Lighting.pointLights[i], diffuseColor);
 	}
 
-	vec4 emissiveSample = texture(Data.EmissiveMap, vertex.texcoord);
-
-	// TODO: figure out how to do the 3 channel stuff better?
-	if(Data.EmissiveType == EmissiveTypeThreeChannel)
+	if(Data.UseEmissiveMap)
 	{
-		float r = emissiveSample.r * Data.EmissiveArguments.r;
-		float g = emissiveSample.g * Data.EmissiveArguments.g;
-		float b = emissiveSample.b * Data.EmissiveArguments.b;
+		vec4 emissiveSample = texture(Data.EmissiveMap, vertex.texcoord);
 
-		float winner = max(max(r,g),b);
+		if(Data.EmissiveType == EmissiveTypeEmissiveOnly)
+		{
+			float a = emissiveSample.r + emissiveSample.b + emissiveSample.g;
+			finalColor = vec4(emissiveSample.rgb, a/3.0);
+		}
+		// TODO: figure out how to do the 3 channel stuff better?
+		else if(Data.EmissiveType == EmissiveTypeThreeChannel)
+		{
+			float r = emissiveSample.r * Data.EmissiveArguments.r;
+			float g = emissiveSample.g * Data.EmissiveArguments.g;
+			float b = emissiveSample.b * Data.EmissiveArguments.b;
 
-		finalColor += vec4(winner,winner,winner,0);
-	}
-	else
-	{
-		finalColor += vec4(emissiveSample.r);
+			float winner = max(max(r,g),b);
+
+			finalColor += vec4(winner,winner,winner,0);
+		}
+		else
+		{
+			finalColor += vec4(emissiveSample.r);
+		}
 	}
 	
 	if(Data.UseAlpha)
 	{
-		float alpha = min(texture(Data.AlphaHandle, vertex.texcoord).a, finalColor.a);
-		
-		if(alpha < 0.5)
+		vec4 alphaSample = texture(Data.AlphaHandle, vertex.texcoord);
+		float alpha = min(alphaSample.a, finalColor.a);
+	
+		if(Data.AlphaChannel.r == 1.0)
 		{
-			discard;
+			alpha = alphaSample.r;
 		}
+
+		finalColor.a = alpha;
 	}
 
     out_color = finalColor;
