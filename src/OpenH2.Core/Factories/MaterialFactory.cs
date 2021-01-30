@@ -10,9 +10,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Numerics;
-using System.Reflection;
 using System.Text.Json;
-using System.Text.Json.Serialization;
 
 namespace OpenH2.Core.Factories
 {
@@ -62,15 +60,15 @@ namespace OpenH2.Core.Factories
             }
 
             var args = shader.Arguments[0];
+            var templateTag = map.GetTag(args.ShaderTemplate);
+            var templateKey = templateTag.Name;
 
-            uint templateId = args.ShaderTemplate.Id;
-
-            if (mappingConfig.Aliases.TryGetValue(templateId, out var alias))
+            if (mappingConfig.Aliases.TryGetValue(templateKey, out var alias))
             {
-                templateId = alias.Alias;
+                templateKey = alias.Alias;
             }
 
-            if (mappingConfig.Mappings.TryGetValue(templateId, out var mapping))
+            if (mappingConfig.Mappings.TryGetValue(templateKey, out var mapping))
             {
                 PopulateFromMapping(map, mat, args, mapping);
                 return mat;
@@ -216,8 +214,6 @@ namespace OpenH2.Core.Factories
                 PropertyNameCaseInsensitive = true
             };
 
-            opts.Converters.Add(new DictionaryUintTValueConverter());
-
             this.mappingConfig = JsonSerializer.Deserialize<MaterialMappingConfig>(json, opts);
 
             foreach (var cb in callbacks)
@@ -227,133 +223,6 @@ namespace OpenH2.Core.Factories
         public void Dispose()
         {
             this.configWatcher?.Dispose();
-        }
-
-        public class DictionaryUintTValueConverter : JsonConverterFactory
-        {
-            public override bool CanConvert(Type typeToConvert)
-            {
-                if (!typeToConvert.IsGenericType)
-                {
-                    return false;
-                }
-
-                if (typeToConvert.GetGenericTypeDefinition() != typeof(Dictionary<,>))
-                {
-                    return false;
-                }
-
-                return typeToConvert.GetGenericArguments()[0] == typeof(uint);
-            }
-
-            public override JsonConverter CreateConverter(
-                Type type,
-                JsonSerializerOptions options)
-            {
-                Type valueType = type.GetGenericArguments()[1];
-
-                JsonConverter converter = (JsonConverter)Activator.CreateInstance(
-                    typeof(DictionaryUintConverterInner<>).MakeGenericType(
-                        new Type[] { valueType }),
-                    BindingFlags.Instance | BindingFlags.Public,
-                    binder: null,
-                    args: new object[] { options },
-                    culture: null);
-
-                return converter;
-            }
-
-            private class DictionaryUintConverterInner<TValue> :
-                JsonConverter<Dictionary<uint, TValue>>
-            {
-                private readonly JsonConverter<TValue> _valueConverter;
-                private Type _valueType;
-
-                public DictionaryUintConverterInner(JsonSerializerOptions options)
-                {
-                    // For performance, use the existing converter if available.
-                    _valueConverter = (JsonConverter<TValue>)options
-                        .GetConverter(typeof(TValue));
-
-                    _valueType = typeof(TValue);
-                }
-
-                public override Dictionary<uint, TValue> Read(
-                    ref Utf8JsonReader reader,
-                    Type typeToConvert,
-                    JsonSerializerOptions options)
-                {
-                    if (reader.TokenType != JsonTokenType.StartObject)
-                    {
-                        throw new JsonException();
-                    }
-
-                    Dictionary<uint, TValue> value = new Dictionary<uint, TValue>();
-
-                    while (reader.Read())
-                    {
-                        if (reader.TokenType == JsonTokenType.EndObject)
-                        {
-                            return value;
-                        }
-
-                        // Get the key.
-                        if (reader.TokenType != JsonTokenType.PropertyName)
-                        {
-                            throw new JsonException();
-                        }
-
-                        string propertyName = reader.GetString();
-
-                        if (!uint.TryParse(propertyName, out var key))
-                        {
-                            throw new JsonException(
-                                $"Unable to convert \"{propertyName}\" to UINT.");
-                        }
-
-                        // Get the value.
-                        TValue v;
-                        if (_valueConverter != null)
-                        {
-                            reader.Read();
-                            v = _valueConverter.Read(ref reader, _valueType, options);
-                        }
-                        else
-                        {
-                            v = JsonSerializer.Deserialize<TValue>(ref reader, options);
-                        }
-
-                        // Add to dictionary.
-                        value.Add(key, v);
-                    }
-
-                    throw new JsonException();
-                }
-
-                public override void Write(
-                    Utf8JsonWriter writer,
-                    Dictionary<uint, TValue> value,
-                    JsonSerializerOptions options)
-                {
-                    writer.WriteStartObject();
-
-                    foreach (KeyValuePair<uint, TValue> kvp in value)
-                    {
-                        writer.WritePropertyName(kvp.Key.ToString());
-
-                        if (_valueConverter != null)
-                        {
-                            _valueConverter.Write(writer, kvp.Value, options);
-                        }
-                        else
-                        {
-                            JsonSerializer.Serialize(writer, kvp.Value, options);
-                        }
-                    }
-
-                    writer.WriteEndObject();
-                }
-            }
         }
     }
 }

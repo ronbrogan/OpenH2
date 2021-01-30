@@ -3,6 +3,6 @@
     public class MaterialAlias
     {
         public string Name { get; set; }
-        public uint Alias { get; set; }
+        public string Alias { get; set; }
     }
 }

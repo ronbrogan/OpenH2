@@ -1,67 +1,23 @@
 ﻿{
     "aliases": {
-        "4084531390": {
-            "name": "TexBumpDetailBlend",
-            "alias": 4116185644
+        "scenarios\\shaders\\solo\\earthcity\\toll_plaza_ground": {
+            "name": "NotSure",
+            "alias": "shaders\\shader_templates\\opaque\\tex_bump_detail_blend"
         },
-        "4085055683": {
-            "name": "TexBumpDetailBlend",
-            "alias": 4116185644
-        },
-        "4083351726": {
-            "name": "TexBumpDetailBlend",
-            "alias": 4116185644
-        },
-        "4113891850": {
-            "name": "TexBumpDetailKeepBlend",
-            "alias": 4116185644
-        },
-        "3836609336": {
-            "name": "TexBumpEnvCombined",
-            "alias": 3923521399
-        },
-        "2149916259": {
-            "name": "NotSure//scenarios\\shaders\\solo\\earthcity\\toll_plaza_ground",
-            "alias": 4116185644
-        },
-        "2155617978": {
-            "name": "NotSure//scenarios\\shaders\\solo\\earthcity\\park_terrain",
-            "alias": 4116185644
-        },
-        "3844146091": {
-            "name": "Overlay",
-            "alias": 3884461347
-        },
-        "4060680168": {
-            "name": "shaders\\shader_templates\\opaque\\prt_simple.stem",
-            "alias": 3913548045
-        },
-        "3870491965": {
-            "name": "shaders\\shader_templates\\opaque\\tex_bump_env_illum_combined.stem",
-            "alias": 3837920076
-        },
-        "3846243275": {
-            "name": "shaders\\shader_templates\\opaque\\tex_bump.stem",
-            "alias": 3786024773
-        },
-        "3860858026": {
-            "name": "shaders\\shader_templates\\opaque\\tex_bump_illum_3_channel.stem",
-            "alias": 4082892954
+        "scenarios\\shaders\\solo\\earthcity\\park_terrain": {
+            "name": "NotSure",
+            "alias": "shaders\\shader_templates\\opaque\\tex_bump_detail_blend"
         }
     },
     "mappings": {
-        "4086628561": {
-            "name": "Illum3Channel",
-            "normalMapIndex": 0
-        },
-        "3842442129": {
+        "shaders\\shader_templates\\transparent\\one_alpha_env": {
             "name": "OneAlphaEnv",
             "specularMapIndex": 0,
             "diffuseMapIndex": 1,
             "alphaMapIndex": 2,
             "alphaFromRed": true
         },
-        "3792316325": {
+        "shaders\\shader_templates\\transparent\\one_alpha_env_illum": {
             "name": "OneAlphaEnvIllum",
             "specularMapIndex": 0,
             "emissiveMapIndex": 1,
@@ -78,13 +34,13 @@
             "diffuseMapIndex": 2,
             "alphaMapIndex": 2
         },
-        "3833408024": {
+        "shaders\\shader_templates\\transparent\\two_add_env_illum": {
             "name": "TwoAddEnvIllum",
             "emissiveMapIndex": 3,
             "emissiveType": "EmissiveOnly",
             "diffuseColor": [ 0 ]
         },
-        "3834718764": {
+        "shaders\\shader_templates\\opaque\\tex_bump_plasma_one_channel_illum": {
             "name": "TexBumpPlasmaOneChannelIllum",
             "diffuseMapIndex": 1,
             "emissiveMap": 3,
@@ -92,7 +48,7 @@
             "detail1ScaleIndex": 3,
             "emissiveType": "EmissiveOnly"
         },
-        "3913548045": {
+        "shaders\\shader_templates\\opaque\\prt_simple": {
             "name": "PrtSimple",
             "normalMapIndex": 0,
             "normalScaleIndex": 0,
@@ -101,20 +57,20 @@
             "detail1ScaleIndex": 3
         },
         // TODO: special overlay flag to enable discard for middle gray
-        "3884461347": {
+        "shaders\\shader_templates\\opaque\\overlay": {
             "name": "Overlay",
             "diffuseMapIndex": 0,
             "alphaMapIndex": 0
         },
 
-        "3917480231": {
+        "shaders\\shader_templates\\opaque\\tex_env": {
             "name": "TexEnv",
             "diffuseMapIndex": 0,
             "detail1MapIndex": 1,
             "detail1ScaleIndex": 3,
             "specularMapIndex": 2
         },
-        "3786024773": {
+        "shaders\\shader_templates\\opaque\\tex_bump": {
             "name": "TexBump",
             "normalMapIndex": 0,
             "normalScaleIndex": 0,
@@ -122,7 +78,7 @@
             "detail1MapIndex": 3,
             "detail1ScaleIndex": 2
         },
-        "3783075608": {
+        "shaders\\shader_templates\\opaque\\tex_bump_illum": {
             "name": "TexBumpIllum",
             "normalMapIndex": 0,
             "normalScaleIndex": 0,
@@ -130,7 +86,7 @@
             "emissiveMapIndex": 3,
             "emissiveType": "DiffuseBlended"
         },
-        "4082892954": {
+        "shaders\\shader_templates\\opaque\\tex_bump_illum_3_channel": {
             "name": "TexBumpIllum3Channel",
             "normalMapIndex": 0,
             "normalScaleIndex": 0,
@@ -141,7 +97,7 @@
             "emissiveType": "ThreeChannel",
             "emissiveArgumentsIndex": 7
         },
-        "3876323435": {
+        "shaders\\shader_templates\\opaque\\tex_bump_illum_detail_honor_guard": {
             "name": "TexBumpIllumDetailHonorGuard",
             "normalMapIndex": 0,
             "normalScaleIndex": 0,
@@ -151,7 +107,7 @@
             "emissiveMapIndex": 3,
             "emissiveType": "DiffuseBlended"
         },
-        "4114612757": {
+        "shaders\\shader_templates\\opaque\\tex_bump_no_alpha": {
             "name": "TexBumpNoAlpha",
             "normalMapIndex": 0,
             "normalScaleIndex": 0,
@@ -159,7 +115,7 @@
             "detail1MapIndex": 3,
             "detail1ScaleIndex": 2
         },
-        "4085121223": {
+        "shaders\\shader_templates\\opaque\\tex_bump_alpha_test": {
             "name": "TexBumpAlphaTest",
             "normalMapIndex": 0,
             "normalScaleIndex": 0,
@@ -168,7 +124,7 @@
             "detail1MapIndex": 4,
             "detail1ScaleIndex": 2
         },
-        "3923521399": {
+        "shaders\\shader_templates\\opaque\\tex_bump_env_combined": {
             "name": "TexBumpEnvCombined",
             "normalMapIndex": 0,
             "normalScaleIndex": 0,
@@ -176,7 +132,7 @@
             "detail1MapIndex": 3,
             "detail1ScaleIndex": 2
         },
-        "3953406271": {
+        "shaders\\shader_templates\\opaque\\tex_bump_env_illum": {
             "name": "TexBumpEnvIllum",
             "normalMapIndex": 0,
             "normalScaleIndex": 0,
@@ -184,7 +140,7 @@
             "emissiveMapIndex": 4,
             "emissiveType": "DiffuseBlended"
         },
-        "4118348365": {
+        "shaders\\shader_templates\\opaque\\tex_bump_detail_keep": {
             "name": "TexBumpDetailKeep",
             "normalMapIndex": 0,
             "normalScaleIndex": 0,
@@ -192,7 +148,7 @@
             "detail1MapIndex": 2,
             "detail1ScaleIndex": 2
         },
-        "4116185644": {
+        "shaders\\shader_templates\\opaque\\tex_bump_detail_blend": {
             "name": "TexBumpDetailBlend",
             "normalMapIndex": 0,
             "normalScaleIndex": 0,
@@ -202,50 +158,30 @@
             "detail2MapIndex": 3,
             "detail2ScaleIndex": 3
         },
-        "3786745680": {
+        "shaders\\shader_templates\\transparent\\plasma_alpha": {
             "name": "TransparentPlasmaAlpha",
             "diffuseMapIndex": 0,
             "animationMapIndex": 1,
             "alphaMapIndex": 2
         },
-        "3788318568": {
-            "name": "TransparentOneAlphaEnv",
-            "specularMapIndex": 0,
-            "diffuseMapIndex": 1,
-            "alphaMapIndex": 2
-        },
-        "3874291795": {
+        "shaders\\shader_templates\\transparent\\one_add_two_plus_two": {
             "name": "TransparentOneAddTwoPlusTwo",
             "diffuseMapIndex": 0
         },
-        "4119855716": {
+        "shaders\\shader_templates\\transparent\\two_alpha_clouds": {
             "name": "TransparentTwoAlphaClouds",
             "diffuseMapIndex": 0,
             "alphaMapIndex": 1
         },
-        "3783524361": {
+        "shaders\\shader_templates\\transparent\\sky_two_alpha_clouds": {
             "name": "SkyTwoAlphaClouds",
             "diffuseMapIndex": 0
         },
-        "3783000068": {
+        "shaders\\shader_templates\\transparent\\sky_one_alpha_env": {
             "name": "SkyOneAlphaEnv",
             "diffuseMapIndex": 2
         },
-        "3875538314": {
-            "name": "TwoAddClouds",
-            "emissiveMapIndex": 0,
-            "emissiveType": "EmissiveOnly"
-        },
-        "3810328999": {
-            "name": "TexBump",
-            "normalMapIndex": 0,
-            "normalScaleIndex": 0,
-            "diffuseMapIndex": 2,
-            "detail1MapIndex": 3,
-            "detail1ScaleIndex": 2
-        },
-
-        "3862627525": {
+        "shaders\\shader_templates\\opaque\\tex_bump_two_detail": {
             "name": "TexBumpTwoDetail",
             "normalMapIndex": 0,
             "normalScaleIndex": 0,
@@ -255,7 +191,7 @@
             "detail2MapIndex": 3,
             "detail2ScaleIndex": 3
         },
-        "3861841081": {
+        "shaders\\shader_templates\\opaque\\tex_bump_env_two_detail": {
             "name": "TexBumpEnvTwoDetail",
             "normalMapIndex": 0,
             "normalScaleIndex": 0,
@@ -265,7 +201,7 @@
             "detail2MapIndex": 3,
             "detail2ScaleIndex": 3
         },
-        "3837920076": {
+        "shaders\\shader_templates\\opaque\\tex_bump_env_illum_combined": {
             "name": "TexBumpEnvIllumCombined",
             "normalMapIndex": 0,
             "normalScaleIndex": 0,
