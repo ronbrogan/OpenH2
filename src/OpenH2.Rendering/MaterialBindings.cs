@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace OpenH2.Rendering
+﻿namespace OpenH2.Rendering
 {
     public struct MaterialBindings
     {
@@ -13,5 +9,6 @@ namespace OpenH2.Rendering
         public long NormalHandle { get; set; }
         public long Detail1Handle { get; set; }
         public long Detail2Handle { get; set; }
+        public long ColorChangeHandle { get; set; }
     }
 }

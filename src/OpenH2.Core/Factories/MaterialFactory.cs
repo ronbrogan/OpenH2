@@ -118,6 +118,8 @@ namespace OpenH2.Core.Factories
             mat.AlphaMap = args.GetBitmap(map, mapping.AlphaMapIndex);
             mat.AlphaFromRed = mapping.AlphaFromRed;
 
+            mat.ColorChangeMask = args.GetBitmap(map, mapping.ColorChangeMaskMapIndex);
+
             mat.SpecularMap = args.GetBitmap(map, mapping.SpecularMapIndex);
         }
 

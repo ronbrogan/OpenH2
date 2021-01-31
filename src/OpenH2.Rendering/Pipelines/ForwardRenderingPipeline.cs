@@ -78,16 +78,6 @@ namespace OpenH2.Rendering.Pipelines
                 }
             }
 
-            this.adapter.UseShader(Shader.Generic);
-            for (var i = transparentRenderables.Count-1; i >= 0; i--)
-            {
-                var renderable = transparentRenderables[i].Item2;
-
-                this.adapter.UseTransform(renderable.Transform);
-
-                this.adapter.DrawMeshes(renderable.DrawCommands);
-            }
-
             this.adapter.UseShader(Shader.Wireframe);
             for (var i = 0; i < renderables.Count; i++)
             {
@@ -98,6 +88,16 @@ namespace OpenH2.Rendering.Pipelines
 
                     this.adapter.DrawMeshes(renderable.DrawCommands);
                 }
+            }
+
+            this.adapter.UseShader(Shader.Generic);
+            for (var i = transparentRenderables.Count - 1; i >= 0; i--)
+            {
+                var renderable = transparentRenderables[i].Item2;
+
+                this.adapter.UseTransform(renderable.Transform);
+
+                this.adapter.DrawMeshes(renderable.DrawCommands);
             }
 
             pointLights.Clear();

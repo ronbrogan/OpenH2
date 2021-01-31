@@ -15,8 +15,10 @@ namespace OpenH2.Rendering.Shaders.Generic
     [StructLayout(LayoutKind.Sequential)]
     public struct GenericUniform
     {
-        public GenericUniform(IMaterial<BitmapTag> material, MaterialBindings bindings)
+        public GenericUniform(Mesh<BitmapTag> mesh, Vector4 colorChangeData, MaterialBindings bindings)
         {
+            var material = mesh.Material;
+
             DiffuseColor = material.DiffuseColor;
             UseDiffuse = bindings.DiffuseHandle != default;
             DiffuseHandle = bindings.DiffuseHandle;
@@ -46,6 +48,11 @@ namespace OpenH2.Rendering.Shaders.Generic
             NormalMap = bindings.NormalHandle;
             NormalMapAmount = 1f;
             NormalMapScale = material.NormalMapScale;
+
+            ChangeColor = bindings.ColorChangeHandle != default;
+            ColorChangeMaskHandle = bindings.ColorChangeHandle;
+            ColorChangeAmount = 1f;
+            ColorChangeColor = colorChangeData;
 
             // Currently unused
             UseSpecular = false;
@@ -88,6 +95,11 @@ namespace OpenH2.Rendering.Shaders.Generic
         public float DetailMap2Amount;
         public long DetailMap2Handle;
         public Vector4 DetailMap2Scale;
+
+        public bool ChangeColor;
+        public float ColorChangeAmount;
+        public long ColorChangeMaskHandle;
+        public Vector4 ColorChangeColor;
 
         public static readonly int Size = Marshal.SizeOf<GenericUniform>();
     }

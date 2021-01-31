@@ -108,7 +108,8 @@ namespace OpenH2.Rendering.OpenGL
                 {
                     VaoHandle = vao,
                     IndexBase = currentIndx,
-                    VertexBase = currentVert
+                    VertexBase = currentVert,
+                    ColorChangeData = model.ColorChangeData
                 };
 
                 Array.Copy(mesh.Verticies, 0, vertices, currentVert, mesh.Verticies.Length);
@@ -162,6 +163,12 @@ namespace OpenH2.Rendering.OpenGL
             {
                 textureBinder.GetOrBind(material.DetailMap2, out var handle);
                 bindings.Detail2Handle = handle;
+            }
+
+            if (material.ColorChangeMask != null)
+            {
+                textureBinder.GetOrBind(material.ColorChangeMask, out var handle);
+                bindings.ColorChangeHandle = handle;
             }
 
             if (material.AlphaMap != null)
@@ -247,13 +254,14 @@ namespace OpenH2.Rendering.OpenGL
                 }
 
                 var bindings = SetupTextures(command.Mesh.Material);
-                command.ShaderUniformHandle = GenerateShaderUniform(command.Mesh, bindings);
+                command.ShaderUniformHandle = GenerateShaderUniform(command, bindings);
                 uniforms[(int)activeShader] = command.ShaderUniformHandle;
             }
         }
 
-        private int GenerateShaderUniform(Mesh<BitmapTag> mesh, MaterialBindings bindings)
+        private int GenerateShaderUniform(DrawCommand command, MaterialBindings bindings)
         {
+            var mesh = command.Mesh;
             var existingUniformHandle = 0;
 
             switch (activeShader)
@@ -268,9 +276,10 @@ namespace OpenH2.Rendering.OpenGL
                 case Shader.Generic:
                     BindAndBufferShaderUniform(
                         activeShader,
-                        new GenericUniform(mesh.Material, bindings),
+                        new GenericUniform(mesh, command.ColorChangeData, bindings),
                         GenericUniform.Size,
                         out existingUniformHandle);
+
                     break;
                 case Shader.Wireframe:
                     BindAndBufferShaderUniform(

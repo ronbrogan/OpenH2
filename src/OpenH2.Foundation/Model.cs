@@ -19,6 +19,8 @@ namespace OpenH2.Foundation
 
         public RenderLayers RenderLayer { get; set; } = RenderLayers.Normal;
 
+        public Vector4 ColorChangeData { get; set; } = Vector4.Zero;
+
         public Matrix4x4 CreateTransformationMatrix()
         {
             var translate = Matrix4x4.CreateTranslation(Position);

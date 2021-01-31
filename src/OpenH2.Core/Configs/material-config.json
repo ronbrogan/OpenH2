@@ -25,7 +25,7 @@
             "emissiveType": "DiffuseBlended",
             "diffuseMapIndex": 2
         },
-        "3865576690": {
+        "shaders\\shader_templates\\transparent\\two_alpha_env_illum": {
             "name": "TwoAlphaEnvIllum",
             "specularMapIndex": 0,
             "emissiveMapIndex": 3,
@@ -62,7 +62,11 @@
             "diffuseMapIndex": 0,
             "alphaMapIndex": 0
         },
-
+        "shaders\\shader_templates\\opaque\\decal_simple": {
+            "name": "DecalSimple",
+            "diffuseMapIndex": 0,
+            "alphaMapIndex": 0
+        },
         "shaders\\shader_templates\\opaque\\tex_env": {
             "name": "TexEnv",
             "diffuseMapIndex": 0,
@@ -77,6 +81,15 @@
             "diffuseMapIndex": 2,
             "detail1MapIndex": 3,
             "detail1ScaleIndex": 2
+        },
+        "shaders\\shader_templates\\opaque\\tex_bump_tiling_specular": {
+            "name": "TexBumpTilingSpecular",
+            "normalMapIndex": 0,
+            "normalScaleIndex": 0,
+            "diffuseMapIndex": 1,
+            "detail1MapIndex": 2,
+            "detail1ScaleIndex": 2,
+            "specularMapIndex": 3
         },
         "shaders\\shader_templates\\opaque\\tex_bump_illum": {
             "name": "TexBumpIllum",
@@ -158,6 +171,22 @@
             "detail2MapIndex": 3,
             "detail2ScaleIndex": 3
         },
+        "shaders\\shader_templates\\opaque\\tex_bump_one_change_color": {
+            "name": "TexBumpOneChangeColor",
+            "normalMapIndex": 0,
+            "normalScaleIndex": 0,
+            "diffuseMapIndex": 1,
+            "colorChangeMaskMapIndex": 2
+        },
+        "shaders\\shader_templates\\opaque\\tex_bump_four_change_color": {
+            "name": "TexBumpFourChangeColor",
+            "normalMapIndex": 0,
+            "normalScaleIndex": 0,
+            "diffuseMapIndex": 1,
+            "detail1MapIndex": 2,
+            "detail1ScaleIndex": 2,
+            "colorChangeMaskMapIndex": 3
+        },
         "shaders\\shader_templates\\transparent\\plasma_alpha": {
             "name": "TransparentPlasmaAlpha",
             "diffuseMapIndex": 0,
@@ -169,17 +198,32 @@
             "diffuseMapIndex": 0
         },
         "shaders\\shader_templates\\transparent\\two_alpha_clouds": {
-            "name": "TransparentTwoAlphaClouds",
+            "name": "TwoAlphaClouds",
             "diffuseMapIndex": 0,
             "alphaMapIndex": 1
+        },
+        "shaders\\shader_templates\\transparent\\two_alpha_detail_masked": {
+            "name": "TwoAlphaDetailMasked",
+            "diffuseMapIndex": 1,
+            "alphaMapIndex": 0
         },
         "shaders\\shader_templates\\transparent\\sky_two_alpha_clouds": {
             "name": "SkyTwoAlphaClouds",
             "diffuseMapIndex": 0
         },
+        "shaders\\shader_templates\\transparent\\sky_two_add_clouds": {
+            "name": "SkyTwoAddClouds",
+            "diffuseMapIndex": 0,
+            "alphaMapIndex": 0
+        },
         "shaders\\shader_templates\\transparent\\sky_one_alpha_env": {
             "name": "SkyOneAlphaEnv",
             "diffuseMapIndex": 2
+        },
+        "shaders\\shader_templates\\transparent\\two_add_clouds": {
+            "name": "TwoAddClouds",
+            "emissiveMapIndex": 0,
+            "emissiveType": "EmissiveOnly"
         },
         "shaders\\shader_templates\\opaque\\tex_bump_two_detail": {
             "name": "TexBumpTwoDetail",

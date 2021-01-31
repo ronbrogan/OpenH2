@@ -94,16 +94,16 @@ namespace OpenH2.Core.Tags.Scenario
             public ColorChangeFlags ActiveColorChanges { get; set; }
 
             [PrimitiveArray(60, 3)]
-            public byte[] PrimaryColorBbr { get; set; } = null!;
+            public byte[] PrimaryColorBgr { get; set; } = null!;
 
             [PrimitiveArray(64, 3)]
-            public byte[] SecondaryColorBbr { get; set; } = null!;
+            public byte[] SecondaryColorBgr { get; set; } = null!;
 
             [PrimitiveArray(68, 3)]
-            public byte[] TertiaryColorBbr { get; set; } = null!;
+            public byte[] TertiaryColorBgr { get; set; } = null!;
 
             [PrimitiveArray(72, 3)]
-            public byte[] QuaternaryColorBbr { get; set; } = null!;
+            public byte[] QuaternaryColorBgr { get; set; } = null!;
 
             public IBloc? GameObject { get; set; }
         }

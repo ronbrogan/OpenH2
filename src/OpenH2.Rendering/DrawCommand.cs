@@ -1,6 +1,7 @@
 ﻿using OpenH2.Core.Tags;
 using OpenH2.Core.Tags.Common.Collision;
 using OpenH2.Foundation;
+using System.Numerics;
 
 namespace OpenH2.Rendering
 {
@@ -16,6 +17,7 @@ namespace OpenH2.Rendering
 
             this.VertexBase = 0;
             this.IndexBase = 0;
+            this.ColorChangeData = Vector4.Zero;
         }
 
         public MeshElementType ElementType;
@@ -24,6 +26,7 @@ namespace OpenH2.Rendering
         public int VertexBase;
         public int IndexBase;
         public int ShaderUniformHandle;
+        public Vector4 ColorChangeData;
         public Mesh<BitmapTag> Mesh;
     }
 }
