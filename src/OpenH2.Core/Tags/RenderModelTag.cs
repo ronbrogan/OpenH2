@@ -70,7 +70,7 @@ namespace OpenH2.Core.Tags
                     resource.Data = resourceData;
                 }
 
-                var meshes = ModelResouceContainerProcessor.ProcessContainer(part, ModelShaderReferences);
+                var meshes = ModelResourceContainerProcessor.ProcessContainer(part, ModelShaderReferences);
 
                 if(this.BoundingBoxes.Length > 0)
                 {

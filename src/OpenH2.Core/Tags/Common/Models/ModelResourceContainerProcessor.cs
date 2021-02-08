@@ -7,7 +7,7 @@ using System.Collections.Generic;
 
 namespace OpenH2.Core.Tags.Common.Models
 {
-    public static class ModelResouceContainerProcessor
+    public static class ModelResourceContainerProcessor
     {
         private struct PartDescription
         {

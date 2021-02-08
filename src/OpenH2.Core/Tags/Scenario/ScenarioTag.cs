@@ -1,13 +1,11 @@
-﻿using OpenH2.Core.GameObjects;
+﻿using OpenBlam.Core.MapLoading;
+using OpenBlam.Serialization.Layout;
+using OpenH2.Core.GameObjects;
 using OpenH2.Core.Maps;
-using OpenH2.Core.Parsing;
 using OpenH2.Core.Scripting;
 using OpenH2.Core.Tags.Layout;
-using OpenBlam.Serialization.Layout;
 using System.Numerics;
 using System.Text.Json.Serialization;
-using OpenBlam.Core.MapLoading;
-using System.IO;
 
 namespace OpenH2.Core.Tags.Scenario
 {

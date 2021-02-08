@@ -166,7 +166,7 @@ namespace OpenH2.Core.Tags
                     resource.Data = resourceData;
                 }
 
-                var meshes = ModelResouceContainerProcessor.ProcessContainer(part, ModelShaderReferences);
+                var meshes = ModelResourceContainerProcessor.ProcessContainer(part, ModelShaderReferences);
                 part.Model = new MeshCollection(meshes);
             }
 
@@ -196,7 +196,7 @@ namespace OpenH2.Core.Tags
                     resource.Data = resourceData;
                 }
 
-                var meshes = ModelResouceContainerProcessor.ProcessContainer(def, ModelShaderReferences, "InstancedGeometry_" + def.DataBlockRawOffset);
+                var meshes = ModelResourceContainerProcessor.ProcessContainer(def, ModelShaderReferences, "InstancedGeometry_" + def.DataBlockRawOffset);
                 def.Model = new MeshCollection(meshes);
             }
         }

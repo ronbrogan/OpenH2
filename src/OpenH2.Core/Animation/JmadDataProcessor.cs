@@ -6,34 +6,6 @@ using System.Numerics;
 
 namespace OpenH2.Core.Animation
 {
-    public enum JmadDataType
-    {
-        Flat = 1,
-        Three = 3,
-        Four = 4,
-        Five = 5,
-        Six = 6,
-        Seven = 7,
-        Eight = 8
-    }
-
-    public struct JmadDataHeader
-    {
-        public JmadDataType Type;
-        public int OrientationCount;
-        public int TranslationCount;
-        public int ScaleCount;
-
-        public int OrientationOffset;
-        public int TranslationOffset;
-        public int ScaleOffset;
-
-        public int TotalLength()
-        {
-            return ScaleOffset + ScaleCount * sizeof(float);
-        }
-    }
-
     public class JmadDataProcessor : IAnimationProcessor
     {
         private delegate int OrientationFrameSetCount(Span<byte> data);
@@ -106,32 +78,48 @@ namespace OpenH2.Core.Animation
         public JmadDataHeader ReadHeader(Span<byte> data)
         {
             var header = new JmadDataHeader
-            {
-                Type = (JmadDataType)data[0],
-                OrientationCount = data[1],
-                TranslationCount = data[2],
-                ScaleCount = data[3]
-            };
+            (
+                type: (JmadDataType)data[0],
+                orientationCount: data[1],
+                translationCount: data[2],
+                scaleCount: data[3]
+            );
 
             switch (header.Type)
             {
                 case JmadDataType.Flat:
-                    header.OrientationOffset = 32;
-                    header.TranslationOffset = data.ReadInt32At(12);
-                    header.ScaleOffset = data.ReadInt32At(16);
+                    header.SetComponentOffsets(32, data.ReadInt32At(12), data.ReadInt32At(16));
                     break;
                 case JmadDataType.Three:
-                    header.OrientationOffset = 32;
-                    header.TranslationOffset = data.ReadInt32At(12);
-                    header.ScaleOffset = data.ReadInt32At(16);
+                    header.SetComponentOffsets(32, data.ReadInt32At(12), data.ReadInt32At(16));
+                    header.SetComponentSizes(data.ReadInt32At(20), data.ReadInt32At(24), data.ReadInt32At(28));
+                    break;
+                case JmadDataType.Four:
+                    header.SetUnknownComponentOffsets(48, data.ReadInt32At(12), data.ReadInt32At(16));
+                    header.SetFrameMappingOffsets(data.ReadInt32At(20), data.ReadInt32At(24), data.ReadInt32At(28));
+                    header.SetComponentOffsets(data.ReadInt32At(32), data.ReadInt32At(36), data.ReadInt32At(40));
+                    break;
+                case JmadDataType.Five:
+                    header.SetUnknownComponentOffsets(48, data.ReadInt32At(12), data.ReadInt32At(16));
+                    header.SetFrameMappingOffsets(data.ReadInt32At(20), data.ReadInt32At(24), data.ReadInt32At(28), usesShorts: true);
+                    header.SetComponentOffsets(data.ReadInt32At(32), data.ReadInt32At(36), data.ReadInt32At(40));
                     break;
                 case JmadDataType.Six:
-                    header.OrientationOffset = data.ReadInt32At(32);
-                    header.TranslationOffset = data.ReadInt32At(36);
-                    header.ScaleOffset = data.ReadInt32At(40);
+                    header.SetUnknownComponentOffsets(48, data.ReadInt32At(12), data.ReadInt32At(16));
+                    header.SetFrameMappingOffsets(data.ReadInt32At(20), data.ReadInt32At(24), data.ReadInt32At(28));
+                    header.SetComponentOffsets(data.ReadInt32At(32), data.ReadInt32At(36), data.ReadInt32At(40));
+                    break;
+                case JmadDataType.Seven:
+                    header.SetUnknownComponentOffsets(48, data.ReadInt32At(12), data.ReadInt32At(16));
+                    header.SetFrameMappingOffsets(data.ReadInt32At(20), data.ReadInt32At(24), data.ReadInt32At(28), usesShorts: true);
+                    header.SetComponentOffsets(data.ReadInt32At(32), data.ReadInt32At(36), data.ReadInt32At(40));
+                    break;
+                case JmadDataType.UncompressedFlat:
+                    header.SetComponentOffsets(32, data.ReadInt32At(12), data.ReadInt32At(16));
+                    header.SetComponentSizes(data.ReadInt32At(20), data.ReadInt32At(24), data.ReadInt32At(28));
                     break;
                 default:
-                    //Debug.Fail("Unsupported data type");
+                    Debug.Fail("Unsupported data type");
                     break;
             }
 

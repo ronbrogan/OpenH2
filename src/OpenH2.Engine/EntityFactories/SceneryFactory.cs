@@ -111,21 +111,45 @@ namespace OpenH2.Engine.EntityFactories
 
             scenery.FriendlyName = tag.Name;
 
-            var renderModel = new RenderModelComponent(scenery, new Model<BitmapTag>
+            var meshes = MeshFactory.GetRenderModel(map, tag.Model);
+            var transparentMeshes = new List<Mesh<BitmapTag>>(meshes.Length);
+            var renderModelMeshes = new List<Mesh<BitmapTag>>(meshes.Length);
+
+            foreach (var mesh in meshes)
+            {
+                var mat = mesh.Material;
+
+                if (mat.AlphaMap == null)
+                {
+                    renderModelMeshes.Add(mesh);
+                }
+                else
+                {
+                    transparentMeshes.Add(mesh);
+                }
+            }
+
+            var components = new List<Component>();
+
+            components.Add(new RenderModelComponent(scenery, new Model<BitmapTag>
             {
                 Note = $"[{tag.Id}] {tag.Name}",
-                Meshes = MeshFactory.GetRenderModel(map, tag.Model),
-                Scale = new Vector3(1),
+                Meshes = renderModelMeshes.ToArray(),
                 Flags = ModelFlags.Diffuse | ModelFlags.CastsShadows | ModelFlags.ReceivesShadows
-            });
+            }));
+
+            foreach(var transparentMesh in transparentMeshes)
+            {
+                components.Add(new RenderModelComponent(scenery, new Model<BitmapTag>
+                {
+                    Note = $"[{tag.Id}] {tag.Name}",
+                    Meshes = new[] { transparentMesh },
+                    Flags = ModelFlags.IsTransparent
+                }));
+            }
 
             var orientation = QuaternionExtensions.FromH2vOrientation(instance.Orientation);
             var xform = new TransformComponent(scenery, instance.Position, orientation);
-
-            var components = new List<Component>(2)
-            {
-                renderModel
-            };
 
             var body = PhysicsComponentFactory.CreateStaticRigidBody(scenery, xform, map, tag.Model);
 

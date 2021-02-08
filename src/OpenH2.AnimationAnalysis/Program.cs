@@ -25,7 +25,8 @@ namespace OpenH2.AnimationAnalysis
 
         static void Main(string[] args)
         {
-            var mapPath = @"D:\H2vMaps\03a_oldmombasa.map";
+            var mapPath = @"D:\H2vMaps\01a_tutorial.map";
+            var outRoot = @"D:\h2scratch\animations\export";
 
             var factory = new MapFactory(Path.GetDirectoryName(mapPath));
             var h2map = factory.Load(Path.GetFileName(mapPath));
@@ -61,8 +62,11 @@ namespace OpenH2.AnimationAnalysis
                         Write(innerHeader);
                         types.Add(innerHeader.Type);
                     }
-                        
 
+                    var outFile = Path.Combine(outRoot, tag.Name, anim.Description.Replace(":", "-")) + ".jmad";
+                    Directory.CreateDirectory(Path.GetDirectoryName(outFile));
+                    File.WriteAllBytes(outFile, anim.Data);
+                    
                     Write("=====================");
                 }
             }

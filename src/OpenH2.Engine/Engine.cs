@@ -14,12 +14,9 @@ using OpenH2.Rendering.Abstractions;
 using OpenH2.Rendering.OpenGL;
 using OpenTK.Windowing.Desktop;
 using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
-using System.Linq;
 using System.Numerics;
-using System.Threading.Tasks;
 
 namespace OpenH2.Engine
 {
