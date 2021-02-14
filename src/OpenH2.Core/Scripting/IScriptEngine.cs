@@ -981,6 +981,9 @@ namespace OpenH2.Core.Scripting
         [ScriptImplementation(100)]
         void objects_predict_high(GameObjectList entity);
 
+        /// <summary>loads textures/geometry/sounds necessary to present objects that are about to come on-screen</summary>
+        void objects_predict_high(IGameObject entity);
+
         [ScriptImplementation(75)]
         IGameObject object_at_marker(IGameObject entity, string stringId);
 

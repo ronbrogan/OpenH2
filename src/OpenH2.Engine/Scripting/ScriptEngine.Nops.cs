@@ -100,6 +100,11 @@ namespace OpenH2.Engine.Scripting
         {
         }
 
+        /// <summary>loads textures/geometry/sounds necessary to present objects that are about to come on-screen</summary>
+        public void objects_predict_high(IGameObject entity)
+        {
+        }
+
         /// <summary>predict a geometry block.</summary>
         public void predict_model_section(RenderModelTag render_model, int value)
         {
