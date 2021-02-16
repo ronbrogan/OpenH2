@@ -36,7 +36,6 @@ namespace OpenH2.AnimationAnalysis
                 throw new NotSupportedException("Only Vista maps are supported in this tool");
             }
 
-            var proc = JmadDataProcessor.GetProcessor();
             var animations = map.GetLocalTagsOfType<AnimationGraphTag>();
 
             var types = new HashSet<JmadDataType>();
@@ -49,14 +48,14 @@ namespace OpenH2.AnimationAnalysis
 
                     Span<byte> data = anim.Data;
 
-                    var zeroHeader = proc.ReadHeader(data);
+                    var zeroHeader = JmadDataContainer.Create(data);
                     if(zeroHeader.Type != JmadDataType.Flat)
                     {
                         Write(zeroHeader);
                         types.Add(zeroHeader.Type);
                     }
 
-                    var innerHeader = proc.ReadHeader(data.Slice(anim.SizeE));
+                    var innerHeader = JmadDataContainer.Create(data.Slice(anim.SizeE));
                     if (innerHeader.Type != JmadDataType.Flat)
                     {
                         Write(innerHeader);
@@ -78,7 +77,7 @@ namespace OpenH2.AnimationAnalysis
             
         }
 
-        static void Write(JmadDataHeader header)
+        static void Write(JmadDataContainer header)
         {
             Write($"Type: {header.Type}");
             Write($"  OrientationCount: {header.OrientationCount}");

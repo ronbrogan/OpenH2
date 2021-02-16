@@ -20,7 +20,7 @@ namespace OpenH2.Core.Tests.Animation
 
             var animation = processor.GetAnimation(19, bones: 42, animationData);
 
-            Assert.Equal(23, animation.Frames.GetLength(0));
+            Assert.Equal(19, animation.Frames.GetLength(0));
         }
 
         [Fact, Trait("skip", "true")]
@@ -32,7 +32,7 @@ namespace OpenH2.Core.Tests.Animation
 
             var animation = processor.GetAnimation(8, bones: 42, animationData);
 
-            Assert.Equal(6, animation.Frames.GetLength(0));
+            Assert.Equal(8, animation.Frames.GetLength(0));
         }
 
         [Fact, Trait("skip", "true")]
@@ -44,7 +44,7 @@ namespace OpenH2.Core.Tests.Animation
 
             var animation = processor.GetAnimation(703, bones: 1, animationData);
 
-            Assert.Equal(1, animation.Frames.GetLength(0));
+            Assert.Equal(703, animation.Frames.GetLength(0));
         }
 
         [Fact, Trait("skip", "true")]
@@ -56,7 +56,7 @@ namespace OpenH2.Core.Tests.Animation
 
             var animation = processor.GetAnimation(110, bones: 53, animationData);
 
-            Assert.Equal(1, animation.Frames.GetLength(0));
+            Assert.Equal(110, animation.Frames.GetLength(0));
         }
     }
 }

@@ -337,3 +337,6 @@ ASALocalRun/
 
 # Map files
 *.map
+
+# RenderDoc Capture Config
+*.cap

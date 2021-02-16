@@ -6,6 +6,6 @@ namespace OpenH2.Core.Animation
 {
     public class Animation
     {
-        public AnimationFrame[,] Frames { get; set; }
+        public AnimationNodeTransform[,] Frames { get; set; }
     }
 }

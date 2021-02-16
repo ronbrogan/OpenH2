@@ -1,16 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Numerics;
-using System.Text;
+﻿using System.Numerics;
 
 namespace OpenH2.Core.Animation
 {
-    public struct AnimationFrame
+    public struct AnimationNodeTransform
     {
         public Quaternion Orientation { get; set; }
         public Vector3 Translation { get; set; }
 
-        public AnimationFrame(Quaternion orient, Vector3 translate)
+        public AnimationNodeTransform(Quaternion orient, Vector3 translate)
         {
             this.Orientation = orient;
             this.Translation = translate;
