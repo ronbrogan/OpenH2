@@ -70,7 +70,7 @@ namespace OpenH2.Core.Tags
         public Obj232[] Obj232s { get; set; }
 
 
-        [FixedLength(112)]
+        [FixedLength(104)]
         public class MoverParameter
         {
             [PrimitiveValue(4)]
@@ -78,6 +78,12 @@ namespace OpenH2.Core.Tags
 
             [InternedString(8)]
             public string Description { get; set; }
+
+            [PrimitiveValue(32)]
+            public float ValueC { get; set; }
+
+            [PrimitiveValue(36)]
+            public float ValueD { get; set; }
 
             [PrimitiveValue(40)]
             public float ValueA { get; set; }

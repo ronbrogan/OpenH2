@@ -531,8 +531,8 @@ namespace OpenH2.Core.Scripting.Generation
                 case ScriptDataType.List:
                     return new EntityGetContext(scenario, node, nameRepo);
                 case ScriptDataType.ScriptReference:
-                    return new ScriptMethodReferenceContext(scenario, node, nameRepo);
                 case ScriptDataType.AIScript:
+                    return new ScriptMethodReferenceContext(scenario, node, nameRepo);
                 case ScriptDataType.Trigger:
                 case ScriptDataType.LocationFlag:
                 case ScriptDataType.DeviceGroup:
