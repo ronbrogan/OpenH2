@@ -324,7 +324,7 @@ namespace OpenH2.Engine.Scripting
         /// <summary>returns true if any of the specified units are looking within the specified number of degrees of the flag.</summary>
         public bool objects_can_see_flag(GameObjectList list, ILocationFlag locationFlag, float degrees)
         {
-            if (list  == null || locationFlag == null)
+            if (list  == default || locationFlag == null)
                 return false;
 
             foreach (var entity in list.Objects)
@@ -347,7 +347,7 @@ namespace OpenH2.Engine.Scripting
         /// <summary>returns true if any of the specified units are looking within the specified number of degrees of the object.</summary>
         public bool objects_can_see_object(GameObjectList list, IGameObject target, float degrees)
         {
-            if (list == null || target == null)
+            if (list == default || target == null)
                 return false;
 
             foreach (var entity in list.Objects)
@@ -373,7 +373,7 @@ namespace OpenH2.Engine.Scripting
         /// <summary>returns minimum distance from any of the specified objects to the specified flag. (returns -1 if there are no objects, or no flag, to check)</summary>
         public float objects_distance_to_flag(GameObjectList list, ILocationFlag locationFlag)
         {
-            if(list == null || list.Objects.Length == 0 || locationFlag == null)
+            if(list == default || list.Objects.Length == 0 || locationFlag == null)
             {
                 return -1;
             }
@@ -403,7 +403,7 @@ namespace OpenH2.Engine.Scripting
         /// <summary>returns minimum distance from any of the specified objects to the specified destination object. (returns -1 if there are no objects to check)</summary>
         public float objects_distance_to_object(GameObjectList list, IGameObject entity)
         {
-            if (list == null || list.Objects.Length == 0 || entity == null)
+            if (list == default || list.Objects.Length == 0 || entity == null)
             {
                 return -1;
             }

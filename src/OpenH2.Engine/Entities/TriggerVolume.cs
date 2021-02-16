@@ -24,7 +24,7 @@ namespace OpenH2.Engine.Entities
 
         public bool Contains(IGameObject entity)
         {
-            return true;
+            return false;
         }
 
         public IGameObject[] GetObjects(TypeFlags f = TypeFlags.All)

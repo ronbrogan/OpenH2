@@ -64,7 +64,8 @@ namespace OpenH2.Engine.Systems
         {
             this.cameraMoveTicks = tickDuration;
 
-            this.SetFieldOfView(destination.FieldOfView, tickDuration);
+            // TODO: either FOV data is wrong, or this isn't supposed to also do FOV changes
+            //this.SetFieldOfView(destination.FieldOfView, tickDuration);
         }
 
         public void SetFieldOfView(float degrees, int ticks)

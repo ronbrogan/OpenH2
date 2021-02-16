@@ -330,7 +330,9 @@ namespace OpenH2.Engine.Scripting
         {
             short live = 0;
 
-            foreach (var o in objects?.Objects)
+            if (objects.Objects == null) return 0;
+
+            foreach (var o in objects.Objects)
             {
                 if (o.IsAlive) live++;
             }

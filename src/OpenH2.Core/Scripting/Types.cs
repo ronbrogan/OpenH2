@@ -35,7 +35,7 @@
         int Identifier { get; }
     }
 
-    public class GameObjectList : IEnumerable<IGameObject>
+    public struct GameObjectList : IEnumerable<IGameObject>
     {
         public static GameObjectList Empty => new GameObjectList(Array.Empty<IGameObject>());
 
@@ -54,6 +54,16 @@
         IEnumerator IEnumerable.GetEnumerator()
         {
             return this.Objects.GetEnumerator();
+        }
+
+        public static bool operator ==(GameObjectList left, GameObjectList right)
+        {
+            return Equals(left.Objects, right.Objects);
+        }
+
+        public static bool operator !=(GameObjectList left, GameObjectList right)
+        {
+            return !Equals(left.Objects, right.Objects);
         }
     }
 

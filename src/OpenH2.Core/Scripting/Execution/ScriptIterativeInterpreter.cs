@@ -839,11 +839,9 @@ namespace OpenH2.Core.Scripting.Execution
                         value.Object = new GameObjectList(new[] { (IGameObject?)value.Object });
                         value.DataType = ScriptDataType.List;
                         break;
-                    case ScriptDataType.Entity:
-                        value.DataType = ScriptDataType.Entity;
-                        break;
                     default:
-                        Debug.Fail($"No configured cast from {value.DataType} to {destType}");
+                        value.DataType = destType;
+                        //Debug.Fail($"No configured cast from {value.DataType} to {destType}");
                         break;
                 }
             }

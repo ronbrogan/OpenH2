@@ -72,10 +72,8 @@ namespace OpenH2.Core.Generators.Scripting
                 var body = new List<StatementSyntax>();
 
                 // Dequeue argument expressions from TopFrame's locals
-                var paramCount = 0;
                 foreach(var param in mem.Parameters)
                 {
-                    paramCount++;
                     if (param.HasExplicitDefaultValue)
                     {
                         body.Add(LocalDeclarationStatement(VariableDeclaration(ParseTypeName("InterpreterResult")).WithVariables(
@@ -85,7 +83,7 @@ namespace OpenH2.Core.Generators.Scripting
                                     Token(SyntaxKind.DefaultKeyword))))))));
 
                         body.Add(IfStatement(
-                                BinaryExpression(SyntaxKind.GreaterThanOrEqualExpression,
+                                BinaryExpression(SyntaxKind.GreaterThanExpression,
                                     MemberAccessExpression(SyntaxKind.SimpleMemberAccessExpression,
                                         MemberAccessExpression(SyntaxKind.SimpleMemberAccessExpression,
                                             MemberAccessExpression(SyntaxKind.SimpleMemberAccessExpression,
@@ -93,7 +91,7 @@ namespace OpenH2.Core.Generators.Scripting
                                                 IdentifierName("TopFrame")),
                                             IdentifierName("Locals")),
                                         IdentifierName("Count")),
-                                    SyntaxUtilities.LiteralExpression(paramCount)),
+                                    SyntaxUtilities.LiteralExpression(0)),
                                 ExpressionStatement(AssignmentExpression(SyntaxKind.SimpleAssignmentExpression, IdentifierName(param.Name),
                                     InvocationExpression(
                                         MemberAccessExpression(SyntaxKind.SimpleMemberAccessExpression,

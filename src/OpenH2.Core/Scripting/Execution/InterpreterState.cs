@@ -2,10 +2,12 @@
 using OpenH2.Core.Tags.Scenario;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Text;
 
 namespace OpenH2.Core.Scripting.Execution
 {
+    [DebuggerDisplay("{OriginatingNode.NodeType}<{OriginatingNode.DataType}> op:{OriginatingNode.OperationId}")]
     public struct StackFrame
     {
         public Queue<InterpreterResult> Locals;
