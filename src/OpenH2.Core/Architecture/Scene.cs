@@ -6,6 +6,7 @@ using OpenH2.Core.Tags.Scenario;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 
 namespace OpenH2.Core.Architecture
@@ -59,7 +60,6 @@ namespace OpenH2.Core.Architecture
 
         public void Load()
         {
-
             foreach (var item in this.Map.Scenario.ItemCollectionPlacements)
             {
                 this.AddEntity(EntityCreator.FromItemCollectionPlacement(item));
@@ -87,7 +87,7 @@ namespace OpenH2.Core.Architecture
         public void GatherPlacedEntities(int bspIndex, List<Entity> entities)
         {
             Func<IPlaceable, bool> shouldPlace = (IPlaceable p) => p.PlacementFlags.HasFlag(PlacementFlags.NotAutomatically) == false
-                && p.BspIndex == bspIndex;
+                && (p.BspIndex == ushort.MaxValue || p.BspIndex == bspIndex);
 
             foreach (ScenarioTag.SceneryInstance scen in this.Map.Scenario.SceneryInstances.Where(shouldPlace))
             {

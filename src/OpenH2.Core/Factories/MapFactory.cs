@@ -52,6 +52,29 @@ namespace OpenH2.Core.Factories
             };
         }
 
+        public static IH2MapInfo LoadInformational(string mapPath)
+        {
+            // Not using ancillary maps here, just info from map header
+            var singleLoader = MapLoader.FromRoot(Path.GetDirectoryName(mapPath));
+
+            Span<byte> header = new byte[2048];
+            using (var peek = File.OpenRead(mapPath))
+            {
+                peek.Read(header);
+            }
+
+            var baseHeader = BlamSerializer.Deserialize<H2HeaderBase>(header);
+
+            return baseHeader.Version switch
+            {
+                MapVersion.Halo2 => singleLoader.Load<H2vMapInfo>(
+                    new ReadOnlyFileStream(mapPath), 
+                    (IMap map, Stream stream) => {}),
+
+                _ => throw new NotSupportedException("This map type is not supported")
+            };
+        }
+
         public IH2Map LoadH2Map(string mapFileName, Span<byte> headerData)
         {
             // Vista and Xbox use the same version, using header layout to differentiate

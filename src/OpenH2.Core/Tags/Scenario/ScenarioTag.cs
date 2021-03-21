@@ -288,6 +288,18 @@ namespace OpenH2.Core.Tags.Scenario
 
             [PrimitiveValue(4)]
             public ushort ToBsp { get; set; }
+
+            [PrimitiveValue(6)]
+            public ushort ValA { get; set; }
+
+            [PrimitiveValue(8)]
+            public ushort LocationFlagOffset_Maybe { get; set; }
+
+            [PrimitiveValue(10)]
+            public ushort ValC { get; set; }
+
+            [PrimitiveValue(12)]
+            public ushort ValD { get; set; }
         }
 
         [FixedLength(8)]

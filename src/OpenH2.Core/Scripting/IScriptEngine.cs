@@ -647,19 +647,19 @@ namespace OpenH2.Core.Scripting
 
         /// <summary>starts a custom animation playing on a unit (interpolates into animation if last parameter is TRUE)</summary>
         [ScriptImplementation(201)]
-        void custom_animation(IUnit unit, AnimationGraphTag animation, string stringid, bool interpolate);
+        void custom_animation(IUnit unit, AnimationGraphTag animation, string animationName, bool interpolate);
 
         /// <summary>starts a custom animation playing on a unit (interpolates into animation if last parameter is TRUE)</summary>
         [ScriptImplementation(202)]
-        void custom_animation_loop(IUnit unit, AnimationGraphTag animation1, string emotion, bool interpolate);
+        void custom_animation_loop(IUnit unit, AnimationGraphTag animation, string animationName, bool interpolate);
 
         /// <summary>starts a custom animation relative to some other object (interpolates into animation if last parameter is TRUE)</summary>
         [ScriptImplementation(203)]
-        void custom_animation_relative(IUnit entity, AnimationGraphTag animation, string emotion, bool boolean, IGameObject other);
+        void custom_animation_relative(IUnit entity, AnimationGraphTag animation, string animationName, bool boolean, IGameObject other);
 
         /// <summary>starts a custom animation relative to some other object (interpolates into animation if last parameter is TRUE)</summary>
         [ScriptImplementation(204)]
-        void custom_animation_relative_loop(IUnit unit, AnimationGraphTag animation2, string emotion, bool boolean, IGameObject entity);
+        void custom_animation_relative_loop(IUnit unit, AnimationGraphTag animation, string animationName, bool boolean, IGameObject entity);
 
         /// <summary>causes the specified damage at the specified flag.</summary>
         [ScriptImplementation(42)]

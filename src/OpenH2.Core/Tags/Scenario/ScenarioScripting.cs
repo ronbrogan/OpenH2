@@ -146,7 +146,7 @@ namespace OpenH2.Core.Tags.Scenario
                 public ushort Zero4Sometimes { get; set; }
 
                 [PrimitiveValue(46)]
-                public ushort Zero5Sometimes { get; set; }
+                public ushort UnitCount { get; set; }
 
                 [InternedString(48)]
                 public string Variant { get; set; }

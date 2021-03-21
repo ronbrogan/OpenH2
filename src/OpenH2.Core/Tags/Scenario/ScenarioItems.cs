@@ -83,12 +83,35 @@ namespace OpenH2.Core.Tags.Scenario
             [PrimitiveValue(20)]
             public Vector3 Orientation { get; set; }
 
+            [PrimitiveValue(32)]
+            public ushort U1 { get; set; }
+
+            [PrimitiveValue(36)]
+            public ushort U2 { get; set; }
+
+            [PrimitiveValue(36)]
+            public ushort U3 { get; set; }
+
+            [PrimitiveValue(38)]
+            public ushort U4 { get; set; }
+
             [PrimitiveValue(40)]
             public int UniqueId { get; set; }
 
             [PrimitiveValue(44)]
             public ushort BspIndex { get; set; }
 
+            [PrimitiveValue(48)]
+            public ushort U5 { get; set; }
+
+            [PrimitiveValue(50)]
+            public ushort U6 { get; set; }
+
+            [PrimitiveValue(52)]
+            public ushort U7 { get; set; }
+
+            [PrimitiveValue(54)]
+            public ushort U8 { get; set; }
 
             [PrimitiveValue(56)]
             public ColorChangeFlags ActiveColorChanges { get; set; }
