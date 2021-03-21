@@ -85,7 +85,66 @@ namespace OpenH2.Engine.EntityFactories
 
             var originalTag = new OriginalTagComponent(entity, loc);
 
-            entity.SetComponents(xform, /*comp,*/ boneComp, centerOfMass, origin, originalTag);
+            entity.SetComponents(xform, comp, boneComp, centerOfMass, origin, originalTag);
+
+            return entity;
+        }
+
+        public static ActorSpawn? SpawnPointFromStartingLocation(H2vMap map,
+            ScenarioTag.AiSquadDefinition.StartingLocation loc)
+        {
+            var entity = new ActorSpawn();
+            entity.FriendlyName = loc.Description;
+
+            var charIndex = loc.CharacterIndex;
+
+            if (charIndex == ushort.MaxValue)
+            {
+                charIndex = map.Scenario.AiSquadDefinitions[loc.SquadIndex].CharacterIndex;
+            }
+
+            TagRef<HaloModelTag> model = default;
+            string modelDesc = entity.FriendlyName;
+
+            if (charIndex != ushort.MaxValue)
+            {
+                var character = map.GetTag(map.Scenario.CharacterDefinitions[charIndex].CharacterReference);
+                if(map.TryGetTag<BaseTag>(character.Unit, out var unit) == false)
+                {
+                    return null;
+                }
+
+                modelDesc = $"[{unit.Id}] {unit.Name}";
+
+                if (unit is BipedTag biped)
+                {
+                    model = biped.Model;
+                }
+                else if (unit is VehicleTag vehicle)
+                {
+                    model = vehicle.Hlmt;
+                }
+            }
+            else
+            {
+                // Use some default model?
+                return null;
+            }
+
+            var comp = new RenderModelComponent(entity, new Model<BitmapTag>
+            {
+                Note = modelDesc,
+                Flags = ModelFlags.Diffuse | ModelFlags.CastsShadows | ModelFlags.ReceivesShadows,
+                Meshes = MeshFactory.GetRenderModel(map, model),
+                RenderLayer = RenderLayers.Scripting
+            });
+
+            var orientation = Quaternion.CreateFromAxisAngle(EngineGlobals.Up, loc.Rotation);
+            var xform = new TransformComponent(entity, loc.Position, orientation);
+
+            var originalTag = new OriginalTagComponent(entity, loc);
+
+            entity.SetComponents(new Component[] { xform, comp, originalTag });
 
             return entity;
         }

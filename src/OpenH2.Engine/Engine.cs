@@ -7,6 +7,7 @@ using OpenH2.Core.Maps.Vista;
 using OpenH2.Core.Metrics;
 using OpenH2.Engine.Components;
 using OpenH2.Engine.Entities;
+using OpenH2.Engine.EntityFactories;
 using OpenH2.Foundation;
 using OpenH2.Foundation.Engine;
 using OpenH2.OpenAL.Audio;
@@ -101,6 +102,18 @@ namespace OpenH2.Engine
             player.Transform.Orientation = Quaternion.CreateFromAxisAngle(EngineGlobals.Up, map.Scenario.PlayerSpawnMarkers[0].Heading);
             player.Transform.UpdateDerivedData();
             scene.AddEntity(player);
+
+
+            foreach (var squad in map.Scenario.AiSquadDefinitions)
+            {
+                foreach (var start in squad.StartingLocations)
+                {
+                    var entity = ActorFactory.SpawnPointFromStartingLocation(map, start);
+
+                    if(entity != null)
+                        scene.AddEntity(entity);
+                }
+            }
 
             world.LoadScene(scene);
 

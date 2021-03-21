@@ -20,19 +20,22 @@ namespace OpenH2.Engine.Scripting
         private readonly AudioSystem audioSystem;
         private readonly CameraSystem cameraSystem;
         private readonly ActorSystem actorSystem;
+        private readonly AnimationSystem animationSystem;
         private readonly Random rng;
 
         public ScriptEngine(Scene scene, 
             IScriptExecutor executionOrchestrator,
             AudioSystem audioSystem,
             CameraSystem cameraSystem,
-            ActorSystem actorSystem)
+            ActorSystem actorSystem,
+            AnimationSystem animationSystem)
         {
             this.scene = scene;
             this.executionOrchestrator = executionOrchestrator;
             this.audioSystem = audioSystem;
             this.cameraSystem = cameraSystem;
             this.actorSystem = actorSystem;
+            this.animationSystem = animationSystem;
             this.rng = new Random(42);
         }
 
@@ -94,37 +97,38 @@ namespace OpenH2.Engine.Scripting
         }
 
         /// <summary>starts a custom animation playing on a unit (interpolates into animation if last parameter is TRUE)</summary>
-        public void custom_animation(IUnit unit, AnimationGraphTag animation, string /*id*/ stringid, bool interpolate)
+        public void custom_animation(IUnit unit, AnimationGraphTag animation, string animationName, bool interpolate)
         {
+            for(var i = 0; i < animation.Animations.Length; i++)
+            {
+                if(animation.Animations[i].Description == animationName)
+                {
+                    this.animationSystem.StartAnimation(unit, animation.Animations[i], interpolate, loop: false);
+                    return;
+                }
+            }
         }
 
         /// <summary>starts a custom animation playing on a unit (interpolates into animation if last parameter is TRUE)</summary>
-        public void custom_animation(IUnit unit, string /*id*/ emotion, bool interpolate)
+        public void custom_animation_loop(IUnit unit, AnimationGraphTag animation, string animationName, bool interpolate)
         {
+            for (var i = 0; i < animation.Animations.Length; i++)
+            {
+                if (animation.Animations[i].Description == animationName)
+                {
+                    this.animationSystem.StartAnimation(unit, animation.Animations[i], interpolate, loop: true);
+                    return;
+                }
+            }
         }
 
-        /// <summary>starts a custom animation playing on a unit (interpolates into animation if last parameter is TRUE)</summary>
-        public void custom_animation_loop(IUnit unit, AnimationGraphTag animation1, string /*id*/ emotion, bool interpolate)
-        {
-        }
-
-        /// <summary>starts a custom animation playing on a unit (interpolates into animation if last parameter is TRUE)</summary>
-        public void custom_animation_loop(string /*id*/ emotion, bool interpolate)
+        /// <summary>starts a custom animation relative to some other object (interpolates into animation if last parameter is TRUE)</summary>
+        public void custom_animation_relative(IUnit entity, AnimationGraphTag animation, string animationName, bool boolean, IGameObject other)
         {
         }
 
         /// <summary>starts a custom animation relative to some other object (interpolates into animation if last parameter is TRUE)</summary>
-        public void custom_animation_relative(IUnit unit, string /*id*/ emotion, bool interpolate, IGameObject entity)
-        {
-        }
-
-        /// <summary>starts a custom animation relative to some other object (interpolates into animation if last parameter is TRUE)</summary>
-        public void custom_animation_relative(IUnit entity, AnimationGraphTag animation, string /*id*/ emotion, bool boolean, IGameObject other)
-        {
-        }
-
-        /// <summary>starts a custom animation relative to some other object (interpolates into animation if last parameter is TRUE)</summary>
-        public void custom_animation_relative_loop(IUnit unit, AnimationGraphTag animation2, string /*id*/ emotion, bool boolean, IGameObject entity)
+        public void custom_animation_relative_loop(IUnit unit, AnimationGraphTag animation2, string animationName, bool boolean, IGameObject entity)
         {
         }
 

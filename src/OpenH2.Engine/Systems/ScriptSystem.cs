@@ -1,16 +1,10 @@
 ﻿using OpenH2.Core.Architecture;
-using OpenH2.Core.Scripting;
 using OpenH2.Core.Scripting.Execution;
-using OpenH2.Core.Scripting.Generation;
-using OpenH2.Core.Tags.Scenario;
 using OpenH2.Engine.Scripting;
 using OpenH2.Engine.Stores;
 using OpenH2.Foundation.Logging;
 using OpenTK.Windowing.GraphicsLibraryFramework;
-using System;
 using System.Diagnostics;
-using System.Linq;
-using System.Reflection;
 
 namespace OpenH2.Engine.Systems
 {
@@ -19,6 +13,7 @@ namespace OpenH2.Engine.Systems
         private readonly AudioSystem audioSystem;
         private readonly CameraSystem cameraSystem;
         private readonly ActorSystem actorSystem;
+        private readonly AnimationSystem animationSystem;
         private bool run = false;
         private InterpretingScriptExecutor executor;
         private ScriptEngine engine;
@@ -28,11 +23,13 @@ namespace OpenH2.Engine.Systems
         public ScriptSystem(World world, 
             AudioSystem audioSystem,
             CameraSystem cameraSystem,
-            ActorSystem actorSystem) : base(world)
+            ActorSystem actorSystem,
+            AnimationSystem animationSystem) : base(world)
         {
             this.audioSystem = audioSystem;
             this.cameraSystem = cameraSystem;
             this.actorSystem = actorSystem;
+            this.animationSystem = animationSystem;
         }
 
         public override void Initialize(Scene scene)
@@ -46,7 +43,8 @@ namespace OpenH2.Engine.Systems
                 this.executor, 
                 this.audioSystem,
                 this.cameraSystem,
-                this.actorSystem);
+                this.actorSystem,
+                this.animationSystem);
 
             this.executor.Initialize(this.engine);
             this.stopwatch = new Stopwatch();
