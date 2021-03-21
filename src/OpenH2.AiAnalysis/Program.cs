@@ -128,7 +128,6 @@ namespace OpenH2.AiAnalysis
             WriteInfo(locs, l => l.Index8);
             WriteInfo(locs, l => l.State);
             WriteInfo(locs, l => l.Zero4Sometimes);
-            WriteInfo(locs, l => l.Zero5Sometimes);
             WriteInfo(locs, l => l.Index14);
             WriteInfo(locs, l => l.Index15);
             WriteInfo(locs, l => l.MaxValue);
