@@ -1,0 +1,52 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+        Width="720" Height="480"
+        x:Class="OpenH2.Launcher.MainWindow"
+        Title="OpenH2.Launcher">
+  <Grid>
+    <Grid.ColumnDefinitions>
+      <ColumnDefinition Width="*" />
+    </Grid.ColumnDefinitions>
+    <Grid.RowDefinitions>
+      <RowDefinition Height="25" />
+      <RowDefinition Height="*"/>
+      <RowDefinition Height="25"/>
+    </Grid.RowDefinitions>
+
+    <Menu Grid.Row="0" Padding="3" Name="mainMenu" Background="DarkSlateGray">
+      <MenuItem Header="File">
+        <MenuItem Header="Choose Map Folder" Command="{Binding ChooseMapFolder}"></MenuItem>
+        <MenuItem Header="Exit" Command="{Binding Exit}"></MenuItem>
+      </MenuItem>
+    </Menu>
+
+    <TabControl Grid.Row="1">
+      <TabItem Header="Maps" FontSize="14">
+        <StackPanel Orientation="Horizontal">
+          <ListBox Items="{Binding AvailableMaps}" SelectedItem="{Binding SelectedMap}" Width="300">
+            <ListBox.ItemTemplate>
+              <DataTemplate>
+                <TextBlock Text="{Binding FriendlyName}" />
+              </DataTemplate>
+            </ListBox.ItemTemplate>
+          </ListBox>
+          <Button Content="Launch" Command="{Binding Launch}" />
+        </StackPanel>
+
+
+      </TabItem>
+
+      <TabItem Header="Logs" FontSize="14">
+        <TextBlock Text="TODO" />
+      </TabItem>
+    </TabControl>
+
+    <StackPanel Grid.Row="2" Orientation="Horizontal">
+      <TextBlock Text="Connected Process:" Margin="3" />
+      <TextBlock Text="{Binding Path=Connection.ProcessId}" Margin="3" />
+    </StackPanel>
+  </Grid>
+</Window>

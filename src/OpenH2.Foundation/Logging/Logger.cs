@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Numerics;
 
 namespace OpenH2.Foundation.Logging
 {
