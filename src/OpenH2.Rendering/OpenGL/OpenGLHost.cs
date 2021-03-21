@@ -50,6 +50,7 @@ namespace OpenH2.Rendering.OpenGL
                 Title = "OpenH2",
                 Flags = ContextFlags.Debug,
                 APIVersion = new Version(4, 6),
+                NumberOfSamples = 8
             };
 
             window = new GameWindow(settings, nsettings);
@@ -60,12 +61,18 @@ namespace OpenH2.Rendering.OpenGL
 
             window.IsVisible = !hidden;
 
+            window.Closed += this.Window_Closed;
 
             GL.Enable(EnableCap.DepthTest);
             GL.Enable(EnableCap.CullFace);
             GL.Enable(EnableCap.AlphaTest);
             GL.BlendFunc(BlendingFactor.SrcAlpha, BlendingFactor.OneMinusSrcAlpha);
             GL.Enable(EnableCap.Blend);
+        }
+
+        private void Window_Closed()
+        {
+            Environment.Exit(0);
         }
 
         private void Window_Resize(ResizeEventArgs a)

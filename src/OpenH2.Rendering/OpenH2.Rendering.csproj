@@ -5,12 +5,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Remove="Shaders\ShadowMapping\**" />
-    <EmbeddedResource Remove="Shaders\ShadowMapping\**" />
-    <None Remove="Shaders\ShadowMapping\**" />
-  </ItemGroup>
-
-  <ItemGroup>
     <PackageReference Include="OpenTK.Graphics" Version="4.5.0" />
     <PackageReference Include="OpenTK.Windowing.Desktop" Version="4.5.0" />
     <PackageReference Include="System.Drawing.Common" Version="5.0.0" />
