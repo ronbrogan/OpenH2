@@ -12,7 +12,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="OpenTK.OpenAL" Version="4.6.2" />
+    <PackageReference Include="OpenTK.OpenAL" Version="4.6.3" />
   </ItemGroup>
 
   <ItemGroup>
