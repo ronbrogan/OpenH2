@@ -1,0 +1,39 @@
+version: 2
+updates:
+- package-ecosystem: nuget
+  directory: "/"
+  schedule:
+    interval: daily
+    time: "13:00"
+  open-pull-requests-limit: 10
+  ignore:
+  - dependency-name: Avalonia.Diagnostics
+    versions:
+    - 0.10.1
+  - dependency-name: Avalonia
+    versions:
+    - 0.10.1
+  - dependency-name: Avalonia.ReactiveUI
+    versions:
+    - 0.10.1
+  - dependency-name: Avalonia.Desktop
+    versions:
+    - 0.10.1
+  - dependency-name: System.Text.Json
+    versions:
+    - 5.0.1
+  - dependency-name: OpenTK.Graphics
+    versions:
+    - 4.6.1
+  - dependency-name: OpenTK.Windowing.Desktop
+    versions:
+    - 4.6.1
+  - dependency-name: OpenTK
+    versions:
+    - 4.6.1
+  - dependency-name: System.Drawing.Common
+    versions:
+    - 5.0.1
+  - dependency-name: coverlet.collector
+    versions:
+    - 3.0.2
