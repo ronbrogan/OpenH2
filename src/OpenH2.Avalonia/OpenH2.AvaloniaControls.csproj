@@ -16,7 +16,7 @@
   <ItemGroup>
     <PackageReference Include="Avalonia" Version="0.10.0" />
     <PackageReference Include="Avalonia.Diagnostics" Version="0.10.0" />
-    <PackageReference Include="Avalonia.ReactiveUI" Version="0.10.0" />
+    <PackageReference Include="Avalonia.ReactiveUI" Version="0.10.5" />
     <PackageReference Include="PropertyChanged.Fody" Version="3.3.3" />
   </ItemGroup>
 
