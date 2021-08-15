@@ -61,27 +61,29 @@ namespace OpenH2.Engine
 
             var factory = new MapFactory(Path.GetDirectoryName(mapPath));
 
+            var mapFilename = Path.GetFileName(mapPath);
+
             matFactory.AddListener(() =>
             {
-                LoadMap(factory, mapPath, matFactory);
+                LoadMap(factory, mapFilename, matFactory);
             });
 
             world = new RealtimeWorld(gameWindowGetter(), 
                 audioHost.GetAudioAdapter(), 
                 graphicsHost);
 
-            LoadMap(factory, mapPath, matFactory);
+            LoadMap(factory, mapFilename, matFactory);
 
             gameLoop.RegisterCallbacks(world.Update, world.Render);
             gameLoop.Start(60, 60);
         }
 
-        private void LoadMap(MapFactory factory, string mapPath, IMaterialFactory materialFactory)
+        private void LoadMap(MapFactory factory, string mapFilename, IMaterialFactory materialFactory)
         {
             var watch = new Stopwatch();
             watch.Start();
 
-            var imap = factory.Load(mapPath);
+            var imap = factory.Load(mapFilename);
 
             if(imap is not H2vMap map)
             {
