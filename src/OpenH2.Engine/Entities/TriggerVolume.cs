@@ -22,6 +22,14 @@ namespace OpenH2.Engine.Entities
             base.SetComponents(allComps);
         }
 
+        public void ToggleSelected()
+        {
+            foreach (var component in base.GetChildren<RenderModelComponent>())
+            {
+                component.Toggle();
+            }
+        }
+
         public bool Contains(IGameObject entity)
         {
             return false;

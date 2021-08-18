@@ -33,6 +33,7 @@ namespace OpenH2.Engine
             Systems.Add(animationSystem);
             Systems.Add(new ScriptSystem(this, audioSystem, cameraSystem, actorSystem, animationSystem));
             Systems.Add(new RenderCollectorSystem(this, graphics));
+            Systems.Add(new MouseSelectSystem(this, window));
 
             RenderSystems.Add(new RenderPipelineSystem(this, graphics));
 

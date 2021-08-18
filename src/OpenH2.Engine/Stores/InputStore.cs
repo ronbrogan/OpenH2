@@ -6,6 +6,7 @@ namespace OpenH2.Engine.Stores
     public class InputStore
     {
         public bool MouseDown { get; set; }
+        public bool RightMouseDown { get; set; }
         public Vector2 MousePos { get; set; }
         public Vector2 MouseDiff { get; set; }
 
@@ -15,6 +16,7 @@ namespace OpenH2.Engine.Stores
         public void SetMouse(MouseState mouse)
         {
             MouseDown = mouse.IsButtonDown(MouseButton.Left);
+            RightMouseDown = mouse.IsButtonDown(MouseButton.Right);
             var currPos = new Vector2(mouse.X, mouse.Y);
             MouseDiff = MousePos - currPos;
             MousePos = currPos;
