@@ -27,10 +27,20 @@ namespace OpenH2.Engine.EntityFactories
             wireframeRenderModel.Flags = ModelFlags.Wireframe;
             wireframeRenderModel.RenderLayer = RenderLayers.Scripting;
 
+            var renderModelSelected = ModelFactory.Cuboid(Vector3.Zero, tvDefinition.Size, new Vector4(1f, 0f, 0f, 0.5f));
+            renderModelSelected.Flags = ModelFlags.IsTransparent;
+            renderModelSelected.RenderLayer = RenderLayers.Scripting;
+
+            var wireframeRenderModelSelected = ModelFactory.Cuboid(Vector3.Zero, tvDefinition.Size, new Vector4(1f, 0f, 0f, 1f));
+            wireframeRenderModelSelected.Flags = ModelFlags.Wireframe;
+            wireframeRenderModelSelected.RenderLayer = RenderLayers.Scripting;
+
             ent.SetComponents(xform,
                 TriggerGeometryComponent.Cuboid(ent, xform, tvDefinition.Size, tvDefinition.Description),
                 new RenderModelComponent(ent, renderModel),
-                new RenderModelComponent(ent, wireframeRenderModel));
+                new RenderModelComponent(ent, wireframeRenderModel),
+                new RenderModelComponent(ent, renderModelSelected, /*start_disabled=*/true),
+                new RenderModelComponent(ent, wireframeRenderModelSelected, /*start_disabled=*/true));
             return ent;
 
             Quaternion GetOrientation(Vector3 angle, Vector3 axis)

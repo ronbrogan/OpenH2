@@ -13,9 +13,18 @@ namespace OpenH2.Engine.Components
         public DrawCommand[] DrawCommands { get; private set; }
         public ref DrawCommand this[int i] => ref this.DrawCommands[i];
 
-        public RenderModelComponent(Entity parent, Model<BitmapTag> model) : base(parent)
+        public bool Enabled { get; private set; }
+
+        public RenderModelComponent(Entity parent, Model<BitmapTag> model, bool start_disabled = false) : base(parent)
         {
             this.RenderModel = model;
+            this.Enabled = !start_disabled;
+        }
+
+        public void Toggle()
+        {
+            this.Enabled = !this.Enabled;
+            this.RenderModel.RenderLayer ^= RenderLayers.Normal;
         }
 
         public void UpdateDrawCommands(DrawCommand[] commands)

@@ -66,7 +66,7 @@ namespace OpenH2.Engine.Systems
                 {
                     var renderModel = renderModels[j];
 
-                    if((renderModel.RenderModel.RenderLayer & this.enabledLayers) == 0)
+                    if(!renderModel.Enabled || (renderModel.RenderModel.RenderLayer & this.enabledLayers) == 0)
                     {
                         continue;
                     }
