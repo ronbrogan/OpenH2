@@ -90,7 +90,7 @@ namespace OpenH2.MccUtil
             var factory = new MapFactory(Path.GetDirectoryName(path));
             var h2map = factory.Load(Path.GetFileName(path));
 
-            if (h2map is not H2mccMap mccMap)
+            if (h2map is not H2mccV13Map mccMap)
             {
                 throw new NotSupportedException("Only MCC maps are supported in this tool");
             }

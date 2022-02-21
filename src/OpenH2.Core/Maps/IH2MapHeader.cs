@@ -15,7 +15,6 @@ namespace OpenH2.Core.Maps
         int InternedStringsOffset { get; set; }
         TagRef<SoundMappingTag> LocalSounds { get; set; }
         string Name { get; set; }
-        int OffsetToUnknownSection { get; set; }
         int RawSecondaryOffset { get; set; }
         string ScenarioPath { get; set; }
         PrimaryOffset SecondaryOffset { get; set; }

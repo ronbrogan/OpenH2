@@ -14,8 +14,8 @@ namespace OpenH2.Rendering.Pipelines
         private readonly IGraphicsAdapter adapter;
 
         private GlobalUniform Globals;
-        private IList<DrawGroup> renderables = new List<DrawGroup>();
-        private IList<(float, DrawGroup)> transparentRenderables = new List<(float, DrawGroup)>();
+        private List<DrawGroup> renderables = new List<DrawGroup>();
+        private List<(float, DrawGroup)> transparentRenderables = new List<(float, DrawGroup)>();
         private List<PointLight> pointLights = new List<PointLight>();
 
         public ForwardRenderingPipeline(IGraphicsAdapter graphicsAdapter)
@@ -23,7 +23,7 @@ namespace OpenH2.Rendering.Pipelines
             this.adapter = graphicsAdapter;
         }
 
-        public void SetModels(IList<DrawGroup> models)
+        public void SetModels(List<DrawGroup> models)
         {
             renderables = models;
         }

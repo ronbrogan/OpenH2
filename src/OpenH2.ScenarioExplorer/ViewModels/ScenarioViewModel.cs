@@ -65,10 +65,14 @@ namespace OpenH2.ScenarioExplorer.ViewModels
             if(scene.Header.LocalSounds.IsInvalid == false)
             {
                 var soundsVm = GetTagViewModel(scene.Header.LocalSounds);
-                var soundsEntry = new TagTreeEntryViewModel(soundsVm.OriginalTag);
 
-                roots.Insert(1, soundsEntry);
-                treeProcessor.PopulateChildren(scenarioVm, soundsEntry);
+                if(soundsVm != null)
+                {
+                    var soundsEntry = new TagTreeEntryViewModel(soundsVm.OriginalTag);
+
+                    roots.Insert(1, soundsEntry);
+                    treeProcessor.PopulateChildren(scenarioVm, soundsEntry);
+                }
             }
 
             treeProcessor.PopulateChildren(scenarioVm, scenarioEntry);

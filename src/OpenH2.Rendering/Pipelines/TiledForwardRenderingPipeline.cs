@@ -14,7 +14,7 @@ namespace OpenH2.Rendering.Pipelines
     {
         private readonly IGraphicsAdapter adapter;
 
-        private IList<DrawGroup> renderables = new List<DrawGroup>();
+        private List<DrawGroup> renderables = new List<DrawGroup>();
 
         public TiledForwardRenderingPipeline(IGraphicsAdapter adapter)
         {
@@ -26,9 +26,9 @@ namespace OpenH2.Rendering.Pipelines
             
         }
 
-        public void SetModels(IList<DrawGroup> models) => renderables = models;
+        public void SetModels(List<DrawGroup> models) => renderables = models;
 
-        public void SetModels(IList<(Matrix4x4, DrawCommand[])> models)
+        public void SetModels(List<(Matrix4x4, DrawCommand[])> models)
         {
         }
 

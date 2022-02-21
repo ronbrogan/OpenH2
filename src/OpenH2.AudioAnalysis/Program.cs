@@ -1,10 +1,13 @@
-﻿using OpenH2.Core.Factories;
+﻿using OpenBlam.Core.ExternalFormats;
+using OpenH2.Audio;
+using OpenH2.Core.Factories;
 using OpenH2.Core.Maps.Vista;
 using OpenH2.Core.Tags;
 using System;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Runtime.InteropServices;
 
 namespace OpenH2.AudioAnalysis
 {
@@ -47,7 +50,7 @@ namespace OpenH2.AudioAnalysis
                 {
                     var name = snd.Name.Substring(snd.Name.LastIndexOf("\\", snd.Name.LastIndexOf("\\") - 1) + 1).Replace('\\', '_');
 
-                    if (snd.Encoding == EncodingType.ImaAdpcmMono || snd.Encoding == EncodingType.ImaAdpcmStereo)
+                    if (snd.Name != "sound\\dialog\\combat\\sgt_johnson\\08_judge\\scld_plr")
                     {
                         continue;
                     }
@@ -66,6 +69,7 @@ namespace OpenH2.AudioAnalysis
 
                         var clipFilename = string.Format(filenameFormat, s);
 
+                        var rawData = new MemoryStream();
                         using var clipData = new FileStream(Path.Combine(scenarioOut, clipFilename), FileMode.Create);
 
                         for (var c = 0; c < clipInfo.SoundDataChunkCount; c++)
@@ -74,8 +78,13 @@ namespace OpenH2.AudioAnalysis
 
                             var chunkData = scene.ReadData(chunk.Offset.Location, chunk.Offset, (int)(chunk.Length & 0x3FFFFFFF));
 
-                            clipData.Write(chunkData.Span);
+                            rawData.Write(chunkData.Span);
                         }
+
+                        var stereo = snd.Encoding == EncodingType.ImaAdpcmStereo;
+                        var pcm = ImaAdpcmAudio.Decode(stereo, rawData.ToArray());
+                        var bytes = MemoryMarshal.Cast<short, byte>(pcm.AsSpan()).ToArray();
+                        clipData.Write(bytes);
                     }
                 }
             }

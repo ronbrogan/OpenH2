@@ -48,6 +48,7 @@ namespace OpenH2.Core.Factories
             {
                 MapVersion.Halo2 => LoadH2Map(mapFileName, header),
                 MapVersion.Halo2Mcc => LoadH2mccMap(mapFileName),
+                MapVersion.Halo2MccSeason8 => LoadH2mccMapV13(mapFileName),
                 _ => throw new NotSupportedException()
             };
         }
@@ -90,6 +91,11 @@ namespace OpenH2.Core.Factories
         public H2mccMap LoadH2mccMap(string mapFileName)
         {
             return this.loader.Load<H2mccMap>(mapFileName, H2mccCompression.DecompressInline, LoadMetadata);
+        }
+
+        public H2mccV13Map LoadH2mccMapV13(string mapFileName)
+        {
+            return this.loader.Load<H2mccV13Map>(mapFileName, H2mccCompressionV13.DecompressInline, LoadMetadata);
         }
 
         public H2mccMap LoadSingleH2mccMap(Stream decompressedMap)
