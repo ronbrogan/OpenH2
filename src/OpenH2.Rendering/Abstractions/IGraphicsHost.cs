@@ -8,6 +8,8 @@ namespace OpenH2.Rendering.Abstractions
         IGraphicsAdapter GetGraphicsAdapter();
         void EnableConsoleDebug();
 
+        Vector2 ViewportSize { get; }
+
         bool AspectRatioChanged { get; }
         float AspectRatio { get; }
     }

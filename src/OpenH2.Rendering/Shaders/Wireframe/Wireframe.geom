@@ -7,7 +7,9 @@ layout(std140, binding = 0) uniform GlobalUniform
 {
 	mat4 ViewMatrix;
 	mat4 ProjectionMatrix;
-	vec4 ViewPosition;
+	mat4 SunLightMatrix;
+    vec3 SunLightDirection;
+    vec3 ViewPosition;
 } Globals;
 
 layout(std140, binding = 1) uniform WireframeUniform

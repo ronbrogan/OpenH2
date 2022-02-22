@@ -2,6 +2,7 @@
 
   <PropertyGroup>
     <TargetFramework>net5.0</TargetFramework>
+	<AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
 
   <ItemGroup>
@@ -16,8 +17,14 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Update="Shaders\Generic\Generic.frag">
+    <None Update="Shaders\ShadowMapping\ShadowMapping.frag">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="Shaders\ShadowMapping\ShadowMapping.vert">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="Shaders\Generic\Generic.frag">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
     <None Update="Shaders\Generic\Generic.vert">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>

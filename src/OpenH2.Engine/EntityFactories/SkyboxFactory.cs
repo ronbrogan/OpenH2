@@ -10,6 +10,7 @@ using OpenH2.Foundation;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Numerics;
 
 namespace OpenH2.Engine.EntityFactories
 {
@@ -59,8 +60,14 @@ namespace OpenH2.Engine.EntityFactories
                 Flags = ModelFlags.IsSkybox
             });
 
+            var light = new SkyLightComponent(scenery)
+            {
+                Direction = new Vector3(7, 7, -20)
+            };
+
             var components = new List<Component>();
             components.Add(comp);
+            components.Add(light);
             scenery.SetComponents(components.ToArray());
 
             return scenery;

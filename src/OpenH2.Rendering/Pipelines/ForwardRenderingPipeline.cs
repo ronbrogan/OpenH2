@@ -43,10 +43,27 @@ namespace OpenH2.Rendering.Pipelines
             drawElapsed.Restart();
             transparentRenderables.Clear();
 
+
+            // Collect shadow map(s)
+            this.adapter.UseShader(Shader.ShadowMapping);
+            for (var i = 0; i < renderables.Count; i++)
+            {
+                var renderable = renderables[i];
+
+                if (RenderPasses.IsDiffuse(renderable))
+                {
+                    this.adapter.UseTransform(renderable.Transform);
+
+                    this.adapter.DrawMeshes(renderable.DrawCommands);
+                }
+            }
+
             foreach (var light in pointLights)
             {
                 this.adapter.AddLight(light);
             }
+
+
 
             this.adapter.UseShader(Shader.Skybox);
             for (var i = 0; i < renderables.Count; i++)

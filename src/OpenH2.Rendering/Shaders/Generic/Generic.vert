@@ -6,6 +6,8 @@ layout(std140, binding = 0) uniform GlobalUniform
 {
     mat4 ViewMatrix;
     mat4 ProjectionMatrix;
+	mat4 SunLightMatrix;
+    vec4 SunLightDirection;
     vec4 ViewPosition;
 } Globals;
 
@@ -81,6 +83,7 @@ out Vertex
     vec3 vertex_color;
     vec3 world_pos;
     vec3 world_normal;
+    vec4 shadow_pos;
     mat3 TBN;
 } vertex;
 
@@ -107,5 +110,8 @@ void main() {
         vertex.TBN = mat3(1);
     }
 
+    vec3 fragPos = vec3(Transform.ModelMatrix * vec4(local_position, 1));
+
+    vertex.shadow_pos = Globals.SunLightMatrix * vec4(fragPos, 1.0);
     gl_Position = Globals.ProjectionMatrix * modelView * vec4(local_position, 1);
 }

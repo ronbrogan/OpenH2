@@ -2,10 +2,14 @@
 
 #extension GL_ARB_bindless_texture : require
 
+layout(binding=16) uniform sampler2D shadowMap;
+
 layout(std140, binding = 0) uniform GlobalUniform
 {
     mat4 ViewMatrix;
     mat4 ProjectionMatrix;
+	mat4 SunLightMatrix;
+    vec4 SunLightDirection;
     vec4 ViewPosition;
 } Globals;
 
@@ -81,6 +85,7 @@ in Vertex
     vec3 vertex_color;
     vec3 world_pos;
     vec3 world_normal;
+    vec4 shadow_pos;
     mat3 TBN;
 } vertex;
 
@@ -95,16 +100,14 @@ float viewDistance = length(viewDifference);
 vec3 viewDirection = normalize(viewDifference);
 
 
-
-// TODO move lighting to global uniform
-vec3 light_pos = vec3(-5, 2, 5);
 vec3 light_color = vec3(1);
-vec3 lightDirection = normalize(light_pos); 
+vec3 lightDirection = normalize(vec3(Globals.SunLightDirection)); 
 
 vec4 lightCalculation(in PointLight light, in vec4 textureColor);
 vec4 globalLighting(in vec4 textureColor);
 vec4 doColorChange(in vec4 baseColor);
 vec4 unpackColorChangeComponent(in unsigned int component);
+float shadowCalculation(in vec4 fragPosLightSpace);
 
 void main() {
 
@@ -148,7 +151,8 @@ void main() {
     finalColor = vec4(diffuseColor.rgb * 0.3, diffuseColor.a);
 
     // Adds global lighting
-    finalColor += globalLighting(diffuseColor);
+    float shadow = shadowCalculation(vertex.shadow_pos);   
+    finalColor += ((1.0 - shadow) * globalLighting(diffuseColor));
 
     // Accumulates point lights
     for(int i = 0; i < 10; i++)
@@ -209,12 +213,12 @@ void main() {
 
 vec4 globalLighting(in vec4 textureColor)
 {
-    float cosTheta = clamp(dot(lightDirection, calculated_normal), 0.0, 1.0);
+    float cosTheta = clamp(dot(-lightDirection, calculated_normal), 0.0, 1.0);
     vec4 light_diffuse = textureColor * vec4(light_color,1) * cosTheta;
 
     float specularFalloff = 1 / (viewDistance * viewDistance );
 
-    vec3 halfwayDirection = normalize(lightDirection + viewDirection);
+    vec3 halfwayDirection = normalize(-lightDirection + viewDirection);
     float specularAngle = max(dot(calculated_normal, halfwayDirection), 0.0);
 
     // TODO: replace 100 with specular amount/intensity
@@ -272,3 +276,39 @@ vec4 unpackColorChangeComponent(in unsigned int component)
 
     return vec4(r / 255.0, g / 255.0, b / 255.0, a / 1.0);
 }
+
+
+float shadowCalculation(vec4 fragPosLightSpace)
+{
+    // perform perspective divide
+    vec3 projCoords = fragPosLightSpace.xyz / fragPosLightSpace.w;
+
+    // transform to [0,1] range
+    projCoords = projCoords * 0.5 + 0.5;
+    // get closest depth value from light's perspective (using [0,1] range fragPosLight as coords)
+    float closestDepth = texture(shadowMap, projCoords.xy).r; 
+    // get depth of current fragment from light's perspective
+    float currentDepth = projCoords.z;
+    
+    // TODO: can calculate bias automatically
+    //float bias = max(0.05 * (1.0 - dot(calculated_normal, vec3(normalize(-Globals.SunLightDirection)))), 0.005);  
+    float bias = 0.0005;
+
+    // check whether current frag pos is in shadow, using PCF
+    float shadow = 0.0;
+    vec2 texelSize = 1.0 / textureSize(shadowMap, 0);
+    for(int x = -1; x <= 1; ++x)
+    {
+        for(int y = -1; y <= 1; ++y)
+        {
+            float pcfDepth = texture(shadowMap, projCoords.xy + vec2(x, y) * texelSize).r; 
+            shadow += currentDepth - bias > pcfDepth ? 1.0 : 0.0;        
+        }    
+    }
+    shadow /= 9.0;
+
+    if(projCoords.z > 1.0)
+        shadow = 0.0;
+
+    return shadow;
+}  

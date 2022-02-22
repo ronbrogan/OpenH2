@@ -9,14 +9,14 @@ layout(std140, binding = 0) uniform GlobalUniform
     vec3 ViewPosition;
 } Globals;
 
-layout(std140, binding = 1) uniform DepthUniform
+layout(std140, binding = 2) uniform TransformUniform
 {
-	mat4 ModelMatrix;
-	mat4 NormalMatrix;
-} Data;
+    mat4 ModelMatrix;
+    mat4 NormalMatrix;
+} Transform;
 
 layout(location = 0) in vec3 local_position;
 
 void main() {
-    gl_Position = Globals.ProjectionMatrix * Globals.ViewMatrix * Data.ModelMatrix * vec4(local_position, 1);;
+    gl_Position = Globals.SunLightMatrix * Transform.ModelMatrix * vec4(local_position, 1);
 }

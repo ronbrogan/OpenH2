@@ -2,6 +2,7 @@
 using OpenH2.Foundation;
 using OpenH2.Rendering.Abstractions;
 using OpenH2.Rendering.Shaders;
+using OpenH2.Rendering.Shaders.Depth;
 using OpenH2.Rendering.Shaders.Generic;
 using OpenH2.Rendering.Shaders.Skybox;
 using OpenH2.Rendering.Shaders.Wireframe;
@@ -18,6 +19,10 @@ namespace OpenH2.Rendering.OpenGL
 {
     public partial class OpenGLGraphicsAdapter : IGraphicsAdapter
     {
+        private const int shadowMapSize = 2048;
+
+        private readonly OpenGLHost host;
+
         // Uniform index used in shaders
         private class UniformIndices
         {
@@ -29,8 +34,11 @@ namespace OpenH2.Rendering.OpenGL
         private Dictionary<IMaterial<BitmapTag>, MaterialBindings> boundMaterials = new Dictionary<IMaterial<BitmapTag>, MaterialBindings>();
         private ITextureBinder textureBinder = new OpenGLTextureBinder();
 
+        private Action?[] shaderBeginActions = new Action?[(int)Shader.MAX_VALUE];
+        private Action?[] shaderEndActions = new Action?[(int)Shader.MAX_VALUE];
+
         private Shader activeShader;
-        private Dictionary<Shader, int> shaderHandles = new Dictionary<Shader, int>();
+        private int[] shaderHandles = new int[(int)Shader.MAX_VALUE];
 
         private int GlobalUniformHandle;
         private GlobalUniform GlobalUniform;
@@ -40,34 +48,70 @@ namespace OpenH2.Rendering.OpenGL
 
         private int TransformUniformHandle;
 
-        public OpenGLGraphicsAdapter()
+        // TODO support multiple buffers for cascades
+        private (int depthFbo, int depthMap) shadowBuffers;
+
+        public OpenGLGraphicsAdapter(OpenGLHost host)
         {
+            this.host = host;
+
+            this.shaderBeginActions[(int)Shader.Skybox] = () => {
+                GL.Disable(EnableCap.DepthTest);
+            };
+
+            this.shaderEndActions[(int)Shader.Skybox] = () => {
+                GL.Enable(EnableCap.DepthTest);
+            };
+
+            this.shaderBeginActions[(int)Shader.ShadowMapping] = () => {
+                GL.Viewport(0, 0, shadowMapSize, shadowMapSize);
+                GL.BindFramebuffer(FramebufferTarget.Framebuffer, this.shadowBuffers.depthFbo);
+                GL.Clear(ClearBufferMask.DepthBufferBit);
+            };
+
+            this.shaderEndActions[(int)Shader.ShadowMapping] = () => {
+                var size = this.host.ViewportSize;
+                GL.Viewport(0, 0, (int)size.X, (int)size.Y);
+
+                GL.BindFramebuffer(FramebufferTarget.Framebuffer, 0);
+                GL.Clear(ClearBufferMask.DepthBufferBit | ClearBufferMask.ColorBufferBit);
+            };
         }
 
         public void BeginFrame(GlobalUniform global)
         {
+            if(this.shadowBuffers == default)
+            {
+                this.InitializeShadowMapBuffers();
+            }
+
             GlobalUniform = global;
             SetupGlobalUniform();
 
-            LightingUniform = new LightingUniform() { PointLights = new PointLightUniform[0] };
+            LightingUniform = new LightingUniform() { PointLights = Array.Empty<PointLightUniform>() };
         }
 
         public void UseShader(Shader shader)
         {
-            if (shaderHandles.TryGetValue(shader, out var handle) == false)
+            if(activeShader == shader)
+            {
+                return;
+            }
+
+            shaderEndActions[(int)activeShader]?.Invoke();
+
+            var handle = shaderHandles[(int)shader];
+            if (handle == 0)
             {
                 handle = ShaderCompiler.CreateShader(shader);
-                shaderHandles[shader] = handle;
+                shaderHandles[(int)shader] = handle;
             }
 
             GL.UseProgram(handle);
 
             activeShader = shader;
 
-            if(shaderBeginActions.TryGetValue(shader, out var action))
-            {
-                action();
-            }
+            shaderBeginActions[(int)shader]?.Invoke();
         }
 
         public void SetSunLight(Vector3 sunDirection)
@@ -230,19 +274,59 @@ namespace OpenH2.Rendering.OpenGL
             }
         }
 
+
+        public void InitializeShadowMapBuffers()
+        {
+            var error1 = GL.GetError();
+            if (error1 != ErrorCode.NoError)
+            {
+                Console.WriteLine("-- Error {0} occured {1}", error1, "before shadow map bufs");
+            }
+
+            int depthFbo;
+            GL.GenFramebuffers(1, out depthFbo);
+
+            int depthMap;
+            GL.GenTextures(1, out depthMap);
+            GL.BindTexture(TextureTarget.Texture2D, depthMap);
+            GL.TexImage2D(TextureTarget.Texture2D, 0, PixelInternalFormat.DepthComponent,
+                shadowMapSize, shadowMapSize, 0, PixelFormat.DepthComponent, PixelType.Float, IntPtr.Zero);
+
+            GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMinFilter, (float)TextureMinFilter.Nearest);
+            GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMagFilter, (float)TextureMagFilter.Nearest);
+            GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureWrapS, (int)TextureWrapMode.ClampToBorder);
+            GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureWrapT, (int)TextureWrapMode.ClampToBorder);
+            var borderColor = new [] { 1.0f, 1.0f, 1.0f, 1.0f };
+            GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureBorderColor, borderColor);
+
+            GL.BindFramebuffer(FramebufferTarget.Framebuffer, depthFbo);
+            GL.FramebufferTexture2D(FramebufferTarget.Framebuffer, FramebufferAttachment.DepthAttachment, TextureTarget.Texture2D, depthMap, 0);
+            GL.DrawBuffer(DrawBufferMode.None);
+            GL.ReadBuffer(ReadBufferMode.None);
+            GL.BindFramebuffer(FramebufferTarget.Framebuffer, 0);
+
+            this.shadowBuffers = (depthFbo, depthMap);
+
+            error1 = GL.GetError();
+            if (error1 != ErrorCode.NoError)
+            {
+                Console.WriteLine("-- Error {0} occured {1}", error1, "after shadow map bufs");
+            }
+        }
+
         private Dictionary<IMaterial<BitmapTag>, int[]> MaterialUniforms = new Dictionary<IMaterial<BitmapTag>, int[]>();
 
         private int currentlyBoundShaderUniform = -1;
-        private void BindOrCreateShaderUniform(ref DrawCommand command)
+        private unsafe void BindOrCreateShaderUniform(ref DrawCommand command)
         {
             // If the uniform was already buffered, we'll just reuse that buffered uniform
             // Currently these material uniforms never change at runtime - if this changes
             // there will have to be some sort of invalidation to ensure they're updated
-            if (command.ShaderUniformHandle != -1)
+            if (command.ShaderUniformHandle[(int)activeShader] != -1)
             {
-                if(command.ShaderUniformHandle != currentlyBoundShaderUniform)
+                if(command.ShaderUniformHandle[(int)activeShader] != currentlyBoundShaderUniform)
                 {
-                    GL.BindBufferBase(BufferRangeTarget.UniformBuffer, UniformIndices.Shader, command.ShaderUniformHandle);
+                    GL.BindBufferBase(BufferRangeTarget.UniformBuffer, UniformIndices.Shader, command.ShaderUniformHandle[(int)activeShader]);
                 }
             }
             else
@@ -254,8 +338,8 @@ namespace OpenH2.Rendering.OpenGL
                 }
 
                 var bindings = SetupTextures(command.Mesh.Material);
-                command.ShaderUniformHandle = GenerateShaderUniform(command, bindings);
-                uniforms[(int)activeShader] = command.ShaderUniformHandle;
+                command.ShaderUniformHandle[(int)activeShader] = GenerateShaderUniform(command, bindings);
+                uniforms[(int)activeShader] = command.ShaderUniformHandle[(int)activeShader];
             }
         }
 
@@ -286,6 +370,13 @@ namespace OpenH2.Rendering.OpenGL
                         activeShader,
                         new WireframeUniform(mesh.Material),
                         WireframeUniform.Size,
+                        out existingUniformHandle);
+                    break;
+                case Shader.ShadowMapping:
+                    BindAndBufferShaderUniform(
+                        activeShader,
+                        new ShadowMappingUniform(),
+                        ShadowMappingUniform.Size,
                         out existingUniformHandle);
                     break;
                 case Shader.Pointviz:
@@ -348,6 +439,12 @@ namespace OpenH2.Rendering.OpenGL
 
             GL.BindBufferBase(BufferRangeTarget.UniformBuffer, UniformIndices.Global, GlobalUniformHandle);
             GL.BindBuffer(BufferTarget.UniformBuffer, 0);
+
+            // Bind shadow map
+            GL.Uniform1(16, 16);
+            GL.ActiveTexture(TextureUnit.Texture16);
+            GL.BindTexture(TextureTarget.Texture2D, this.shadowBuffers.depthMap);
+            GL.BindSampler(16, 16);
         }
 
         private void BindAndBufferShaderUniform<T>(Shader shader, T uniform, int size, out int handle) where T : struct
@@ -397,20 +494,5 @@ namespace OpenH2.Rendering.OpenGL
             GL.BindBufferBase(BufferRangeTarget.UniformBuffer, 3, LightingUniformHandle);
             GL.BindBuffer(BufferTarget.UniformBuffer, 0);
         }
-
-        private Dictionary<Shader, Action> shaderBeginActions = new Dictionary<Shader, Action>()
-        {
-            { Shader.Skybox, () => {
-                GL.Disable(EnableCap.DepthTest);
-            }},
-            { Shader.Generic, () => {
-                GL.Enable(EnableCap.DepthTest);
-            }}
-        };
-
-        private Dictionary<Shader, Action> shaderEndActions = new Dictionary<Shader, Action>()
-        {
-            
-        };
     }
 }

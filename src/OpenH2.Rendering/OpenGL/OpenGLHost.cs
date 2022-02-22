@@ -19,9 +19,11 @@ namespace OpenH2.Rendering.OpenGL
 
         public float AspectRatio { get; private set; }
 
+        public System.Numerics.Vector2 ViewportSize { get; private set; }
+
         public OpenGLHost()
         {
-            this.adapter = new OpenGLGraphicsAdapter();
+            this.adapter = new OpenGLGraphicsAdapter(this);
         }
 
         public IGraphicsAdapter GetGraphicsAdapter()
@@ -78,6 +80,7 @@ namespace OpenH2.Rendering.OpenGL
         private void Window_Resize(ResizeEventArgs a)
         {
             GL.Viewport(0, 0, a.Width, a.Height);
+            this.ViewportSize = new System.Numerics.Vector2(a.Width, a.Height);
             this.AspectRatio = a.Width / (float)a.Height;
             this.AspectRatioChanged = true;
         }
