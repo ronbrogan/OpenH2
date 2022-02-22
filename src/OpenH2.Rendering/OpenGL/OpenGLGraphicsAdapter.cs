@@ -19,7 +19,8 @@ namespace OpenH2.Rendering.OpenGL
 {
     public partial class OpenGLGraphicsAdapter : IGraphicsAdapter
     {
-        private const int shadowMapSize = 2048;
+        private const int ShadowMapSize = 4096;
+        private const int ShadowCascadeCount = 4;
 
         private readonly OpenGLHost host;
 
@@ -36,6 +37,7 @@ namespace OpenH2.Rendering.OpenGL
 
         private Action?[] shaderBeginActions = new Action?[(int)Shader.MAX_VALUE];
         private Action?[] shaderEndActions = new Action?[(int)Shader.MAX_VALUE];
+        private Action<Action<DrawCommand[]>, DrawCommand[]>?[] shaderDrawActions = new Action<Action<DrawCommand[]>, DrawCommand[]>?[(int)Shader.MAX_VALUE];
 
         private Shader activeShader;
         private int[] shaderHandles = new int[(int)Shader.MAX_VALUE];
@@ -48,8 +50,7 @@ namespace OpenH2.Rendering.OpenGL
 
         private int TransformUniformHandle;
 
-        // TODO support multiple buffers for cascades
-        private (int depthFbo, int depthMap) shadowBuffers;
+        private (int depthFbo, int depthMaps) shadowBuffers;
 
         public OpenGLGraphicsAdapter(OpenGLHost host)
         {
@@ -64,15 +65,16 @@ namespace OpenH2.Rendering.OpenGL
             };
 
             this.shaderBeginActions[(int)Shader.ShadowMapping] = () => {
-                GL.Viewport(0, 0, shadowMapSize, shadowMapSize);
                 GL.BindFramebuffer(FramebufferTarget.Framebuffer, this.shadowBuffers.depthFbo);
+                // Tutorial had Texture2DArray instead of DepthAttachment here, but that doesn't really make sense
+                GL.FramebufferTexture(FramebufferTarget.Framebuffer, FramebufferAttachment.DepthAttachment, this.shadowBuffers.depthMaps, 0);
+                GL.Viewport(0, 0, ShadowMapSize, ShadowMapSize);
                 GL.Clear(ClearBufferMask.DepthBufferBit);
             };
 
             this.shaderEndActions[(int)Shader.ShadowMapping] = () => {
                 var size = this.host.ViewportSize;
                 GL.Viewport(0, 0, (int)size.X, (int)size.Y);
-
                 GL.BindFramebuffer(FramebufferTarget.Framebuffer, 0);
                 GL.Clear(ClearBufferMask.DepthBufferBit | ClearBufferMask.ColorBufferBit);
             };
@@ -248,7 +250,7 @@ namespace OpenH2.Rendering.OpenGL
 
         public void DrawMeshes(DrawCommand[] commands)
         {
-            for(var i = 0; i < commands.Length; i++)
+            for (var i = 0; i < commands.Length; i++)
             {
                 ref DrawCommand command = ref commands[i];
 
@@ -269,11 +271,10 @@ namespace OpenH2.Rendering.OpenGL
                 GL.DrawElementsBaseVertex(primitiveType,
                     command.IndiciesCount,
                     DrawElementsType.UnsignedInt,
-                    (IntPtr)(command.IndexBase * sizeof(int)), 
+                    (IntPtr)(command.IndexBase * sizeof(int)),
                     command.VertexBase);
             }
         }
-
 
         public void InitializeShadowMapBuffers()
         {
@@ -283,34 +284,34 @@ namespace OpenH2.Rendering.OpenGL
                 Console.WriteLine("-- Error {0} occured {1}", error1, "before shadow map bufs");
             }
 
-            int depthFbo;
-            GL.GenFramebuffers(1, out depthFbo);
+            
+            GL.GenFramebuffers(1, out int depthFbo);
+            GL.GenTextures(1, out int depthMap);
 
-            int depthMap;
-            GL.GenTextures(1, out depthMap);
-            GL.BindTexture(TextureTarget.Texture2D, depthMap);
-            GL.TexImage2D(TextureTarget.Texture2D, 0, PixelInternalFormat.DepthComponent,
-                shadowMapSize, shadowMapSize, 0, PixelFormat.DepthComponent, PixelType.Float, IntPtr.Zero);
+            GL.BindTexture(TextureTarget.Texture2DArray, depthMap);
+            GL.TexImage3D(TextureTarget.Texture2DArray, 0, PixelInternalFormat.DepthComponent32f,
+                ShadowMapSize, ShadowMapSize, ShadowCascadeCount + 1, 0, PixelFormat.DepthComponent, PixelType.Float, IntPtr.Zero);
 
-            GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMinFilter, (float)TextureMinFilter.Nearest);
-            GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMagFilter, (float)TextureMagFilter.Nearest);
-            GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureWrapS, (int)TextureWrapMode.ClampToBorder);
-            GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureWrapT, (int)TextureWrapMode.ClampToBorder);
-            var borderColor = new [] { 1.0f, 1.0f, 1.0f, 1.0f };
-            GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureBorderColor, borderColor);
+            GL.TexParameter(TextureTarget.Texture2DArray, TextureParameterName.TextureMinFilter, (float)TextureMinFilter.Nearest);
+            GL.TexParameter(TextureTarget.Texture2DArray, TextureParameterName.TextureMagFilter, (float)TextureMagFilter.Nearest);
+            GL.TexParameter(TextureTarget.Texture2DArray, TextureParameterName.TextureWrapS, (int)TextureWrapMode.ClampToBorder);
+            GL.TexParameter(TextureTarget.Texture2DArray, TextureParameterName.TextureWrapT, (int)TextureWrapMode.ClampToBorder);
+            var borderColor = new[] { 1.0f, 1.0f, 1.0f, 1.0f };
+            GL.TexParameter(TextureTarget.Texture2DArray, TextureParameterName.TextureBorderColor, borderColor);
 
             GL.BindFramebuffer(FramebufferTarget.Framebuffer, depthFbo);
-            GL.FramebufferTexture2D(FramebufferTarget.Framebuffer, FramebufferAttachment.DepthAttachment, TextureTarget.Texture2D, depthMap, 0);
+            GL.FramebufferTexture(FramebufferTarget.Framebuffer, FramebufferAttachment.DepthAttachment, depthMap, 0);
             GL.DrawBuffer(DrawBufferMode.None);
             GL.ReadBuffer(ReadBufferMode.None);
             GL.BindFramebuffer(FramebufferTarget.Framebuffer, 0);
 
             this.shadowBuffers = (depthFbo, depthMap);
+            
 
             error1 = GL.GetError();
             if (error1 != ErrorCode.NoError)
             {
-                Console.WriteLine("-- Error {0} occured {1}", error1, "after shadow map bufs");
+                Console.WriteLine("-- Error {0} occured {1}", error1, "during shadow map bufs");
             }
         }
 
@@ -440,10 +441,10 @@ namespace OpenH2.Rendering.OpenGL
             GL.BindBufferBase(BufferRangeTarget.UniformBuffer, UniformIndices.Global, GlobalUniformHandle);
             GL.BindBuffer(BufferTarget.UniformBuffer, 0);
 
-            // Bind shadow map
+            // Bind shadow maps
             GL.Uniform1(16, 16);
             GL.ActiveTexture(TextureUnit.Texture16);
-            GL.BindTexture(TextureTarget.Texture2D, this.shadowBuffers.depthMap);
+            GL.BindTexture(TextureTarget.Texture2DArray, this.shadowBuffers.depthMaps);
             GL.BindSampler(16, 16);
         }
 

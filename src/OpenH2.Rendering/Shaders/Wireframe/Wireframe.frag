@@ -4,7 +4,8 @@ layout(std140, binding = 0) uniform GlobalUniform
 {
 	mat4 ViewMatrix;
 	mat4 ProjectionMatrix;
-	mat4 SunLightMatrix;
+	mat4 SunLightMatrix[4];
+    vec4 SunLightDistances;
     vec3 SunLightDirection;
     vec3 ViewPosition;
 } Globals;
