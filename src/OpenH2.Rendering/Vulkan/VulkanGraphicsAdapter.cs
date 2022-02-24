@@ -32,10 +32,17 @@ namespace OpenH2.Rendering.Vulkan
         private SwapchainKHR swapchain;
         private Image[] swapchainImages = Array.Empty<Image>();
         private ImageView[] swapchainImageviews = Array.Empty<ImageView>();
+        private Framebuffer[] swapchainFramebuffers = Array.Empty<Framebuffer>();
         private (Format format, Extent2D extent) swapchainParams;
         private PipelineLayout pipelineLayout;
         private RenderPass renderPass;
         private Pipeline graphicsPipeline;
+        private CommandPool commandPool;
+        private CommandBuffer commandBuffer;
+
+        private Semaphore imageAvailableSemaphore;
+        private Semaphore renderFinishedSemaphore;
+        private Fence inFlightFence;
 
         public VulkanGraphicsAdapter(VulkanHost vulkanHost, IVkSurface vkSurface)
         {
@@ -93,9 +100,9 @@ namespace OpenH2.Rendering.Vulkan
             SUCCESS(vk.CreateInstance(in instanceInfo, null, out instance), "Couldn't create instance");
             SUCCESS(vk.TryGetInstanceExtension(instance, out khrSurfaceExtension), "Couldn't get surface ext");
             this.surface = this.vkSurface.Create<AllocationCallbacks>(instance.ToHandle(), null).ToSurface();
-            
+
             // Choose appropriate physical device and get relevant settings to create logical device and swapchains
-            if(!ChooseDevice(instance, out var phyDevice, out var queueFamilies, out var caps, out var format, out var presentMode, out var extent))
+            if (!ChooseDevice(instance, out var phyDevice, out var queueFamilies, out var caps, out var format, out var presentMode, out var extent))
             {
                 throw new Exception("No supported devices found");
             }
@@ -165,7 +172,7 @@ namespace OpenH2.Rendering.Vulkan
             };
 
             // If we're not using the same queue, setup concurrent images
-            if(queueFamilies.graphics != queueFamilies.present)
+            if (queueFamilies.graphics != queueFamilies.present)
             {
                 var queueFamilyIndices = stackalloc uint[] { queueFamilies.graphics.Value, queueFamilies.present.Value };
                 swapchainCreate.ImageSharingMode = SharingMode.Concurrent;
@@ -177,6 +184,7 @@ namespace OpenH2.Rendering.Vulkan
             khrSwapchainExt.GetSwapchainImages(device, swapchain, ref imgCount, null);
             swapchainImages = new Image[imgCount];
             swapchainImageviews = new ImageView[imgCount];
+            swapchainFramebuffers = new Framebuffer[imgCount];
 
             khrSwapchainExt.GetSwapchainImages(device, swapchain, ref imgCount, out swapchainImages[0]);
             swapchainParams = (format.Format, extent);
@@ -339,6 +347,16 @@ namespace OpenH2.Rendering.Vulkan
                 PColorAttachments = &colorAttachRef,
             };
 
+            var dependency = new SubpassDependency
+            {
+                SrcSubpass = Vk.SubpassExternal,
+                DstSubpass = 0,
+                SrcStageMask = PipelineStageFlags.PipelineStageColorAttachmentOutputBit,
+                SrcAccessMask = 0,
+                DstStageMask = PipelineStageFlags.PipelineStageColorAttachmentOutputBit,
+                DstAccessMask = AccessFlags.AccessColorAttachmentWriteBit,
+            };
+
             var renderPassCreate = new RenderPassCreateInfo
             {
                 SType = StructureType.RenderPassCreateInfo,
@@ -346,6 +364,8 @@ namespace OpenH2.Rendering.Vulkan
                 PAttachments = &colorAttach,
                 SubpassCount = 1,
                 PSubpasses = &subpass,
+                DependencyCount = 1,
+                PDependencies = &dependency
             };
 
             SUCCESS(vk.CreateRenderPass(device, in renderPassCreate, null, out renderPass), "Render pass create failed");
@@ -362,7 +382,7 @@ namespace OpenH2.Rendering.Vulkan
                 PMultisampleState = &msaa,
                 PDepthStencilState = null,
                 PColorBlendState = &colorBlendState,
-                PDynamicState = &dynamicState,
+                //PDynamicState = &dynamicState,
                 Layout = pipelineLayout,
                 RenderPass = renderPass,
                 Subpass = 0,
@@ -372,8 +392,62 @@ namespace OpenH2.Rendering.Vulkan
 
             SUCCESS(vk.CreateGraphicsPipelines(device, default, 1, &pipelineCreate, null, out graphicsPipeline), "Pipeline create failed");
 
+            // Clear to destroy shader info after pipeline creation
             vk.DestroyShaderModule(device, vertShader, null);
             vk.DestroyShaderModule(device, fragShader, null);
+
+            // =======================
+            // framebuffer setup
+            // =======================
+
+            var attachments = stackalloc ImageView[1];
+            for (int i = 0; i < swapchainImageviews.Length; i++)
+            {
+                attachments[0] = swapchainImageviews[i];
+
+                var framebufferCreate = new FramebufferCreateInfo
+                {
+                    SType = StructureType.FramebufferCreateInfo,
+                    RenderPass = renderPass,
+                    AttachmentCount = 1,
+                    PAttachments = attachments,
+                    Width = swapchainParams.extent.Width,
+                    Height = swapchainParams.extent.Height,
+                    Layers = 1
+                };
+
+                vk.CreateFramebuffer(device, in framebufferCreate, null, out swapchainFramebuffers[i]);
+            }
+
+            // =======================
+            // commandbuffer setup
+            // =======================
+
+            var poolCreate = new CommandPoolCreateInfo
+            {
+                SType = StructureType.CommandPoolCreateInfo,
+                Flags = CommandPoolCreateFlags.CommandPoolCreateResetCommandBufferBit,
+                QueueFamilyIndex = queueFamilies.graphics.Value
+            };
+
+            SUCCESS(vk.CreateCommandPool(device, in poolCreate, null, out commandPool), "CommandPool create failed");
+
+            var commandBufAlloc = new CommandBufferAllocateInfo
+            {
+                SType = StructureType.CommandBufferAllocateInfo,
+                CommandPool = commandPool,
+                Level = CommandBufferLevel.Primary,
+                CommandBufferCount = 1
+            };
+
+            SUCCESS(vk.AllocateCommandBuffers(device, in commandBufAlloc, out commandBuffer), "Command buffer alloc failed");
+
+            var semInfo = new SemaphoreCreateInfo(StructureType.SemaphoreCreateInfo);
+            SUCCESS(vk.CreateSemaphore(device, &semInfo, null, out imageAvailableSemaphore));
+            SUCCESS(vk.CreateSemaphore(device, &semInfo, null, out renderFinishedSemaphore));
+
+            var fenceInfo = new FenceCreateInfo(StructureType.FenceCreateInfo, flags: FenceCreateFlags.FenceCreateSignaledBit);
+            SUCCESS(vk.CreateFence(device, &fenceInfo, null, out inFlightFence));
         }
 
         private bool QuerySwapchainSupport(PhysicalDevice phyDevice, 
@@ -523,16 +597,90 @@ namespace OpenH2.Rendering.Vulkan
         {
         }
 
+        private uint imageIndex = 0;
         public void BeginFrame(GlobalUniform matricies)
         {
+            vk.WaitForFences(device, 1, in inFlightFence, true, ulong.MaxValue);
+            vk.ResetFences(device, 1, in inFlightFence);
+
+            khrSwapchainExt.AcquireNextImage(device, swapchain, ulong.MaxValue, imageAvailableSemaphore, default, ref imageIndex);
+
+            vk.ResetCommandBuffer(commandBuffer, (CommandBufferResetFlags)0);
+
+            var bufBegin = new CommandBufferBeginInfo
+            {
+                SType = StructureType.CommandBufferBeginInfo
+            };
+
+            SUCCESS(vk.BeginCommandBuffer(commandBuffer, in bufBegin), "Unable to begin writing to command buffer");
+
+            var clearColor = new ClearValue(new ClearColorValue(0f, 0f, 0f, 1f));
+            var renderBegin = new RenderPassBeginInfo
+            {
+                SType = StructureType.RenderPassBeginInfo,
+                RenderPass = renderPass,
+                Framebuffer = swapchainFramebuffers[imageIndex],
+                RenderArea = new Rect2D(new Offset2D(0, 0), swapchainParams.extent),
+                ClearValueCount = 1,
+                PClearValues = &clearColor
+            };
+
+            vk.CmdBeginRenderPass(commandBuffer, in renderBegin, SubpassContents.Inline);
+
+            vk.CmdBindPipeline(commandBuffer, PipelineBindPoint.Graphics, graphicsPipeline);
+
+            vk.CmdDraw(commandBuffer, 3, 1, 0, 0);
+
+
+            
         }
 
         public void DrawMeshes(DrawCommand[] commands)
         {
+            
         }
 
         public void EndFrame()
         {
+            vk.CmdEndRenderPass(commandBuffer);
+
+            SUCCESS(vk.EndCommandBuffer(commandBuffer), "Failed to record command buffer");
+
+            var waitSems = stackalloc Semaphore[] { imageAvailableSemaphore };
+            var waitStages = stackalloc PipelineStageFlags[] { PipelineStageFlags.PipelineStageColorAttachmentOutputBit };
+
+            var signalSems = stackalloc Semaphore[] { renderFinishedSemaphore };
+
+
+            var buf = commandBuffer;
+            var submitInfo = new SubmitInfo
+            {
+                SType = StructureType.SubmitInfo,
+                WaitSemaphoreCount = 1,
+                PWaitSemaphores = waitSems,
+                PWaitDstStageMask = waitStages,
+                CommandBufferCount = 1,
+                PCommandBuffers = &buf,
+                SignalSemaphoreCount = 1,
+                PSignalSemaphores = signalSems
+            };
+
+            SUCCESS(vk.QueueSubmit(graphicsQueue, 1, in submitInfo, inFlightFence));
+
+            var chains = stackalloc SwapchainKHR[] { swapchain };
+            var imgIndex = imageIndex;
+            var presentInfo = new PresentInfoKHR
+            {
+                SType = StructureType.PresentInfoKhr,
+                WaitSemaphoreCount = 1,
+                PWaitSemaphores = signalSems,
+                SwapchainCount = 1,
+                PSwapchains = chains,
+                PImageIndices = &imgIndex,
+                PResults = null
+            };
+
+            khrSwapchainExt.QueuePresent(presentQueue, in presentInfo);
         }
 
         public void SetSunLight(Vector3 sunDirection)
@@ -555,6 +703,17 @@ namespace OpenH2.Rendering.Vulkan
 
         public void Dispose()
         {
+            vk.DestroySemaphore(device, imageAvailableSemaphore, null);
+            vk.DestroySemaphore(device, renderFinishedSemaphore, null);
+            vk.DestroyFence(device, inFlightFence, null);
+
+            vk.DestroyCommandPool(device, commandPool, null);
+
+            foreach(var buf in swapchainFramebuffers)
+            {
+                vk.DestroyFramebuffer(device, buf, null);
+            }
+
             vk.DestroyPipeline(device, graphicsPipeline, null);
             vk.DestroyPipelineLayout(device, pipelineLayout, null);
             vk.DestroyRenderPass(device, renderPass, null);

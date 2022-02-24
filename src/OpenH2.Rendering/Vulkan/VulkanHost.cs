@@ -11,6 +11,7 @@ using Silk.NET.Maths;
 using Silk.NET.Vulkan;
 using Silk.NET.Vulkan.Extensions.KHR;
 using System.Diagnostics;
+using OpenH2.Rendering.Shaders;
 
 namespace OpenH2.Rendering.Vulkan
 {
@@ -55,18 +56,24 @@ namespace OpenH2.Rendering.Vulkan
 
         public void RegisterCallbacks(Action<double> updateCallback, Action<double> renderCallback)
         {
-            this.updateAction = updateCallback;
+            //this.updateAction = updateCallback;
             this.renderAction = renderCallback;
         }
 
         public void Start(int updatesPerSecond, int framesPerSecond)
         {
             var sw = new Stopwatch();
+            
             this.window.Run(() =>
             {
+                this.window.DoEvents();
                 var deltaT = sw.Elapsed.TotalMilliseconds;
-                this.updateAction(deltaT);
-                this.renderAction(deltaT);
+                //this.updateAction(deltaT);
+                //this.renderAction(deltaT);
+
+                this.adapter.BeginFrame(new GlobalUniform());
+                this.adapter.EndFrame();
+
                 sw.Restart();
             });
         }
