@@ -30,7 +30,9 @@ namespace OpenH2.Rendering.Vulkan
         private Queue presentQueue;
         private KhrSwapchain khrSwapchainExt;
         private SwapchainKHR swapchain;
-        
+        private Image[] swapchainImages = Array.Empty<Image>();
+        private ImageView[] swapchainImageviews = Array.Empty<ImageView>();
+        private (Format, Extent2D) swapchainParams;
 
         public VulkanGraphicsAdapter(VulkanHost vulkanHost, IVkSurface vkSurface)
         {
@@ -169,6 +171,34 @@ namespace OpenH2.Rendering.Vulkan
             }
 
             SUCCESS(khrSwapchainExt.CreateSwapchain(device, in swapchainCreate, null, out swapchain), "failed to create swapchain");
+            khrSwapchainExt.GetSwapchainImages(device, swapchain, ref imgCount, null);
+            swapchainImages = new Image[imgCount];
+            swapchainImageviews = new ImageView[imgCount];
+
+            khrSwapchainExt.GetSwapchainImages(device, swapchain, ref imgCount, out swapchainImages[0]);
+            swapchainParams = (format.Format, extent);
+
+            for (int i = 0; i < imgCount; i++)
+            {
+                var imgViewCreate = new ImageViewCreateInfo
+                {
+                    SType = StructureType.ImageViewCreateInfo,
+                    Image = swapchainImages[i],
+                    ViewType = ImageViewType.ImageViewType2D,
+                    Format = format.Format,
+                    Components = new ComponentMapping(ComponentSwizzle.Identity, ComponentSwizzle.Identity, ComponentSwizzle.Identity, ComponentSwizzle.Identity),
+                    SubresourceRange = new ImageSubresourceRange
+                    {
+                        AspectMask = ImageAspectFlags.ImageAspectColorBit,
+                        BaseMipLevel = 0,
+                        LevelCount = 1,
+                        BaseArrayLayer = 0,
+                        LayerCount = 1
+                    }
+                };
+
+                SUCCESS(vk.CreateImageView(device, in imgViewCreate, null, out swapchainImageviews[i]), "Image view create failed");
+            }
         }
 
         private bool QuerySwapchainSupport(PhysicalDevice phyDevice, 
@@ -350,6 +380,11 @@ namespace OpenH2.Rendering.Vulkan
 
         public void Dispose()
         {
+            foreach(var imgView in swapchainImageviews)
+            {
+                vk.DestroyImageView(this.device, imgView, null);
+            }
+
             if (khrSwapchainExt != null)
             {
                 khrSwapchainExt.DestroySwapchain(device, swapchain, null);
