@@ -155,7 +155,7 @@ namespace OpenH2.AudioDemo
                 AudioEncoding.StereoImaAdpcm => (ALFormat.StereoIma4Ext, 1),
             };
 
-            AL.BufferData(buffer, format, data, rate.Rate);
+            AL.BufferData<TSample>(buffer, format, data, rate.Rate);
             return (int)(dataBytes * samplesPerByte);
         }
 

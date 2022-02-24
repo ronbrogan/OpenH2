@@ -13,6 +13,7 @@ using OpenH2.Foundation.Engine;
 using OpenH2.OpenAL.Audio;
 using OpenH2.Rendering.Abstractions;
 using OpenH2.Rendering.OpenGL;
+using OpenH2.Rendering.Vulkan;
 using OpenTK.Windowing.Desktop;
 using System;
 using System.Diagnostics;
@@ -21,8 +22,9 @@ using System.Numerics;
 
 namespace OpenH2.Engine
 {
-    public class Engine
+    public class Engine : IDisposable
     {
+        IDisposable? graphicsHostDisposable = null;
         IGraphicsHost graphicsHost;
         IAudioHost audioHost;
         IGameLoopSource gameLoop;
@@ -32,9 +34,10 @@ namespace OpenH2.Engine
 
         public Engine()
         {
-            var host = new OpenGLHost();
-            gameWindowGetter = host.GetWindow;
+            var host = new VulkanHost();
+            //gameWindowGetter = host.GetWindow;
 
+            graphicsHostDisposable = host;
             graphicsHost = host;
             gameLoop = host;
 
@@ -68,7 +71,7 @@ namespace OpenH2.Engine
                 LoadMap(factory, mapFilename, matFactory);
             });
 
-            world = new RealtimeWorld(gameWindowGetter(), 
+            world = new RealtimeWorld(//gameWindowGetter(), 
                 audioHost.GetAudioAdapter(), 
                 graphicsHost);
 
@@ -158,5 +161,11 @@ namespace OpenH2.Engine
                 destination.Entities.Add(Guid.NewGuid(), item);
             }
         }
+
+        public void Dispose()
+        {
+            this.graphicsHostDisposable?.Dispose();
+        }
+
     }
 }

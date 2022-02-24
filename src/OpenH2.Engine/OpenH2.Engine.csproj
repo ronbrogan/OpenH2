@@ -41,7 +41,8 @@
     </ItemGroup>
 
     <ItemGroup>
-      <PackageReference Include="OpenTK" Version="4.6.4" />
-    </ItemGroup>
+      <PackageReference Include="OpenTK" Version="4.7.1" />
+	  <PackageReference Include="System.Runtime.CompilerServices.Unsafe" Version="6.0.0" />
+	</ItemGroup>
 
 </Project>
