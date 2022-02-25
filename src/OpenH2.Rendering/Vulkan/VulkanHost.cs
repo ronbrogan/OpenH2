@@ -22,6 +22,8 @@ namespace OpenH2.Rendering.Vulkan
         private Action<double> updateAction;
         private Action<double> renderAction;
 
+        public readonly Vk vk;
+
         public Vector2 ViewportSize => new Vector2(1600, 900);
 
         public bool AspectRatioChanged => false;
@@ -30,6 +32,7 @@ namespace OpenH2.Rendering.Vulkan
 
         public VulkanHost()
         {
+            this.vk = Vk.GetApi();
         }
 
         public void CreateWindow(Vector2 size, bool hidden = false)

@@ -17,206 +17,42 @@ using System.Runtime.CompilerServices;
 
 namespace OpenH2.Rendering.Vulkan
 {
-    public sealed unsafe class VulkanGraphicsAdapter : IGraphicsAdapter, IDisposable
+    public sealed unsafe class VulkanGraphicsAdapter : VkObject, IGraphicsAdapter, IDisposable
     {
+        const int MaxFramesInFlight = 2;
+
         private VulkanHost vulkanHost;
-        private Vk vk;
         private IVkSurface vkSurface;
-        private KhrSurface khrSurfaceExtension;
-        private Instance instance;
-        private Device device;
-        private SurfaceKHR surface;
-        private Queue graphicsQueue;
-        private Queue presentQueue;
-        private KhrSwapchain khrSwapchainExt;
-        private SwapchainKHR swapchain;
-        private Image[] swapchainImages = Array.Empty<Image>();
-        private ImageView[] swapchainImageviews = Array.Empty<ImageView>();
-        private Framebuffer[] swapchainFramebuffers = Array.Empty<Framebuffer>();
-        private (Format format, Extent2D extent) swapchainParams;
+        private VkInstance instance;
+        private VkDevice device;
+
         private PipelineLayout pipelineLayout;
         private RenderPass renderPass;
         private Pipeline graphicsPipeline;
         private CommandPool commandPool;
+
+        // TODO: need multiple of these to support multiple in-flight frames
+
         private CommandBuffer commandBuffer;
 
         private Semaphore imageAvailableSemaphore;
         private Semaphore renderFinishedSemaphore;
         private Fence inFlightFence;
 
-        public VulkanGraphicsAdapter(VulkanHost vulkanHost, IVkSurface vkSurface)
+        public VulkanGraphicsAdapter(VulkanHost vulkanHost, IVkSurface vkSurface) : base(vulkanHost.vk)
         {
             this.vkSurface = vkSurface;
             this.vulkanHost = vulkanHost;
-            this.vk = Vk.GetApi();
 
-            var extensionStrings = vkSurface.GetRequiredExtensions(out var reqExtensionCount);
-
-            uint extensionCount = 0;
-            vk.EnumerateInstanceExtensionProperties(0, ref extensionCount, null);
-            var extensions = new ExtensionProperties[extensionCount];
-            vk.EnumerateInstanceExtensionProperties(0, ref extensionCount, ref extensions[0]);
-
-            Console.WriteLine("Extensions");
-            foreach (var ext in extensions)
-            {
-                Console.WriteLine("\t" + Encoding.UTF8.GetNullTerminatedString(ext.ExtensionName, 128));
-            }
-
-            uint availableLayerCount = 0;
-            vk.EnumerateInstanceLayerProperties(ref availableLayerCount, null);
-            var layers = new LayerProperties[availableLayerCount];
-            vk.EnumerateInstanceLayerProperties(ref availableLayerCount, ref layers[0]);
-
-            var layerCount = 1u;
-            var layerNames = stackalloc byte*[] { PinnedUtf8.Get("VK_LAYER_KHRONOS_validation") };
-
-            Console.WriteLine("Layers");
-            foreach (var layer in layers)
-            {
-                Console.WriteLine("\t" + Encoding.UTF8.GetNullTerminatedString(layer.LayerName, 128));
-            }
-
-            var appInfo = new ApplicationInfo
-            {
-                SType = StructureType.ApplicationInfo,
-                PApplicationName = PinnedUtf8.Get("OpenH2"),
-                ApplicationVersion = Vk.MakeVersion(0, 0, 1),
-                PEngineName = PinnedUtf8.Get("OpenH2.Engine"),
-                EngineVersion = Vk.MakeVersion(0, 0, 1),
-                ApiVersion = Vk.Version10
-            };
-
-            var instanceInfo = new InstanceCreateInfo
-            {
-                SType = StructureType.InstanceCreateInfo,
-                PApplicationInfo = &appInfo,
-                EnabledExtensionCount = reqExtensionCount,
-                PpEnabledExtensionNames = extensionStrings,
-                EnabledLayerCount = layerCount,
-                PpEnabledLayerNames = layerNames
-            };
-
-            SUCCESS(vk.CreateInstance(in instanceInfo, null, out instance), "Couldn't create instance");
-            SUCCESS(vk.TryGetInstanceExtension(instance, out khrSurfaceExtension), "Couldn't get surface ext");
-            this.surface = this.vkSurface.Create<AllocationCallbacks>(instance.ToHandle(), null).ToSurface();
-
-            // Choose appropriate physical device and get relevant settings to create logical device and swapchains
-            if (!ChooseDevice(instance, out var phyDevice, out var queueFamilies, out var caps, out var format, out var presentMode, out var extent))
-            {
-                throw new Exception("No supported devices found");
-            }
-
-            var uniqueFamilies = new HashSet<uint> { queueFamilies.graphics.Value, queueFamilies.present.Value };
-            var queueCreateInfos = stackalloc DeviceQueueCreateInfo[uniqueFamilies.Count];
-            float priority = 1f;
-            for (var f = 0; f < uniqueFamilies.Count; f++)
-            {
-                queueCreateInfos[f] = new DeviceQueueCreateInfo
-                {
-                    SType = StructureType.DeviceQueueCreateInfo,
-                    QueueFamilyIndex = uniqueFamilies.ElementAt(f),
-                    QueueCount = 1,
-                    PQueuePriorities = &priority
-                };
-            }
-
-            var deviceFeatures = new PhysicalDeviceFeatures();
-
-            var deviceExtensionCount = 1u;
-            var deviceExtensionNames = stackalloc byte*[]
-            {
-                PinnedUtf8.Get("VK_KHR_swapchain")
-            };
-
-            var deviceCreate = new DeviceCreateInfo
-            {
-                SType = StructureType.DeviceCreateInfo,
-                PQueueCreateInfos = queueCreateInfos,
-                QueueCreateInfoCount = (uint)uniqueFamilies.Count,
-                PEnabledFeatures = &deviceFeatures,
-                EnabledLayerCount = layerCount,
-                PpEnabledLayerNames = layerNames,
-                EnabledExtensionCount = deviceExtensionCount,
-                PpEnabledExtensionNames = deviceExtensionNames
-            };
-
-            // Create logical device and grab device-specific resources
-            SUCCESS(vk.CreateDevice(phyDevice, in deviceCreate, null, out device), "Logical device creation failed");
-            SUCCESS(vk.TryGetDeviceExtension(instance, device, out khrSwapchainExt), "Couldn't get swapchain extension");
-            vk.GetDeviceQueue(device, queueFamilies.graphics.Value, 0, out graphicsQueue);
-            vk.GetDeviceQueue(device, queueFamilies.present.Value, 0, out presentQueue);
-
-            // One more than min count, unless we're bound by max image count
-            var imgCount = caps.MinImageCount + 1;
-            if (caps.MaxImageCount > 0 && imgCount > caps.MaxImageCount)
-                imgCount = caps.MaxImageCount;
-
-            // Prepare to create swapchain with what we've found
-            var swapchainCreate = new SwapchainCreateInfoKHR
-            {
-                SType = StructureType.SwapchainCreateInfoKhr,
-                Surface = this.surface,
-                MinImageCount = imgCount,
-                ImageFormat = format.Format,
-                ImageColorSpace = format.ColorSpace,
-                ImageExtent = extent,
-                ImageArrayLayers = 1,
-                ImageUsage = ImageUsageFlags.ImageUsageColorAttachmentBit,
-                PreTransform = caps.CurrentTransform,
-                CompositeAlpha = CompositeAlphaFlagsKHR.CompositeAlphaOpaqueBitKhr,
-                PresentMode = presentMode,
-                Clipped = true,
-                OldSwapchain = default,
-                ImageSharingMode = SharingMode.Exclusive,
-            };
-
-            // If we're not using the same queue, setup concurrent images
-            if (queueFamilies.graphics != queueFamilies.present)
-            {
-                var queueFamilyIndices = stackalloc uint[] { queueFamilies.graphics.Value, queueFamilies.present.Value };
-                swapchainCreate.ImageSharingMode = SharingMode.Concurrent;
-                swapchainCreate.QueueFamilyIndexCount = 2;
-                swapchainCreate.PQueueFamilyIndices = queueFamilyIndices;
-            }
-
-            SUCCESS(khrSwapchainExt.CreateSwapchain(device, in swapchainCreate, null, out swapchain), "failed to create swapchain");
-            khrSwapchainExt.GetSwapchainImages(device, swapchain, ref imgCount, null);
-            swapchainImages = new Image[imgCount];
-            swapchainImageviews = new ImageView[imgCount];
-            swapchainFramebuffers = new Framebuffer[imgCount];
-
-            khrSwapchainExt.GetSwapchainImages(device, swapchain, ref imgCount, out swapchainImages[0]);
-            swapchainParams = (format.Format, extent);
-
-            for (int i = 0; i < imgCount; i++)
-            {
-                var imgViewCreate = new ImageViewCreateInfo
-                {
-                    SType = StructureType.ImageViewCreateInfo,
-                    Image = swapchainImages[i],
-                    ViewType = ImageViewType.ImageViewType2D,
-                    Format = format.Format,
-                    Components = new ComponentMapping(ComponentSwizzle.Identity, ComponentSwizzle.Identity, ComponentSwizzle.Identity, ComponentSwizzle.Identity),
-                    SubresourceRange = new ImageSubresourceRange
-                    {
-                        AspectMask = ImageAspectFlags.ImageAspectColorBit,
-                        BaseMipLevel = 0,
-                        LevelCount = 1,
-                        BaseArrayLayer = 0,
-                        LayerCount = 1
-                    }
-                };
-
-                SUCCESS(vk.CreateImageView(device, in imgViewCreate, null, out swapchainImageviews[i]), "Image view create failed");
-            }
+            this.instance = new VkInstance(vulkanHost);
+            this.device = instance.CreateDevice();
 
             // =======================
             //  start pipeline setup
             // =======================
 
-            using var vertShader = new VkShader(vk, device, "VulkanTest", ShaderType.Vertex);
-            using var fragShader = new VkShader(vk, device, "VulkanTest", ShaderType.Fragment);
+            using var vertShader = new VkShader(device, "VulkanTest", ShaderType.Vertex);
+            using var fragShader = new VkShader(device, "VulkanTest", ShaderType.Fragment);
 
             var shaderStages = stackalloc PipelineShaderStageCreateInfo[] { vertShader.stageInfo, fragShader.stageInfo };
 
@@ -234,8 +70,8 @@ namespace OpenH2.Rendering.Vulkan
                 PrimitiveRestartEnable = false
             };
 
-            var viewport = new Viewport(0, 0, swapchainParams.extent.Width, swapchainParams.extent.Height, 0, 1f);
-            var scissor = new Rect2D(new Offset2D(0, 0), swapchainParams.extent);
+            var viewport = new Viewport(0, 0, device.Extent.Width, device.Extent.Height, 0, 1f);
+            var scissor = new Rect2D(new Offset2D(0, 0), device.Extent);
 
             var viewportState = new PipelineViewportStateCreateInfo
             {
@@ -312,7 +148,7 @@ namespace OpenH2.Rendering.Vulkan
 
             var colorAttach = new AttachmentDescription
             {
-                Format = swapchainParams.format,
+                Format = device.Format,
                 Samples = SampleCountFlags.SampleCount1Bit,
                 LoadOp = AttachmentLoadOp.Clear,
                 StoreOp = AttachmentStoreOp.Store,
@@ -383,9 +219,9 @@ namespace OpenH2.Rendering.Vulkan
             // =======================
 
             var attachments = stackalloc ImageView[1];
-            for (int i = 0; i < swapchainImageviews.Length; i++)
+            for (int i = 0; i < device.ImageViews.Length; i++)
             {
-                attachments[0] = swapchainImageviews[i];
+                attachments[0] = device.ImageViews[i];
 
                 var framebufferCreate = new FramebufferCreateInfo
                 {
@@ -393,12 +229,12 @@ namespace OpenH2.Rendering.Vulkan
                     RenderPass = renderPass,
                     AttachmentCount = 1,
                     PAttachments = attachments,
-                    Width = swapchainParams.extent.Width,
-                    Height = swapchainParams.extent.Height,
+                    Width = device.Extent.Width,
+                    Height = device.Extent.Height,
                     Layers = 1
                 };
 
-                vk.CreateFramebuffer(device, in framebufferCreate, null, out swapchainFramebuffers[i]);
+                vk.CreateFramebuffer(device, in framebufferCreate, null, out device.Framebuffers[i]);
             }
 
             // =======================
@@ -409,7 +245,7 @@ namespace OpenH2.Rendering.Vulkan
             {
                 SType = StructureType.CommandPoolCreateInfo,
                 Flags = CommandPoolCreateFlags.CommandPoolCreateResetCommandBufferBit,
-                QueueFamilyIndex = queueFamilies.graphics.Value
+                QueueFamilyIndex = device.GraphicsQueueFamily.Value
             };
 
             SUCCESS(vk.CreateCommandPool(device, in poolCreate, null, out commandPool), "CommandPool create failed");
@@ -432,148 +268,6 @@ namespace OpenH2.Rendering.Vulkan
             SUCCESS(vk.CreateFence(device, &fenceInfo, null, out inFlightFence));
         }
 
-        private bool QuerySwapchainSupport(PhysicalDevice phyDevice, 
-            out SurfaceCapabilitiesKHR capabilities, 
-            out SurfaceFormatKHR[] formats, 
-            out PresentModeKHR[] presentModes )
-        {
-            var kse = khrSurfaceExtension;
-            kse.GetPhysicalDeviceSurfaceCapabilities(phyDevice, this.surface, out capabilities);
-
-            var formatCount = 0u;
-            kse.GetPhysicalDeviceSurfaceFormats(phyDevice, this.surface, ref formatCount, null);
-            formats = new SurfaceFormatKHR[formatCount];
-            kse.GetPhysicalDeviceSurfaceFormats(phyDevice, this.surface, ref formatCount, out formats[0]);
-
-            var presentModeCount = 0u;
-            kse.GetPhysicalDeviceSurfacePresentModes(phyDevice, surface, ref presentModeCount, null);
-            presentModes = new PresentModeKHR[presentModeCount];
-            kse.GetPhysicalDeviceSurfacePresentModes(phyDevice, surface, ref presentModeCount, out presentModes[0]);
-
-            return formatCount > 0 && presentModeCount > 0;
-        }
-
-        private (uint? graphics, uint? present) FindQueueFamilies(PhysicalDevice device)
-        {
-            uint? graphics = null;
-            uint? present = null;
-
-            uint familyCount = 0;
-            vk.GetPhysicalDeviceQueueFamilyProperties(device, ref familyCount, null);
-
-            var props = new QueueFamilyProperties[familyCount];
-            vk.GetPhysicalDeviceQueueFamilyProperties(device, ref familyCount, out props[0]);
-
-            for (var i = 0u; i < props.Length; i++)
-            {
-                QueueFamilyProperties prop = props[i];
-                if (prop.QueueFlags.HasFlag(QueueFlags.QueueGraphicsBit))
-                    graphics = i;
-
-                SUCCESS(khrSurfaceExtension.GetPhysicalDeviceSurfaceSupport(device, i, surface, out var presentSupported), "Surface query failed");
-
-                if(presentSupported)
-                {
-                    present = i;
-                }
-
-                if (graphics.HasValue && present.HasValue)
-                    break;
-
-                i++;
-            }
-
-            return (graphics, present);
-        }
-
-        private bool ChooseDevice(
-            Instance instance, 
-            out PhysicalDevice physicalDevice,
-            out (uint? graphics, uint? present) queueFamilies,
-            out SurfaceCapabilitiesKHR capabilities,
-            out SurfaceFormatKHR format,
-            out PresentModeKHR presentMode,
-            out Extent2D extent)
-        {
-            queueFamilies = default;
-            capabilities = default;
-            format = default;
-            presentMode = PresentModeKHR.PresentModeFifoKhr;
-            extent = default;
-
-            uint deviceCount = 0;
-            vk.EnumeratePhysicalDevices(instance, ref deviceCount, null);
-            var devices = new PhysicalDevice[deviceCount];
-            vk.EnumeratePhysicalDevices(instance, ref deviceCount, ref devices[0]);
-
-            Console.WriteLine("Devices");
-            foreach (var device in devices)
-            {
-                vk.GetPhysicalDeviceProperties(device, out var props);
-                vk.GetPhysicalDeviceFeatures(device, out var feats);
-
-                Console.WriteLine("\t" + Encoding.UTF8.GetNullTerminatedString(props.DeviceName, 128));
-
-                if (!feats.GeometryShader)
-                    continue;
-
-                queueFamilies = FindQueueFamilies(device);
-
-                // TODO: query all required extensions (swapchain, etc)
-
-                if (!QuerySwapchainSupport(device, out capabilities, out var formats, out var presentModes))
-                    continue;
-
-                format = ChooseFormat(formats);
-                presentMode = ChoosePresentMode(presentModes);
-                extent = ChooseSwapExtent(capabilities);
-
-                if (!queueFamilies.graphics.HasValue)
-                    continue;
-
-                physicalDevice = device;
-                return true;
-            }
-
-            physicalDevice = default;
-            return false;
-        }
-
-        private SurfaceFormatKHR ChooseFormat(SurfaceFormatKHR[] formats)
-        {
-            foreach (var format in formats)
-            {
-                if (format.Format == Format.B8G8R8A8Srgb && format.ColorSpace == ColorSpaceKHR.ColorSpaceSrgbNonlinearKhr)
-                    return format;
-            }
-
-            return formats[0];
-        }
-
-        private PresentModeKHR ChoosePresentMode(PresentModeKHR[] modes)
-        {
-            foreach (var mode in modes)
-            {
-                if (mode == PresentModeKHR.PresentModeMailboxKhr)
-                    return mode;
-            }
-
-            return PresentModeKHR.PresentModeFifoKhr;
-        }
-
-        private Extent2D ChooseSwapExtent(SurfaceCapabilitiesKHR capabilities)
-        {
-            if (capabilities.CurrentExtent.Width != uint.MaxValue)
-                return capabilities.CurrentExtent;
-
-            var fbSize = this.vulkanHost.window.FramebufferSize;
-
-            return new Extent2D
-            {
-                Width = (uint)Math.Clamp(fbSize.X, capabilities.MinImageExtent.Width, capabilities.MaxImageExtent.Width),
-                Height = (uint)Math.Clamp(fbSize.Y, capabilities.MinImageExtent.Height, capabilities.MaxImageExtent.Height),
-            };
-        }
 
         public void AddLight(PointLight light)
         {
@@ -585,7 +279,7 @@ namespace OpenH2.Rendering.Vulkan
             vk.WaitForFences(device, 1, in inFlightFence, true, ulong.MaxValue);
             vk.ResetFences(device, 1, in inFlightFence);
 
-            khrSwapchainExt.AcquireNextImage(device, swapchain, ulong.MaxValue, imageAvailableSemaphore, default, ref imageIndex);
+            device.AcquireNextImage(imageAvailableSemaphore, default, ref imageIndex);
 
             vk.ResetCommandBuffer(commandBuffer, (CommandBufferResetFlags)0);
 
@@ -601,8 +295,8 @@ namespace OpenH2.Rendering.Vulkan
             {
                 SType = StructureType.RenderPassBeginInfo,
                 RenderPass = renderPass,
-                Framebuffer = swapchainFramebuffers[imageIndex],
-                RenderArea = new Rect2D(new Offset2D(0, 0), swapchainParams.extent),
+                Framebuffer = device.Framebuffers[imageIndex],
+                RenderArea = new Rect2D(new Offset2D(0, 0), device.Extent),
                 ClearValueCount = 1,
                 PClearValues = &clearColor
             };
@@ -647,9 +341,9 @@ namespace OpenH2.Rendering.Vulkan
                 PSignalSemaphores = signalSems
             };
 
-            SUCCESS(vk.QueueSubmit(graphicsQueue, 1, in submitInfo, inFlightFence));
+            SUCCESS(vk.QueueSubmit(device.GraphicsQueue, 1, in submitInfo, inFlightFence));
 
-            var chains = stackalloc SwapchainKHR[] { swapchain };
+            var chains = stackalloc SwapchainKHR[] { device.Swapchain };
             var imgIndex = imageIndex;
             var presentInfo = new PresentInfoKHR
             {
@@ -662,7 +356,7 @@ namespace OpenH2.Rendering.Vulkan
                 PResults = null
             };
 
-            khrSwapchainExt.QueuePresent(presentQueue, in presentInfo);
+            device.QueuePresent(in presentInfo);
         }
 
         public void SetSunLight(Vector3 sunDirection)
@@ -693,7 +387,9 @@ namespace OpenH2.Rendering.Vulkan
 
             vk.DestroyCommandPool(device, commandPool, null);
 
-            foreach(var buf in swapchainFramebuffers)
+            // Destroy pipeline
+
+            foreach(var buf in device.Framebuffers)
             {
                 vk.DestroyFramebuffer(device, buf, null);
             }
@@ -702,41 +398,13 @@ namespace OpenH2.Rendering.Vulkan
             vk.DestroyPipelineLayout(device, pipelineLayout, null);
             vk.DestroyRenderPass(device, renderPass, null);
 
-            foreach(var imgView in swapchainImageviews)
-            {
-                vk.DestroyImageView(this.device, imgView, null);
-            }
+            // destroy device
 
-            if (khrSwapchainExt != null)
-            {
-                khrSwapchainExt.DestroySwapchain(device, swapchain, null);
-                khrSwapchainExt.Dispose();
-            }
+            this.device.Dispose();
 
-            if (khrSurfaceExtension != null)
-            {
-                khrSurfaceExtension.DestroySurface(instance, surface, null);
-                khrSurfaceExtension.Dispose();
-            }
+            // destroy instance
 
-            vk.DestroyDevice(this.device, null);
-            vk.DestroyInstance(this.instance, null);
-        }
-
-        void SUCCESS(Result result, string? description = null)
-        {
-            if(result != Result.Success)
-            {
-                throw new Exception(description ?? "Vulkan operation failed");
-            }
-        }
-
-        void SUCCESS(bool result, string? description = null)
-        {
-            if (!result)
-            {
-                throw new Exception(description ?? "Vulkan operation failed");
-            }
+            this.instance.Dispose();
         }
     }
 }

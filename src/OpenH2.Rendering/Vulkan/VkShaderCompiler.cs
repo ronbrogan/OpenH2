@@ -9,17 +9,15 @@ namespace OpenH2.Rendering.Vulkan
 {
     internal unsafe sealed class VkShader : IDisposable
     {
-        private readonly Vk vk;
-        private readonly Device device;
+        private readonly VkDevice device;
         public ShaderModule module;
         public PipelineShaderStageCreateInfo stageInfo;
 
-        public VkShader(Vk vk, Device device, string shaderName, ShaderType type, string entryPoint = "main")
+        public VkShader(VkDevice device, string shaderName, ShaderType type, string entryPoint = "main")
         {
-            this.vk = vk;
             this.device = device;
 
-            this.module = VkShaderCompiler.LoadSpirvShader(vk, device, shaderName, type);
+            this.module = VkShaderCompiler.LoadSpirvShader(device, shaderName, type);
 
             var stage = type switch
             {
@@ -39,7 +37,7 @@ namespace OpenH2.Rendering.Vulkan
 
         public void Dispose()
         {
-            vk.DestroyShaderModule(this.device, this.module, null);
+            this.device.vk.DestroyShaderModule(this.device, this.module, null);
         }
     }
 
@@ -64,7 +62,7 @@ namespace OpenH2.Rendering.Vulkan
             return File.ReadAllBytes(Path.Combine(path, stub + ".spv"));
         }
 
-        public unsafe static ShaderModule LoadSpirvShader(Vk vk, Device device, string shaderName, ShaderType type)
+        public unsafe static ShaderModule LoadSpirvShader(VkDevice device, string shaderName, ShaderType type)
         {
             var bytes = LoadSpirvBytes(shaderName, type);
 
@@ -77,7 +75,7 @@ namespace OpenH2.Rendering.Vulkan
                     PCode = (uint*)ptr
                 };
 
-                if (vk.CreateShaderModule(device, in createInfo, null, out var shader) != Result.Success)
+                if (device.vk.CreateShaderModule(device, in createInfo, null, out var shader) != Result.Success)
                     throw new Exception("Unable to compile shader");
 
                 return shader;
