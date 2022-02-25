@@ -25,7 +25,7 @@ namespace OpenH2.Rendering.Vulkan
         private IVkSurface vkSurface;
         private VkInstance instance;
         private VkDevice device;
-
+        private VkSwapchain swapchain;
         private PipelineLayout pipelineLayout;
         private RenderPass renderPass;
         private Pipeline graphicsPipeline;
@@ -46,6 +46,7 @@ namespace OpenH2.Rendering.Vulkan
 
             this.instance = new VkInstance(vulkanHost);
             this.device = instance.CreateDevice();
+            this.swapchain = device.CreateSwapchain();
 
             // =======================
             //  start pipeline setup
@@ -70,8 +71,8 @@ namespace OpenH2.Rendering.Vulkan
                 PrimitiveRestartEnable = false
             };
 
-            var viewport = new Viewport(0, 0, device.Extent.Width, device.Extent.Height, 0, 1f);
-            var scissor = new Rect2D(new Offset2D(0, 0), device.Extent);
+            var viewport = new Viewport(0, 0, swapchain.Extent.Width, swapchain.Extent.Height, 0, 1f);
+            var scissor = new Rect2D(new Offset2D(0, 0), swapchain.Extent);
 
             var viewportState = new PipelineViewportStateCreateInfo
             {
@@ -148,7 +149,7 @@ namespace OpenH2.Rendering.Vulkan
 
             var colorAttach = new AttachmentDescription
             {
-                Format = device.Format,
+                Format = device.SurfaceFormat.Format,
                 Samples = SampleCountFlags.SampleCount1Bit,
                 LoadOp = AttachmentLoadOp.Clear,
                 StoreOp = AttachmentStoreOp.Store,
@@ -219,9 +220,9 @@ namespace OpenH2.Rendering.Vulkan
             // =======================
 
             var attachments = stackalloc ImageView[1];
-            for (int i = 0; i < device.ImageViews.Length; i++)
+            for (int i = 0; i < swapchain.ImageViews.Length; i++)
             {
-                attachments[0] = device.ImageViews[i];
+                attachments[0] = swapchain.ImageViews[i];
 
                 var framebufferCreate = new FramebufferCreateInfo
                 {
@@ -229,12 +230,12 @@ namespace OpenH2.Rendering.Vulkan
                     RenderPass = renderPass,
                     AttachmentCount = 1,
                     PAttachments = attachments,
-                    Width = device.Extent.Width,
-                    Height = device.Extent.Height,
+                    Width = swapchain.Extent.Width,
+                    Height = swapchain.Extent.Height,
                     Layers = 1
                 };
 
-                vk.CreateFramebuffer(device, in framebufferCreate, null, out device.Framebuffers[i]);
+                vk.CreateFramebuffer(device, in framebufferCreate, null, out swapchain.Framebuffers[i]);
             }
 
             // =======================
@@ -279,7 +280,7 @@ namespace OpenH2.Rendering.Vulkan
             vk.WaitForFences(device, 1, in inFlightFence, true, ulong.MaxValue);
             vk.ResetFences(device, 1, in inFlightFence);
 
-            device.AcquireNextImage(imageAvailableSemaphore, default, ref imageIndex);
+            swapchain.AcquireNextImage(imageAvailableSemaphore, default, ref imageIndex);
 
             vk.ResetCommandBuffer(commandBuffer, (CommandBufferResetFlags)0);
 
@@ -295,8 +296,8 @@ namespace OpenH2.Rendering.Vulkan
             {
                 SType = StructureType.RenderPassBeginInfo,
                 RenderPass = renderPass,
-                Framebuffer = device.Framebuffers[imageIndex],
-                RenderArea = new Rect2D(new Offset2D(0, 0), device.Extent),
+                Framebuffer = swapchain.Framebuffers[imageIndex],
+                RenderArea = new Rect2D(new Offset2D(0, 0), swapchain.Extent),
                 ClearValueCount = 1,
                 PClearValues = &clearColor
             };
@@ -306,9 +307,6 @@ namespace OpenH2.Rendering.Vulkan
             vk.CmdBindPipeline(commandBuffer, PipelineBindPoint.Graphics, graphicsPipeline);
 
             vk.CmdDraw(commandBuffer, 3, 1, 0, 0);
-
-
-            
         }
 
         public void DrawMeshes(DrawCommand[] commands)
@@ -343,7 +341,7 @@ namespace OpenH2.Rendering.Vulkan
 
             SUCCESS(vk.QueueSubmit(device.GraphicsQueue, 1, in submitInfo, inFlightFence));
 
-            var chains = stackalloc SwapchainKHR[] { device.Swapchain };
+            var chains = stackalloc SwapchainKHR[] { swapchain };
             var imgIndex = imageIndex;
             var presentInfo = new PresentInfoKHR
             {
@@ -356,7 +354,7 @@ namespace OpenH2.Rendering.Vulkan
                 PResults = null
             };
 
-            device.QueuePresent(in presentInfo);
+            swapchain.QueuePresent(in presentInfo);
         }
 
         public void SetSunLight(Vector3 sunDirection)
@@ -387,12 +385,10 @@ namespace OpenH2.Rendering.Vulkan
 
             vk.DestroyCommandPool(device, commandPool, null);
 
-            // Destroy pipeline
+            // destroy swapchain
+            this.swapchain.Dispose();
 
-            foreach(var buf in device.Framebuffers)
-            {
-                vk.DestroyFramebuffer(device, buf, null);
-            }
+            // Destroy pipeline
 
             vk.DestroyPipeline(device, graphicsPipeline, null);
             vk.DestroyPipelineLayout(device, pipelineLayout, null);
