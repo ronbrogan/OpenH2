@@ -77,7 +77,7 @@ namespace OpenH2.Rendering.Vulkan
             return new VkDevice(this.host, this, this.validationLayers);
         }
 
-        public static implicit operator Instance(VkInstance instanceObj) => instanceObj._instance;
+        public static implicit operator Instance(VkInstance @this) => @this._instance;
 
         public void Dispose()
         {

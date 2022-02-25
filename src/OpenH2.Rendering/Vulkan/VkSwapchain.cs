@@ -117,6 +117,28 @@ namespace OpenH2.Rendering.Vulkan
             return khrSwapchainExt.QueuePresent(device.PresentQueue, in presentInfo);
         }
 
+        public void InitializeFramebuffers(in RenderPass renderPass)
+        {
+            var attachments = stackalloc ImageView[1];
+            for (int i = 0; i < swapchainImageviews.Length; i++)
+            {
+                attachments[0] = swapchainImageviews[i];
+
+                var framebufferCreate = new FramebufferCreateInfo
+                {
+                    SType = StructureType.FramebufferCreateInfo,
+                    RenderPass = renderPass,
+                    AttachmentCount = 1,
+                    PAttachments = attachments,
+                    Width = Extent.Width,
+                    Height = Extent.Height,
+                    Layers = 1
+                };
+
+                vk.CreateFramebuffer(device, in framebufferCreate, null, out swapchainFramebuffers[i]);
+            }
+        }
+
         public static implicit operator SwapchainKHR(VkSwapchain @this) => @this.swapchain;
 
         public void Dispose()

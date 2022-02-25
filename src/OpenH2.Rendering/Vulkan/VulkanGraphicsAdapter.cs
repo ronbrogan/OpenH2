@@ -1,19 +1,11 @@
 ﻿using OpenH2.Core.Tags;
-using OpenH2.Core.Extensions;
 using OpenH2.Foundation;
 using OpenH2.Rendering.Abstractions;
 using OpenH2.Rendering.Shaders;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Numerics;
-using System.Text;
-using System.Threading.Tasks;
-using Silk.NET.Vulkan;
-using Silk.NET.Vulkan.Extensions.KHR;
 using Silk.NET.Core.Contexts;
-using System.Runtime.InteropServices;
-using System.Runtime.CompilerServices;
+using Silk.NET.Vulkan;
+using System;
+using System.Numerics;
 
 namespace OpenH2.Rendering.Vulkan
 {
@@ -26,15 +18,12 @@ namespace OpenH2.Rendering.Vulkan
         private VkInstance instance;
         private VkDevice device;
         private VkSwapchain swapchain;
-        private PipelineLayout pipelineLayout;
-        private RenderPass renderPass;
-        private Pipeline graphicsPipeline;
+        private VkDefaultGraphicsPipeline pipeline;
+
         private CommandPool commandPool;
 
         // TODO: need multiple of these to support multiple in-flight frames
-
         private CommandBuffer commandBuffer;
-
         private Semaphore imageAvailableSemaphore;
         private Semaphore renderFinishedSemaphore;
         private Fence inFlightFence;
@@ -47,196 +36,7 @@ namespace OpenH2.Rendering.Vulkan
             this.instance = new VkInstance(vulkanHost);
             this.device = instance.CreateDevice();
             this.swapchain = device.CreateSwapchain();
-
-            // =======================
-            //  start pipeline setup
-            // =======================
-
-            using var vertShader = new VkShader(device, "VulkanTest", ShaderType.Vertex);
-            using var fragShader = new VkShader(device, "VulkanTest", ShaderType.Fragment);
-
-            var shaderStages = stackalloc PipelineShaderStageCreateInfo[] { vertShader.stageInfo, fragShader.stageInfo };
-
-            var vertInput = new PipelineVertexInputStateCreateInfo
-            {
-                SType = StructureType.PipelineVertexInputStateCreateInfo,
-                VertexBindingDescriptionCount = 0,
-                VertexAttributeDescriptionCount = 0
-            };
-
-            var inputAssembly = new PipelineInputAssemblyStateCreateInfo
-            {
-                SType = StructureType.PipelineInputAssemblyStateCreateInfo,
-                Topology = PrimitiveTopology.TriangleList,
-                PrimitiveRestartEnable = false
-            };
-
-            var viewport = new Viewport(0, 0, swapchain.Extent.Width, swapchain.Extent.Height, 0, 1f);
-            var scissor = new Rect2D(new Offset2D(0, 0), swapchain.Extent);
-
-            var viewportState = new PipelineViewportStateCreateInfo
-            {
-                SType = StructureType.PipelineViewportStateCreateInfo,
-                ViewportCount = 1,
-                PViewports = &viewport,
-                ScissorCount = 1,
-                PScissors = &scissor,
-            };
-
-            var rasterizer = new PipelineRasterizationStateCreateInfo
-            {
-                SType = StructureType.PipelineRasterizationStateCreateInfo,
-                DepthClampEnable = false,
-                RasterizerDiscardEnable = false,
-                PolygonMode = PolygonMode.Fill,
-                LineWidth = 1,
-                CullMode = CullModeFlags.CullModeBackBit,
-                FrontFace = FrontFace.Clockwise,
-                DepthBiasEnable = false,
-                DepthBiasConstantFactor = 0,
-                DepthBiasClamp = 0,
-                DepthBiasSlopeFactor = 0
-            };
-
-            var msaa = new PipelineMultisampleStateCreateInfo
-            {
-                SType = StructureType.PipelineMultisampleStateCreateInfo,
-                SampleShadingEnable = false,
-                RasterizationSamples = SampleCountFlags.SampleCount1Bit,
-                MinSampleShading = 1
-            };
-
-            var colorBlend = new PipelineColorBlendAttachmentState
-            {
-                ColorWriteMask = ColorComponentFlags.ColorComponentRBit | ColorComponentFlags.ColorComponentGBit | ColorComponentFlags.ColorComponentBBit | ColorComponentFlags.ColorComponentABit,
-                BlendEnable = true,
-                SrcColorBlendFactor = BlendFactor.SrcAlpha,
-                DstColorBlendFactor = BlendFactor.OneMinusSrcAlpha,
-                ColorBlendOp = BlendOp.Add,
-                SrcAlphaBlendFactor = BlendFactor.One,
-                DstAlphaBlendFactor = BlendFactor.Zero,
-                AlphaBlendOp = BlendOp.Add
-            };
-
-            var colorBlendState = new PipelineColorBlendStateCreateInfo()
-            {
-                SType = StructureType.PipelineColorBlendStateCreateInfo,
-                LogicOpEnable = false,
-                LogicOp = LogicOp.Copy,
-                AttachmentCount = 1,
-                PAttachments = &colorBlend
-            };
-
-            var dynamicStates = stackalloc DynamicState[] { DynamicState.Viewport, DynamicState.LineWidth };
-
-            var dynamicState = new PipelineDynamicStateCreateInfo
-            {
-                SType = StructureType.PipelineDynamicStateCreateInfo,
-                DynamicStateCount = 2,
-                PDynamicStates = dynamicStates,
-            };
-
-            var layoutCreate = new PipelineLayoutCreateInfo
-            {
-                SType = StructureType.PipelineLayoutCreateInfo,
-            };
-
-            SUCCESS(vk.CreatePipelineLayout(device, in layoutCreate, null, out pipelineLayout), "Pipeline layout create failed");
-
-            // =======================
-            // start render pass setup
-            // =======================
-
-            var colorAttach = new AttachmentDescription
-            {
-                Format = device.SurfaceFormat.Format,
-                Samples = SampleCountFlags.SampleCount1Bit,
-                LoadOp = AttachmentLoadOp.Clear,
-                StoreOp = AttachmentStoreOp.Store,
-                StencilLoadOp = AttachmentLoadOp.DontCare,
-                StencilStoreOp = AttachmentStoreOp.DontCare,
-                InitialLayout = ImageLayout.Undefined,
-                FinalLayout = ImageLayout.PresentSrcKhr
-            };
-
-            var colorAttachRef = new AttachmentReference(0, ImageLayout.ColorAttachmentOptimal);
-
-            var subpass = new SubpassDescription
-            {
-                PipelineBindPoint = PipelineBindPoint.Graphics,
-                ColorAttachmentCount = 1,
-                PColorAttachments = &colorAttachRef,
-            };
-
-            var dependency = new SubpassDependency
-            {
-                SrcSubpass = Vk.SubpassExternal,
-                DstSubpass = 0,
-                SrcStageMask = PipelineStageFlags.PipelineStageColorAttachmentOutputBit,
-                SrcAccessMask = 0,
-                DstStageMask = PipelineStageFlags.PipelineStageColorAttachmentOutputBit,
-                DstAccessMask = AccessFlags.AccessColorAttachmentWriteBit,
-            };
-
-            var renderPassCreate = new RenderPassCreateInfo
-            {
-                SType = StructureType.RenderPassCreateInfo,
-                AttachmentCount = 1,
-                PAttachments = &colorAttach,
-                SubpassCount = 1,
-                PSubpasses = &subpass,
-                DependencyCount = 1,
-                PDependencies = &dependency
-            };
-
-            SUCCESS(vk.CreateRenderPass(device, in renderPassCreate, null, out renderPass), "Render pass create failed");
-
-            var pipelineCreate = new GraphicsPipelineCreateInfo
-            {
-                SType = StructureType.GraphicsPipelineCreateInfo,
-                StageCount = 2,
-                PStages = shaderStages,
-                PVertexInputState = &vertInput,
-                PInputAssemblyState = &inputAssembly,
-                PViewportState = &viewportState,
-                PRasterizationState = &rasterizer,
-                PMultisampleState = &msaa,
-                PDepthStencilState = null,
-                PColorBlendState = &colorBlendState,
-                //PDynamicState = &dynamicState,
-                Layout = pipelineLayout,
-                RenderPass = renderPass,
-                Subpass = 0,
-                BasePipelineHandle = default,
-                BasePipelineIndex = -1
-            };
-
-            GC.Collect(2, GCCollectionMode.Forced, true);
-
-            SUCCESS(vk.CreateGraphicsPipelines(device, default, 1, &pipelineCreate, null, out graphicsPipeline), "Pipeline create failed");
-
-            // =======================
-            // framebuffer setup
-            // =======================
-
-            var attachments = stackalloc ImageView[1];
-            for (int i = 0; i < swapchain.ImageViews.Length; i++)
-            {
-                attachments[0] = swapchain.ImageViews[i];
-
-                var framebufferCreate = new FramebufferCreateInfo
-                {
-                    SType = StructureType.FramebufferCreateInfo,
-                    RenderPass = renderPass,
-                    AttachmentCount = 1,
-                    PAttachments = attachments,
-                    Width = swapchain.Extent.Width,
-                    Height = swapchain.Extent.Height,
-                    Layers = 1
-                };
-
-                vk.CreateFramebuffer(device, in framebufferCreate, null, out swapchain.Framebuffers[i]);
-            }
+            this.pipeline = new VkDefaultGraphicsPipeline(vulkanHost, device, swapchain);
 
             // =======================
             // commandbuffer setup
@@ -260,6 +60,10 @@ namespace OpenH2.Rendering.Vulkan
             };
 
             SUCCESS(vk.AllocateCommandBuffers(device, in commandBufAlloc, out commandBuffer), "Command buffer alloc failed");
+
+            // =======================
+            // sync setup
+            // =======================
 
             var semInfo = new SemaphoreCreateInfo(StructureType.SemaphoreCreateInfo);
             SUCCESS(vk.CreateSemaphore(device, &semInfo, null, out imageAvailableSemaphore));
@@ -291,20 +95,9 @@ namespace OpenH2.Rendering.Vulkan
 
             SUCCESS(vk.BeginCommandBuffer(commandBuffer, in bufBegin), "Unable to begin writing to command buffer");
 
-            var clearColor = new ClearValue(new ClearColorValue(0f, 0f, 0f, 1f));
-            var renderBegin = new RenderPassBeginInfo
-            {
-                SType = StructureType.RenderPassBeginInfo,
-                RenderPass = renderPass,
-                Framebuffer = swapchain.Framebuffers[imageIndex],
-                RenderArea = new Rect2D(new Offset2D(0, 0), swapchain.Extent),
-                ClearValueCount = 1,
-                PClearValues = &clearColor
-            };
+            this.pipeline.BeginPass(commandBuffer, imageIndex);
 
-            vk.CmdBeginRenderPass(commandBuffer, in renderBegin, SubpassContents.Inline);
-
-            vk.CmdBindPipeline(commandBuffer, PipelineBindPoint.Graphics, graphicsPipeline);
+            this.pipeline.Bind(commandBuffer);
 
             vk.CmdDraw(commandBuffer, 3, 1, 0, 0);
         }
@@ -324,7 +117,6 @@ namespace OpenH2.Rendering.Vulkan
             var waitStages = stackalloc PipelineStageFlags[] { PipelineStageFlags.PipelineStageColorAttachmentOutputBit };
 
             var signalSems = stackalloc Semaphore[] { renderFinishedSemaphore };
-
 
             var buf = commandBuffer;
             var submitInfo = new SubmitInfo
@@ -388,18 +180,13 @@ namespace OpenH2.Rendering.Vulkan
             // destroy swapchain
             this.swapchain.Dispose();
 
-            // Destroy pipeline
-
-            vk.DestroyPipeline(device, graphicsPipeline, null);
-            vk.DestroyPipelineLayout(device, pipelineLayout, null);
-            vk.DestroyRenderPass(device, renderPass, null);
+            // destroy pipeline
+            this.pipeline.Dispose();
 
             // destroy device
-
             this.device.Dispose();
 
             // destroy instance
-
             this.instance.Dispose();
         }
     }
