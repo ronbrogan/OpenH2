@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace OpenH2.Rendering.Vulkan
 {
-    internal class VkGraphicsPipeline
+    internal class VkDefaultGraphicsPipeline
     {
     }
 }

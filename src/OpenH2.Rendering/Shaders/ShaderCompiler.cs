@@ -42,13 +42,13 @@ namespace OpenH2.Rendering.Shaders
             var geometryShader = 0;
 
             if (string.IsNullOrWhiteSpace(vertexSource) == false)
-                vertexShader = CompileShader(ShaderType.VertexShader, vertexSource, "vertex::" + shaderName);
+                vertexShader = CompileShader(OpenTK.Graphics.OpenGL.ShaderType.VertexShader, vertexSource, "vertex::" + shaderName);
 
             if (string.IsNullOrWhiteSpace(fragmentSource) == false)
-                fragmentShader = CompileShader(ShaderType.FragmentShader, fragmentSource, "fragment::" + shaderName);
+                fragmentShader = CompileShader(OpenTK.Graphics.OpenGL.ShaderType.FragmentShader, fragmentSource, "fragment::" + shaderName);
 
             if (string.IsNullOrWhiteSpace(geomSource) == false)
-                geometryShader = CompileShader(ShaderType.GeometryShader, geomSource, "geom::" + shaderName);
+                geometryShader = CompileShader(OpenTK.Graphics.OpenGL.ShaderType.GeometryShader, geomSource, "geom::" + shaderName);
 
             var program = GL.CreateProgram();
 
@@ -79,7 +79,7 @@ namespace OpenH2.Rendering.Shaders
             return program;
         }
 
-        private static int CompileShader(ShaderType type, string sourceCode, string shaderName)
+        private static int CompileShader(OpenTK.Graphics.OpenGL.ShaderType type, string sourceCode, string shaderName)
         {
             var statusCode = 0;
             var shader = GL.CreateShader(type);

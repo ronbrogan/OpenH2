@@ -31,6 +31,7 @@ namespace OpenH2.Engine
         Func<GameWindow> gameWindowGetter;
 
         private World world;
+        private FlatFileMetricSink sink;
 
         public Engine()
         {
@@ -125,9 +126,9 @@ namespace OpenH2.Engine
             var timestamp = DateTime.Now.ToString("yy-MM-ddTHH-mm");
             var sinkPath = Path.Combine(Environment.CurrentDirectory, "diagnostics", $"{timestamp}-metrics.csv");
             Directory.CreateDirectory(Path.GetDirectoryName(sinkPath));
-            var sink = new FlatFileMetricSink(sinkPath);
-            scene.UseMetricSink(sink);
-            sink.Start();
+            this.sink = new FlatFileMetricSink(sinkPath);
+            scene.UseMetricSink(this.sink);
+            this.sink.Start();
         }
 
         private void PlaceLights(Scene destination)
@@ -164,6 +165,7 @@ namespace OpenH2.Engine
 
         public void Dispose()
         {
+            this.sink.Stop();
             this.graphicsHostDisposable?.Dispose();
         }
 

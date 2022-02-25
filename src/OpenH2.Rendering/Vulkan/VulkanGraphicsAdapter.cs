@@ -215,26 +215,10 @@ namespace OpenH2.Rendering.Vulkan
             //  start pipeline setup
             // =======================
 
-            var vertShader = VkShaderCompiler.LoadSpirvShader(vk, device, "VulkanTest", "vert");
-            var fragShader = VkShaderCompiler.LoadSpirvShader(vk, device, "VulkanTest", "frag");
+            using var vertShader = new VkShader(vk, device, "VulkanTest", ShaderType.Vertex);
+            using var fragShader = new VkShader(vk, device, "VulkanTest", ShaderType.Fragment);
 
-            var vertCreate = new PipelineShaderStageCreateInfo
-            {
-                SType = StructureType.PipelineShaderStageCreateInfo,
-                Stage = ShaderStageFlags.ShaderStageVertexBit,
-                Module = vertShader,
-                PName = PinnedUtf8.Get("main")
-            };
-
-            var fragCreate = new PipelineShaderStageCreateInfo
-            {
-                SType = StructureType.PipelineShaderStageCreateInfo,
-                Stage = ShaderStageFlags.ShaderStageFragmentBit,
-                Module = fragShader,
-                PName = PinnedUtf8.Get("main")
-            };
-
-            var shaderStages = stackalloc PipelineShaderStageCreateInfo[] { vertCreate, fragCreate };
+            var shaderStages = stackalloc PipelineShaderStageCreateInfo[] { vertShader.stageInfo, fragShader.stageInfo };
 
             var vertInput = new PipelineVertexInputStateCreateInfo
             {
@@ -390,11 +374,9 @@ namespace OpenH2.Rendering.Vulkan
                 BasePipelineIndex = -1
             };
 
-            SUCCESS(vk.CreateGraphicsPipelines(device, default, 1, &pipelineCreate, null, out graphicsPipeline), "Pipeline create failed");
+            GC.Collect(2, GCCollectionMode.Forced, true);
 
-            // Clear to destroy shader info after pipeline creation
-            vk.DestroyShaderModule(device, vertShader, null);
-            vk.DestroyShaderModule(device, fragShader, null);
+            SUCCESS(vk.CreateGraphicsPipelines(device, default, 1, &pipelineCreate, null, out graphicsPipeline), "Pipeline create failed");
 
             // =======================
             // framebuffer setup
@@ -703,6 +685,8 @@ namespace OpenH2.Rendering.Vulkan
 
         public void Dispose()
         {
+            vk.DeviceWaitIdle(device);
+
             vk.DestroySemaphore(device, imageAvailableSemaphore, null);
             vk.DestroySemaphore(device, renderFinishedSemaphore, null);
             vk.DestroyFence(device, inFlightFence, null);
@@ -752,48 +736,6 @@ namespace OpenH2.Rendering.Vulkan
             if (!result)
             {
                 throw new Exception(description ?? "Vulkan operation failed");
-            }
-        }
-
-        private class PinnedUtf8
-        {
-            private static ConditionalWeakTable<string, byte[]> pins = new ConditionalWeakTable<string, byte[]>();
-            public readonly byte* Address;
-
-            public PinnedUtf8(string value)
-            {
-                this.Address = Get(value);
-            }
-
-            public static byte* Get(string value)
-            {
-                // Maybe shouldn't use framework interning?
-                var interned = string.Intern(value);
-
-                if(pins.TryGetValue(interned, out var arr))
-                {
-                    return (byte*)Unsafe.AsPointer(ref arr[0]);
-                }
-
-                lock(pins)
-                {
-                    if(pins.TryGetValue(interned, out arr))
-                    {
-                        return (byte*)Unsafe.AsPointer(ref arr[0]);
-                    }
-
-                    arr = GC.AllocateUninitializedArray<byte>(Encoding.UTF8.GetByteCount(interned) + 1, true);
-                    Encoding.UTF8.GetBytes(interned, arr);
-                    arr[arr.Length - 1] = 0; // Null terminate
-                    pins.Add(interned, arr);
-                }
-
-                return (byte*)Unsafe.AsPointer(ref arr[0]); // Just grab pointer since it's already pinned
-            }
-
-            public static implicit operator byte*(PinnedUtf8 obj)
-            {
-                return obj.Address;
             }
         }
     }
