@@ -61,20 +61,6 @@ namespace OpenH2.Rendering.Vulkan
             this.swapchain = device.CreateSwapchain();
             this.pipeline = new VkDefaultGraphicsPipeline(vulkanHost, device, swapchain);
 
-            // =======================
-            // vertex buffer setup
-            // =======================
-
-            this.vertexBuffer = device.CreateBuffer<VulkanTestVertex>(vertices.Length, 
-                BufferUsageFlags.BufferUsageVertexBufferBit, 
-                MemoryPropertyFlags.MemoryPropertyHostVisibleBit | MemoryPropertyFlags.MemoryPropertyHostCoherentBit);
-
-            this.vertexBuffer.Load(vertices);
-
-            // =======================
-            // commandbuffer setup
-            // =======================
-
             var poolCreate = new CommandPoolCreateInfo
             {
                 SType = StructureType.CommandPoolCreateInfo,
@@ -83,6 +69,27 @@ namespace OpenH2.Rendering.Vulkan
             };
 
             SUCCESS(vk.CreateCommandPool(device, in poolCreate, null, out commandPool), "CommandPool create failed");
+
+            // =======================
+            // vertex buffer setup
+            // =======================
+
+            using (var vertexStagingBuffer = device.CreateBuffer<VulkanTestVertex>(vertices.Length,
+                BufferUsageFlags.BufferUsageTransferSrcBit,
+                MemoryPropertyFlags.MemoryPropertyHostVisibleBit | MemoryPropertyFlags.MemoryPropertyHostCoherentBit))
+            {
+                vertexStagingBuffer.Load(vertices);
+
+                this.vertexBuffer = device.CreateBuffer<VulkanTestVertex>(vertices.Length,
+                    BufferUsageFlags.BufferUsageVertexBufferBit | BufferUsageFlags.BufferUsageTransferDstBit,
+                    MemoryPropertyFlags.MemoryPropertyDeviceLocalBit);
+
+                this.vertexBuffer.QueueLoad(vertexStagingBuffer, commandPool);
+            }
+
+            // =======================
+            // commandbuffer setup
+            // =======================
 
             var commandBufAlloc = new CommandBufferAllocateInfo
             {

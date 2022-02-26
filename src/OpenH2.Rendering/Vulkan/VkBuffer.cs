@@ -51,13 +51,61 @@ namespace OpenH2.Rendering.Vulkan
             vk.FreeMemory(device, bufferMemory, null);
         }
 
-        internal void Load(T[] items)
+        public void Load(T[] items)
         {
             void* data = null;
             vk.MapMemory(device, bufferMemory, 0, memorySize, 0, ref data);
             fixed (T* itemsPtr = items)
                 System.Buffer.MemoryCopy(itemsPtr, data, memorySize, memorySize);
             vk.UnmapMemory(device, bufferMemory);
+        }
+
+        public void QueueLoad(VkBuffer<T> source, CommandPool pool)
+        {
+            var bufferCreate = new CommandBufferAllocateInfo
+            {
+                SType = StructureType.CommandBufferAllocateInfo,
+                Level = CommandBufferLevel.Primary,
+                CommandPool = pool,
+                CommandBufferCount = 1
+            };
+
+            vk.AllocateCommandBuffers(device, in bufferCreate, out var commandBuffer);
+
+
+            var begin = new CommandBufferBeginInfo
+            {
+                SType = StructureType.CommandBufferBeginInfo,
+                Flags = CommandBufferUsageFlags.CommandBufferUsageOneTimeSubmitBit
+            };
+
+            vk.BeginCommandBuffer(commandBuffer, in begin);
+
+
+            var copy = new BufferCopy
+            {
+                SrcOffset = 0,
+                DstOffset = 0,
+                Size = memorySize
+            };
+
+            vk.CmdCopyBuffer(commandBuffer, source.buffer, this.buffer, 1, in copy);
+
+            vk.EndCommandBuffer(commandBuffer);
+
+
+            var submit = new SubmitInfo
+            {
+                SType = StructureType.SubmitInfo,
+                CommandBufferCount = 1,
+                PCommandBuffers = &commandBuffer
+            };
+
+            vk.QueueSubmit(device.GraphicsQueue, 1, in submit, default);
+
+            vk.QueueWaitIdle(device.GraphicsQueue);
+
+            vk.FreeCommandBuffers(device, pool, 1, in commandBuffer);
         }
     }
 }
