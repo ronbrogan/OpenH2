@@ -51,7 +51,7 @@ namespace OpenH2.Rendering.Vulkan
             vk.FreeMemory(device, bufferMemory, null);
         }
 
-        public void Load(T[] items)
+        public void Load(ReadOnlySpan<T> items)
         {
             void* data = null;
             vk.MapMemory(device, bufferMemory, 0, memorySize, 0, ref data);
@@ -60,13 +60,13 @@ namespace OpenH2.Rendering.Vulkan
             vk.UnmapMemory(device, bufferMemory);
         }
 
-        public void QueueLoad(VkBuffer<T> source, CommandPool pool)
+        public void QueueLoad(VkBuffer<T> source)
         {
             var bufferCreate = new CommandBufferAllocateInfo
             {
                 SType = StructureType.CommandBufferAllocateInfo,
                 Level = CommandBufferLevel.Primary,
-                CommandPool = pool,
+                CommandPool = device.CommandPool,
                 CommandBufferCount = 1
             };
 
@@ -105,7 +105,7 @@ namespace OpenH2.Rendering.Vulkan
 
             vk.QueueWaitIdle(device.GraphicsQueue);
 
-            vk.FreeCommandBuffers(device, pool, 1, in commandBuffer);
+            vk.FreeCommandBuffers(device, device.CommandPool, 1, in commandBuffer);
         }
     }
 }

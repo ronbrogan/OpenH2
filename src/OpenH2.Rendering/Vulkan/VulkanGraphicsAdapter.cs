@@ -22,6 +22,13 @@ namespace OpenH2.Rendering.Vulkan
         }
     }
 
+    public struct UBO
+    {
+        public Matrix4x4 Model;
+        public Matrix4x4 View;
+        public Matrix4x4 Project;
+    }
+
     public sealed unsafe class VulkanGraphicsAdapter : VkObject, IGraphicsAdapter, IDisposable
     {
         const int MaxFramesInFlight = 2;
@@ -32,7 +39,7 @@ namespace OpenH2.Rendering.Vulkan
         private VkSwapchain swapchain;
         private VkDefaultGraphicsPipeline pipeline;
 
-        private CommandPool commandPool;
+        
 
         private bool recreateSwapchain = false;
 
@@ -50,6 +57,7 @@ namespace OpenH2.Rendering.Vulkan
 
 
         // TODO: need multiple of these to support multiple in-flight frames
+        private VkBuffer<UBO> uboBuffer;
         private CommandBuffer commandBuffer;
         private Semaphore imageAvailableSemaphore;
         private Semaphore renderFinishedSemaphore;
@@ -66,14 +74,7 @@ namespace OpenH2.Rendering.Vulkan
             this.swapchain = device.CreateSwapchain();
             this.pipeline = new VkDefaultGraphicsPipeline(vulkanHost, device, swapchain);
 
-            var poolCreate = new CommandPoolCreateInfo
-            {
-                SType = StructureType.CommandPoolCreateInfo,
-                Flags = CommandPoolCreateFlags.CommandPoolCreateResetCommandBufferBit,
-                QueueFamilyIndex = device.GraphicsQueueFamily.Value
-            };
-
-            SUCCESS(vk.CreateCommandPool(device, in poolCreate, null, out commandPool), "CommandPool create failed");
+            
 
             // =======================
             // vertex buffer setup
@@ -89,7 +90,7 @@ namespace OpenH2.Rendering.Vulkan
                     BufferUsageFlags.BufferUsageVertexBufferBit | BufferUsageFlags.BufferUsageTransferDstBit,
                     MemoryPropertyFlags.MemoryPropertyDeviceLocalBit);
 
-                this.vertexBuffer.QueueLoad(staging, commandPool);
+                this.vertexBuffer.QueueLoad(staging);
             }
 
             using (var staging = device.CreateBuffer<ushort>(indices.Length,
@@ -102,8 +103,14 @@ namespace OpenH2.Rendering.Vulkan
                     BufferUsageFlags.BufferUsageIndexBufferBit | BufferUsageFlags.BufferUsageTransferDstBit,
                     MemoryPropertyFlags.MemoryPropertyDeviceLocalBit);
 
-                this.indexBuffer.QueueLoad(staging, commandPool);
+                this.indexBuffer.QueueLoad(staging);
             }
+
+            this.uboBuffer = device.CreateBuffer<UBO>(1, 
+                BufferUsageFlags.BufferUsageUniformBufferBit, 
+                MemoryPropertyFlags.MemoryPropertyHostVisibleBit | MemoryPropertyFlags.MemoryPropertyHostCoherentBit);
+
+            this.pipeline.CreateDescriptors(this.uboBuffer);
 
             // =======================
             // commandbuffer setup
@@ -112,7 +119,7 @@ namespace OpenH2.Rendering.Vulkan
             var commandBufAlloc = new CommandBufferAllocateInfo
             {
                 SType = StructureType.CommandBufferAllocateInfo,
-                CommandPool = commandPool,
+                CommandPool = device.CommandPool,
                 Level = CommandBufferLevel.Primary,
                 CommandBufferCount = 1
             };
@@ -165,6 +172,8 @@ namespace OpenH2.Rendering.Vulkan
             };
 
             SUCCESS(vk.BeginCommandBuffer(commandBuffer, in bufBegin), "Unable to begin writing to command buffer");
+
+            UpdateUbo(imageIndex);
 
             this.pipeline.BeginPass(commandBuffer, imageIndex);
 
@@ -236,6 +245,28 @@ namespace OpenH2.Rendering.Vulkan
             }
         }
 
+        
+
+        static DateTimeOffset start = DateTimeOffset.UtcNow;
+        const float RadiansPer = (MathF.PI / 180);
+        private static float DegToRad(float deg) => RadiansPer * deg;
+        private void UpdateUbo(uint imageIndex)
+        {
+            var time = (float)(DateTimeOffset.UtcNow - start).TotalSeconds;
+
+            var ubo = new UBO
+            {
+                Model = Matrix4x4.CreateRotationZ(time * DegToRad(90)),
+                View = Matrix4x4.CreateLookAt(new(2f, 2f, 2f), new(0, 0, 0), new(0, 0, 1f)),
+                Project = Matrix4x4.CreatePerspectiveFieldOfView(DegToRad(45), swapchain.Extent.Width / (float)swapchain.Extent.Height, 0.1f, 10f)
+            };
+
+            // Correct for OpenGL Y inversion
+            ubo.Project.M22 *= -1;
+
+            this.uboBuffer/*[imageIndex]*/.Load(stackalloc UBO[] { ubo });
+        }
+
         private void RecreateSwapchain()
         {
             // TODO: spin render thread if width/height are zero, invalid framebuffer for vulkan (happens when minimized)
@@ -246,6 +277,8 @@ namespace OpenH2.Rendering.Vulkan
             this.swapchain.DestroyResources();
             this.swapchain.CreateResources();
             this.pipeline.CreateResources();
+
+            // TODO: multiple frame support: recreate uniform buffers, command buffers, pools??
         }
 
         public void SetSunLight(Vector3 sunDirection)
@@ -276,8 +309,6 @@ namespace OpenH2.Rendering.Vulkan
             vk.DestroySemaphore(device, imageAvailableSemaphore, null);
             vk.DestroySemaphore(device, renderFinishedSemaphore, null);
             vk.DestroyFence(device, inFlightFence, null);
-
-            vk.DestroyCommandPool(device, commandPool, null);
 
             // destroy swapchain
             this.swapchain.Dispose();

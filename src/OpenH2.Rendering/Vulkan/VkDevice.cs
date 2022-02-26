@@ -41,6 +41,9 @@ namespace OpenH2.Rendering.Vulkan
         private SurfaceCapabilitiesKHR caps;
         public SurfaceCapabilitiesKHR SurfaceCapabilities => caps;
 
+        public CommandPool CommandPool { get; private set; }
+        public DescriptorPool DescriptorPool { get; private set; }
+
         public Extent2D Extent => this.ChooseSwapExtent();
 
         public PhysicalDeviceMemoryProperties MemoryProperties { get; private set; }
@@ -106,6 +109,29 @@ namespace OpenH2.Rendering.Vulkan
             SUCCESS(vk.CreateDevice(physicalDevice, in deviceCreate, null, out device), "Logical device creation failed");
             vk.GetDeviceQueue(device, queueFamilies.graphics.Value, 0, out graphicsQueue);
             vk.GetDeviceQueue(device, queueFamilies.present.Value, 0, out presentQueue);
+
+            var poolCreate = new CommandPoolCreateInfo
+            {
+                SType = StructureType.CommandPoolCreateInfo,
+                Flags = CommandPoolCreateFlags.CommandPoolCreateResetCommandBufferBit,
+                QueueFamilyIndex = GraphicsQueueFamily.Value
+            };
+
+            SUCCESS(vk.CreateCommandPool(device, in poolCreate, null, out var commandPool), "CommandPool create failed");
+
+            var descPoolSize = new DescriptorPoolSize(DescriptorType.UniformBuffer, 1);
+            var descPoolCreate = new DescriptorPoolCreateInfo
+            {
+                SType = StructureType.DescriptorPoolCreateInfo,
+                PoolSizeCount = 1,
+                PPoolSizes = &descPoolSize,
+                MaxSets = 1
+            };
+
+            SUCCESS(vk.CreateDescriptorPool(device, in descPoolCreate, null, out var descriptorPool), "DescriptorPool create failed");
+
+            this.CommandPool = commandPool;
+            this.DescriptorPool = descriptorPool;
         }
 
         public VkSwapchain CreateSwapchain()
@@ -277,6 +303,9 @@ namespace OpenH2.Rendering.Vulkan
 
         public void Dispose()
         {
+            vk.DestroyCommandPool(device, CommandPool, null);
+            vk.DestroyDescriptorPool(device, DescriptorPool, null);
+
             if (khrSurfaceExtension != null)
             {
                 khrSurfaceExtension.DestroySurface(instance, surface, null);

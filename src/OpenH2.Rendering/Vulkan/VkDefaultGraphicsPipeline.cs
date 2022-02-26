@@ -14,9 +14,12 @@ namespace OpenH2.Rendering.Vulkan
         private readonly VkDevice device;
         private readonly VkSwapchain swapchain;
 
+        private DescriptorSetLayout descriptorSetLayout;
         private PipelineLayout pipelineLayout;
+
         private RenderPass renderPass;
         private Pipeline graphicsPipeline;
+        private DescriptorSet descriptorSet;
 
         public VkDefaultGraphicsPipeline(VulkanHost host, VkDevice device, VkSwapchain swapchain) : base(host.vk)
         {
@@ -45,14 +48,34 @@ namespace OpenH2.Rendering.Vulkan
         public void Bind(in CommandBuffer commandBuffer)
         {
             vk.CmdBindPipeline(commandBuffer, PipelineBindPoint.Graphics, graphicsPipeline);
+
+            vk.CmdBindDescriptorSets(commandBuffer, PipelineBindPoint.Graphics, pipelineLayout, 0, 1, in descriptorSet, 0, null);
         }
 
         public void CreateResources()
         {
-            using var vertShader = new VkShader(device, "VulkanTest", ShaderType.Vertex);
-            using var fragShader = new VkShader(device, "VulkanTest", ShaderType.Fragment);
+            // =======================
+            // descriptor set setup
+            // =======================
 
-            var shaderStages = stackalloc PipelineShaderStageCreateInfo[] { vertShader.stageInfo, fragShader.stageInfo };
+            // TODO: auto generate descriptors/bindings
+            var uboBinding = new DescriptorSetLayoutBinding
+            {
+                Binding = 0,
+                DescriptorType = DescriptorType.UniformBuffer,
+                DescriptorCount = 1,
+                StageFlags = ShaderStageFlags.ShaderStageVertexBit,
+                PImmutableSamplers = null
+            };
+
+            var descCreate = new DescriptorSetLayoutCreateInfo
+            {
+                SType = StructureType.DescriptorSetLayoutCreateInfo,
+                BindingCount = 1,
+                PBindings = &uboBinding
+            };
+
+            SUCCESS(vk.CreateDescriptorSetLayout(device, in descCreate, null, out descriptorSetLayout), "Descriptor set layout create failed");
 
             // TODO: auto generate binding/attribute descriptions
             var binding = new VertexInputBindingDescription()
@@ -116,7 +139,7 @@ namespace OpenH2.Rendering.Vulkan
                 PolygonMode = PolygonMode.Fill,
                 LineWidth = 1,
                 CullMode = CullModeFlags.CullModeBackBit,
-                FrontFace = FrontFace.Clockwise,
+                FrontFace = FrontFace.CounterClockwise,
                 DepthBiasEnable = false,
                 DepthBiasConstantFactor = 0,
                 DepthBiasClamp = 0,
@@ -161,9 +184,12 @@ namespace OpenH2.Rendering.Vulkan
                 PDynamicStates = dynamicStates,
             };
 
+            var descriptors = stackalloc DescriptorSetLayout[] { descriptorSetLayout };
             var layoutCreate = new PipelineLayoutCreateInfo
             {
                 SType = StructureType.PipelineLayoutCreateInfo,
+                SetLayoutCount = 1,
+                PSetLayouts = descriptors
             };
 
             SUCCESS(vk.CreatePipelineLayout(device, in layoutCreate, null, out pipelineLayout), "Pipeline layout create failed");
@@ -216,6 +242,11 @@ namespace OpenH2.Rendering.Vulkan
 
             SUCCESS(vk.CreateRenderPass(device, in renderPassCreate, null, out renderPass), "Render pass create failed");
 
+            using var vertShader = new VkShader(device, "VulkanTest", ShaderType.Vertex);
+            using var fragShader = new VkShader(device, "VulkanTest", ShaderType.Fragment);
+
+            var shaderStages = stackalloc PipelineShaderStageCreateInfo[] { vertShader.stageInfo, fragShader.stageInfo };
+
             var pipelineCreate = new GraphicsPipelineCreateInfo
             {
                 SType = StructureType.GraphicsPipelineCreateInfo,
@@ -241,8 +272,40 @@ namespace OpenH2.Rendering.Vulkan
             swapchain.InitializeFramebuffers(renderPass);
         }
 
+        public void CreateDescriptors(VkBuffer<UBO> ubo)
+        {
+            var layouts = stackalloc DescriptorSetLayout[] { descriptorSetLayout };
+            var alloc = new DescriptorSetAllocateInfo
+            {
+                SType = StructureType.DescriptorSetAllocateInfo,
+                DescriptorPool = device.DescriptorPool,
+                DescriptorSetCount = 1,
+                PSetLayouts = layouts
+            };
+
+            SUCCESS(vk.AllocateDescriptorSets(device, in alloc, out descriptorSet), "DescriptorSet allocate failed");
+
+            var info = new DescriptorBufferInfo(ubo, 0, Vk.WholeSize);
+
+            var write = new WriteDescriptorSet
+            {
+                SType = StructureType.WriteDescriptorSet,
+                DstSet = descriptorSet,
+                DstBinding = 0,
+                DstArrayElement = 0,
+                DescriptorType = DescriptorType.UniformBuffer,
+                DescriptorCount = 1,
+                PBufferInfo = &info,
+                PImageInfo = null,
+                PTexelBufferView = null
+            };
+
+            vk.UpdateDescriptorSets(device, 1, in write, 0, null);
+        }
+
         public void DestroyResources()
         {
+            vk.DestroyDescriptorSetLayout(device, descriptorSetLayout, null);
             vk.DestroyPipeline(device, graphicsPipeline, null);
             vk.DestroyPipelineLayout(device, pipelineLayout, null);
             vk.DestroyRenderPass(device, renderPass, null);
