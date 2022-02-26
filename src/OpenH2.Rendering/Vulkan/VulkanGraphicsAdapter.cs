@@ -42,8 +42,7 @@ namespace OpenH2.Rendering.Vulkan
             new (new (0.5f, 0.5f), new (0f, 1f, 0f)),
             new (new (-0.5f, 0.5f), new (0f, 0f, 1f)),
         };
-        private Buffer vertexBuffer;
-        private DeviceMemory vertBufMem;
+        private VkBuffer<VulkanTestVertex> vertexBuffer;
 
         // TODO: need multiple of these to support multiple in-flight frames
         private CommandBuffer commandBuffer;
@@ -66,34 +65,11 @@ namespace OpenH2.Rendering.Vulkan
             // vertex buffer setup
             // =======================
 
-            var vertCreate = new BufferCreateInfo
-            {
-                SType = StructureType.BufferCreateInfo,
-                Size = (ulong)(sizeof(VulkanTestVertex) * vertices.Length),
-                Usage = BufferUsageFlags.BufferUsageVertexBufferBit,
-                SharingMode = SharingMode.Exclusive
-            };
+            this.vertexBuffer = device.CreateBuffer<VulkanTestVertex>(vertices.Length, 
+                BufferUsageFlags.BufferUsageVertexBufferBit, 
+                MemoryPropertyFlags.MemoryPropertyHostVisibleBit | MemoryPropertyFlags.MemoryPropertyHostCoherentBit);
 
-            SUCCESS(vk.CreateBuffer(device, in vertCreate, null, out vertexBuffer), "Vertex buffer create failed");
-
-            vk.GetBufferMemoryRequirements(device, vertexBuffer, out var memReq);
-
-            var vertAlloc = new MemoryAllocateInfo
-            {
-                SType = StructureType.MemoryAllocateInfo,
-                AllocationSize = memReq.Size,
-                MemoryTypeIndex = device.FindMemoryType(memReq.MemoryTypeBits, MemoryPropertyFlags.MemoryPropertyHostVisibleBit | MemoryPropertyFlags.MemoryPropertyHostCoherentBit)
-            };
-
-            SUCCESS(vk.AllocateMemory(device, in vertAlloc, null, out vertBufMem), "Unable to allocate vertex buffer memory");
-            vk.BindBufferMemory(device, vertexBuffer, vertBufMem, 0);
-
-
-            void* data = null;
-            vk.MapMemory(device, vertBufMem, 0, vertCreate.Size, 0, ref data);
-            fixed (VulkanTestVertex* vertsPtr = vertices)
-                System.Buffer.MemoryCopy(vertsPtr, data, vertCreate.Size, vertCreate.Size);
-            vk.UnmapMemory(device, vertBufMem);
+            this.vertexBuffer.Load(vertices);
 
             // =======================
             // commandbuffer setup
@@ -266,8 +242,7 @@ namespace OpenH2.Rendering.Vulkan
         {
             vk.DeviceWaitIdle(device);
 
-            vk.DestroyBuffer(device, vertexBuffer, null);
-            vk.FreeMemory(device, vertBufMem, null);
+            this.vertexBuffer.Dispose();
 
             vk.DestroySemaphore(device, imageAvailableSemaphore, null);
             vk.DestroySemaphore(device, renderFinishedSemaphore, null);

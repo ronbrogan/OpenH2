@@ -113,6 +113,11 @@ namespace OpenH2.Rendering.Vulkan
             return new VkSwapchain(this.vulkanHost, this.instance, this);
         }
 
+        public VkBuffer<T> CreateBuffer<T>(int count, BufferUsageFlags usage, MemoryPropertyFlags memoryProperties) where T: unmanaged
+        {
+            return new VkBuffer<T>(this, count, usage, memoryProperties);
+        }
+
         public uint FindMemoryType(uint typeFilter, MemoryPropertyFlags properties)
         {
             for(var i = 0; i < this.MemoryProperties.MemoryTypeCount; i++)
