@@ -22,6 +22,32 @@ namespace OpenH2.Rendering.Vulkan
             this.device = device;
             this.swapchain = swapchain;
 
+            this.CreateResources();
+        }
+
+        internal void BeginPass(in CommandBuffer commandBuffer, uint imageIndex)
+        {
+            var clearColor = new ClearValue(new ClearColorValue(0f, 0f, 0f, 1f));
+            var renderBegin = new RenderPassBeginInfo
+            {
+                SType = StructureType.RenderPassBeginInfo,
+                RenderPass = renderPass,
+                Framebuffer = swapchain.Framebuffers[imageIndex],
+                RenderArea = new Rect2D(new Offset2D(0, 0), swapchain.Extent),
+                ClearValueCount = 1,
+                PClearValues = &clearColor
+            };
+
+            vk.CmdBeginRenderPass(commandBuffer, in renderBegin, SubpassContents.Inline);
+        }
+
+        public void Bind(in CommandBuffer commandBuffer)
+        {
+            vk.CmdBindPipeline(commandBuffer, PipelineBindPoint.Graphics, graphicsPipeline);
+        }
+
+        public void CreateResources()
+        {
             using var vertShader = new VkShader(device, "VulkanTest", ShaderType.Vertex);
             using var fragShader = new VkShader(device, "VulkanTest", ShaderType.Fragment);
 
@@ -186,33 +212,16 @@ namespace OpenH2.Rendering.Vulkan
             swapchain.InitializeFramebuffers(renderPass);
         }
 
-        internal void BeginPass(in CommandBuffer commandBuffer, uint imageIndex)
-        {
-            var clearColor = new ClearValue(new ClearColorValue(0f, 0f, 0f, 1f));
-            var renderBegin = new RenderPassBeginInfo
-            {
-                SType = StructureType.RenderPassBeginInfo,
-                RenderPass = renderPass,
-                Framebuffer = swapchain.Framebuffers[imageIndex],
-                RenderArea = new Rect2D(new Offset2D(0, 0), swapchain.Extent),
-                ClearValueCount = 1,
-                PClearValues = &clearColor
-            };
-
-            vk.CmdBeginRenderPass(commandBuffer, in renderBegin, SubpassContents.Inline);
-        }
-
-        public void Bind(in CommandBuffer commandBuffer)
-        {
-            vk.CmdBindPipeline(commandBuffer, PipelineBindPoint.Graphics, graphicsPipeline);
-        }
-
-
-        public void Dispose()
+        public void DestroyResources()
         {
             vk.DestroyPipeline(device, graphicsPipeline, null);
             vk.DestroyPipelineLayout(device, pipelineLayout, null);
             vk.DestroyRenderPass(device, renderPass, null);
+        }
+
+        public void Dispose()
+        {
+            this.DestroyResources();
         }
     }
 }

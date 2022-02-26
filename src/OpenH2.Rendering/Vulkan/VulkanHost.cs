@@ -48,7 +48,7 @@ namespace OpenH2.Rendering.Vulkan
                 throw new NotSupportedException("Unable to use Vulkan!");
             }
 
-            this.adapter = new VulkanGraphicsAdapter(this, this.window.VkSurface);
+            this.adapter = new VulkanGraphicsAdapter(this);
         }
 
         public void EnableConsoleDebug()

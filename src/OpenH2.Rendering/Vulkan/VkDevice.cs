@@ -11,6 +11,7 @@ namespace OpenH2.Rendering.Vulkan
 {
     internal unsafe sealed class VkDevice : VkObject, IDisposable
     {
+        private PhysicalDevice physicalDevice;
         private Device device;
         private VkInstance instance;
         private KhrSurface khrSurfaceExtension;
@@ -40,7 +41,7 @@ namespace OpenH2.Rendering.Vulkan
         private SurfaceCapabilitiesKHR caps;
         public SurfaceCapabilitiesKHR SurfaceCapabilities => caps;
 
-        public Extent2D Extent => this.ChooseSwapExtent(this.caps);
+        public Extent2D Extent => this.ChooseSwapExtent();
 
         public VkDevice(VulkanHost host, VkInstance instance, string[] validationLayers) : base(instance.vk)
         {
@@ -51,7 +52,7 @@ namespace OpenH2.Rendering.Vulkan
             this.surface = host.window.VkSurface.Create<AllocationCallbacks>(instance.Instance.ToHandle(), null).ToSurface();
 
             // Choose appropriate physical device and get relevant settings to create logical device and swapchains
-            if (!ChooseDevice(instance, out var phyDevice, out queueFamilies, out caps, out format, out presentMode))
+            if (!ChooseDevice(instance, out physicalDevice, out queueFamilies, out caps, out format, out presentMode))
             {
                 throw new Exception("No supported devices found");
             }
@@ -97,7 +98,7 @@ namespace OpenH2.Rendering.Vulkan
             };
 
             // Create logical device and grab device-specific resources
-            SUCCESS(vk.CreateDevice(phyDevice, in deviceCreate, null, out device), "Logical device creation failed");
+            SUCCESS(vk.CreateDevice(physicalDevice, in deviceCreate, null, out device), "Logical device creation failed");
             vk.GetDeviceQueue(device, queueFamilies.graphics.Value, 0, out graphicsQueue);
             vk.GetDeviceQueue(device, queueFamilies.present.Value, 0, out presentQueue);
         }
@@ -233,17 +234,19 @@ namespace OpenH2.Rendering.Vulkan
             return PresentModeKHR.PresentModeFifoKhr;
         }
 
-        private Extent2D ChooseSwapExtent(SurfaceCapabilitiesKHR capabilities)
+        private Extent2D ChooseSwapExtent()
         {
-            if (capabilities.CurrentExtent.Width != uint.MaxValue)
-                return capabilities.CurrentExtent;
+            khrSurfaceExtension.GetPhysicalDeviceSurfaceCapabilities(physicalDevice, surface, out caps);
+
+            if (caps.CurrentExtent.Width != uint.MaxValue)
+                return caps.CurrentExtent;
 
             var fbSize = this.vulkanHost.window.FramebufferSize;
 
             return new Extent2D
             {
-                Width = (uint)Math.Clamp(fbSize.X, capabilities.MinImageExtent.Width, capabilities.MaxImageExtent.Width),
-                Height = (uint)Math.Clamp(fbSize.Y, capabilities.MinImageExtent.Height, capabilities.MaxImageExtent.Height),
+                Width = (uint)Math.Clamp(fbSize.X, caps.MinImageExtent.Width, caps.MaxImageExtent.Width),
+                Height = (uint)Math.Clamp(fbSize.Y, caps.MinImageExtent.Height, caps.MaxImageExtent.Height),
             };
         }
 

@@ -14,7 +14,6 @@ namespace OpenH2.Rendering.Vulkan
         const int MaxFramesInFlight = 2;
 
         private VulkanHost vulkanHost;
-        private IVkSurface vkSurface;
         private VkInstance instance;
         private VkDevice device;
         private VkSwapchain swapchain;
@@ -22,16 +21,19 @@ namespace OpenH2.Rendering.Vulkan
 
         private CommandPool commandPool;
 
+        private bool recreateSwapchain = false;
+
         // TODO: need multiple of these to support multiple in-flight frames
         private CommandBuffer commandBuffer;
         private Semaphore imageAvailableSemaphore;
         private Semaphore renderFinishedSemaphore;
         private Fence inFlightFence;
 
-        public VulkanGraphicsAdapter(VulkanHost vulkanHost, IVkSurface vkSurface) : base(vulkanHost.vk)
+        public VulkanGraphicsAdapter(VulkanHost vulkanHost) : base(vulkanHost.vk)
         {
-            this.vkSurface = vkSurface;
             this.vulkanHost = vulkanHost;
+
+            vulkanHost.window.Resize += (s) => recreateSwapchain = true;
 
             this.instance = new VkInstance(vulkanHost);
             this.device = instance.CreateDevice();
@@ -82,9 +84,20 @@ namespace OpenH2.Rendering.Vulkan
         public void BeginFrame(GlobalUniform matricies)
         {
             vk.WaitForFences(device, 1, in inFlightFence, true, ulong.MaxValue);
-            vk.ResetFences(device, 1, in inFlightFence);
 
-            swapchain.AcquireNextImage(imageAvailableSemaphore, default, ref imageIndex);
+            var acquired = swapchain.AcquireNextImage(imageAvailableSemaphore, default, ref imageIndex);
+
+            if(acquired == Result.ErrorOutOfDateKhr)
+            {
+                RecreateSwapchain();
+                return;
+            } 
+            else if (acquired != Result.Success && acquired != Result.SuboptimalKhr)
+            {
+                throw new Exception("Failed to acquire swapchain image");
+            }
+
+            vk.ResetFences(device, 1, in inFlightFence);
 
             vk.ResetCommandBuffer(commandBuffer, (CommandBufferResetFlags)0);
 
@@ -146,7 +159,28 @@ namespace OpenH2.Rendering.Vulkan
                 PResults = null
             };
 
-            swapchain.QueuePresent(in presentInfo);
+            var presented = swapchain.QueuePresent(in presentInfo);
+
+            if (presented == Result.ErrorOutOfDateKhr || presented == Result.SuboptimalKhr || recreateSwapchain)
+            {
+                RecreateSwapchain();
+            }
+            else if (presented != Result.Success)
+            {
+                throw new Exception("Failed to acquire swapchain image");
+            }
+        }
+
+        private void RecreateSwapchain()
+        {
+            // TODO: spin render thread if width/height are zero, invalid framebuffer for vulkan (happens when minimized)
+
+            recreateSwapchain = false;
+            vk.DeviceWaitIdle(device);
+            this.pipeline.DestroyResources();
+            this.swapchain.DestroyResources();
+            this.swapchain.CreateResources();
+            this.pipeline.CreateResources();
         }
 
         public void SetSunLight(Vector3 sunDirection)

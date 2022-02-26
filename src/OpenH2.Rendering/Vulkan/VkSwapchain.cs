@@ -17,6 +17,7 @@ namespace OpenH2.Rendering.Vulkan
 
 
         private SwapchainKHR swapchain;
+        private uint imageCount;
         private Image[] swapchainImages;
         private ImageView[] swapchainImageviews;
         private Framebuffer[] swapchainFramebuffers;
@@ -37,74 +38,8 @@ namespace OpenH2.Rendering.Vulkan
             this.device = device;
             this.vulkanHost = host;
 
-            var caps = device.SurfaceCapabilities;
-            
             SUCCESS(vk.TryGetDeviceExtension(instance, device, out khrSwapchainExt), "Couldn't get swapchain extension");
-            
-
-            // One more than min count, unless we're bound by max image count
-            var imgCount = caps.MinImageCount + 1;
-            if (caps.MaxImageCount > 0 && imgCount > caps.MaxImageCount)
-                imgCount = caps.MaxImageCount;
-
-            // Prepare to create swapchain with what we've found
-            var swapchainCreate = new SwapchainCreateInfoKHR
-            {
-                SType = StructureType.SwapchainCreateInfoKhr,
-                Surface = device.Surface,
-                MinImageCount = imgCount,
-                ImageFormat = device.SurfaceFormat.Format,
-                ImageColorSpace = device.SurfaceFormat.ColorSpace,
-                ImageExtent = device.Extent,
-                ImageArrayLayers = 1,
-                ImageUsage = ImageUsageFlags.ImageUsageColorAttachmentBit,
-                PreTransform = caps.CurrentTransform,
-                CompositeAlpha = CompositeAlphaFlagsKHR.CompositeAlphaOpaqueBitKhr,
-                PresentMode = device.PresentMode,
-                Clipped = true,
-                OldSwapchain = default,
-                ImageSharingMode = SharingMode.Exclusive,
-            };
-
-            // If we're not using the same queue, setup concurrent images
-            if (device.GraphicsQueueFamily != device.PresentQueueFamily)
-            {
-                var queueFamilyIndices = stackalloc uint[] { device.GraphicsQueueFamily.Value, device.PresentQueueFamily.Value };
-                swapchainCreate.ImageSharingMode = SharingMode.Concurrent;
-                swapchainCreate.QueueFamilyIndexCount = 2;
-                swapchainCreate.PQueueFamilyIndices = queueFamilyIndices;
-            }
-
-            SUCCESS(khrSwapchainExt.CreateSwapchain(device, in swapchainCreate, null, out swapchain), "failed to create swapchain");
-            khrSwapchainExt.GetSwapchainImages(device, swapchain, ref imgCount, null);
-            swapchainImages = new Image[imgCount];
-            swapchainImageviews = new ImageView[imgCount];
-            swapchainFramebuffers = new Framebuffer[imgCount];
-
-            khrSwapchainExt.GetSwapchainImages(device, swapchain, ref imgCount, out swapchainImages[0]);
-            swapchainParams = (device.SurfaceFormat.Format, device.Extent);
-
-            for (int i = 0; i < imgCount; i++)
-            {
-                var imgViewCreate = new ImageViewCreateInfo
-                {
-                    SType = StructureType.ImageViewCreateInfo,
-                    Image = swapchainImages[i],
-                    ViewType = ImageViewType.ImageViewType2D,
-                    Format = device.SurfaceFormat.Format,
-                    Components = new ComponentMapping(ComponentSwizzle.Identity, ComponentSwizzle.Identity, ComponentSwizzle.Identity, ComponentSwizzle.Identity),
-                    SubresourceRange = new ImageSubresourceRange
-                    {
-                        AspectMask = ImageAspectFlags.ImageAspectColorBit,
-                        BaseMipLevel = 0,
-                        LevelCount = 1,
-                        BaseArrayLayer = 0,
-                        LayerCount = 1
-                    }
-                };
-
-                SUCCESS(vk.CreateImageView(device, in imgViewCreate, null, out swapchainImageviews[i]), "Image view create failed");
-            }
+            this.CreateResources();
         }
 
         public Result AcquireNextImage(Semaphore semaphore, Fence fence, ref uint index)
@@ -141,7 +76,77 @@ namespace OpenH2.Rendering.Vulkan
 
         public static implicit operator SwapchainKHR(VkSwapchain @this) => @this.swapchain;
 
-        public void Dispose()
+        public void CreateResources()
+        {
+            var currentExtent = device.Extent;
+
+            // One more than min count, unless we're bound by max image count
+            var caps = device.SurfaceCapabilities;
+            imageCount = caps.MinImageCount + 1;
+            if (caps.MaxImageCount > 0 && imageCount > caps.MaxImageCount)
+                imageCount = caps.MaxImageCount;
+
+            // Prepare to create swapchain with what we've found
+            var swapchainCreate = new SwapchainCreateInfoKHR
+            {
+                SType = StructureType.SwapchainCreateInfoKhr,
+                Surface = device.Surface,
+                MinImageCount = imageCount,
+                ImageFormat = device.SurfaceFormat.Format,
+                ImageColorSpace = device.SurfaceFormat.ColorSpace,
+                ImageExtent = currentExtent,
+                ImageArrayLayers = 1,
+                ImageUsage = ImageUsageFlags.ImageUsageColorAttachmentBit,
+                PreTransform = caps.CurrentTransform,
+                CompositeAlpha = CompositeAlphaFlagsKHR.CompositeAlphaOpaqueBitKhr,
+                PresentMode = device.PresentMode,
+                Clipped = true,
+                OldSwapchain = default,
+                ImageSharingMode = SharingMode.Exclusive,
+            };
+
+            // If we're not using the same queue, setup concurrent images
+            if (device.GraphicsQueueFamily != device.PresentQueueFamily)
+            {
+                var queueFamilyIndices = stackalloc uint[] { device.GraphicsQueueFamily.Value, device.PresentQueueFamily.Value };
+                swapchainCreate.ImageSharingMode = SharingMode.Concurrent;
+                swapchainCreate.QueueFamilyIndexCount = 2;
+                swapchainCreate.PQueueFamilyIndices = queueFamilyIndices;
+            }
+
+            SUCCESS(khrSwapchainExt.CreateSwapchain(device, in swapchainCreate, null, out swapchain), "failed to create swapchain");
+            khrSwapchainExt.GetSwapchainImages(device, swapchain, ref imageCount, null);
+            swapchainImages = new Image[imageCount];
+            swapchainImageviews = new ImageView[imageCount];
+            swapchainFramebuffers = new Framebuffer[imageCount];
+
+            khrSwapchainExt.GetSwapchainImages(device, swapchain, ref imageCount, out swapchainImages[0]);
+            swapchainParams = (device.SurfaceFormat.Format, currentExtent);
+
+            for (int i = 0; i < imageCount; i++)
+            {
+                var imgViewCreate = new ImageViewCreateInfo
+                {
+                    SType = StructureType.ImageViewCreateInfo,
+                    Image = swapchainImages[i],
+                    ViewType = ImageViewType.ImageViewType2D,
+                    Format = device.SurfaceFormat.Format,
+                    Components = new ComponentMapping(ComponentSwizzle.Identity, ComponentSwizzle.Identity, ComponentSwizzle.Identity, ComponentSwizzle.Identity),
+                    SubresourceRange = new ImageSubresourceRange
+                    {
+                        AspectMask = ImageAspectFlags.ImageAspectColorBit,
+                        BaseMipLevel = 0,
+                        LevelCount = 1,
+                        BaseArrayLayer = 0,
+                        LayerCount = 1
+                    }
+                };
+
+                SUCCESS(vk.CreateImageView(device, in imgViewCreate, null, out swapchainImageviews[i]), "Image view create failed");
+            }
+        }
+
+        public void DestroyResources()
         {
             foreach (var buf in swapchainFramebuffers)
             {
@@ -156,6 +161,15 @@ namespace OpenH2.Rendering.Vulkan
             if (khrSwapchainExt != null)
             {
                 khrSwapchainExt.DestroySwapchain(device, swapchain, null);
+            }
+        }
+
+        public void Dispose()
+        {
+            this.DestroyResources();
+
+            if (khrSwapchainExt != null)
+            {
                 khrSwapchainExt.Dispose();
             }
         }
