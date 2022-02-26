@@ -2,13 +2,26 @@
 using OpenH2.Foundation;
 using OpenH2.Rendering.Abstractions;
 using OpenH2.Rendering.Shaders;
-using Silk.NET.Core.Contexts;
 using Silk.NET.Vulkan;
 using System;
 using System.Numerics;
+using System.Runtime.InteropServices;
+using Buffer = Silk.NET.Vulkan.Buffer;
 
 namespace OpenH2.Rendering.Vulkan
 {
+    public struct VulkanTestVertex
+    {
+        public Vector2 VertexPosition;
+        public Vector3 VertexColor;
+
+        public VulkanTestVertex(Vector2 pos, Vector3 color)
+        {
+            this.VertexPosition = pos;
+            this.VertexColor = color;
+        }
+    }
+
     public sealed unsafe class VulkanGraphicsAdapter : VkObject, IGraphicsAdapter, IDisposable
     {
         const int MaxFramesInFlight = 2;
@@ -22,6 +35,15 @@ namespace OpenH2.Rendering.Vulkan
         private CommandPool commandPool;
 
         private bool recreateSwapchain = false;
+
+        VulkanTestVertex[] vertices = new VulkanTestVertex[]
+        {
+            new (new (0f, -0.5f), new (1f, 1f, 1f)),
+            new (new (0.5f, 0.5f), new (0f, 1f, 0f)),
+            new (new (-0.5f, 0.5f), new (0f, 0f, 1f)),
+        };
+        private Buffer vertexBuffer;
+        private DeviceMemory vertBufMem;
 
         // TODO: need multiple of these to support multiple in-flight frames
         private CommandBuffer commandBuffer;
@@ -39,6 +61,39 @@ namespace OpenH2.Rendering.Vulkan
             this.device = instance.CreateDevice();
             this.swapchain = device.CreateSwapchain();
             this.pipeline = new VkDefaultGraphicsPipeline(vulkanHost, device, swapchain);
+
+            // =======================
+            // vertex buffer setup
+            // =======================
+
+            var vertCreate = new BufferCreateInfo
+            {
+                SType = StructureType.BufferCreateInfo,
+                Size = (ulong)(sizeof(VulkanTestVertex) * vertices.Length),
+                Usage = BufferUsageFlags.BufferUsageVertexBufferBit,
+                SharingMode = SharingMode.Exclusive
+            };
+
+            SUCCESS(vk.CreateBuffer(device, in vertCreate, null, out vertexBuffer), "Vertex buffer create failed");
+
+            vk.GetBufferMemoryRequirements(device, vertexBuffer, out var memReq);
+
+            var vertAlloc = new MemoryAllocateInfo
+            {
+                SType = StructureType.MemoryAllocateInfo,
+                AllocationSize = memReq.Size,
+                MemoryTypeIndex = device.FindMemoryType(memReq.MemoryTypeBits, MemoryPropertyFlags.MemoryPropertyHostVisibleBit | MemoryPropertyFlags.MemoryPropertyHostCoherentBit)
+            };
+
+            SUCCESS(vk.AllocateMemory(device, in vertAlloc, null, out vertBufMem), "Unable to allocate vertex buffer memory");
+            vk.BindBufferMemory(device, vertexBuffer, vertBufMem, 0);
+
+
+            void* data = null;
+            vk.MapMemory(device, vertBufMem, 0, vertCreate.Size, 0, ref data);
+            fixed (VulkanTestVertex* vertsPtr = vertices)
+                System.Buffer.MemoryCopy(vertsPtr, data, vertCreate.Size, vertCreate.Size);
+            vk.UnmapMemory(device, vertBufMem);
 
             // =======================
             // commandbuffer setup
@@ -75,12 +130,14 @@ namespace OpenH2.Rendering.Vulkan
             SUCCESS(vk.CreateFence(device, &fenceInfo, null, out inFlightFence));
         }
 
+        
 
         public void AddLight(PointLight light)
         {
         }
 
         private uint imageIndex = 0;
+
         public void BeginFrame(GlobalUniform matricies)
         {
             vk.WaitForFences(device, 1, in inFlightFence, true, ulong.MaxValue);
@@ -112,7 +169,11 @@ namespace OpenH2.Rendering.Vulkan
 
             this.pipeline.Bind(commandBuffer);
 
-            vk.CmdDraw(commandBuffer, 3, 1, 0, 0);
+            var vertexBuffers = stackalloc Buffer[]{ vertexBuffer };
+            var offsets = stackalloc ulong[] { 0 };
+            vk.CmdBindVertexBuffers(commandBuffer, 0, 1, vertexBuffers, offsets);
+
+            vk.CmdDraw(commandBuffer, (uint)vertices.Length, 1, 0, 0);
         }
 
         public void DrawMeshes(DrawCommand[] commands)
@@ -204,6 +265,9 @@ namespace OpenH2.Rendering.Vulkan
         public void Dispose()
         {
             vk.DeviceWaitIdle(device);
+
+            vk.DestroyBuffer(device, vertexBuffer, null);
+            vk.FreeMemory(device, vertBufMem, null);
 
             vk.DestroySemaphore(device, imageAvailableSemaphore, null);
             vk.DestroySemaphore(device, renderFinishedSemaphore, null);

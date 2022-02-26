@@ -43,6 +43,8 @@ namespace OpenH2.Rendering.Vulkan
 
         public Extent2D Extent => this.ChooseSwapExtent();
 
+        public PhysicalDeviceMemoryProperties MemoryProperties { get; private set; }
+
         public VkDevice(VulkanHost host, VkInstance instance, string[] validationLayers) : base(instance.vk)
         {
             this.vulkanHost = host;
@@ -56,6 +58,9 @@ namespace OpenH2.Rendering.Vulkan
             {
                 throw new Exception("No supported devices found");
             }
+
+            vk.GetPhysicalDeviceMemoryProperties(physicalDevice, out var memProps);
+            this.MemoryProperties = memProps;
 
             var uniqueFamilies = new HashSet<uint> { queueFamilies.graphics.Value, queueFamilies.present.Value };
             var queueCreateInfos = stackalloc DeviceQueueCreateInfo[uniqueFamilies.Count];
@@ -106,6 +111,19 @@ namespace OpenH2.Rendering.Vulkan
         public VkSwapchain CreateSwapchain()
         {
             return new VkSwapchain(this.vulkanHost, this.instance, this);
+        }
+
+        public uint FindMemoryType(uint typeFilter, MemoryPropertyFlags properties)
+        {
+            for(var i = 0; i < this.MemoryProperties.MemoryTypeCount; i++)
+            {
+                if((typeFilter & (1 << i)) != 0 && (this.MemoryProperties.MemoryTypes[i].PropertyFlags & properties) == properties)
+                {
+                    return (uint)i;
+                }
+            }
+
+            throw new NotSupportedException("Unable to find suitable memory type");
         }
 
         private bool QuerySwapchainSupport(PhysicalDevice phyDevice,

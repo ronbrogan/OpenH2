@@ -3,6 +3,7 @@ using Silk.NET.Vulkan;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Numerics;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -53,11 +54,39 @@ namespace OpenH2.Rendering.Vulkan
 
             var shaderStages = stackalloc PipelineShaderStageCreateInfo[] { vertShader.stageInfo, fragShader.stageInfo };
 
+            // TODO: auto generate binding/attribute descriptions
+            var binding = new VertexInputBindingDescription()
+            {
+                Binding = 0,
+                InputRate = VertexInputRate.Vertex,
+                Stride = (uint)sizeof(VulkanTestVertex)
+            };
+
+            var posAttr = new VertexInputAttributeDescription
+            {
+                Binding = 0,
+                Location = 0,
+                Format = Format.R32G32Sfloat,
+                Offset = 0,
+            };
+
+            var colorAttr = new VertexInputAttributeDescription
+            {
+                Binding = 0,
+                Location = 1,
+                Format = Format.R32G32B32Sfloat,
+                Offset = (uint)sizeof(Vector2)
+            };
+
+            var attrs = stackalloc VertexInputAttributeDescription[] { posAttr, colorAttr };
+
             var vertInput = new PipelineVertexInputStateCreateInfo
             {
                 SType = StructureType.PipelineVertexInputStateCreateInfo,
-                VertexBindingDescriptionCount = 0,
-                VertexAttributeDescriptionCount = 0
+                VertexBindingDescriptionCount = 1,
+                PVertexBindingDescriptions = &binding,
+                VertexAttributeDescriptionCount = 2,
+                PVertexAttributeDescriptions = attrs
             };
 
             var inputAssembly = new PipelineInputAssemblyStateCreateInfo
