@@ -36,13 +36,18 @@ namespace OpenH2.Rendering.Vulkan
 
         private bool recreateSwapchain = false;
 
+        ushort[] indices = new ushort[] { 0, 1, 2, 2, 3, 0 };
         VulkanTestVertex[] vertices = new VulkanTestVertex[]
         {
-            new (new (0f, -0.5f), new (1f, 1f, 1f)),
-            new (new (0.5f, 0.5f), new (0f, 1f, 0f)),
-            new (new (-0.5f, 0.5f), new (0f, 0f, 1f)),
+            new (new (-0.5f, -0.5f), new (1f, 0f, 0f)),
+            new (new (0.5f, -0.5f), new (0f, 1f, 0f)),
+            new (new (0.5f, 0.5f), new (0f, 0f, 1f)),
+            new (new (-0.5f, 0.5f), new (1f, 1f, 1f)),
         };
+
+        private VkBuffer<ushort> indexBuffer;
         private VkBuffer<VulkanTestVertex> vertexBuffer;
+
 
         // TODO: need multiple of these to support multiple in-flight frames
         private CommandBuffer commandBuffer;
@@ -74,17 +79,30 @@ namespace OpenH2.Rendering.Vulkan
             // vertex buffer setup
             // =======================
 
-            using (var vertexStagingBuffer = device.CreateBuffer<VulkanTestVertex>(vertices.Length,
+            using (var staging = device.CreateBuffer<VulkanTestVertex>(vertices.Length,
                 BufferUsageFlags.BufferUsageTransferSrcBit,
                 MemoryPropertyFlags.MemoryPropertyHostVisibleBit | MemoryPropertyFlags.MemoryPropertyHostCoherentBit))
             {
-                vertexStagingBuffer.Load(vertices);
+                staging.Load(vertices);
 
                 this.vertexBuffer = device.CreateBuffer<VulkanTestVertex>(vertices.Length,
                     BufferUsageFlags.BufferUsageVertexBufferBit | BufferUsageFlags.BufferUsageTransferDstBit,
                     MemoryPropertyFlags.MemoryPropertyDeviceLocalBit);
 
-                this.vertexBuffer.QueueLoad(vertexStagingBuffer, commandPool);
+                this.vertexBuffer.QueueLoad(staging, commandPool);
+            }
+
+            using (var staging = device.CreateBuffer<ushort>(indices.Length,
+                BufferUsageFlags.BufferUsageTransferSrcBit,
+                MemoryPropertyFlags.MemoryPropertyHostVisibleBit | MemoryPropertyFlags.MemoryPropertyHostCoherentBit))
+            {
+                staging.Load(indices);
+
+                this.indexBuffer = device.CreateBuffer<ushort>(indices.Length,
+                    BufferUsageFlags.BufferUsageIndexBufferBit | BufferUsageFlags.BufferUsageTransferDstBit,
+                    MemoryPropertyFlags.MemoryPropertyDeviceLocalBit);
+
+                this.indexBuffer.QueueLoad(staging, commandPool);
             }
 
             // =======================
@@ -156,7 +174,10 @@ namespace OpenH2.Rendering.Vulkan
             var offsets = stackalloc ulong[] { 0 };
             vk.CmdBindVertexBuffers(commandBuffer, 0, 1, vertexBuffers, offsets);
 
-            vk.CmdDraw(commandBuffer, (uint)vertices.Length, 1, 0, 0);
+            vk.CmdBindIndexBuffer(commandBuffer, indexBuffer, 0, IndexType.Uint16);
+
+            //vk.CmdDraw(commandBuffer, (uint)vertices.Length, 1, 0, 0);
+            vk.CmdDrawIndexed(commandBuffer, (uint)indices.Length, 1, 0, 0, 0);
         }
 
         public void DrawMeshes(DrawCommand[] commands)
@@ -250,6 +271,7 @@ namespace OpenH2.Rendering.Vulkan
             vk.DeviceWaitIdle(device);
 
             this.vertexBuffer.Dispose();
+            this.indexBuffer.Dispose();
 
             vk.DestroySemaphore(device, imageAvailableSemaphore, null);
             vk.DestroySemaphore(device, renderFinishedSemaphore, null);
