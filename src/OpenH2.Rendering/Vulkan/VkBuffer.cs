@@ -20,7 +20,7 @@ namespace OpenH2.Rendering.Vulkan
             this.device = device;
             this.memorySize = (ulong)(sizeof(T) * count);
 
-            var vertCreate = new BufferCreateInfo
+            var bufCreate = new BufferCreateInfo
             {
                 SType = StructureType.BufferCreateInfo,
                 Size = (ulong)(sizeof(T) * count),
@@ -28,7 +28,7 @@ namespace OpenH2.Rendering.Vulkan
                 SharingMode = SharingMode.Exclusive
             };
 
-            SUCCESS(vk.CreateBuffer(device, in vertCreate, null, out buffer), "Vertex buffer create failed");
+            SUCCESS(vk.CreateBuffer(device, in bufCreate, null, out buffer), "Buffer create failed");
 
             vk.GetBufferMemoryRequirements(device, buffer, out var memReq);
 
@@ -39,7 +39,7 @@ namespace OpenH2.Rendering.Vulkan
                 MemoryTypeIndex = device.FindMemoryType(memReq.MemoryTypeBits, memoryProperties)
             };
 
-            SUCCESS(vk.AllocateMemory(device, in vertAlloc, null, out bufferMemory), "Unable to allocate vertex buffer memory");
+            SUCCESS(vk.AllocateMemory(device, in vertAlloc, null, out bufferMemory), "Unable to allocate buffer memory");
             vk.BindBufferMemory(device, buffer, bufferMemory, 0);
         }
 
@@ -62,50 +62,17 @@ namespace OpenH2.Rendering.Vulkan
 
         public void QueueLoad(VkBuffer<T> source)
         {
-            var bufferCreate = new CommandBufferAllocateInfo
+            device.OneShotCommand(c =>
             {
-                SType = StructureType.CommandBufferAllocateInfo,
-                Level = CommandBufferLevel.Primary,
-                CommandPool = device.CommandPool,
-                CommandBufferCount = 1
-            };
+                var copy = new BufferCopy
+                {
+                    SrcOffset = 0,
+                    DstOffset = 0,
+                    Size = memorySize
+                };
 
-            vk.AllocateCommandBuffers(device, in bufferCreate, out var commandBuffer);
-
-
-            var begin = new CommandBufferBeginInfo
-            {
-                SType = StructureType.CommandBufferBeginInfo,
-                Flags = CommandBufferUsageFlags.CommandBufferUsageOneTimeSubmitBit
-            };
-
-            vk.BeginCommandBuffer(commandBuffer, in begin);
-
-
-            var copy = new BufferCopy
-            {
-                SrcOffset = 0,
-                DstOffset = 0,
-                Size = memorySize
-            };
-
-            vk.CmdCopyBuffer(commandBuffer, source.buffer, this.buffer, 1, in copy);
-
-            vk.EndCommandBuffer(commandBuffer);
-
-
-            var submit = new SubmitInfo
-            {
-                SType = StructureType.SubmitInfo,
-                CommandBufferCount = 1,
-                PCommandBuffers = &commandBuffer
-            };
-
-            vk.QueueSubmit(device.GraphicsQueue, 1, in submit, default);
-
-            vk.QueueWaitIdle(device.GraphicsQueue);
-
-            vk.FreeCommandBuffers(device, device.CommandPool, 1, in commandBuffer);
+                vk.CmdCopyBuffer(c, source.buffer, this.buffer, 1, in copy);
+            });
         }
     }
 }

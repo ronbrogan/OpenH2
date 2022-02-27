@@ -46,7 +46,9 @@ namespace OpenH2.Rendering.Vulkan
 
         public Extent2D Extent => this.ChooseSwapExtent();
 
+        public PhysicalDeviceProperties PhysicalProperties { get; private set; }
         public PhysicalDeviceMemoryProperties MemoryProperties { get; private set; }
+
 
         public VkDevice(VulkanHost host, VkInstance instance, string[] validationLayers) : base(instance.vk)
         {
@@ -57,10 +59,12 @@ namespace OpenH2.Rendering.Vulkan
             this.surface = host.window.VkSurface.Create<AllocationCallbacks>(instance.Instance.ToHandle(), null).ToSurface();
 
             // Choose appropriate physical device and get relevant settings to create logical device and swapchains
-            if (!ChooseDevice(instance, out physicalDevice, out queueFamilies, out caps, out format, out presentMode))
+            if (!ChooseDevice(instance, out physicalDevice, out var props, out queueFamilies, out caps, out format, out presentMode))
             {
                 throw new Exception("No supported devices found");
             }
+
+            this.PhysicalProperties = props;
 
             vk.GetPhysicalDeviceMemoryProperties(physicalDevice, out var memProps);
             this.MemoryProperties = memProps;
@@ -79,7 +83,11 @@ namespace OpenH2.Rendering.Vulkan
                 };
             }
 
-            var deviceFeatures = new PhysicalDeviceFeatures();
+            var deviceFeatures = new PhysicalDeviceFeatures
+            { 
+                SamplerAnisotropy = true
+            };
+
 
             var deviceExtensionCount = 1u;
             var deviceExtensionNames = stackalloc byte*[]
@@ -119,12 +127,14 @@ namespace OpenH2.Rendering.Vulkan
 
             SUCCESS(vk.CreateCommandPool(device, in poolCreate, null, out var commandPool), "CommandPool create failed");
 
-            var descPoolSize = new DescriptorPoolSize(DescriptorType.UniformBuffer, 1);
+            var uboPoolSize = new DescriptorPoolSize(DescriptorType.UniformBuffer, 1);
+            var texPoolSize = new DescriptorPoolSize(DescriptorType.CombinedImageSampler, 1);
+            var sizes = stackalloc DescriptorPoolSize[] { uboPoolSize, texPoolSize };
             var descPoolCreate = new DescriptorPoolCreateInfo
             {
                 SType = StructureType.DescriptorPoolCreateInfo,
-                PoolSizeCount = 1,
-                PPoolSizes = &descPoolSize,
+                PoolSizeCount = 2,
+                PPoolSizes = sizes,
                 MaxSets = 1
             };
 
@@ -155,6 +165,44 @@ namespace OpenH2.Rendering.Vulkan
             }
 
             throw new NotSupportedException("Unable to find suitable memory type");
+        }
+
+        public void OneShotCommand(Action<CommandBuffer> command)
+        {
+            var bufferCreate = new CommandBufferAllocateInfo
+            {
+                SType = StructureType.CommandBufferAllocateInfo,
+                Level = CommandBufferLevel.Primary,
+                CommandPool = CommandPool,
+                CommandBufferCount = 1
+            };
+
+            vk.AllocateCommandBuffers(device, in bufferCreate, out var commandBuffer);
+
+            var begin = new CommandBufferBeginInfo
+            {
+                SType = StructureType.CommandBufferBeginInfo,
+                Flags = CommandBufferUsageFlags.CommandBufferUsageOneTimeSubmitBit
+            };
+
+            vk.BeginCommandBuffer(commandBuffer, in begin);
+
+            command(commandBuffer);
+
+            vk.EndCommandBuffer(commandBuffer);
+
+            var submit = new SubmitInfo
+            {
+                SType = StructureType.SubmitInfo,
+                CommandBufferCount = 1,
+                PCommandBuffers = &commandBuffer
+            };
+
+            vk.QueueSubmit(GraphicsQueue, 1, in submit, default);
+
+            vk.QueueWaitIdle(GraphicsQueue);
+
+            vk.FreeCommandBuffers(device, CommandPool, 1, in commandBuffer);
         }
 
         private bool QuerySwapchainSupport(PhysicalDevice phyDevice,
@@ -214,6 +262,7 @@ namespace OpenH2.Rendering.Vulkan
         private bool ChooseDevice(
             Instance instance,
             out PhysicalDevice physicalDevice,
+            out PhysicalDeviceProperties physicalDeviceProps,
             out (uint? graphics, uint? present) queueFamilies,
             out SurfaceCapabilitiesKHR capabilities,
             out SurfaceFormatKHR format,
@@ -254,10 +303,12 @@ namespace OpenH2.Rendering.Vulkan
                     continue;
 
                 physicalDevice = device;
+                physicalDeviceProps = props;
                 return true;
             }
 
             physicalDevice = default;
+            physicalDeviceProps = default;
             return false;
         }
 

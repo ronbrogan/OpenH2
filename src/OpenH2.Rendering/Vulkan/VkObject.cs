@@ -16,7 +16,7 @@ namespace OpenH2.Rendering.Vulkan
             this.vk = vkApi;
         }
 
-        protected void SUCCESS(Result result, string? description = null)
+        protected static void SUCCESS(Result result, string? description = null)
         {
             if (result != Result.Success)
             {
@@ -24,7 +24,7 @@ namespace OpenH2.Rendering.Vulkan
             }
         }
 
-        protected void SUCCESS(bool result, string? description = null)
+        protected static  void SUCCESS(bool result, string? description = null)
         {
             if (!result)
             {

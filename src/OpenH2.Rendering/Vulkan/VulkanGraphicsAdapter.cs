@@ -14,11 +14,13 @@ namespace OpenH2.Rendering.Vulkan
     {
         public Vector2 VertexPosition;
         public Vector3 VertexColor;
+        public Vector2 TexCoord;
 
-        public VulkanTestVertex(Vector2 pos, Vector3 color)
+        public VulkanTestVertex(Vector2 pos, Vector3 color, Vector2 tex)
         {
             this.VertexPosition = pos;
             this.VertexColor = color;
+            this.TexCoord = tex;
         }
     }
 
@@ -36,20 +38,20 @@ namespace OpenH2.Rendering.Vulkan
         private VulkanHost vulkanHost;
         private VkInstance instance;
         private VkDevice device;
+        private VulkanTextureBinder textureBinder;
         private VkSwapchain swapchain;
         private VkDefaultGraphicsPipeline pipeline;
-
-        
-
+        private VkImage image;
+        private VkSampler sampler;
         private bool recreateSwapchain = false;
 
         ushort[] indices = new ushort[] { 0, 1, 2, 2, 3, 0 };
         VulkanTestVertex[] vertices = new VulkanTestVertex[]
         {
-            new (new (-0.5f, -0.5f), new (1f, 0f, 0f)),
-            new (new (0.5f, -0.5f), new (0f, 1f, 0f)),
-            new (new (0.5f, 0.5f), new (0f, 0f, 1f)),
-            new (new (-0.5f, 0.5f), new (1f, 1f, 1f)),
+            new (new (-0.5f, -0.5f), new (1f, 0f, 0f), new (1f,0)),
+            new (new (0.5f, -0.5f), new (0f, 1f, 0f), new (0,0)),
+            new (new (0.5f, 0.5f), new (0f, 0f, 1f), new (0,1f)),
+            new (new (-0.5f, 0.5f), new (1f, 1f, 1f), new (1f,1f)),
         };
 
         private VkBuffer<ushort> indexBuffer;
@@ -71,10 +73,12 @@ namespace OpenH2.Rendering.Vulkan
 
             this.instance = new VkInstance(vulkanHost);
             this.device = instance.CreateDevice();
+            this.textureBinder = new VulkanTextureBinder(this.device);
             this.swapchain = device.CreateSwapchain();
             this.pipeline = new VkDefaultGraphicsPipeline(vulkanHost, device, swapchain);
 
-            
+            this.image = this.textureBinder.TestBind();
+            this.sampler = new VkSampler(this.device);
 
             // =======================
             // vertex buffer setup
@@ -110,7 +114,10 @@ namespace OpenH2.Rendering.Vulkan
                 BufferUsageFlags.BufferUsageUniformBufferBit, 
                 MemoryPropertyFlags.MemoryPropertyHostVisibleBit | MemoryPropertyFlags.MemoryPropertyHostCoherentBit);
 
-            this.pipeline.CreateDescriptors(this.uboBuffer);
+
+
+
+            this.pipeline.CreateDescriptors(this.uboBuffer, this.image, this.sampler);
 
             // =======================
             // commandbuffer setup
@@ -305,6 +312,7 @@ namespace OpenH2.Rendering.Vulkan
 
             this.vertexBuffer.Dispose();
             this.indexBuffer.Dispose();
+            this.uboBuffer.Dispose();
 
             vk.DestroySemaphore(device, imageAvailableSemaphore, null);
             vk.DestroySemaphore(device, renderFinishedSemaphore, null);
@@ -312,6 +320,9 @@ namespace OpenH2.Rendering.Vulkan
 
             // destroy swapchain
             this.swapchain.Dispose();
+
+            this.image.Dispose();
+            this.sampler.Dispose();
 
             // destroy pipeline
             this.pipeline.Dispose();

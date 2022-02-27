@@ -68,11 +68,22 @@ namespace OpenH2.Rendering.Vulkan
                 PImmutableSamplers = null
             };
 
+            var texBinding = new DescriptorSetLayoutBinding
+            { 
+                Binding =1,
+                DescriptorCount = 1,
+                DescriptorType = DescriptorType.CombinedImageSampler,
+                PImmutableSamplers= null,
+                StageFlags = ShaderStageFlags.ShaderStageFragmentBit
+            };
+
+            var bindings = stackalloc DescriptorSetLayoutBinding[] { uboBinding, texBinding };
+
             var descCreate = new DescriptorSetLayoutCreateInfo
             {
                 SType = StructureType.DescriptorSetLayoutCreateInfo,
-                BindingCount = 1,
-                PBindings = &uboBinding
+                BindingCount = 2,
+                PBindings = bindings
             };
 
             SUCCESS(vk.CreateDescriptorSetLayout(device, in descCreate, null, out descriptorSetLayout), "Descriptor set layout create failed");
@@ -101,14 +112,22 @@ namespace OpenH2.Rendering.Vulkan
                 Offset = (uint)sizeof(Vector2)
             };
 
-            var attrs = stackalloc VertexInputAttributeDescription[] { posAttr, colorAttr };
+            var texAttr = new VertexInputAttributeDescription
+            {
+                Binding = 0,
+                Location = 2,
+                Format = Format.R32G32Sfloat,
+                Offset = (uint)sizeof(Vector2) + (uint)sizeof(Vector3),
+            };
+
+            var attrs = stackalloc VertexInputAttributeDescription[] { posAttr, colorAttr, texAttr };
 
             var vertInput = new PipelineVertexInputStateCreateInfo
             {
                 SType = StructureType.PipelineVertexInputStateCreateInfo,
                 VertexBindingDescriptionCount = 1,
                 PVertexBindingDescriptions = &binding,
-                VertexAttributeDescriptionCount = 2,
+                VertexAttributeDescriptionCount = 3,
                 PVertexAttributeDescriptions = attrs
             };
 
@@ -272,7 +291,7 @@ namespace OpenH2.Rendering.Vulkan
             swapchain.InitializeFramebuffers(renderPass);
         }
 
-        public void CreateDescriptors(VkBuffer<UBO> ubo)
+        public void CreateDescriptors(VkBuffer<UBO> ubo, VkImage image, VkSampler sampler)
         {
             var layouts = stackalloc DescriptorSetLayout[] { descriptorSetLayout };
             var alloc = new DescriptorSetAllocateInfo
@@ -285,22 +304,37 @@ namespace OpenH2.Rendering.Vulkan
 
             SUCCESS(vk.AllocateDescriptorSets(device, in alloc, out descriptorSet), "DescriptorSet allocate failed");
 
-            var info = new DescriptorBufferInfo(ubo, 0, Vk.WholeSize);
+            var uboInfo = new DescriptorBufferInfo(ubo, 0, Vk.WholeSize);
 
-            var write = new WriteDescriptorSet
+            var texInfo = new DescriptorImageInfo(sampler, image.View, ImageLayout.ShaderReadOnlyOptimal);
+
+            var writes = stackalloc WriteDescriptorSet[]
             {
-                SType = StructureType.WriteDescriptorSet,
-                DstSet = descriptorSet,
-                DstBinding = 0,
-                DstArrayElement = 0,
-                DescriptorType = DescriptorType.UniformBuffer,
-                DescriptorCount = 1,
-                PBufferInfo = &info,
-                PImageInfo = null,
-                PTexelBufferView = null
+                new WriteDescriptorSet
+                {
+                    SType = StructureType.WriteDescriptorSet,
+                    DstSet = descriptorSet,
+                    DstBinding = 0,
+                    DstArrayElement = 0,
+                    DescriptorType = DescriptorType.UniformBuffer,
+                    DescriptorCount = 1,
+                    PBufferInfo = &uboInfo,
+                    PImageInfo = null,
+                    PTexelBufferView = null
+                },
+                new WriteDescriptorSet
+                {
+                    SType = StructureType.WriteDescriptorSet,
+                    DstSet = descriptorSet,
+                    DstBinding = 1,
+                    DstArrayElement = 0,
+                    DescriptorType = DescriptorType.CombinedImageSampler,
+                    DescriptorCount = 1,
+                    PImageInfo = &texInfo
+                }
             };
 
-            vk.UpdateDescriptorSets(device, 1, in write, 0, null);
+            vk.UpdateDescriptorSets(device, 2, writes, 0, null);
         }
 
         public void DestroyResources()
