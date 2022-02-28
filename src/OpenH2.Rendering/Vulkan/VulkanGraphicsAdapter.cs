@@ -4,6 +4,7 @@ using OpenH2.Rendering.Abstractions;
 using OpenH2.Rendering.Shaders;
 using Silk.NET.Vulkan;
 using System;
+using System.Diagnostics;
 using System.Numerics;
 using System.Runtime.InteropServices;
 using Buffer = Silk.NET.Vulkan.Buffer;
@@ -22,13 +23,6 @@ namespace OpenH2.Rendering.Vulkan
             this.VertexColor = color;
             this.TexCoord = tex;
         }
-    }
-
-    public struct UBO
-    {
-        public Matrix4x4 Model;
-        public Matrix4x4 View;
-        public Matrix4x4 Project;
     }
 
     public sealed unsafe class VulkanGraphicsAdapter : VkObject, IGraphicsAdapter, IDisposable
@@ -68,7 +62,8 @@ namespace OpenH2.Rendering.Vulkan
 
 
         // TODO: need multiple of these to support multiple in-flight frames
-        private VkBuffer<UBO> uboBuffer;
+        private VkBuffer<GlobalUniform> globalBuffer;
+        private VkBuffer<TransformUniform> transformBuffer;
         private CommandBuffer commandBuffer;
         private Semaphore imageAvailableSemaphore;
         private Semaphore renderFinishedSemaphore;
@@ -120,14 +115,16 @@ namespace OpenH2.Rendering.Vulkan
                 this.indexBuffer.QueueLoad(staging);
             }
 
-            this.uboBuffer = device.CreateBuffer<UBO>(1, 
+            this.globalBuffer = device.CreateBuffer<GlobalUniform>(1, 
                 BufferUsageFlags.BufferUsageUniformBufferBit, 
                 MemoryPropertyFlags.MemoryPropertyHostVisibleBit | MemoryPropertyFlags.MemoryPropertyHostCoherentBit);
 
+            this.transformBuffer = device.CreateBuffer<TransformUniform>(1,
+                BufferUsageFlags.BufferUsageUniformBufferBit,
+                MemoryPropertyFlags.MemoryPropertyHostVisibleBit | MemoryPropertyFlags.MemoryPropertyHostCoherentBit);
 
 
-
-            this.pipeline.CreateDescriptors(this.uboBuffer, this.image, this.sampler);
+            this.pipeline.CreateDescriptors(this.globalBuffer, this.transformBuffer, this.image, this.sampler);
 
             // =======================
             // commandbuffer setup
@@ -190,7 +187,7 @@ namespace OpenH2.Rendering.Vulkan
 
             SUCCESS(vk.BeginCommandBuffer(commandBuffer, in bufBegin), "Unable to begin writing to command buffer");
 
-            UpdateUbo(imageIndex);
+            UpdateGlobals(imageIndex, matricies);
 
             this.pipeline.BeginPass(commandBuffer, imageIndex);
 
@@ -267,21 +264,27 @@ namespace OpenH2.Rendering.Vulkan
         static DateTimeOffset start = DateTimeOffset.UtcNow;
         const float RadiansPer = (MathF.PI / 180);
         private static float DegToRad(float deg) => RadiansPer * deg;
-        private void UpdateUbo(uint imageIndex)
+        private void UpdateGlobals(uint imageIndex, GlobalUniform globals)
         {
-            var time = (float)(DateTimeOffset.UtcNow - start).TotalSeconds;
-
-            var ubo = new UBO
-            {
-                Model = Matrix4x4.CreateRotationZ(time * DegToRad(90)),
-                View = Matrix4x4.CreateLookAt(new(2f, 2f, 2f), new(0, 0, 0), new(0, 0, 1f)),
-                Project = Matrix4x4.CreatePerspectiveFieldOfView(DegToRad(45), swapchain.Extent.Width / (float)swapchain.Extent.Height, 0.1f, 10f)
-            };
+            globals.ViewMatrix = Matrix4x4.CreateLookAt(new(2f, 2f, 2f), new(0, 0, 0), new(0, 0, 1f));
+            globals.ProjectionMatrix = Matrix4x4.CreatePerspectiveFieldOfView(DegToRad(45), swapchain.Extent.Width / (float)swapchain.Extent.Height, 0.1f, 10f);
 
             // Correct for OpenGL Y inversion
-            ubo.Project.M22 *= -1;
+            globals.ProjectionMatrix.M22 *= -1;
 
-            this.uboBuffer/*[imageIndex]*/.Load(stackalloc UBO[] { ubo });
+            //this.globalBuffer/*[imageIndex]*/.Load(stackalloc UBO[] { ubo });
+            this.globalBuffer/*[imageIndex]*/.Load(globals);
+
+
+            var time = (float)(DateTimeOffset.UtcNow - start).TotalSeconds;
+
+            var model = Matrix4x4.CreateRotationZ(time * DegToRad(90));
+            var success = Matrix4x4.Invert(model, out var inverted);
+            Debug.Assert(success);
+
+            var transforms = new TransformUniform(model, inverted);
+
+            this.transformBuffer/*[imageIndex]*/.Load(transforms);
         }
 
         private void RecreateSwapchain()
@@ -310,10 +313,15 @@ namespace OpenH2.Rendering.Vulkan
 
         public void UseShader(Shader shader)
         {
+            // TODO: lookup and bind appropriate pipeline
         }
 
         public void UseTransform(Matrix4x4 transform)
         {
+            //var success = Matrix4x4.Invert(transform, out var inverted);
+            //Debug.Assert(success);
+            //
+            //SetupTransformUniform(new TransformUniform(transform, inverted));
         }
 
         public void Dispose()
@@ -322,7 +330,8 @@ namespace OpenH2.Rendering.Vulkan
 
             this.vertexBuffer.Dispose();
             this.indexBuffer.Dispose();
-            this.uboBuffer.Dispose();
+            this.globalBuffer.Dispose();
+            this.transformBuffer.Dispose();
 
             vk.DestroySemaphore(device, imageAvailableSemaphore, null);
             vk.DestroySemaphore(device, renderFinishedSemaphore, null);

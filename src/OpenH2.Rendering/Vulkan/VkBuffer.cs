@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace OpenH2.Rendering.Vulkan
 {
-    internal unsafe class VkBuffer<T> : VkObject, IDisposable where T: unmanaged
+    internal unsafe class VkBuffer<T> : VkObject, IDisposable where T : unmanaged
     {
         private readonly VkDevice device;
         private readonly ulong memorySize;
@@ -57,6 +57,14 @@ namespace OpenH2.Rendering.Vulkan
             vk.MapMemory(device, bufferMemory, 0, memorySize, 0, ref data);
             fixed (T* itemsPtr = items)
                 System.Buffer.MemoryCopy(itemsPtr, data, memorySize, memorySize);
+            vk.UnmapMemory(device, bufferMemory);
+        }
+
+        public void Load(T item)
+        {
+            void* data = null;
+            vk.MapMemory(device, bufferMemory, 0, memorySize, 0, ref data);
+            System.Buffer.MemoryCopy(&item, data, memorySize, memorySize);
             vk.UnmapMemory(device, bufferMemory);
         }
 

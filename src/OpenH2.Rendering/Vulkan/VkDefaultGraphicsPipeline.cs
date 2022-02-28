@@ -58,30 +58,39 @@ namespace OpenH2.Rendering.Vulkan
             // =======================
 
             // TODO: auto generate descriptors/bindings
-            var uboBinding = new DescriptorSetLayoutBinding
+            var globalsBinding = new DescriptorSetLayoutBinding
             {
                 Binding = 0,
                 DescriptorType = DescriptorType.UniformBuffer,
                 DescriptorCount = 1,
-                StageFlags = ShaderStageFlags.ShaderStageVertexBit,
+                StageFlags = ShaderStageFlags.ShaderStageAllGraphics,
+                PImmutableSamplers = null
+            };
+
+            var transformBinding = new DescriptorSetLayoutBinding
+            {
+                Binding = 2,
+                DescriptorType = DescriptorType.UniformBuffer,
+                DescriptorCount = 1,
+                StageFlags = ShaderStageFlags.ShaderStageAllGraphics,
                 PImmutableSamplers = null
             };
 
             var texBinding = new DescriptorSetLayoutBinding
             { 
-                Binding =1,
+                Binding = 1,
                 DescriptorCount = 1,
                 DescriptorType = DescriptorType.CombinedImageSampler,
                 PImmutableSamplers= null,
                 StageFlags = ShaderStageFlags.ShaderStageFragmentBit
             };
 
-            var bindings = stackalloc [] { uboBinding, texBinding };
+            var bindings = stackalloc [] { globalsBinding, transformBinding, texBinding };
 
             var descCreate = new DescriptorSetLayoutCreateInfo
             {
                 SType = StructureType.DescriptorSetLayoutCreateInfo,
-                BindingCount = 2,
+                BindingCount = 3,
                 PBindings = bindings
             };
 
@@ -316,7 +325,7 @@ namespace OpenH2.Rendering.Vulkan
             swapchain.InitializeFramebuffers(renderPass);
         }
 
-        public void CreateDescriptors(VkBuffer<UBO> ubo, VkImage image, VkSampler sampler)
+        public void CreateDescriptors(VkBuffer<GlobalUniform> globals, VkBuffer<TransformUniform> transform, VkImage image, VkSampler sampler)
         {
             var layouts = stackalloc [] { descriptorSetLayout };
             var alloc = new DescriptorSetAllocateInfo
@@ -329,11 +338,12 @@ namespace OpenH2.Rendering.Vulkan
 
             SUCCESS(vk.AllocateDescriptorSets(device, in alloc, out descriptorSet), "DescriptorSet allocate failed");
 
-            var uboInfo = new DescriptorBufferInfo(ubo, 0, Vk.WholeSize);
+            var globalsInfo = new DescriptorBufferInfo(globals, 0, Vk.WholeSize);
+            var transformsInfo = new DescriptorBufferInfo(transform, 0, Vk.WholeSize);
 
             var texInfo = new DescriptorImageInfo(sampler, image.View, ImageLayout.ShaderReadOnlyOptimal);
 
-            var writes = stackalloc []
+            ReadOnlySpan<WriteDescriptorSet> writes = stackalloc []
             {
                 new WriteDescriptorSet
                 {
@@ -343,7 +353,20 @@ namespace OpenH2.Rendering.Vulkan
                     DstArrayElement = 0,
                     DescriptorType = DescriptorType.UniformBuffer,
                     DescriptorCount = 1,
-                    PBufferInfo = &uboInfo,
+                    PBufferInfo = &globalsInfo,
+                    PImageInfo = null,
+                    PTexelBufferView = null
+                },
+
+                new WriteDescriptorSet
+                {
+                    SType = StructureType.WriteDescriptorSet,
+                    DstSet = descriptorSet,
+                    DstBinding = 2,
+                    DstArrayElement = 0,
+                    DescriptorType = DescriptorType.UniformBuffer,
+                    DescriptorCount = 1,
+                    PBufferInfo = &transformsInfo,
                     PImageInfo = null,
                     PTexelBufferView = null
                 },
@@ -359,7 +382,7 @@ namespace OpenH2.Rendering.Vulkan
                 }
             };
 
-            vk.UpdateDescriptorSets(device, 2, writes, 0, null);
+            vk.UpdateDescriptorSets(device, writes, 0, null);
         }
 
         public void DestroyResources()

@@ -1,10 +1,20 @@
 #version 450
 
-layout(binding = 0) uniform UniformBufferObject {
-    mat4 model;
-    mat4 view;
-    mat4 proj;
-} ubo;
+layout(std140, binding = 0) uniform GlobalUniform
+{
+    mat4 ViewMatrix;
+    mat4 ProjectionMatrix;
+    mat4 SunLightMatrix[4];
+    vec4 SunLightDistances;
+    vec4 SunLightDirection;
+    vec4 ViewPosition;
+} Globals;
+
+layout(std140, binding = 2) uniform TransformUniform
+{
+    mat4 ModelMatrix;
+    mat4 NormalMatrix;
+} Transform;
 
 layout(location = 0) in vec3 inPosition;
 layout(location = 1) in vec3 inColor;
@@ -15,7 +25,7 @@ layout(location = 1) out vec2 texPos;
 
 
 void main() {
-    gl_Position = ubo.proj * ubo.view * ubo.model * vec4(inPosition, 1.0);
+    gl_Position = Globals.ProjectionMatrix * Globals.ViewMatrix * Transform.ModelMatrix * vec4(inPosition, 1.0);
     fragColor = inColor;
     texPos = inTex;
 }
