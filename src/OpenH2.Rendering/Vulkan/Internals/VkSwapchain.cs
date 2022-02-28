@@ -7,7 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace OpenH2.Rendering.Vulkan
+namespace OpenH2.Rendering.Vulkan.Internals
 {
     internal unsafe sealed class VkSwapchain : VkObject, IDisposable
     {
@@ -37,10 +37,10 @@ namespace OpenH2.Rendering.Vulkan
         {
             this.instance = instance;
             this.device = device;
-            this.vulkanHost = host;
+            vulkanHost = host;
 
             SUCCESS(vk.TryGetDeviceExtension(instance, device, out khrSwapchainExt), "Couldn't get swapchain extension");
-            this.CreateResources();
+            CreateResources();
         }
 
         public Result AcquireNextImage(Semaphore semaphore, Fence fence, ref uint index)
@@ -56,7 +56,7 @@ namespace OpenH2.Rendering.Vulkan
         public void InitializeFramebuffers(in RenderPass renderPass)
         {
             // TODO find a supported depth format instead of hardcoding D32Sfloat
-            this.depthImage = new VkImage(device, this.Extent, Format.D32Sfloat, ImageUsageFlags.ImageUsageDepthStencilAttachmentBit, ImageAspectFlags.ImageAspectDepthBit, false);
+            depthImage = new VkImage(device, Extent, Format.D32Sfloat, ImageUsageFlags.ImageUsageDepthStencilAttachmentBit, ImageAspectFlags.ImageAspectDepthBit, false);
             depthImage.CreateView();
 
             var attachments = stackalloc ImageView[2];
@@ -154,7 +154,7 @@ namespace OpenH2.Rendering.Vulkan
 
         public void DestroyResources()
         {
-            this.depthImage.Dispose();
+            depthImage.Dispose();
 
             foreach (var buf in swapchainFramebuffers)
             {
@@ -163,7 +163,7 @@ namespace OpenH2.Rendering.Vulkan
 
             foreach (var imgView in swapchainImageviews)
             {
-                vk.DestroyImageView(this.device, imgView, null);
+                vk.DestroyImageView(device, imgView, null);
             }
 
             if (khrSwapchainExt != null)
@@ -174,7 +174,7 @@ namespace OpenH2.Rendering.Vulkan
 
         public void Dispose()
         {
-            this.DestroyResources();
+            DestroyResources();
 
             if (khrSwapchainExt != null)
             {

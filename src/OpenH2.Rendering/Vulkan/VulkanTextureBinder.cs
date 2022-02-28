@@ -1,7 +1,7 @@
 ﻿using OpenBlam.Core.Texturing;
 using OpenH2.Core.Enums.Texture;
-using OpenH2.Rendering.Abstractions;
-using OpenH2.Rendering.Vulkan;
+using OpenH2.Rendering.OpenGL;
+using OpenH2.Rendering.Vulkan.Internals;
 using OpenTK.Graphics.OpenGL;
 using Silk.NET.Vulkan;
 using System;

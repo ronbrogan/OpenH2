@@ -2,8 +2,8 @@
 using OpenH2.Foundation;
 using OpenH2.Rendering.Abstractions;
 using OpenH2.Rendering.Shaders;
-using OpenH2.Rendering.Shaders.Depth;
 using OpenH2.Rendering.Shaders.Generic;
+using OpenH2.Rendering.Shaders.ShadowMapping;
 using OpenH2.Rendering.Shaders.Skybox;
 using OpenH2.Rendering.Shaders.Wireframe;
 using OpenTK.Graphics.OpenGL;

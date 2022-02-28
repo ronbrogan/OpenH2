@@ -4,7 +4,7 @@ using Silk.NET.Vulkan;
 using System;
 using System.Numerics;
 
-namespace OpenH2.Rendering.Vulkan
+namespace OpenH2.Rendering.Vulkan.Internals
 {
     internal unsafe class VkDefaultGraphicsPipeline : VkObject, IDisposable
     {
@@ -23,7 +23,7 @@ namespace OpenH2.Rendering.Vulkan
             this.device = device;
             this.swapchain = swapchain;
             this.renderPass = renderPass;
-            this.CreateResources();
+            CreateResources();
         }
 
         public void Bind(in CommandBuffer commandBuffer)
@@ -76,7 +76,7 @@ namespace OpenH2.Rendering.Vulkan
                 PImmutableSamplers = null
             };
 
-            var bindings = stackalloc [] { globalsBinding, transformBinding, texBinding };
+            var bindings = stackalloc[] { globalsBinding, transformBinding, texBinding };
 
             var descCreate = new DescriptorSetLayoutCreateInfo
             {
@@ -135,7 +135,7 @@ namespace OpenH2.Rendering.Vulkan
                 Offset = (uint)VertexFormat.BitangentOffset
             };
 
-            var attrs = stackalloc [] { posAttr, texAttr, normalAttr, tanAttr, bitanAttr };
+            var attrs = stackalloc[] { posAttr, texAttr, normalAttr, tanAttr, bitanAttr };
 
             var vertInput = new PipelineVertexInputStateCreateInfo
             {
@@ -209,7 +209,7 @@ namespace OpenH2.Rendering.Vulkan
                 PAttachments = &colorBlend
             };
 
-            var dynamicStates = stackalloc [] { DynamicState.Viewport, DynamicState.LineWidth };
+            var dynamicStates = stackalloc[] { DynamicState.Viewport, DynamicState.LineWidth };
 
             var dynamicState = new PipelineDynamicStateCreateInfo
             {
@@ -218,7 +218,7 @@ namespace OpenH2.Rendering.Vulkan
                 PDynamicStates = dynamicStates,
             };
 
-            var descriptors = stackalloc [] { descriptorSetLayout };
+            var descriptors = stackalloc[] { descriptorSetLayout };
             var layoutCreate = new PipelineLayoutCreateInfo
             {
                 SType = StructureType.PipelineLayoutCreateInfo,
@@ -231,10 +231,10 @@ namespace OpenH2.Rendering.Vulkan
             using var vertShader = new VkShader(device, "VulkanTest", ShaderType.Vertex);
             using var fragShader = new VkShader(device, "VulkanTest", ShaderType.Fragment);
 
-            var shaderStages = stackalloc [] { vertShader.stageInfo, fragShader.stageInfo };
+            var shaderStages = stackalloc[] { vertShader.stageInfo, fragShader.stageInfo };
 
             var depthStencil = new PipelineDepthStencilStateCreateInfo
-            { 
+            {
                 SType = StructureType.PipelineDepthStencilStateCreateInfo,
                 DepthTestEnable = true,
                 DepthWriteEnable = true,
@@ -265,12 +265,12 @@ namespace OpenH2.Rendering.Vulkan
 
             SUCCESS(vk.CreateGraphicsPipelines(device, default, 1, &pipelineCreate, null, out graphicsPipeline), "Pipeline create failed");
 
-            
+
         }
 
         public void CreateDescriptors(VkBuffer<GlobalUniform> globals, VkBuffer<TransformUniform> transform, VkBuffer<VulkanTestUniform> uniform, (VkImage image, VkSampler sampler)[] textures)
         {
-            var layouts = stackalloc [] { descriptorSetLayout };
+            var layouts = stackalloc[] { descriptorSetLayout };
             var alloc = new DescriptorSetAllocateInfo
             {
                 SType = StructureType.DescriptorSetAllocateInfo,
@@ -288,7 +288,7 @@ namespace OpenH2.Rendering.Vulkan
             var textureInfos = stackalloc DescriptorImageInfo[8];
             for (int i = 0; i < 8; i++)
             {
-                if(textures.Length > i)
+                if (textures.Length > i)
                     textureInfos[i] = new DescriptorImageInfo(textures[i].sampler, textures[i].image.View, ImageLayout.ShaderReadOnlyOptimal);
                 else
                     // TODO: have a fallback texture or something?
@@ -296,7 +296,7 @@ namespace OpenH2.Rendering.Vulkan
 
             }
 
-            ReadOnlySpan<WriteDescriptorSet> writes = stackalloc []
+            ReadOnlySpan<WriteDescriptorSet> writes = stackalloc[]
             {
                 new WriteDescriptorSet
                 {
@@ -348,7 +348,7 @@ namespace OpenH2.Rendering.Vulkan
 
         public void Dispose()
         {
-            this.DestroyResources();
+            DestroyResources();
         }
     }
 }

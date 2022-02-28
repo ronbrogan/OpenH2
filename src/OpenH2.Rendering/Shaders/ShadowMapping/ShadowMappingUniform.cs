@@ -1,7 +1,7 @@
 ﻿using System.Numerics;
 using System.Runtime.InteropServices;
 
-namespace OpenH2.Rendering.Shaders.Depth
+namespace OpenH2.Rendering.Shaders.ShadowMapping
 {
     // Be careful moving/adding/removing properties
     // Sequential layout ensures that the offset of a field occurs at a multiple of the size

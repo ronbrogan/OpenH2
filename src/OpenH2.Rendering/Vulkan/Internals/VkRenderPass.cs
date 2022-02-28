@@ -1,7 +1,7 @@
 ﻿using Silk.NET.Vulkan;
 using System;
 
-namespace OpenH2.Rendering.Vulkan
+namespace OpenH2.Rendering.Vulkan.Internals
 {
     internal unsafe sealed class VkRenderPass : VkObject, IDisposable
     {

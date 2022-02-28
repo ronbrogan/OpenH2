@@ -4,7 +4,7 @@ using Silk.NET.Vulkan.Extensions.KHR;
 using System;
 using System.Text;
 
-namespace OpenH2.Rendering.Vulkan
+namespace OpenH2.Rendering.Vulkan.Internals
 {
     internal unsafe class VkInstance : VkObject, IDisposable
     {
@@ -74,14 +74,14 @@ namespace OpenH2.Rendering.Vulkan
 
         public VkDevice CreateDevice()
         {
-            return new VkDevice(this.host, this, this.validationLayers);
+            return new VkDevice(host, this, validationLayers);
         }
 
         public static implicit operator Instance(VkInstance @this) => @this._instance;
 
         public void Dispose()
         {
-            vk.DestroyInstance(this._instance, null);
+            vk.DestroyInstance(_instance, null);
         }
     }
 }

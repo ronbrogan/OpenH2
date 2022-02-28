@@ -4,7 +4,7 @@ using Silk.NET.Vulkan;
 using System;
 
 
-namespace OpenH2.Rendering.Vulkan
+namespace OpenH2.Rendering.Vulkan.Internals
 {
     internal unsafe sealed class VkShader : IDisposable
     {
@@ -16,7 +16,7 @@ namespace OpenH2.Rendering.Vulkan
         {
             this.device = device;
 
-            this.module = VulkanShaderCompiler.LoadSpirvShader(device, shaderName, type);
+            module = VulkanShaderCompiler.LoadSpirvShader(device, shaderName, type);
 
             var stage = type switch
             {
@@ -36,7 +36,7 @@ namespace OpenH2.Rendering.Vulkan
 
         public void Dispose()
         {
-            this.device.vk.DestroyShaderModule(this.device, this.module, null);
+            device.vk.DestroyShaderModule(device, module, null);
         }
     }
 }

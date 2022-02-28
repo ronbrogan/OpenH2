@@ -2,6 +2,7 @@
 using OpenH2.Foundation;
 using OpenH2.Rendering.Abstractions;
 using OpenH2.Rendering.Shaders;
+using OpenH2.Rendering.Vulkan.Internals;
 using Silk.NET.Vulkan;
 using System;
 using System.Diagnostics;

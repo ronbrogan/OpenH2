@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace OpenH2.Rendering.Vulkan
+namespace OpenH2.Rendering.Vulkan.Internals
 {
     public abstract class VkObject
     {
@@ -13,10 +13,10 @@ namespace OpenH2.Rendering.Vulkan
 
         public VkObject(Vk vkApi)
         {
-            this.vk = vkApi;
+            vk = vkApi;
         }
 
-        protected static void SUCCESS(Result result, string? description = null)
+        protected static void SUCCESS(Result result, string description = null)
         {
             if (result != Result.Success)
             {
@@ -24,7 +24,7 @@ namespace OpenH2.Rendering.Vulkan
             }
         }
 
-        protected static  void SUCCESS(bool result, string? description = null)
+        protected static void SUCCESS(bool result, string description = null)
         {
             if (!result)
             {

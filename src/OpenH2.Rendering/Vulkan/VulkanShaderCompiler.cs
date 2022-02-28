@@ -1,4 +1,5 @@
 ﻿using OpenH2.Rendering.Shaders;
+using OpenH2.Rendering.Vulkan.Internals;
 using Silk.NET.Vulkan;
 using System;
 using System.IO;

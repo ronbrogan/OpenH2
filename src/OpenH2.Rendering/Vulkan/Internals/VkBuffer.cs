@@ -1,11 +1,7 @@
 ﻿using Silk.NET.Vulkan;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
-namespace OpenH2.Rendering.Vulkan
+namespace OpenH2.Rendering.Vulkan.Internals
 {
     internal unsafe class VkBuffer<T> : VkObject, IDisposable where T : unmanaged
     {
@@ -18,7 +14,7 @@ namespace OpenH2.Rendering.Vulkan
         public VkBuffer(VkDevice device, int count, BufferUsageFlags usage, MemoryPropertyFlags memoryProperties) : base(device.vk)
         {
             this.device = device;
-            this.memorySize = (ulong)(sizeof(T) * count);
+            memorySize = (ulong)(sizeof(T) * count);
 
             var bufCreate = new BufferCreateInfo
             {
@@ -79,7 +75,7 @@ namespace OpenH2.Rendering.Vulkan
                     Size = memorySize
                 };
 
-                vk.CmdCopyBuffer(c, source.buffer, this.buffer, 1, in copy);
+                vk.CmdCopyBuffer(c, source.buffer, buffer, 1, in copy);
             });
         }
     }

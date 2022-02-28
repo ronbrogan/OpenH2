@@ -2,7 +2,7 @@
 using System.Drawing.Imaging;
 using System.IO;
 
-namespace OpenH2.Rendering.Abstractions
+namespace OpenH2.Rendering.OpenGL
 {
     public interface ITextureBinder
     {

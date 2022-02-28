@@ -1,7 +1,7 @@
 ﻿using Silk.NET.Vulkan;
 using System;
 
-namespace OpenH2.Rendering.Vulkan
+namespace OpenH2.Rendering.Vulkan.Internals
 {
     internal unsafe sealed class VkImage : VkObject, IDisposable
     {
@@ -31,11 +31,11 @@ namespace OpenH2.Rendering.Vulkan
             this.format = format;
             this.aspectFlags = aspectFlags;
 
-            this.mips = generateMips
+            mips = generateMips
                 ? CalculateMips(width, height)
                 : 1;
 
-            if(mips > 1)
+            if (mips > 1)
             {
                 // We'll need to blit to generate mips
                 usage |= ImageUsageFlags.ImageUsageTransferSrcBit | ImageUsageFlags.ImageUsageTransferDstBit;
@@ -46,7 +46,7 @@ namespace OpenH2.Rendering.Vulkan
                 SType = StructureType.ImageCreateInfo,
                 ImageType = ImageType.ImageType2D,
                 Extent = new Extent3D(width, height, 1),
-                MipLevels = this.mips,
+                MipLevels = mips,
                 ArrayLayers = 1,
                 Format = format,
                 Tiling = ImageTiling.Optimal,
@@ -75,7 +75,7 @@ namespace OpenH2.Rendering.Vulkan
 
         public VkSampler CreateSampler()
         {
-            return new VkSampler(this.device, (int)this.mips);
+            return new VkSampler(device, (int)mips);
         }
 
         private static uint CalculateMips(uint width, uint height)
@@ -103,7 +103,7 @@ namespace OpenH2.Rendering.Vulkan
                 DstQueueFamilyIndex = Vk.QueueFamilyIgnored,
 
                 Image = image,
-                SubresourceRange = new ImageSubresourceRange(aspectFlags, 0, this.mips, 0, 1),
+                SubresourceRange = new ImageSubresourceRange(aspectFlags, 0, mips, 0, 1),
             };
 
             PipelineStageFlags sourceStage;
@@ -141,7 +141,7 @@ namespace OpenH2.Rendering.Vulkan
         // TODO: make implicit with image creation?
         public void CreateView()
         {
-            this.View = CreateView(device, image, format, aspectFlags, this.mips);
+            View = CreateView(device, image, format, aspectFlags, mips);
         }
 
         public static ImageView CreateView(VkDevice device, Image image, Format format, ImageAspectFlags aspectFlags, uint mipMaps)
@@ -163,7 +163,7 @@ namespace OpenH2.Rendering.Vulkan
         {
             device.OneShotCommand(commandBuffer =>
             {
-                this.TransitionLayout(commandBuffer, ImageLayout.Undefined, ImageLayout.TransferDstOptimal);
+                TransitionLayout(commandBuffer, ImageLayout.Undefined, ImageLayout.TransferDstOptimal);
 
                 var copy = new BufferImageCopy
                 {
@@ -172,16 +172,16 @@ namespace OpenH2.Rendering.Vulkan
                     BufferImageHeight = 0,
 
                     ImageSubresource = new ImageSubresourceLayers(aspectFlags, 0, 0, 1),
-                    ImageOffset = new Offset3D(0,0,0),
+                    ImageOffset = new Offset3D(0, 0, 0),
                     ImageExtent = new Extent3D(width, height, 1)
                 };
 
                 vk.CmdCopyBufferToImage(commandBuffer, source, image, ImageLayout.TransferDstOptimal, 1, in copy);
 
-                if (this.mips > 1)
+                if (mips > 1)
                     GenerateMipmaps(commandBuffer);
                 else
-                    this.TransitionLayout(commandBuffer, ImageLayout.TransferDstOptimal, ImageLayout.ShaderReadOnlyOptimal);
+                    TransitionLayout(commandBuffer, ImageLayout.TransferDstOptimal, ImageLayout.ShaderReadOnlyOptimal);
             });
         }
 
@@ -204,7 +204,7 @@ namespace OpenH2.Rendering.Vulkan
             var mipWidth = (int)width;
             var mipHeight = (int)height;
 
-            for(var i = 1; i < mips; i++)
+            for (var i = 1; i < mips; i++)
             {
                 barrier.SubresourceRange.BaseMipLevel = (uint)(i - 1);
                 barrier.OldLayout = ImageLayout.TransferDstOptimal;
@@ -220,16 +220,16 @@ namespace OpenH2.Rendering.Vulkan
 
                 var blit = new ImageBlit
                 {
-                    SrcOffsets = new () { Element0 = new (0, 0, 0), Element1 = new (mipWidth, mipHeight, 1)  },
+                    SrcOffsets = new() { Element0 = new(0, 0, 0), Element1 = new(mipWidth, mipHeight, 1) },
                     SrcSubresource = new ImageSubresourceLayers(aspectFlags, (uint)i - 1, 0, 1),
-                    DstOffsets = new () { Element0 = new (0, 0, 0), Element1 = new(mipWidth > 1 ? mipWidth / 2 : 1, mipHeight > 1 ? mipHeight / 2 : 1, 1)},
+                    DstOffsets = new() { Element0 = new(0, 0, 0), Element1 = new(mipWidth > 1 ? mipWidth / 2 : 1, mipHeight > 1 ? mipHeight / 2 : 1, 1) },
                     DstSubresource = new ImageSubresourceLayers(aspectFlags, (uint)i, 0, 1)
                 };
 
                 // WARNING: command buffer must have graphics capability for blitting
-                vk.CmdBlitImage(commandBuffer, 
-                    image, ImageLayout.TransferSrcOptimal, 
-                    image, ImageLayout.TransferDstOptimal, 
+                vk.CmdBlitImage(commandBuffer,
+                    image, ImageLayout.TransferSrcOptimal,
+                    image, ImageLayout.TransferDstOptimal,
                     1, in blit, Filter.Linear);
 
                 barrier.OldLayout = ImageLayout.TransferSrcOptimal;

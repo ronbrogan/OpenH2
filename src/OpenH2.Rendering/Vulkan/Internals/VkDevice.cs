@@ -7,7 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace OpenH2.Rendering.Vulkan
+namespace OpenH2.Rendering.Vulkan.Internals
 {
     internal unsafe sealed class VkDevice : VkObject, IDisposable
     {
@@ -44,7 +44,7 @@ namespace OpenH2.Rendering.Vulkan
         public CommandPool CommandPool { get; private set; }
         public DescriptorPool DescriptorPool { get; private set; }
 
-        public Extent2D Extent => this.ChooseSwapExtent();
+        public Extent2D Extent => ChooseSwapExtent();
 
         public PhysicalDeviceProperties PhysicalProperties { get; private set; }
         public PhysicalDeviceMemoryProperties MemoryProperties { get; private set; }
@@ -52,11 +52,11 @@ namespace OpenH2.Rendering.Vulkan
 
         public VkDevice(VulkanHost host, VkInstance instance, string[] validationLayers) : base(instance.vk)
         {
-            this.vulkanHost = host;
+            vulkanHost = host;
             this.instance = instance;
 
             SUCCESS(vk.TryGetInstanceExtension(instance, out khrSurfaceExtension), "Couldn't get surface ext");
-            this.surface = host.window.VkSurface.Create<AllocationCallbacks>(instance.Instance.ToHandle(), null).ToSurface();
+            surface = host.window.VkSurface.Create<AllocationCallbacks>(instance.Instance.ToHandle(), null).ToSurface();
 
             // Choose appropriate physical device and get relevant settings to create logical device and swapchains
             if (!ChooseDevice(instance, out physicalDevice, out var props, out queueFamilies, out caps, out format, out presentMode))
@@ -64,10 +64,10 @@ namespace OpenH2.Rendering.Vulkan
                 throw new Exception("No supported devices found");
             }
 
-            this.PhysicalProperties = props;
+            PhysicalProperties = props;
 
             vk.GetPhysicalDeviceMemoryProperties(physicalDevice, out var memProps);
-            this.MemoryProperties = memProps;
+            MemoryProperties = memProps;
 
             var uniqueFamilies = new HashSet<uint> { queueFamilies.graphics.Value, queueFamilies.present.Value };
             var queueCreateInfos = stackalloc DeviceQueueCreateInfo[uniqueFamilies.Count];
@@ -84,7 +84,7 @@ namespace OpenH2.Rendering.Vulkan
             }
 
             var deviceFeatures = new PhysicalDeviceFeatures
-            { 
+            {
                 SamplerAnisotropy = true
             };
 
@@ -96,7 +96,7 @@ namespace OpenH2.Rendering.Vulkan
             };
 
             var layerNames = stackalloc byte*[validationLayers.Length];
-            for(var i = 0; i < validationLayers.Length; i++)
+            for (var i = 0; i < validationLayers.Length; i++)
             {
                 layerNames[i] = PinnedUtf8.Get(validationLayers[i]);
             }
@@ -140,25 +140,25 @@ namespace OpenH2.Rendering.Vulkan
 
             SUCCESS(vk.CreateDescriptorPool(device, in descPoolCreate, null, out var descriptorPool), "DescriptorPool create failed");
 
-            this.CommandPool = commandPool;
-            this.DescriptorPool = descriptorPool;
+            CommandPool = commandPool;
+            DescriptorPool = descriptorPool;
         }
 
         public VkSwapchain CreateSwapchain()
         {
-            return new VkSwapchain(this.vulkanHost, this.instance, this);
+            return new VkSwapchain(vulkanHost, instance, this);
         }
 
-        public VkBuffer<T> CreateBuffer<T>(int count, BufferUsageFlags usage, MemoryPropertyFlags memoryProperties) where T: unmanaged
+        public VkBuffer<T> CreateBuffer<T>(int count, BufferUsageFlags usage, MemoryPropertyFlags memoryProperties) where T : unmanaged
         {
             return new VkBuffer<T>(this, count, usage, memoryProperties);
         }
 
         public uint FindMemoryType(uint typeFilter, MemoryPropertyFlags properties)
         {
-            for(var i = 0; i < this.MemoryProperties.MemoryTypeCount; i++)
+            for (var i = 0; i < MemoryProperties.MemoryTypeCount; i++)
             {
-                if((typeFilter & (1 << i)) != 0 && (this.MemoryProperties.MemoryTypes[i].PropertyFlags & properties) == properties)
+                if ((typeFilter & 1 << i) != 0 && (MemoryProperties.MemoryTypes[i].PropertyFlags & properties) == properties)
                 {
                     return (uint)i;
                 }
@@ -341,7 +341,7 @@ namespace OpenH2.Rendering.Vulkan
             if (caps.CurrentExtent.Width != uint.MaxValue)
                 return caps.CurrentExtent;
 
-            var fbSize = this.vulkanHost.window.FramebufferSize;
+            var fbSize = vulkanHost.window.FramebufferSize;
 
             return new Extent2D
             {
@@ -363,7 +363,7 @@ namespace OpenH2.Rendering.Vulkan
                 khrSurfaceExtension.Dispose();
             }
 
-            vk.DestroyDevice(this.device, null);
+            vk.DestroyDevice(device, null);
         }
     }
 }
