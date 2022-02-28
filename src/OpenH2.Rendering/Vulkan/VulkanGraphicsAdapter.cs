@@ -34,6 +34,7 @@ namespace OpenH2.Rendering.Vulkan
         private VkDevice device;
         private VulkanTextureBinder textureBinder;
         private VkSwapchain swapchain;
+        private VkRenderPass renderpass;
         private VkDefaultGraphicsPipeline pipeline;
         private VkImage image;
         private VkSampler sampler;
@@ -79,7 +80,8 @@ namespace OpenH2.Rendering.Vulkan
             this.device = instance.CreateDevice();
             this.textureBinder = new VulkanTextureBinder(this.device);
             this.swapchain = device.CreateSwapchain();
-            this.pipeline = new VkDefaultGraphicsPipeline(vulkanHost, device, swapchain);
+            this.renderpass = new VkRenderPass(device, swapchain);
+            this.pipeline = new VkDefaultGraphicsPipeline(vulkanHost, device, swapchain, renderpass);
 
 
             this.image = this.textureBinder.TestBind();
@@ -178,6 +180,8 @@ namespace OpenH2.Rendering.Vulkan
 
             vk.ResetFences(device, 1, in inFlightFence);
 
+            UpdateGlobals(imageIndex, matricies);
+
             vk.ResetCommandBuffer(commandBuffer, (CommandBufferResetFlags)0);
 
             var bufBegin = new CommandBufferBeginInfo
@@ -187,9 +191,7 @@ namespace OpenH2.Rendering.Vulkan
 
             SUCCESS(vk.BeginCommandBuffer(commandBuffer, in bufBegin), "Unable to begin writing to command buffer");
 
-            UpdateGlobals(imageIndex, matricies);
-
-            this.pipeline.BeginPass(commandBuffer, imageIndex);
+            this.renderpass.Begin(commandBuffer, imageIndex);
 
             this.pipeline.Bind(commandBuffer);
 
@@ -272,9 +274,7 @@ namespace OpenH2.Rendering.Vulkan
             // Correct for OpenGL Y inversion
             globals.ProjectionMatrix.M22 *= -1;
 
-            //this.globalBuffer/*[imageIndex]*/.Load(stackalloc UBO[] { ubo });
             this.globalBuffer/*[imageIndex]*/.Load(globals);
-
 
             var time = (float)(DateTimeOffset.UtcNow - start).TotalSeconds;
 
@@ -293,9 +293,13 @@ namespace OpenH2.Rendering.Vulkan
 
             recreateSwapchain = false;
             vk.DeviceWaitIdle(device);
+
             this.pipeline.DestroyResources();
+
             this.swapchain.DestroyResources();
             this.swapchain.CreateResources();
+            this.renderpass.InitializeFramebuffers();
+
             this.pipeline.CreateResources();
 
             // TODO: multiple frame support: recreate uniform buffers, command buffers, pools??
@@ -337,7 +341,7 @@ namespace OpenH2.Rendering.Vulkan
             vk.DestroySemaphore(device, renderFinishedSemaphore, null);
             vk.DestroyFence(device, inFlightFence, null);
 
-            // destroy swapchain
+            this.renderpass.Dispose();
             this.swapchain.Dispose();
 
             this.image.Dispose();

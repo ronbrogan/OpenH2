@@ -9,39 +9,20 @@ namespace OpenH2.Rendering.Vulkan
     {
         private readonly VkDevice device;
         private readonly VkSwapchain swapchain;
+        private readonly VkRenderPass renderPass;
 
         private DescriptorSetLayout descriptorSetLayout;
         private PipelineLayout pipelineLayout;
 
-        private RenderPass renderPass;
         private Pipeline graphicsPipeline;
         private DescriptorSet descriptorSet;
 
-        public VkDefaultGraphicsPipeline(VulkanHost host, VkDevice device, VkSwapchain swapchain) : base(host.vk)
+        public VkDefaultGraphicsPipeline(VulkanHost host, VkDevice device, VkSwapchain swapchain, VkRenderPass renderPass) : base(host.vk)
         {
             this.device = device;
             this.swapchain = swapchain;
-
+            this.renderPass = renderPass;
             this.CreateResources();
-        }
-
-        internal void BeginPass(in CommandBuffer commandBuffer, uint imageIndex)
-        {
-            var clearColors = stackalloc[] {
-                new ClearValue(new ClearColorValue(0f, 0f, 0f, 1f)),
-                new ClearValue(depthStencil: new ClearDepthStencilValue(1.0f, 0))
-            };
-            var renderBegin = new RenderPassBeginInfo
-            {
-                SType = StructureType.RenderPassBeginInfo,
-                RenderPass = renderPass,
-                Framebuffer = swapchain.Framebuffers[imageIndex],
-                RenderArea = new Rect2D(new Offset2D(0, 0), swapchain.Extent),
-                ClearValueCount = 2,
-                PClearValues = clearColors
-            };
-
-            vk.CmdBeginRenderPass(commandBuffer, in renderBegin, SubpassContents.Inline);
         }
 
         public void Bind(in CommandBuffer commandBuffer)
@@ -221,70 +202,6 @@ namespace OpenH2.Rendering.Vulkan
 
             SUCCESS(vk.CreatePipelineLayout(device, in layoutCreate, null, out pipelineLayout), "Pipeline layout create failed");
 
-            // =======================
-            // start render pass setup
-            // =======================
-
-            var colorAttach = new AttachmentDescription
-            {
-                Format = device.SurfaceFormat.Format,
-                Samples = SampleCountFlags.SampleCount1Bit,
-                LoadOp = AttachmentLoadOp.Clear,
-                StoreOp = AttachmentStoreOp.Store,
-                StencilLoadOp = AttachmentLoadOp.DontCare,
-                StencilStoreOp = AttachmentStoreOp.DontCare,
-                InitialLayout = ImageLayout.Undefined,
-                FinalLayout = ImageLayout.PresentSrcKhr
-            };
-
-            // TODO: derive depth format from common place
-            var depthAttach = new AttachmentDescription
-            {
-                Format = Format.D32Sfloat,
-                Samples = SampleCountFlags.SampleCount1Bit,
-                LoadOp = AttachmentLoadOp.Clear,
-                StoreOp = AttachmentStoreOp.DontCare,
-                StencilLoadOp = AttachmentLoadOp.DontCare,
-                StencilStoreOp = AttachmentStoreOp.DontCare,
-                InitialLayout = ImageLayout.Undefined,
-                FinalLayout = ImageLayout.DepthStencilAttachmentOptimal
-            };
-
-            var colorAttachRef = new AttachmentReference(0, ImageLayout.ColorAttachmentOptimal);
-            var depthAttachRef = new AttachmentReference(1, ImageLayout.DepthStencilAttachmentOptimal);
-
-            var subpass = new SubpassDescription
-            {
-                PipelineBindPoint = PipelineBindPoint.Graphics,
-                ColorAttachmentCount = 1,
-                PColorAttachments = &colorAttachRef,
-                PDepthStencilAttachment = &depthAttachRef,
-            };
-
-            var dependency = new SubpassDependency
-            {
-                SrcSubpass = Vk.SubpassExternal,
-                DstSubpass = 0,
-                SrcStageMask = PipelineStageFlags.PipelineStageColorAttachmentOutputBit | PipelineStageFlags.PipelineStageEarlyFragmentTestsBit,
-                SrcAccessMask = 0,
-                DstStageMask = PipelineStageFlags.PipelineStageColorAttachmentOutputBit | PipelineStageFlags.PipelineStageEarlyFragmentTestsBit,
-                DstAccessMask = AccessFlags.AccessColorAttachmentWriteBit | AccessFlags.AccessDepthStencilAttachmentWriteBit,
-            };
-
-            var attachments = stackalloc [] { colorAttach, depthAttach };
-            var renderPassCreate = new RenderPassCreateInfo
-            {
-                SType = StructureType.RenderPassCreateInfo,
-                AttachmentCount = 2,
-                PAttachments = attachments,
-                SubpassCount = 1,
-                PSubpasses = &subpass,
-                DependencyCount = 1,
-                PDependencies = &dependency
-            };
-
-            SUCCESS(vk.CreateRenderPass(device, in renderPassCreate, null, out renderPass), "Render pass create failed");
-
             using var vertShader = new VkShader(device, "VulkanTest", ShaderType.Vertex);
             using var fragShader = new VkShader(device, "VulkanTest", ShaderType.Fragment);
 
@@ -322,7 +239,7 @@ namespace OpenH2.Rendering.Vulkan
 
             SUCCESS(vk.CreateGraphicsPipelines(device, default, 1, &pipelineCreate, null, out graphicsPipeline), "Pipeline create failed");
 
-            swapchain.InitializeFramebuffers(renderPass);
+            
         }
 
         public void CreateDescriptors(VkBuffer<GlobalUniform> globals, VkBuffer<TransformUniform> transform, VkImage image, VkSampler sampler)
@@ -390,7 +307,6 @@ namespace OpenH2.Rendering.Vulkan
             vk.DestroyDescriptorSetLayout(device, descriptorSetLayout, null);
             vk.DestroyPipeline(device, graphicsPipeline, null);
             vk.DestroyPipelineLayout(device, pipelineLayout, null);
-            vk.DestroyRenderPass(device, renderPass, null);
         }
 
         public void Dispose()
