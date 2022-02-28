@@ -1,4 +1,5 @@
-﻿using OpenH2.Rendering.Shaders;
+﻿using OpenH2.Foundation;
+using OpenH2.Rendering.Shaders;
 using Silk.NET.Vulkan;
 using System;
 using System.Numerics;
@@ -82,7 +83,7 @@ namespace OpenH2.Rendering.Vulkan
             {
                 Binding = 0,
                 InputRate = VertexInputRate.Vertex,
-                Stride = (uint)sizeof(VulkanTestVertex)
+                Stride = (uint)sizeof(VertexFormat)
             };
 
             var posAttr = new VertexInputAttributeDescription
@@ -90,33 +91,49 @@ namespace OpenH2.Rendering.Vulkan
                 Binding = 0,
                 Location = 0,
                 Format = Format.R32G32B32Sfloat,
-                Offset = 0,
-            };
-
-            var colorAttr = new VertexInputAttributeDescription
-            {
-                Binding = 0,
-                Location = 1,
-                Format = Format.R32G32B32Sfloat,
-                Offset = (uint)sizeof(Vector2)
+                Offset = (uint)VertexFormat.PositionOffset,
             };
 
             var texAttr = new VertexInputAttributeDescription
             {
                 Binding = 0,
-                Location = 2,
+                Location = 1,
                 Format = Format.R32G32Sfloat,
-                Offset = (uint)sizeof(Vector2) + (uint)sizeof(Vector3),
+                Offset = (uint)VertexFormat.TexCoordsOffset,
             };
 
-            var attrs = stackalloc [] { posAttr, colorAttr, texAttr };
+            var normalAttr = new VertexInputAttributeDescription
+            {
+                Binding = 0,
+                Location = 2,
+                Format = Format.R32G32B32Sfloat,
+                Offset = (uint)VertexFormat.NormalOffset
+            };
+
+            var tanAttr = new VertexInputAttributeDescription
+            {
+                Binding = 0,
+                Location = 3,
+                Format = Format.R32G32B32Sfloat,
+                Offset = (uint)VertexFormat.TangentOffset
+            };
+
+            var bitanAttr = new VertexInputAttributeDescription
+            {
+                Binding = 0,
+                Location = 4,
+                Format = Format.R32G32B32Sfloat,
+                Offset = (uint)VertexFormat.BitangentOffset
+            };
+
+            var attrs = stackalloc [] { posAttr, texAttr, normalAttr, tanAttr, bitanAttr };
 
             var vertInput = new PipelineVertexInputStateCreateInfo
             {
                 SType = StructureType.PipelineVertexInputStateCreateInfo,
                 VertexBindingDescriptionCount = 1,
                 PVertexBindingDescriptions = &binding,
-                VertexAttributeDescriptionCount = 3,
+                VertexAttributeDescriptionCount = 5,
                 PVertexAttributeDescriptions = attrs
             };
 

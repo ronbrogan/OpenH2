@@ -40,26 +40,26 @@ namespace OpenH2.Rendering.Vulkan
         private VkSampler sampler;
         private bool recreateSwapchain = false;
 
-        ushort[] indices = new ushort[] 
+        uint[] indices = new uint[] 
         { 
             0, 1, 2, 2, 3, 0,
             4, 5, 6, 6, 7, 4
         };
-        VulkanTestVertex[] vertices = new VulkanTestVertex[]
+        VertexFormat[] vertices = new VertexFormat[]
         {
-            new (new (-0.5f, -0.5f, 0), new (1f, 0f, 0f), new (1f,0)),
-            new (new (0.5f, -0.5f, 0), new (0f, 1f, 0f), new (0,0)),
-            new (new (0.5f, 0.5f, 0), new (0f, 0f, 1f), new (0,1f)),
-            new (new (-0.5f, 0.5f, 0), new (1f, 1f, 1f), new (1f,1f)),
+            new (new (-0.5f, -0.5f, 0) ,new (1f,0) , new (1f, 0f, 0f)),
+            new (new (0.5f, -0.5f, 0)  ,new (0,0)  , new (0f, 1f, 0f)),
+            new (new (0.5f, 0.5f, 0)   ,new (0,1f) , new (0f, 0f, 1f)),
+            new (new (-0.5f, 0.5f, 0)  ,new (1f,1f), new (1f, 1f, 1f)),
 
-            new (new (-0.5f, -0.5f, -0.5f), new (1f, 0f, 0f), new (1f,0)),
-            new (new (0.5f, -0.5f, -0.5f), new (0f, 1f, 0f), new (0,0)),
-            new (new (0.5f, 0.5f, -0.5f), new (0f, 0f, 1f), new (0,1f)),
-            new (new (-0.5f, 0.5f, -0.5f), new (1f, 1f, 1f), new (1f,1f)),
+            new (new (-0.5f, -0.5f, -0.5f), new (1f,0) ,  new (1f, 0f, 0f)),
+            new (new (0.5f, -0.5f, -0.5f) , new (0,0)  ,  new (0f, 1f, 0f)),
+            new (new (0.5f, 0.5f, -0.5f)  , new (0,1f) ,  new (0f, 0f, 1f)),
+            new (new (-0.5f, 0.5f, -0.5f) , new (1f,1f),  new (1f, 1f, 1f)),
         };
 
-        private VkBuffer<ushort> indexBuffer;
-        private VkBuffer<VulkanTestVertex> vertexBuffer;
+        private VkBuffer<uint> indexBuffer;
+        private VkBuffer<VertexFormat> vertexBuffer;
 
 
         // TODO: need multiple of these to support multiple in-flight frames
@@ -91,26 +91,26 @@ namespace OpenH2.Rendering.Vulkan
             // vertex buffer setup
             // =======================
 
-            using (var staging = device.CreateBuffer<VulkanTestVertex>(vertices.Length,
+            using (var staging = device.CreateBuffer<VertexFormat>(vertices.Length,
                 BufferUsageFlags.BufferUsageTransferSrcBit,
                 MemoryPropertyFlags.MemoryPropertyHostVisibleBit | MemoryPropertyFlags.MemoryPropertyHostCoherentBit))
             {
                 staging.Load(vertices);
 
-                this.vertexBuffer = device.CreateBuffer<VulkanTestVertex>(vertices.Length,
+                this.vertexBuffer = device.CreateBuffer<VertexFormat>(vertices.Length,
                     BufferUsageFlags.BufferUsageVertexBufferBit | BufferUsageFlags.BufferUsageTransferDstBit,
                     MemoryPropertyFlags.MemoryPropertyDeviceLocalBit);
 
                 this.vertexBuffer.QueueLoad(staging);
             }
 
-            using (var staging = device.CreateBuffer<ushort>(indices.Length,
+            using (var staging = device.CreateBuffer<uint>(indices.Length,
                 BufferUsageFlags.BufferUsageTransferSrcBit,
                 MemoryPropertyFlags.MemoryPropertyHostVisibleBit | MemoryPropertyFlags.MemoryPropertyHostCoherentBit))
             {
                 staging.Load(indices);
 
-                this.indexBuffer = device.CreateBuffer<ushort>(indices.Length,
+                this.indexBuffer = device.CreateBuffer<uint>(indices.Length,
                     BufferUsageFlags.BufferUsageIndexBufferBit | BufferUsageFlags.BufferUsageTransferDstBit,
                     MemoryPropertyFlags.MemoryPropertyDeviceLocalBit);
 
@@ -199,7 +199,7 @@ namespace OpenH2.Rendering.Vulkan
             var offsets = stackalloc ulong[] { 0 };
             vk.CmdBindVertexBuffers(commandBuffer, 0, 1, vertexBuffers, offsets);
 
-            vk.CmdBindIndexBuffer(commandBuffer, indexBuffer, 0, IndexType.Uint16);
+            vk.CmdBindIndexBuffer(commandBuffer, indexBuffer, 0, IndexType.Uint32);
 
             //vk.CmdDraw(commandBuffer, (uint)vertices.Length, 1, 0, 0);
             vk.CmdDrawIndexed(commandBuffer, (uint)indices.Length, 1, 0, 0, 0);

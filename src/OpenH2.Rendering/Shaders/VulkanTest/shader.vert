@@ -16,16 +16,16 @@ layout(std140, binding = 2) uniform TransformUniform
     mat4 NormalMatrix;
 } Transform;
 
-layout(location = 0) in vec3 inPosition;
-layout(location = 1) in vec3 inColor;
-layout(location = 2) in vec2 inTex;
+layout(location = 0) in vec3 local_position;
+layout(location = 1) in vec2 in_texture;
+layout(location = 2) in vec3 local_normal;
+layout(location = 3) in vec3 tangent;
+layout(location = 4) in vec3 bitangent;
 
-layout(location = 0) out vec3 fragColor;
-layout(location = 1) out vec2 texPos;
+layout(location = 0) out vec2 texPos;
 
 
 void main() {
-    gl_Position = Globals.ProjectionMatrix * Globals.ViewMatrix * Transform.ModelMatrix * vec4(inPosition, 1.0);
-    fragColor = inColor;
-    texPos = inTex;
+    gl_Position = Globals.ProjectionMatrix * Globals.ViewMatrix * Transform.ModelMatrix * vec4(local_position, 1.0);
+    texPos = in_texture;
 }
