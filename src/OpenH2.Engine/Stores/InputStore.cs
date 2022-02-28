@@ -1,5 +1,8 @@
-﻿using OpenTK.Windowing.GraphicsLibraryFramework;
+﻿using Silk.NET.Input;
+using Silk.NET.Input.Extensions;
+using System.Collections.Generic;
 using System.Numerics;
+using System.Threading;
 
 namespace OpenH2.Engine.Stores
 {
@@ -14,40 +17,40 @@ namespace OpenH2.Engine.Stores
 
         public void SetMouse(MouseState mouse)
         {
-            MouseDown = mouse.IsButtonDown(MouseButton.Left);
-            var currPos = new Vector2(mouse.X, mouse.Y);
-            MouseDiff = MousePos - currPos;
-            MousePos = currPos;
+            MouseDown = mouse.IsButtonPressed(MouseButton.Left);
+            MouseDiff = MousePos - mouse.Position;
+            MousePos = mouse.Position;
         }
 
         public void SetKeys(KeyboardState currentDown)
         {
             this.PreviousKeyState = this.KeyState;
-            this.KeyState = currentDown.GetSnapshot();
+            this.KeyState = currentDown;
         }
+
 
         /// <summary>
         /// Returns true if the key is down now, but wasn't last frame 
         /// </summary>
-        public bool WasPressed(Keys key)
+        public bool WasPressed(Key key)
         {
-            return this.KeyState.IsKeyDown(key) && (!this.PreviousKeyState?.IsKeyDown(key) ?? true);
+            return this.KeyState.IsKeyPressed(key) && (!(this.PreviousKeyState?.IsKeyPressed(key)) ?? true);
         }
 
         /// <summary>
         /// Returns if the key is currently down
         /// </summary>
-        public bool IsDown(Keys key)
+        public bool IsDown(Key key)
         {
-            return this.KeyState.IsKeyDown(key);
+            return this.KeyState.IsKeyPressed(key);
         }
 
         /// <summary>
         /// Returns true if the key is down now, and was last frame as well
         /// </summary>
-        public bool Held(Keys key)
+        public bool Held(Key key)
         {
-            return this.KeyState.IsKeyDown(key) && this.PreviousKeyState.IsKeyDown(key);
+            return this.KeyState.IsKeyPressed(key) && this.PreviousKeyState.IsKeyPressed(key);
         }
     }
 }

@@ -15,6 +15,7 @@ using OpenH2.Rendering.Abstractions;
 using OpenH2.Rendering.OpenGL;
 using OpenH2.Rendering.Vulkan;
 using OpenTK.Windowing.Desktop;
+using Silk.NET.Input;
 using System;
 using System.Diagnostics;
 using System.IO;
@@ -28,7 +29,7 @@ namespace OpenH2.Engine
         IGraphicsHost graphicsHost;
         IAudioHost audioHost;
         IGameLoopSource gameLoop;
-        Func<GameWindow> gameWindowGetter;
+        Func<IInputContext> gameInputGetter;
 
         private World world;
         private FlatFileMetricSink sink;
@@ -36,7 +37,7 @@ namespace OpenH2.Engine
         public Engine()
         {
             var host = new VulkanHost();
-            //gameWindowGetter = host.GetWindow;
+            gameInputGetter = host.GetInputContext;
 
             graphicsHostDisposable = host;
             graphicsHost = host;
@@ -72,7 +73,7 @@ namespace OpenH2.Engine
                 LoadMap(factory, mapFilename, matFactory);
             });
 
-            world = new RealtimeWorld(//gameWindowGetter(), 
+            world = new RealtimeWorld(gameInputGetter(), 
                 audioHost.GetAudioAdapter(), 
                 graphicsHost);
 

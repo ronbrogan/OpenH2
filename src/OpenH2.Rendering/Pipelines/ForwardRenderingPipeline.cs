@@ -143,6 +143,8 @@ namespace OpenH2.Rendering.Pipelines
 
             float GetDistance(DrawGroup renderable)
             {
+                if(renderable.DrawCommands.Length == 0) return 0;
+
                 if(renderable.Transform.Translation == Vector3.Zero)
                 {
                     return Vector3.DistanceSquared(this.Globals.ViewPosition, renderable.DrawCommands[0].Mesh.Verticies[0].Position);

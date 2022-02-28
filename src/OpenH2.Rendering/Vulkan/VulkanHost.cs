@@ -12,23 +12,24 @@ using Silk.NET.Vulkan;
 using Silk.NET.Vulkan.Extensions.KHR;
 using System.Diagnostics;
 using OpenH2.Rendering.Shaders;
+using Silk.NET.Input;
 
 namespace OpenH2.Rendering.Vulkan
 {
     public sealed unsafe class VulkanHost : IGraphicsHost, IGameLoopSource, IDisposable
     {
         private VulkanGraphicsAdapter adapter;
+        private IInputContext inputContext;
         internal IWindow window;
-        private Action<double> updateAction;
-        private Action<double> renderAction;
+        
 
         public readonly Vk vk;
 
-        public Vector2 ViewportSize => new Vector2(1600, 900);
+        public bool AspectRatioChanged { get; private set; }
 
-        public bool AspectRatioChanged => false;
+        public float AspectRatio { get; private set; }
 
-        public float AspectRatio => 16f / 9f;
+        public System.Numerics.Vector2 ViewportSize { get; private set; }
 
         public VulkanHost()
         {
@@ -42,13 +43,26 @@ namespace OpenH2.Rendering.Vulkan
 
             this.window = Window.Create(options);
             this.window.Initialize();
+            this.inputContext = this.window.CreateInput();
 
-            if(this.window.VkSurface is null)
+            this.window.Resize += a =>
+            {
+                this.ViewportSize = new System.Numerics.Vector2(a.X, a.Y);
+                this.AspectRatio = a.X / (float)a.Y;
+                this.AspectRatioChanged = true;
+            };
+
+            if (this.window.VkSurface is null)
             {
                 throw new NotSupportedException("Unable to use Vulkan!");
             }
 
             this.adapter = new VulkanGraphicsAdapter(this);
+        }
+
+        public IInputContext GetInputContext()
+        {
+            return this.inputContext;
         }
 
         public void EnableConsoleDebug()
@@ -59,26 +73,16 @@ namespace OpenH2.Rendering.Vulkan
 
         public void RegisterCallbacks(Action<double> updateCallback, Action<double> renderCallback)
         {
-            //this.updateAction = updateCallback;
-            this.renderAction = renderCallback;
+            this.window.Update += updateCallback;
+            this.window.Render += renderCallback;
         }
 
         public void Start(int updatesPerSecond, int framesPerSecond)
         {
-            var sw = new Stopwatch();
-            
-            this.window.Run(() =>
-            {
-                this.window.DoEvents();
-                var deltaT = sw.Elapsed.TotalMilliseconds;
-                //this.updateAction(deltaT);
-                //this.renderAction(deltaT);
+            this.window.UpdatesPerSecond = updatesPerSecond;
+            this.window.FramesPerSecond = framesPerSecond;
 
-                this.adapter.BeginFrame(new GlobalUniform());
-                this.adapter.EndFrame();
-
-                sw.Restart();
-            });
+            this.window.Run();
         }
 
         public void Dispose()

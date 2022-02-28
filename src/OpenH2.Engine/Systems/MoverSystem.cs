@@ -7,6 +7,7 @@ using OpenH2.Foundation.Extensions;
 using OpenH2.Foundation.Logging;
 using OpenTK.Windowing.Common.Input;
 using OpenTK.Windowing.GraphicsLibraryFramework;
+using Silk.NET.Input;
 using System;
 using System.Collections.Generic;
 using System.Numerics;
@@ -40,28 +41,28 @@ namespace OpenH2.Engine.Systems
             UpdateMovers(movers, input, yaw, pitch, timestep);
         }
 
-        private static Dictionary<Keys, Func<float, Vector3, Vector3>> downKeyMap = new()
+        private static Dictionary<Key, Func<float, Vector3, Vector3>> downKeyMap = new()
         {
-            { Keys.W, (s,d) => d += new Vector3(s, 0, 0) },
-            { Keys.S, (s,d) => d += new Vector3(-s, 0, 0) },
-            { Keys.A, (s,d) => d += new Vector3(0, -s, 0) },
-            { Keys.D, (s,d) => d += new Vector3(0, s, 0) },
-            { Keys.LeftShift, (s,d) => d += new Vector3(0, 0, -s) },
+            { Key.W, (s,d) => d += new Vector3(s, 0, 0) },
+            { Key.S, (s,d) => d += new Vector3(-s, 0, 0) },
+            { Key.A, (s,d) => d += new Vector3(0, -s, 0) },
+            { Key.D, (s,d) => d += new Vector3(0, s, 0) },
+            { Key.ShiftLeft, (s,d) => d += new Vector3(0, 0, -s) },
         };
 
         private Vector3 GetInput(InputStore input, MoverComponent mover)
         {
             var speed = 1f;
 
-            if (input.IsDown(Keys.LeftControl))
+            if (input.IsDown(Key.ControlLeft))
             {
                 speed = 10.0f;
             }
 
             var delta = Vector3.Zero;
 
-            // handle down keys
-            foreach (var key in downKeyMap.Keys)
+            // handle down Key
+            foreach (var (key, _) in downKeyMap)
             {
                 if (input.IsDown(key))
                 {
@@ -69,7 +70,7 @@ namespace OpenH2.Engine.Systems
                 }
             }
 
-            if(input.WasPressed(Keys.M))
+            if(input.WasPressed(Key.M))
             {
                 if(mover.Mode != mover.Config.Mode)
                 {
@@ -94,7 +95,7 @@ namespace OpenH2.Engine.Systems
                 this.world.Scene.AddEntity(mover.Parent);
             }
 
-            if(input.WasPressed(Keys.P))
+            if(input.WasPressed(Key.P))
             {
                 var p = mover.Transform.Position;
                 var q = mover.Transform.Orientation;
@@ -107,14 +108,14 @@ namespace OpenH2.Engine.Systems
 
             if(mover.Mode == MoverComponent.MovementMode.Freecam)
             {
-                if(input.IsDown(Keys.Space))
+                if(input.IsDown(Key.Space))
                 {
                     delta += new Vector3(0, 0, speed);
                 }
             }
             else
             {
-                if (input.WasPressed(Keys.Space))
+                if (input.WasPressed(Key.Space))
                 {
                     delta += new Vector3(0, 0, speed);
                 }
@@ -125,8 +126,8 @@ namespace OpenH2.Engine.Systems
 
         public void UpdateMovers(List<MoverComponent> movers, InputStore input, float yaw, float pitch, double timestep)
         {
-            var yawQuat = Quaternion.CreateFromAxisAngle(EngineGlobals.Up, yaw);
-            var pitchQuat = Quaternion.CreateFromAxisAngle(EngineGlobals.Strafe, pitch);
+            var yawQuat = Quaternion.CreateFromAxisAngle(EngineGlobals.Up, -yaw);
+            var pitchQuat = Quaternion.CreateFromAxisAngle(EngineGlobals.Strafe, -pitch);
 
             foreach (var mover in movers)
             {

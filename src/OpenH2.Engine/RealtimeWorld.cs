@@ -4,6 +4,7 @@ using OpenH2.Engine.Stores;
 using OpenH2.Engine.Systems;
 using OpenH2.Rendering.Abstractions;
 using OpenTK.Windowing.Desktop;
+using Silk.NET.Input;
 using System.Collections.Generic;
 
 namespace OpenH2.Engine
@@ -12,7 +13,7 @@ namespace OpenH2.Engine
     {
         private List<object> globalResources = new List<object>();
 
-        public RealtimeWorld(//GameWindow window, 
+        public RealtimeWorld(IInputContext inputContext, 
             IAudioAdapter audioAdapter,
             IGraphicsHost graphicsHost)
         {
@@ -24,6 +25,7 @@ namespace OpenH2.Engine
             var animationSystem = new AnimationSystem(this);
             // new up systems, order here will be order of update
             //Systems.Add(new OpenTKInputSystem(this, window));
+            Systems.Add(new SilkInputSystem(this, inputContext));
             Systems.Add(new BspSystem(this));
             Systems.Add(new PhysxPhysicsSystem(this));
             Systems.Add(new MoverSystem(this));

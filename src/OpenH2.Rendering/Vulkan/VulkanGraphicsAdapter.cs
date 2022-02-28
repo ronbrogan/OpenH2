@@ -265,11 +265,11 @@ namespace OpenH2.Rendering.Vulkan
         private static float DegToRad(float deg) => RadiansPer * deg;
         private void UpdateGlobals(uint imageIndex, GlobalUniform globals)
         {
-            globals.ViewMatrix = Matrix4x4.CreateLookAt(new(2f, 2f, 2f), new(0, 0, 0), new(0, 0, 1f));
-            globals.ProjectionMatrix = Matrix4x4.CreatePerspectiveFieldOfView(DegToRad(45), swapchain.Extent.Width / (float)swapchain.Extent.Height, 0.1f, 10f);
-
-            // Correct for OpenGL Y inversion
-            globals.ProjectionMatrix.M22 *= -1;
+            //globals.ViewMatrix = Matrix4x4.CreateLookAt(new(2f, 2f, 2f), new(0, 0, 0), new(0, 0, 1f));
+            //globals.ProjectionMatrix = Matrix4x4.CreatePerspectiveFieldOfView(DegToRad(45), swapchain.Extent.Width / (float)swapchain.Extent.Height, 0.1f, 10f);
+            //
+            //// Correct for OpenGL Y inversion
+            //globals.ProjectionMatrix.M22 *= -1;
 
             this.globalBuffer/*[imageIndex]*/.Load(globals);
 

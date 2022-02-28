@@ -18,8 +18,8 @@ namespace OpenH2.Engine.Systems
         {
             var inputs = this.world.GetGlobalResource<InputStore>();
 
-            inputs.SetMouse(window.MouseState);
-            inputs.SetKeys(window.KeyboardState);
+            //inputs.SetMouse(window.MouseState);
+            //inputs.SetKeys(window.KeyboardState);
         }
     }
 }

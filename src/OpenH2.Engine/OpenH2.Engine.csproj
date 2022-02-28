@@ -42,6 +42,7 @@
 
     <ItemGroup>
       <PackageReference Include="OpenTK" Version="4.7.1" />
+      <PackageReference Include="Silk.NET.Input.Extensions" Version="2.13.0" />
 	  <PackageReference Include="System.Runtime.CompilerServices.Unsafe" Version="6.0.0" />
 	</ItemGroup>
 

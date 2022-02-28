@@ -4,6 +4,7 @@ using OpenH2.Engine.Scripting;
 using OpenH2.Engine.Stores;
 using OpenH2.Foundation.Logging;
 using OpenTK.Windowing.GraphicsLibraryFramework;
+using Silk.NET.Input;
 using System.Diagnostics;
 
 namespace OpenH2.Engine.Systems
@@ -56,7 +57,7 @@ namespace OpenH2.Engine.Systems
 
         public override void Update(double timestep)
         {
-            if(this.inputStore.WasPressed(Keys.F11))
+            if(this.inputStore.WasPressed(Key.F11))
             {
                 this.run = !this.run;
                 Logger.LogInfo($"Toggling script execution to [{(this.run ? "ON" : "OFF")}]");
