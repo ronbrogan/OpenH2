@@ -11,18 +11,9 @@ using Buffer = Silk.NET.Vulkan.Buffer;
 
 namespace OpenH2.Rendering.Vulkan
 {
-    public struct VulkanTestVertex
+    public struct VulkanTestUniform
     {
-        public Vector3 VertexPosition;
-        public Vector3 VertexColor;
-        public Vector2 TexCoord;
-
-        public VulkanTestVertex(Vector3 pos, Vector3 color, Vector2 tex)
-        {
-            this.VertexPosition = pos;
-            this.VertexColor = color;
-            this.TexCoord = tex;
-        }
+        public Sampler Texture;
     }
 
     public sealed unsafe class VulkanGraphicsAdapter : VkObject, IGraphicsAdapter, IDisposable
@@ -64,8 +55,9 @@ namespace OpenH2.Rendering.Vulkan
 
         // TODO: need multiple of these to support multiple in-flight frames
         private VkBuffer<GlobalUniform> globalBuffer;
+        private VkBuffer<VulkanTestUniform> shaderUniformBuffer;
         private VkBuffer<TransformUniform> transformBuffer;
-        private CommandBuffer commandBuffer;
+        private CommandBuffer renderCommands;
         private Semaphore imageAvailableSemaphore;
         private Semaphore renderFinishedSemaphore;
         private Fence inFlightFence;
@@ -121,12 +113,16 @@ namespace OpenH2.Rendering.Vulkan
                 BufferUsageFlags.BufferUsageUniformBufferBit, 
                 MemoryPropertyFlags.MemoryPropertyHostVisibleBit | MemoryPropertyFlags.MemoryPropertyHostCoherentBit);
 
+            this.shaderUniformBuffer = device.CreateBuffer<VulkanTestUniform>(1,
+                BufferUsageFlags.BufferUsageUniformBufferBit,
+                MemoryPropertyFlags.MemoryPropertyHostVisibleBit | MemoryPropertyFlags.MemoryPropertyHostCoherentBit);
+
             this.transformBuffer = device.CreateBuffer<TransformUniform>(1,
                 BufferUsageFlags.BufferUsageUniformBufferBit,
                 MemoryPropertyFlags.MemoryPropertyHostVisibleBit | MemoryPropertyFlags.MemoryPropertyHostCoherentBit);
 
 
-            this.pipeline.CreateDescriptors(this.globalBuffer, this.transformBuffer, this.image, this.sampler);
+            this.pipeline.CreateDescriptors(this.globalBuffer, this.transformBuffer, this.shaderUniformBuffer, new[] { (this.image, this.sampler) });
 
             // =======================
             // commandbuffer setup
@@ -140,7 +136,7 @@ namespace OpenH2.Rendering.Vulkan
                 CommandBufferCount = 1
             };
 
-            SUCCESS(vk.AllocateCommandBuffers(device, in commandBufAlloc, out commandBuffer), "Command buffer alloc failed");
+            SUCCESS(vk.AllocateCommandBuffers(device, in commandBufAlloc, out renderCommands), "Command buffer alloc failed");
 
             // =======================
             // sync setup
@@ -182,27 +178,27 @@ namespace OpenH2.Rendering.Vulkan
 
             UpdateGlobals(imageIndex, matricies);
 
-            vk.ResetCommandBuffer(commandBuffer, (CommandBufferResetFlags)0);
+            vk.ResetCommandBuffer(renderCommands, (CommandBufferResetFlags)0);
 
             var bufBegin = new CommandBufferBeginInfo
             {
                 SType = StructureType.CommandBufferBeginInfo
             };
 
-            SUCCESS(vk.BeginCommandBuffer(commandBuffer, in bufBegin), "Unable to begin writing to command buffer");
+            SUCCESS(vk.BeginCommandBuffer(renderCommands, in bufBegin), "Unable to begin writing to command buffer");
 
-            this.renderpass.Begin(commandBuffer, imageIndex);
+            this.renderpass.Begin(renderCommands, imageIndex);
 
-            this.pipeline.Bind(commandBuffer);
+            this.pipeline.Bind(renderCommands);
 
             var vertexBuffers = stackalloc Buffer[]{ vertexBuffer };
             var offsets = stackalloc ulong[] { 0 };
-            vk.CmdBindVertexBuffers(commandBuffer, 0, 1, vertexBuffers, offsets);
+            vk.CmdBindVertexBuffers(renderCommands, 0, 1, vertexBuffers, offsets);
 
-            vk.CmdBindIndexBuffer(commandBuffer, indexBuffer, 0, IndexType.Uint32);
+            vk.CmdBindIndexBuffer(renderCommands, indexBuffer, 0, IndexType.Uint32);
 
             //vk.CmdDraw(commandBuffer, (uint)vertices.Length, 1, 0, 0);
-            vk.CmdDrawIndexed(commandBuffer, (uint)indices.Length, 1, 0, 0, 0);
+            vk.CmdDrawIndexed(renderCommands, (uint)indices.Length, 1, 0, 0, 0);
         }
 
         public void DrawMeshes(DrawCommand[] commands)
@@ -212,16 +208,16 @@ namespace OpenH2.Rendering.Vulkan
 
         public void EndFrame()
         {
-            vk.CmdEndRenderPass(commandBuffer);
+            vk.CmdEndRenderPass(renderCommands);
 
-            SUCCESS(vk.EndCommandBuffer(commandBuffer), "Failed to record command buffer");
+            SUCCESS(vk.EndCommandBuffer(renderCommands), "Failed to record command buffer");
 
             var waitSems = stackalloc Semaphore[] { imageAvailableSemaphore };
             var waitStages = stackalloc PipelineStageFlags[] { PipelineStageFlags.PipelineStageColorAttachmentOutputBit };
 
             var signalSems = stackalloc Semaphore[] { renderFinishedSemaphore };
 
-            var buf = commandBuffer;
+            var buf = renderCommands;
             var submitInfo = new SubmitInfo
             {
                 SType = StructureType.SubmitInfo,

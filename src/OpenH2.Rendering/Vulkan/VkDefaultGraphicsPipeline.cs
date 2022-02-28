@@ -51,20 +51,29 @@ namespace OpenH2.Rendering.Vulkan
 
             var transformBinding = new DescriptorSetLayoutBinding
             {
-                Binding = 2,
+                Binding = 1,
                 DescriptorType = DescriptorType.UniformBuffer,
                 DescriptorCount = 1,
+                PImmutableSamplers = null,
+                StageFlags = ShaderStageFlags.ShaderStageAllGraphics
+            };
+
+            var texBinding = new DescriptorSetLayoutBinding
+            {
+                Binding = 2,
+                DescriptorType = DescriptorType.CombinedImageSampler,
+                DescriptorCount = 8,
                 StageFlags = ShaderStageFlags.ShaderStageAllGraphics,
                 PImmutableSamplers = null
             };
 
-            var texBinding = new DescriptorSetLayoutBinding
-            { 
-                Binding = 1,
-                DescriptorCount = 1,
+            var dataBinding = new DescriptorSetLayoutBinding
+            {
+                Binding = 2,
                 DescriptorType = DescriptorType.CombinedImageSampler,
-                PImmutableSamplers= null,
-                StageFlags = ShaderStageFlags.ShaderStageFragmentBit
+                DescriptorCount = 1,
+                StageFlags = ShaderStageFlags.ShaderStageAllGraphics,
+                PImmutableSamplers = null
             };
 
             var bindings = stackalloc [] { globalsBinding, transformBinding, texBinding };
@@ -259,7 +268,7 @@ namespace OpenH2.Rendering.Vulkan
             
         }
 
-        public void CreateDescriptors(VkBuffer<GlobalUniform> globals, VkBuffer<TransformUniform> transform, VkImage image, VkSampler sampler)
+        public void CreateDescriptors(VkBuffer<GlobalUniform> globals, VkBuffer<TransformUniform> transform, VkBuffer<VulkanTestUniform> uniform, (VkImage image, VkSampler sampler)[] textures)
         {
             var layouts = stackalloc [] { descriptorSetLayout };
             var alloc = new DescriptorSetAllocateInfo
@@ -273,9 +282,19 @@ namespace OpenH2.Rendering.Vulkan
             SUCCESS(vk.AllocateDescriptorSets(device, in alloc, out descriptorSet), "DescriptorSet allocate failed");
 
             var globalsInfo = new DescriptorBufferInfo(globals, 0, Vk.WholeSize);
+            var uniformInfo = new DescriptorBufferInfo(uniform, 0, Vk.WholeSize);
             var transformsInfo = new DescriptorBufferInfo(transform, 0, Vk.WholeSize);
 
-            var texInfo = new DescriptorImageInfo(sampler, image.View, ImageLayout.ShaderReadOnlyOptimal);
+            var textureInfos = stackalloc DescriptorImageInfo[8];
+            for (int i = 0; i < 8; i++)
+            {
+                if(textures.Length > i)
+                    textureInfos[i] = new DescriptorImageInfo(textures[i].sampler, textures[i].image.View, ImageLayout.ShaderReadOnlyOptimal);
+                else
+                    // TODO: have a fallback texture or something?
+                    textureInfos[i] = new DescriptorImageInfo(textures[0].sampler, textures[0].image.View, ImageLayout.ShaderReadOnlyOptimal);
+
+            }
 
             ReadOnlySpan<WriteDescriptorSet> writes = stackalloc []
             {
@@ -291,12 +310,11 @@ namespace OpenH2.Rendering.Vulkan
                     PImageInfo = null,
                     PTexelBufferView = null
                 },
-
                 new WriteDescriptorSet
                 {
                     SType = StructureType.WriteDescriptorSet,
                     DstSet = descriptorSet,
-                    DstBinding = 2,
+                    DstBinding = 1,
                     DstArrayElement = 0,
                     DescriptorType = DescriptorType.UniformBuffer,
                     DescriptorCount = 1,
@@ -308,11 +326,13 @@ namespace OpenH2.Rendering.Vulkan
                 {
                     SType = StructureType.WriteDescriptorSet,
                     DstSet = descriptorSet,
-                    DstBinding = 1,
+                    DstBinding = 2,
                     DstArrayElement = 0,
                     DescriptorType = DescriptorType.CombinedImageSampler,
-                    DescriptorCount = 1,
-                    PImageInfo = &texInfo
+                    DescriptorCount = 8,
+                    PBufferInfo = null,
+                    PImageInfo = textureInfos,
+                    PTexelBufferView = null
                 }
             };
 

@@ -10,11 +10,15 @@ layout(std140, binding = 0) uniform GlobalUniform
     vec4 ViewPosition;
 } Globals;
 
-layout(std140, binding = 2) uniform TransformUniform
+
+
+layout(std140, binding = 1) uniform TransformUniform
 {
     mat4 ModelMatrix;
     mat4 NormalMatrix;
 } Transform;
+
+layout(binding = 2) uniform sampler2D Textures[1];
 
 layout(location = 0) in vec3 local_position;
 layout(location = 1) in vec2 in_texture;
