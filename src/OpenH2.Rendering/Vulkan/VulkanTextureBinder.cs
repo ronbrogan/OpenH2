@@ -69,7 +69,7 @@ namespace OpenH2.Rendering.Vulkan
             tmp.Load(new Span<byte>((void*)data.Scan0, size));
             bmp.UnlockBits(data);
 
-            var image = new VkImage(device, bmp.Width, bmp.Height);
+            var image = new VkImage(device, (uint)bmp.Width, (uint)bmp.Height, Format.B8G8R8A8Srgb);
             image.TransitionLayout(ImageLayout.Undefined, ImageLayout.TransferDstOptimal);
             image.QueueLoad(tmp);
             image.TransitionLayout(ImageLayout.TransferDstOptimal, ImageLayout.ShaderReadOnlyOptimal);

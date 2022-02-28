@@ -1,11 +1,7 @@
 ﻿using OpenH2.Rendering.Shaders;
 using Silk.NET.Vulkan;
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Numerics;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace OpenH2.Rendering.Vulkan
 {
@@ -31,15 +27,18 @@ namespace OpenH2.Rendering.Vulkan
 
         internal void BeginPass(in CommandBuffer commandBuffer, uint imageIndex)
         {
-            var clearColor = new ClearValue(new ClearColorValue(0f, 0f, 0f, 1f));
+            var clearColors = stackalloc[] {
+                new ClearValue(new ClearColorValue(0f, 0f, 0f, 1f)),
+                new ClearValue(depthStencil: new ClearDepthStencilValue(1.0f, 0))
+            };
             var renderBegin = new RenderPassBeginInfo
             {
                 SType = StructureType.RenderPassBeginInfo,
                 RenderPass = renderPass,
                 Framebuffer = swapchain.Framebuffers[imageIndex],
                 RenderArea = new Rect2D(new Offset2D(0, 0), swapchain.Extent),
-                ClearValueCount = 1,
-                PClearValues = &clearColor
+                ClearValueCount = 2,
+                PClearValues = clearColors
             };
 
             vk.CmdBeginRenderPass(commandBuffer, in renderBegin, SubpassContents.Inline);
@@ -77,7 +76,7 @@ namespace OpenH2.Rendering.Vulkan
                 StageFlags = ShaderStageFlags.ShaderStageFragmentBit
             };
 
-            var bindings = stackalloc DescriptorSetLayoutBinding[] { uboBinding, texBinding };
+            var bindings = stackalloc [] { uboBinding, texBinding };
 
             var descCreate = new DescriptorSetLayoutCreateInfo
             {
@@ -100,7 +99,7 @@ namespace OpenH2.Rendering.Vulkan
             {
                 Binding = 0,
                 Location = 0,
-                Format = Format.R32G32Sfloat,
+                Format = Format.R32G32B32Sfloat,
                 Offset = 0,
             };
 
@@ -120,7 +119,7 @@ namespace OpenH2.Rendering.Vulkan
                 Offset = (uint)sizeof(Vector2) + (uint)sizeof(Vector3),
             };
 
-            var attrs = stackalloc VertexInputAttributeDescription[] { posAttr, colorAttr, texAttr };
+            var attrs = stackalloc [] { posAttr, colorAttr, texAttr };
 
             var vertInput = new PipelineVertexInputStateCreateInfo
             {
@@ -194,7 +193,7 @@ namespace OpenH2.Rendering.Vulkan
                 PAttachments = &colorBlend
             };
 
-            var dynamicStates = stackalloc DynamicState[] { DynamicState.Viewport, DynamicState.LineWidth };
+            var dynamicStates = stackalloc [] { DynamicState.Viewport, DynamicState.LineWidth };
 
             var dynamicState = new PipelineDynamicStateCreateInfo
             {
@@ -203,12 +202,12 @@ namespace OpenH2.Rendering.Vulkan
                 PDynamicStates = dynamicStates,
             };
 
-            var descriptors = stackalloc DescriptorSetLayout[] { descriptorSetLayout };
+            var descriptors = stackalloc [] { descriptorSetLayout };
             var layoutCreate = new PipelineLayoutCreateInfo
             {
                 SType = StructureType.PipelineLayoutCreateInfo,
                 SetLayoutCount = 1,
-                PSetLayouts = descriptors
+                PSetLayouts = descriptors,
             };
 
             SUCCESS(vk.CreatePipelineLayout(device, in layoutCreate, null, out pipelineLayout), "Pipeline layout create failed");
@@ -229,30 +228,46 @@ namespace OpenH2.Rendering.Vulkan
                 FinalLayout = ImageLayout.PresentSrcKhr
             };
 
+            // TODO: derive depth format from common place
+            var depthAttach = new AttachmentDescription
+            {
+                Format = Format.D32Sfloat,
+                Samples = SampleCountFlags.SampleCount1Bit,
+                LoadOp = AttachmentLoadOp.Clear,
+                StoreOp = AttachmentStoreOp.DontCare,
+                StencilLoadOp = AttachmentLoadOp.DontCare,
+                StencilStoreOp = AttachmentStoreOp.DontCare,
+                InitialLayout = ImageLayout.Undefined,
+                FinalLayout = ImageLayout.DepthStencilAttachmentOptimal
+            };
+
             var colorAttachRef = new AttachmentReference(0, ImageLayout.ColorAttachmentOptimal);
+            var depthAttachRef = new AttachmentReference(1, ImageLayout.DepthStencilAttachmentOptimal);
 
             var subpass = new SubpassDescription
             {
                 PipelineBindPoint = PipelineBindPoint.Graphics,
                 ColorAttachmentCount = 1,
                 PColorAttachments = &colorAttachRef,
+                PDepthStencilAttachment = &depthAttachRef,
             };
 
             var dependency = new SubpassDependency
             {
                 SrcSubpass = Vk.SubpassExternal,
                 DstSubpass = 0,
-                SrcStageMask = PipelineStageFlags.PipelineStageColorAttachmentOutputBit,
+                SrcStageMask = PipelineStageFlags.PipelineStageColorAttachmentOutputBit | PipelineStageFlags.PipelineStageEarlyFragmentTestsBit,
                 SrcAccessMask = 0,
-                DstStageMask = PipelineStageFlags.PipelineStageColorAttachmentOutputBit,
-                DstAccessMask = AccessFlags.AccessColorAttachmentWriteBit,
+                DstStageMask = PipelineStageFlags.PipelineStageColorAttachmentOutputBit | PipelineStageFlags.PipelineStageEarlyFragmentTestsBit,
+                DstAccessMask = AccessFlags.AccessColorAttachmentWriteBit | AccessFlags.AccessDepthStencilAttachmentWriteBit,
             };
 
+            var attachments = stackalloc [] { colorAttach, depthAttach };
             var renderPassCreate = new RenderPassCreateInfo
             {
                 SType = StructureType.RenderPassCreateInfo,
-                AttachmentCount = 1,
-                PAttachments = &colorAttach,
+                AttachmentCount = 2,
+                PAttachments = attachments,
                 SubpassCount = 1,
                 PSubpasses = &subpass,
                 DependencyCount = 1,
@@ -264,7 +279,17 @@ namespace OpenH2.Rendering.Vulkan
             using var vertShader = new VkShader(device, "VulkanTest", ShaderType.Vertex);
             using var fragShader = new VkShader(device, "VulkanTest", ShaderType.Fragment);
 
-            var shaderStages = stackalloc PipelineShaderStageCreateInfo[] { vertShader.stageInfo, fragShader.stageInfo };
+            var shaderStages = stackalloc [] { vertShader.stageInfo, fragShader.stageInfo };
+
+            var depthStencil = new PipelineDepthStencilStateCreateInfo
+            { 
+                SType = StructureType.PipelineDepthStencilStateCreateInfo,
+                DepthTestEnable = true,
+                DepthWriteEnable = true,
+                DepthCompareOp = CompareOp.Less,
+                DepthBoundsTestEnable = false,
+                StencilTestEnable = false,
+            };
 
             var pipelineCreate = new GraphicsPipelineCreateInfo
             {
@@ -276,14 +301,14 @@ namespace OpenH2.Rendering.Vulkan
                 PViewportState = &viewportState,
                 PRasterizationState = &rasterizer,
                 PMultisampleState = &msaa,
-                PDepthStencilState = null,
+                PDepthStencilState = &depthStencil,
                 PColorBlendState = &colorBlendState,
                 //PDynamicState = &dynamicState,
                 Layout = pipelineLayout,
                 RenderPass = renderPass,
                 Subpass = 0,
                 BasePipelineHandle = default,
-                BasePipelineIndex = -1
+                BasePipelineIndex = -1,
             };
 
             SUCCESS(vk.CreateGraphicsPipelines(device, default, 1, &pipelineCreate, null, out graphicsPipeline), "Pipeline create failed");
@@ -293,7 +318,7 @@ namespace OpenH2.Rendering.Vulkan
 
         public void CreateDescriptors(VkBuffer<UBO> ubo, VkImage image, VkSampler sampler)
         {
-            var layouts = stackalloc DescriptorSetLayout[] { descriptorSetLayout };
+            var layouts = stackalloc [] { descriptorSetLayout };
             var alloc = new DescriptorSetAllocateInfo
             {
                 SType = StructureType.DescriptorSetAllocateInfo,
@@ -308,7 +333,7 @@ namespace OpenH2.Rendering.Vulkan
 
             var texInfo = new DescriptorImageInfo(sampler, image.View, ImageLayout.ShaderReadOnlyOptimal);
 
-            var writes = stackalloc WriteDescriptorSet[]
+            var writes = stackalloc []
             {
                 new WriteDescriptorSet
                 {

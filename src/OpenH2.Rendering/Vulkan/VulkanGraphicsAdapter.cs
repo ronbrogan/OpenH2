@@ -12,11 +12,11 @@ namespace OpenH2.Rendering.Vulkan
 {
     public struct VulkanTestVertex
     {
-        public Vector2 VertexPosition;
+        public Vector3 VertexPosition;
         public Vector3 VertexColor;
         public Vector2 TexCoord;
 
-        public VulkanTestVertex(Vector2 pos, Vector3 color, Vector2 tex)
+        public VulkanTestVertex(Vector3 pos, Vector3 color, Vector2 tex)
         {
             this.VertexPosition = pos;
             this.VertexColor = color;
@@ -45,13 +45,22 @@ namespace OpenH2.Rendering.Vulkan
         private VkSampler sampler;
         private bool recreateSwapchain = false;
 
-        ushort[] indices = new ushort[] { 0, 1, 2, 2, 3, 0 };
+        ushort[] indices = new ushort[] 
+        { 
+            0, 1, 2, 2, 3, 0,
+            4, 5, 6, 6, 7, 4
+        };
         VulkanTestVertex[] vertices = new VulkanTestVertex[]
         {
-            new (new (-0.5f, -0.5f), new (1f, 0f, 0f), new (1f,0)),
-            new (new (0.5f, -0.5f), new (0f, 1f, 0f), new (0,0)),
-            new (new (0.5f, 0.5f), new (0f, 0f, 1f), new (0,1f)),
-            new (new (-0.5f, 0.5f), new (1f, 1f, 1f), new (1f,1f)),
+            new (new (-0.5f, -0.5f, 0), new (1f, 0f, 0f), new (1f,0)),
+            new (new (0.5f, -0.5f, 0), new (0f, 1f, 0f), new (0,0)),
+            new (new (0.5f, 0.5f, 0), new (0f, 0f, 1f), new (0,1f)),
+            new (new (-0.5f, 0.5f, 0), new (1f, 1f, 1f), new (1f,1f)),
+
+            new (new (-0.5f, -0.5f, -0.5f), new (1f, 0f, 0f), new (1f,0)),
+            new (new (0.5f, -0.5f, -0.5f), new (0f, 1f, 0f), new (0,0)),
+            new (new (0.5f, 0.5f, -0.5f), new (0f, 0f, 1f), new (0,1f)),
+            new (new (-0.5f, 0.5f, -0.5f), new (1f, 1f, 1f), new (1f,1f)),
         };
 
         private VkBuffer<ushort> indexBuffer;
@@ -76,6 +85,9 @@ namespace OpenH2.Rendering.Vulkan
             this.textureBinder = new VulkanTextureBinder(this.device);
             this.swapchain = device.CreateSwapchain();
             this.pipeline = new VkDefaultGraphicsPipeline(vulkanHost, device, swapchain);
+
+
+
 
             this.image = this.textureBinder.TestBind();
             this.sampler = new VkSampler(this.device);

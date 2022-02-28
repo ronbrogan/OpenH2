@@ -22,6 +22,7 @@ namespace OpenH2.Rendering.Vulkan
         private ImageView[] swapchainImageviews;
         private Framebuffer[] swapchainFramebuffers;
         private (Format format, Extent2D extent) swapchainParams;
+        private VkImage depthImage;
         private readonly VulkanHost vulkanHost;
 
 
@@ -54,16 +55,21 @@ namespace OpenH2.Rendering.Vulkan
 
         public void InitializeFramebuffers(in RenderPass renderPass)
         {
-            var attachments = stackalloc ImageView[1];
+            // TODO find a supported depth format instead of hardcoding D32Sfloat
+            this.depthImage = new VkImage(device, this.Extent, Format.D32Sfloat, ImageUsageFlags.ImageUsageDepthStencilAttachmentBit, ImageAspectFlags.ImageAspectDepthBit);
+            depthImage.CreateView();
+
+            var attachments = stackalloc ImageView[2];
             for (int i = 0; i < swapchainImageviews.Length; i++)
             {
                 attachments[0] = swapchainImageviews[i];
+                attachments[1] = depthImage.View;
 
                 var framebufferCreate = new FramebufferCreateInfo
                 {
                     SType = StructureType.FramebufferCreateInfo,
                     RenderPass = renderPass,
-                    AttachmentCount = 1,
+                    AttachmentCount = 2,
                     PAttachments = attachments,
                     Width = Extent.Width,
                     Height = Extent.Height,
@@ -148,6 +154,8 @@ namespace OpenH2.Rendering.Vulkan
 
         public void DestroyResources()
         {
+            this.depthImage.Dispose();
+
             foreach (var buf in swapchainFramebuffers)
             {
                 vk.DestroyFramebuffer(device, buf, null);

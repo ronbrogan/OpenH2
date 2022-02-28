@@ -10,30 +10,40 @@ namespace OpenH2.Rendering.Vulkan
     internal unsafe sealed class VkImage : VkObject, IDisposable
     {
         private readonly VkDevice device;
-        private readonly int width;
-        private readonly int height;
+        private readonly uint width;
+        private readonly uint height;
+        private readonly Format format;
+        private readonly ImageAspectFlags aspectFlags;
 
         private Image image;
         private DeviceMemory memory;
 
         public ImageView View { get; private set; }
 
-        public VkImage(VkDevice device, int width, int height) : base(device.vk)
+        public const ImageUsageFlags TransferUsage = ImageUsageFlags.ImageUsageTransferDstBit | ImageUsageFlags.ImageUsageSampledBit;
+        public const ImageAspectFlags ColorAspect = ImageAspectFlags.ImageAspectColorBit;
+
+        public VkImage(VkDevice device, Extent2D dims, Format format, ImageUsageFlags usage = TransferUsage, ImageAspectFlags aspectFlags = ColorAspect)
+            : this(device, dims.Width, dims.Height, format, usage, aspectFlags) { }
+
+        public VkImage(VkDevice device, uint width, uint height, Format format, ImageUsageFlags usage = TransferUsage, ImageAspectFlags aspectFlags = ColorAspect) : base(device.vk)
         {
             this.device = device;
             this.width = width;
             this.height = height;
+            this.format = format;
+            this.aspectFlags = aspectFlags;
             var imageCreate = new ImageCreateInfo
             {
                 SType = StructureType.ImageCreateInfo,
                 ImageType = ImageType.ImageType2D,
-                Extent = new Extent3D((uint)width, (uint)height, 1),
+                Extent = new Extent3D(width, height, 1),
                 MipLevels = 1,
                 ArrayLayers = 1,
-                Format = Format.B8G8R8A8Srgb,
+                Format = format,
                 Tiling = ImageTiling.Optimal,
                 InitialLayout = ImageLayout.Undefined,
-                Usage = ImageUsageFlags.ImageUsageTransferDstBit | ImageUsageFlags.ImageUsageSampledBit,
+                Usage = usage,
                 SharingMode = SharingMode.Exclusive,
                 Samples = SampleCountFlags.SampleCount1Bit,
                 Flags = 0,
@@ -69,7 +79,7 @@ namespace OpenH2.Rendering.Vulkan
                     DstQueueFamilyIndex = Vk.QueueFamilyIgnored,
 
                     Image = image,
-                    SubresourceRange = new ImageSubresourceRange(ImageAspectFlags.ImageAspectColorBit, 0, 1, 0, 1),
+                    SubresourceRange = new ImageSubresourceRange(aspectFlags, 0, 1, 0, 1),
                 };
 
                 PipelineStageFlags sourceStage;
@@ -105,12 +115,13 @@ namespace OpenH2.Rendering.Vulkan
             });
         }
 
+        // TODO: make implicit with image creation?
         public void CreateView()
         {
-            this.View = CreateView(device, image, Format.B8G8R8A8Srgb);
+            this.View = CreateView(device, image, format, aspectFlags);
         }
 
-        public static ImageView CreateView(VkDevice device, Image image, Format format)
+        public static ImageView CreateView(VkDevice device, Image image, Format format, ImageAspectFlags aspectFlags)
         {
             var viewCreate = new ImageViewCreateInfo
             {
@@ -118,7 +129,7 @@ namespace OpenH2.Rendering.Vulkan
                 Image = image,
                 ViewType = ImageViewType.ImageViewType2D,
                 Format = format,
-                SubresourceRange = new ImageSubresourceRange(ImageAspectFlags.ImageAspectColorBit, 0, 1, 0, 1)
+                SubresourceRange = new ImageSubresourceRange(aspectFlags, 0, 1, 0, 1)
             };
 
             SUCCESS(device.vk.CreateImageView(device, in viewCreate, null, out var view), "ImageView creation failed");
@@ -135,9 +146,9 @@ namespace OpenH2.Rendering.Vulkan
                     BufferRowLength = 0,
                     BufferImageHeight = 0,
 
-                    ImageSubresource = new ImageSubresourceLayers(ImageAspectFlags.ImageAspectColorBit, 0, 0, 1),
+                    ImageSubresource = new ImageSubresourceLayers(aspectFlags, 0, 0, 1),
                     ImageOffset = new Offset3D(0,0,0),
-                    ImageExtent = new Extent3D((uint)width, (uint)height, 1)
+                    ImageExtent = new Extent3D(width, height, 1)
                 };
 
                 vk.CmdCopyBufferToImage(commandBuffer, source, image, ImageLayout.TransferDstOptimal, 1, in copy);
