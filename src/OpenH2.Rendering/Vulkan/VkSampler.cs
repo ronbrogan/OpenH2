@@ -8,7 +8,7 @@ namespace OpenH2.Rendering.Vulkan
         private readonly VkDevice device;
         private Sampler sampler;
 
-        public VkSampler(VkDevice device) : base(device.vk)
+        public VkSampler(VkDevice device, int mipmapCount) : base(device.vk)
         {
             var samplerCreate = new SamplerCreateInfo
             {
@@ -27,7 +27,7 @@ namespace OpenH2.Rendering.Vulkan
                 MipmapMode = SamplerMipmapMode.Linear,
                 MipLodBias = 0,
                 MinLod = 0,
-                MaxLod = 0
+                MaxLod = mipmapCount
             };
 
             SUCCESS(vk.CreateSampler(device, in samplerCreate, null, out sampler), "Sampler create failed");

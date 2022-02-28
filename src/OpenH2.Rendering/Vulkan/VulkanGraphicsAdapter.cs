@@ -87,10 +87,8 @@ namespace OpenH2.Rendering.Vulkan
             this.pipeline = new VkDefaultGraphicsPipeline(vulkanHost, device, swapchain);
 
 
-
-
             this.image = this.textureBinder.TestBind();
-            this.sampler = new VkSampler(this.device);
+            this.sampler = image.CreateSampler();
 
             // =======================
             // vertex buffer setup
