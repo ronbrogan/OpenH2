@@ -11,15 +11,29 @@ namespace OpenH2.Rendering.Vulkan.Internals
         private Silk.NET.Vulkan.Buffer buffer;
         private DeviceMemory bufferMemory;
 
-        public VkBuffer(VkDevice device, int count, BufferUsageFlags usage, MemoryPropertyFlags memoryProperties) : base(device.vk)
+        private void* bufferPtr = null;
+
+        public static VkBuffer<T> CreateDynamicUniformBuffer(VkDevice device, int count, BufferUsageFlags usage, MemoryPropertyFlags memoryProperties)
+        {
+            var bytes = (ulong)(device.AlignUboItem<T>(1) * count);
+            return new VkBuffer<T>(device, bytes, usage, memoryProperties);
+        }
+
+        public static VkBuffer<T> CreatePacked(VkDevice device, int count, BufferUsageFlags usage, MemoryPropertyFlags memoryProperties)
+        {
+            var bytes = (ulong)(sizeof(T) * count);
+            return new VkBuffer<T>(device, bytes, usage, memoryProperties);
+        }
+
+        private VkBuffer(VkDevice device, ulong bytes, BufferUsageFlags usage, MemoryPropertyFlags memoryProperties) : base(device.vk)
         {
             this.device = device;
-            memorySize = (ulong)(sizeof(T) * count);
+            memorySize = bytes;
 
             var bufCreate = new BufferCreateInfo
             {
                 SType = StructureType.BufferCreateInfo,
-                Size = (ulong)(sizeof(T) * count),
+                Size = bytes,
                 Usage = usage,
                 SharingMode = SharingMode.Exclusive
             };
@@ -47,7 +61,7 @@ namespace OpenH2.Rendering.Vulkan.Internals
             vk.FreeMemory(device, bufferMemory, null);
         }
 
-        public void Load(ReadOnlySpan<T> items)
+        public void LoadFull(ReadOnlySpan<T> items)
         {
             void* data = null;
             vk.MapMemory(device, bufferMemory, 0, memorySize, 0, ref data);
@@ -56,12 +70,30 @@ namespace OpenH2.Rendering.Vulkan.Internals
             vk.UnmapMemory(device, bufferMemory);
         }
 
-        public void Load(T item)
+        public void LoadFull(T item)
         {
             void* data = null;
             vk.MapMemory(device, bufferMemory, 0, memorySize, 0, ref data);
             System.Buffer.MemoryCopy(&item, data, memorySize, memorySize);
             vk.UnmapMemory(device, bufferMemory);
+        }
+
+        public void Map()
+        {
+            vk.MapMemory(device, bufferMemory, 0, memorySize, 0, ref bufferPtr);
+        }
+
+        public void LoadMapped(int xformOffset, T item)
+        {
+            if (bufferPtr == null) throw new Exception("Buffer was not mapped already");
+
+            System.Buffer.MemoryCopy(&item, (byte*)bufferPtr + xformOffset, (long)memorySize - xformOffset, sizeof(T));
+        }
+
+        public void Unmap()
+        {
+            vk.UnmapMemory(device, bufferMemory);
+            this.bufferPtr = null;
         }
 
         public void QueueLoad(VkBuffer<T> source)

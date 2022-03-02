@@ -56,7 +56,7 @@ namespace OpenH2.Rendering.Vulkan.Internals
                 ApplicationVersion = Vk.MakeVersion(0, 0, 1),
                 PEngineName = PinnedUtf8.Get("OpenH2.Engine"),
                 EngineVersion = Vk.MakeVersion(0, 0, 1),
-                ApiVersion = Vk.Version10
+                ApiVersion = Vk.Version12
             };
 
             var instanceInfo = new InstanceCreateInfo

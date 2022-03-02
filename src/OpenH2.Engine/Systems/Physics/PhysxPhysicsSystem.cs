@@ -182,8 +182,8 @@ namespace OpenH2.Engine.Systems
         }
 
 
-        private float stepSize = 1f / 100f;
-        private double totalTime = 0d;
+        private const float stepSize = 1f / 100f;
+        private double totalTime = stepSize;
         private double simulatedTime = 0d;
         public override void Update(double timestep)
         {

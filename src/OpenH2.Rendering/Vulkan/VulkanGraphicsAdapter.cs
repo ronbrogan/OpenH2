@@ -5,10 +5,14 @@ using OpenH2.Rendering.Shaders;
 using OpenH2.Rendering.Vulkan.Internals;
 using Silk.NET.Vulkan;
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using System.Numerics;
 using System.Runtime.InteropServices;
+using System.Threading;
 using Buffer = Silk.NET.Vulkan.Buffer;
+using Semaphore = Silk.NET.Vulkan.Semaphore;
 
 namespace OpenH2.Rendering.Vulkan
 {
@@ -27,36 +31,22 @@ namespace OpenH2.Rendering.Vulkan
         private VulkanTextureBinder textureBinder;
         private VkSwapchain swapchain;
         private VkRenderPass renderpass;
-        private VkDefaultGraphicsPipeline pipeline;
+        
         private VkImage image;
         private VkSampler sampler;
         private bool recreateSwapchain = false;
 
-        uint[] indices = new uint[] 
-        { 
-            0, 1, 2, 2, 3, 0,
-            4, 5, 6, 6, 7, 4
-        };
-        VertexFormat[] vertices = new VertexFormat[]
-        {
-            new (new (-0.5f, -0.5f, 0) ,new (1f,0) , new (1f, 0f, 0f)),
-            new (new (0.5f, -0.5f, 0)  ,new (0,0)  , new (0f, 1f, 0f)),
-            new (new (0.5f, 0.5f, 0)   ,new (0,1f) , new (0f, 0f, 1f)),
-            new (new (-0.5f, 0.5f, 0)  ,new (1f,1f), new (1f, 1f, 1f)),
+        private Dictionary<MeshElementType, VkDefaultGraphicsPipeline> pipelines = new();
 
-            new (new (-0.5f, -0.5f, -0.5f), new (1f,0) ,  new (1f, 0f, 0f)),
-            new (new (0.5f, -0.5f, -0.5f) , new (0,0)  ,  new (0f, 1f, 0f)),
-            new (new (0.5f, 0.5f, -0.5f)  , new (0,1f) ,  new (0f, 0f, 1f)),
-            new (new (-0.5f, 0.5f, -0.5f) , new (1f,1f),  new (1f, 1f, 1f)),
-        };
-
-        private VkBuffer<uint> indexBuffer;
-        private VkBuffer<VertexFormat> vertexBuffer;
+        private int nextModelHandle = 0;
+        private (VkBuffer<int> indices, VkBuffer<VertexFormat> vertices)[] models = new (VkBuffer<int> indices, VkBuffer<VertexFormat> vertices)[2048];
 
 
         // TODO: need multiple of these to support multiple in-flight frames
         private VkBuffer<GlobalUniform> globalBuffer;
         private VkBuffer<VulkanTestUniform> shaderUniformBuffer;
+
+        private int nextTransformIndex = 0;
         private VkBuffer<TransformUniform> transformBuffer;
         private CommandBuffer renderCommands;
         private Semaphore imageAvailableSemaphore;
@@ -74,41 +64,15 @@ namespace OpenH2.Rendering.Vulkan
             this.textureBinder = new VulkanTextureBinder(this.device);
             this.swapchain = device.CreateSwapchain();
             this.renderpass = new VkRenderPass(device, swapchain);
-            this.pipeline = new VkDefaultGraphicsPipeline(vulkanHost, device, swapchain, renderpass);
+
+            // TODO: precompute all pipelines?
+            this.pipelines.Add(MeshElementType.TriangleList, new VkDefaultGraphicsPipeline(vulkanHost, device, swapchain, renderpass, MeshElementType.TriangleList));
+            this.pipelines.Add(MeshElementType.TriangleStrip, new VkDefaultGraphicsPipeline(vulkanHost, device, swapchain, renderpass, MeshElementType.TriangleStrip));
 
 
             this.image = this.textureBinder.TestBind();
             this.sampler = image.CreateSampler();
 
-            // =======================
-            // vertex buffer setup
-            // =======================
-
-            using (var staging = device.CreateBuffer<VertexFormat>(vertices.Length,
-                BufferUsageFlags.BufferUsageTransferSrcBit,
-                MemoryPropertyFlags.MemoryPropertyHostVisibleBit | MemoryPropertyFlags.MemoryPropertyHostCoherentBit))
-            {
-                staging.Load(vertices);
-
-                this.vertexBuffer = device.CreateBuffer<VertexFormat>(vertices.Length,
-                    BufferUsageFlags.BufferUsageVertexBufferBit | BufferUsageFlags.BufferUsageTransferDstBit,
-                    MemoryPropertyFlags.MemoryPropertyDeviceLocalBit);
-
-                this.vertexBuffer.QueueLoad(staging);
-            }
-
-            using (var staging = device.CreateBuffer<uint>(indices.Length,
-                BufferUsageFlags.BufferUsageTransferSrcBit,
-                MemoryPropertyFlags.MemoryPropertyHostVisibleBit | MemoryPropertyFlags.MemoryPropertyHostCoherentBit))
-            {
-                staging.Load(indices);
-
-                this.indexBuffer = device.CreateBuffer<uint>(indices.Length,
-                    BufferUsageFlags.BufferUsageIndexBufferBit | BufferUsageFlags.BufferUsageTransferDstBit,
-                    MemoryPropertyFlags.MemoryPropertyDeviceLocalBit);
-
-                this.indexBuffer.QueueLoad(staging);
-            }
 
             this.globalBuffer = device.CreateBuffer<GlobalUniform>(1, 
                 BufferUsageFlags.BufferUsageUniformBufferBit, 
@@ -118,12 +82,15 @@ namespace OpenH2.Rendering.Vulkan
                 BufferUsageFlags.BufferUsageUniformBufferBit,
                 MemoryPropertyFlags.MemoryPropertyHostVisibleBit | MemoryPropertyFlags.MemoryPropertyHostCoherentBit);
 
-            this.transformBuffer = device.CreateBuffer<TransformUniform>(1,
+            this.transformBuffer = device.CreateDynamicUniformBuffer<TransformUniform>(16384,
                 BufferUsageFlags.BufferUsageUniformBufferBit,
                 MemoryPropertyFlags.MemoryPropertyHostVisibleBit | MemoryPropertyFlags.MemoryPropertyHostCoherentBit);
 
+            // Leaving mapped so that we can write during render
+            this.transformBuffer.Map();
 
-            this.pipeline.CreateDescriptors(this.globalBuffer, this.transformBuffer, this.shaderUniformBuffer, new[] { (this.image, this.sampler) });
+            this.pipelines[MeshElementType.TriangleList].CreateDescriptors(this.globalBuffer, this.transformBuffer, this.shaderUniformBuffer, new[] { (this.image, this.sampler) });
+            this.pipelines[MeshElementType.TriangleStrip].CreateDescriptors(this.globalBuffer, this.transformBuffer, this.shaderUniformBuffer, new[] { (this.image, this.sampler) });
 
             // =======================
             // commandbuffer setup
@@ -158,6 +125,8 @@ namespace OpenH2.Rendering.Vulkan
         }
 
         private uint imageIndex = 0;
+        private Shader currentShader;
+        private TransformUniform currentTransform;
 
         public void BeginFrame(GlobalUniform matricies)
         {
@@ -190,25 +159,74 @@ namespace OpenH2.Rendering.Vulkan
 
             this.renderpass.Begin(renderCommands, imageIndex);
 
-            this.pipeline.Bind(renderCommands);
-
-            var vertexBuffers = stackalloc Buffer[]{ vertexBuffer };
-            var offsets = stackalloc ulong[] { 0 };
-            vk.CmdBindVertexBuffers(renderCommands, 0, 1, vertexBuffers, offsets);
-
-            vk.CmdBindIndexBuffer(renderCommands, indexBuffer, 0, IndexType.Uint32);
-
-            //vk.CmdDraw(commandBuffer, (uint)vertices.Length, 1, 0, 0);
-            vk.CmdDrawIndexed(renderCommands, (uint)indices.Length, 1, 0, 0, 0);
         }
 
         public void DrawMeshes(DrawCommand[] commands)
         {
-            
+            if(this.currentShader != Shader.Generic)
+            {
+                return;
+            }
+
+            if (commands.Length == 0)
+                return;
+
+            if (!this.pipelines.TryGetValue(commands[0].ElementType, out var pipeline))
+                return;
+
+            pipeline.Bind(renderCommands);
+
+
+            // Find properly aligned offset to write current transform into
+            var xformIndex = Interlocked.Increment(ref nextTransformIndex);
+            //if (xformIndex >= 255) return;
+            var xformOffset = device.AlignUboItem<TransformUniform>(xformIndex);
+            // Write the current transform to that offset
+            // TODO: do bounds check and re-allocate larger buffer, or somthing
+            this.transformBuffer.LoadMapped(xformOffset, this.currentTransform);
+            // Bind the descriptor with the offset
+            Span<uint> dynamics = stackalloc uint[] { (uint)xformOffset };
+            pipeline.BindDescriptors(renderCommands, dynamics);
+
+            var vertexBuffers = stackalloc Buffer[1];
+            var offsets = stackalloc ulong[] { 0 };
+            for (var i = 0; i < commands.Length; i++)
+            {
+                ref DrawCommand command = ref commands[i];
+
+                // Upload shader uniform data
+                //BindOrCreateShaderUniform(ref command);
+
+
+                
+
+                // TODO: make pipelines for this purpose, extension not widely available
+                //vk.CmdSetPrimitiveTopology(renderCommands, primitiveType.Item1);
+                //vk.CmdSetPrimitiveRestartEnable(renderCommands, primitiveType.Item2);
+
+
+
+                // TODO: We use the same buffers for all commands in a renderable, so we can skip rebinding every loop
+                var (indexBuffer, vertexBuffer) = this.models[commands[i].VaoHandle];
+
+                if (indexBuffer == null || vertexBuffer == null)
+                    return;
+
+                vertexBuffers[0] = vertexBuffer;
+                offsets[0] = (uint)command.VertexBase * (uint)sizeof(VertexFormat);
+
+                vk.CmdBindVertexBuffers(renderCommands, 0, 1, vertexBuffers, offsets);
+
+                vk.CmdBindIndexBuffer(renderCommands, indexBuffer, 0, IndexType.Uint32);
+
+                vk.CmdDrawIndexed(renderCommands, (uint)command.IndiciesCount, 1, (uint)command.IndexBase, 0, 0);
+            }
         }
 
         public void EndFrame()
         {
+            this.nextTransformIndex = 0;
+
             vk.CmdEndRenderPass(renderCommands);
 
             SUCCESS(vk.EndCommandBuffer(renderCommands), "Failed to record command buffer");
@@ -258,30 +276,9 @@ namespace OpenH2.Rendering.Vulkan
             }
         }
 
-        
-
-        static DateTimeOffset start = DateTimeOffset.UtcNow;
-        const float RadiansPer = (MathF.PI / 180);
-        private static float DegToRad(float deg) => RadiansPer * deg;
         private void UpdateGlobals(uint imageIndex, GlobalUniform globals)
         {
-            //globals.ViewMatrix = Matrix4x4.CreateLookAt(new(2f, 2f, 2f), new(0, 0, 0), new(0, 0, 1f));
-            //globals.ProjectionMatrix = Matrix4x4.CreatePerspectiveFieldOfView(DegToRad(45), swapchain.Extent.Width / (float)swapchain.Extent.Height, 0.1f, 10f);
-            //
-            //// Correct for OpenGL Y inversion
-            //globals.ProjectionMatrix.M22 *= -1;
-
-            this.globalBuffer/*[imageIndex]*/.Load(globals);
-
-            var time = (float)(DateTimeOffset.UtcNow - start).TotalSeconds;
-
-            var model = Matrix4x4.CreateRotationZ(time * DegToRad(90));
-            var success = Matrix4x4.Invert(model, out var inverted);
-            Debug.Assert(success);
-
-            var transforms = new TransformUniform(model, inverted);
-
-            this.transformBuffer/*[imageIndex]*/.Load(transforms);
+            this.globalBuffer/*[imageIndex]*/.LoadFull(globals);
         }
 
         private void RecreateSwapchain()
@@ -291,13 +288,15 @@ namespace OpenH2.Rendering.Vulkan
             recreateSwapchain = false;
             vk.DeviceWaitIdle(device);
 
-            this.pipeline.DestroyResources();
+            foreach(var (_,p) in this.pipelines)
+                p.DestroyResources();
 
             this.swapchain.DestroyResources();
             this.swapchain.CreateResources();
             this.renderpass.InitializeFramebuffers();
 
-            this.pipeline.CreateResources();
+            foreach (var (_, p) in this.pipelines)
+                p.CreateResources();
 
             // TODO: multiple frame support: recreate uniform buffers, command buffers, pools??
         }
@@ -308,29 +307,100 @@ namespace OpenH2.Rendering.Vulkan
 
         public int UploadModel(Model<BitmapTag> model, out DrawCommand[] meshCommands)
         {
-            meshCommands = new DrawCommand[0];
-            return 0;
+            var handle = Interlocked.Increment(ref nextModelHandle);
+
+            var vertCount = model.Meshes.Sum(m => m.Verticies.Length);
+            var indxCount = model.Meshes.Sum(m => m.Indicies.Length);
+
+            meshCommands = new DrawCommand[model.Meshes.Length];
+            var vertices = new VertexFormat[vertCount];
+            var indices = new int[indxCount];
+
+            var currentVert = 0;
+            var currentIndx = 0;
+
+            for (var i = 0; i < model.Meshes.Length; i++)
+            {
+                var mesh = model.Meshes[i];
+
+                var command = new DrawCommand(mesh)
+                {
+                    VaoHandle = handle,
+                    IndexBase = currentIndx,
+                    VertexBase = currentVert,
+                    ColorChangeData = model.ColorChangeData
+                };
+
+                Array.Copy(mesh.Verticies, 0, vertices, currentVert, mesh.Verticies.Length);
+                currentVert += mesh.Verticies.Length;
+
+                Array.Copy(mesh.Indicies, 0, indices, currentIndx, mesh.Indicies.Length);
+                currentIndx += mesh.Indicies.Length;
+
+                meshCommands[i] = command;
+            }
+
+            if (vertCount == 0 || indxCount == 0)
+            {
+                return handle;
+            }
+
+            using var vertStage = device.CreateBuffer<VertexFormat>(vertices.Length,
+                BufferUsageFlags.BufferUsageTransferSrcBit,
+                MemoryPropertyFlags.MemoryPropertyHostVisibleBit | MemoryPropertyFlags.MemoryPropertyHostCoherentBit);
+            
+            vertStage.LoadFull(vertices);
+
+            var vertexBuffer = device.CreateBuffer<VertexFormat>(vertices.Length,
+                BufferUsageFlags.BufferUsageVertexBufferBit | BufferUsageFlags.BufferUsageTransferDstBit,
+                MemoryPropertyFlags.MemoryPropertyDeviceLocalBit);
+
+            vertexBuffer.QueueLoad(vertStage);
+
+
+            using var indexStage = device.CreateBuffer<int>(indices.Length,
+                BufferUsageFlags.BufferUsageTransferSrcBit,
+                MemoryPropertyFlags.MemoryPropertyHostVisibleBit | MemoryPropertyFlags.MemoryPropertyHostCoherentBit);
+            
+            indexStage.LoadFull(indices);
+
+            var indexBuffer = device.CreateBuffer<int>(indices.Length,
+                BufferUsageFlags.BufferUsageIndexBufferBit | BufferUsageFlags.BufferUsageTransferDstBit,
+                MemoryPropertyFlags.MemoryPropertyDeviceLocalBit);
+
+            indexBuffer.QueueLoad(indexStage);
+
+            this.models[handle] = (indexBuffer, vertexBuffer);
+            return handle;
         }
 
         public void UseShader(Shader shader)
         {
             // TODO: lookup and bind appropriate pipeline
+            this.currentShader = shader;
         }
 
         public void UseTransform(Matrix4x4 transform)
         {
-            //var success = Matrix4x4.Invert(transform, out var inverted);
-            //Debug.Assert(success);
-            //
-            //SetupTransformUniform(new TransformUniform(transform, inverted));
+            var success = Matrix4x4.Invert(transform, out var inverted);
+            Debug.Assert(success);
+
+            this.currentTransform = new TransformUniform(transform, inverted);
         }
 
         public void Dispose()
         {
             vk.DeviceWaitIdle(device);
 
-            this.vertexBuffer.Dispose();
-            this.indexBuffer.Dispose();
+            for(var i = 0; i < nextModelHandle; i++)
+            {
+                if(models[i] != default)
+                {
+                    models[i].indices.Dispose();
+                    models[i].vertices.Dispose();
+                }
+            }
+
             this.globalBuffer.Dispose();
             this.transformBuffer.Dispose();
 
@@ -344,8 +414,9 @@ namespace OpenH2.Rendering.Vulkan
             this.image.Dispose();
             this.sampler.Dispose();
 
-            // destroy pipeline
-            this.pipeline.Dispose();
+            // destroy pipelines
+            foreach (var (_, p) in this.pipelines)
+                p.Dispose();
 
             // destroy device
             this.device.Dispose();

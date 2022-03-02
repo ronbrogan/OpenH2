@@ -135,7 +135,7 @@ namespace OpenH2.Rendering.Vulkan.Internals
                 SType = StructureType.DescriptorPoolCreateInfo,
                 PoolSizeCount = 2,
                 PPoolSizes = sizes,
-                MaxSets = 1
+                MaxSets = 2
             };
 
             SUCCESS(vk.CreateDescriptorPool(device, in descPoolCreate, null, out var descriptorPool), "DescriptorPool create failed");
@@ -151,7 +151,12 @@ namespace OpenH2.Rendering.Vulkan.Internals
 
         public VkBuffer<T> CreateBuffer<T>(int count, BufferUsageFlags usage, MemoryPropertyFlags memoryProperties) where T : unmanaged
         {
-            return new VkBuffer<T>(this, count, usage, memoryProperties);
+            return VkBuffer<T>.CreatePacked(this, count, usage, memoryProperties);
+        }
+
+        public VkBuffer<T> CreateDynamicUniformBuffer<T>(int count, BufferUsageFlags usage, MemoryPropertyFlags memoryProperties) where T : unmanaged
+        {
+            return VkBuffer<T>.CreateDynamicUniformBuffer(this, count, usage, memoryProperties);
         }
 
         public uint FindMemoryType(uint typeFilter, MemoryPropertyFlags properties)
@@ -165,6 +170,13 @@ namespace OpenH2.Rendering.Vulkan.Internals
             }
 
             throw new NotSupportedException("Unable to find suitable memory type");
+        }
+
+        public int AlignUboItem<T>(int index) where T : unmanaged
+        {
+            var align = (int)this.PhysicalProperties.Limits.MinUniformBufferOffsetAlignment;
+            var alignedChunksPerItem = (int)MathF.Ceiling(sizeof(T) / (float)align);
+            return alignedChunksPerItem * align * index;
         }
 
         public void OneShotCommand(Action<CommandBuffer> command)

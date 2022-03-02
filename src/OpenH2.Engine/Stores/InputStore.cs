@@ -34,7 +34,7 @@ namespace OpenH2.Engine.Stores
         /// </summary>
         public bool WasPressed(Key key)
         {
-            return this.KeyState.IsKeyPressed(key) && (!(this.PreviousKeyState?.IsKeyPressed(key)) ?? true);
+            return (this.KeyState?.IsKeyPressed(key) ?? false) && (!(this.PreviousKeyState?.IsKeyPressed(key)) ?? true);
         }
 
         /// <summary>
@@ -42,7 +42,7 @@ namespace OpenH2.Engine.Stores
         /// </summary>
         public bool IsDown(Key key)
         {
-            return this.KeyState.IsKeyPressed(key);
+            return this.KeyState?.IsKeyPressed(key) ?? false;
         }
 
         /// <summary>
@@ -50,7 +50,7 @@ namespace OpenH2.Engine.Stores
         /// </summary>
         public bool Held(Key key)
         {
-            return this.KeyState.IsKeyPressed(key) && this.PreviousKeyState.IsKeyPressed(key);
+            return (this.KeyState?.IsKeyPressed(key) ?? false) && this.PreviousKeyState.IsKeyPressed(key);
         }
     }
 }

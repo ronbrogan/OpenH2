@@ -2,7 +2,9 @@
 using OpenH2.Rendering.Shaders;
 using Silk.NET.Vulkan;
 using System;
+using System.Diagnostics;
 using System.Numerics;
+using System.Runtime.CompilerServices;
 
 namespace OpenH2.Rendering.Vulkan.Internals
 {
@@ -11,6 +13,7 @@ namespace OpenH2.Rendering.Vulkan.Internals
         private readonly VkDevice device;
         private readonly VkSwapchain swapchain;
         private readonly VkRenderPass renderPass;
+        private readonly MeshElementType primitiveType;
 
         private DescriptorSetLayout descriptorSetLayout;
         private PipelineLayout pipelineLayout;
@@ -18,11 +21,12 @@ namespace OpenH2.Rendering.Vulkan.Internals
         private Pipeline graphicsPipeline;
         private DescriptorSet descriptorSet;
 
-        public VkDefaultGraphicsPipeline(VulkanHost host, VkDevice device, VkSwapchain swapchain, VkRenderPass renderPass) : base(host.vk)
+        public VkDefaultGraphicsPipeline(VulkanHost host, VkDevice device, VkSwapchain swapchain, VkRenderPass renderPass, MeshElementType primitiveType) : base(host.vk)
         {
             this.device = device;
             this.swapchain = swapchain;
             this.renderPass = renderPass;
+            this.primitiveType = primitiveType;
             CreateResources();
         }
 
@@ -30,7 +34,18 @@ namespace OpenH2.Rendering.Vulkan.Internals
         {
             vk.CmdBindPipeline(commandBuffer, PipelineBindPoint.Graphics, graphicsPipeline);
 
+        }
+
+        public void BindDescriptors(in CommandBuffer commandBuffer)
+        {
             vk.CmdBindDescriptorSets(commandBuffer, PipelineBindPoint.Graphics, pipelineLayout, 0, 1, in descriptorSet, 0, null);
+        }
+
+        public void BindDescriptors(in CommandBuffer commandBuffer, Span<uint> dynamicOffsets)
+        {
+            Debug.Assert(dynamicOffsets.Length > 0);
+            var ptr = (uint*)Unsafe.AsPointer(ref dynamicOffsets[0]);
+            vk.CmdBindDescriptorSets(commandBuffer, PipelineBindPoint.Graphics, pipelineLayout, 0, 1, in descriptorSet, (uint)dynamicOffsets.Length, ptr);
         }
 
         public void CreateResources()
@@ -52,7 +67,7 @@ namespace OpenH2.Rendering.Vulkan.Internals
             var transformBinding = new DescriptorSetLayoutBinding
             {
                 Binding = 1,
-                DescriptorType = DescriptorType.UniformBuffer,
+                DescriptorType = DescriptorType.UniformBufferDynamic,
                 DescriptorCount = 1,
                 PImmutableSamplers = null,
                 StageFlags = ShaderStageFlags.ShaderStageAllGraphics
@@ -63,15 +78,6 @@ namespace OpenH2.Rendering.Vulkan.Internals
                 Binding = 2,
                 DescriptorType = DescriptorType.CombinedImageSampler,
                 DescriptorCount = 8,
-                StageFlags = ShaderStageFlags.ShaderStageAllGraphics,
-                PImmutableSamplers = null
-            };
-
-            var dataBinding = new DescriptorSetLayoutBinding
-            {
-                Binding = 2,
-                DescriptorType = DescriptorType.CombinedImageSampler,
-                DescriptorCount = 1,
                 StageFlags = ShaderStageFlags.ShaderStageAllGraphics,
                 PImmutableSamplers = null
             };
@@ -146,14 +152,23 @@ namespace OpenH2.Rendering.Vulkan.Internals
                 PVertexAttributeDescriptions = attrs
             };
 
+            var (topology, restart) = this.primitiveType switch
+            {
+                MeshElementType.TriangleList => (PrimitiveTopology.TriangleList, false),
+                MeshElementType.TriangleStrip => (PrimitiveTopology.TriangleStrip, true),
+                MeshElementType.TriangleStripDecal => (PrimitiveTopology.TriangleStrip, true),
+                MeshElementType.Point => (PrimitiveTopology.PointList, false),
+                _ => (PrimitiveTopology.TriangleList, false)
+            };
+
             var inputAssembly = new PipelineInputAssemblyStateCreateInfo
             {
                 SType = StructureType.PipelineInputAssemblyStateCreateInfo,
-                Topology = PrimitiveTopology.TriangleList,
-                PrimitiveRestartEnable = false
+                Topology = topology,
+                PrimitiveRestartEnable = restart
             };
 
-            var viewport = new Viewport(0, 0, swapchain.Extent.Width, swapchain.Extent.Height, 0, 1f);
+            var viewport = new Viewport(0, swapchain.Extent.Height, swapchain.Extent.Width, -swapchain.Extent.Height, 0, 1f);
             var scissor = new Rect2D(new Offset2D(0, 0), swapchain.Extent);
 
             var viewportState = new PipelineViewportStateCreateInfo
@@ -209,12 +224,12 @@ namespace OpenH2.Rendering.Vulkan.Internals
                 PAttachments = &colorBlend
             };
 
-            var dynamicStates = stackalloc[] { DynamicState.Viewport, DynamicState.LineWidth };
+            var dynamicStates = stackalloc[] { DynamicState.Viewport, DynamicState.LineWidth, DynamicState.PrimitiveTopology, DynamicState.PrimitiveRestartEnable };
 
             var dynamicState = new PipelineDynamicStateCreateInfo
             {
                 SType = StructureType.PipelineDynamicStateCreateInfo,
-                DynamicStateCount = 2,
+                DynamicStateCount = 3,
                 PDynamicStates = dynamicStates,
             };
 
@@ -283,7 +298,7 @@ namespace OpenH2.Rendering.Vulkan.Internals
 
             var globalsInfo = new DescriptorBufferInfo(globals, 0, Vk.WholeSize);
             var uniformInfo = new DescriptorBufferInfo(uniform, 0, Vk.WholeSize);
-            var transformsInfo = new DescriptorBufferInfo(transform, 0, Vk.WholeSize);
+            var transformsInfo = new DescriptorBufferInfo(transform, 0, (ulong)device.AlignUboItem<TransformUniform>(1));
 
             var textureInfos = stackalloc DescriptorImageInfo[8];
             for (int i = 0; i < 8; i++)
@@ -316,7 +331,7 @@ namespace OpenH2.Rendering.Vulkan.Internals
                     DstSet = descriptorSet,
                     DstBinding = 1,
                     DstArrayElement = 0,
-                    DescriptorType = DescriptorType.UniformBuffer,
+                    DescriptorType = DescriptorType.UniformBufferDynamic,
                     DescriptorCount = 1,
                     PBufferInfo = &transformsInfo,
                     PImageInfo = null,

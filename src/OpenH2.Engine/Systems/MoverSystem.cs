@@ -126,8 +126,8 @@ namespace OpenH2.Engine.Systems
 
         public void UpdateMovers(List<MoverComponent> movers, InputStore input, float yaw, float pitch, double timestep)
         {
-            var yawQuat = Quaternion.CreateFromAxisAngle(EngineGlobals.Up, -yaw);
-            var pitchQuat = Quaternion.CreateFromAxisAngle(EngineGlobals.Strafe, -pitch);
+            var yawQuat = Quaternion.CreateFromAxisAngle(EngineGlobals.Up, yaw);
+            var pitchQuat = Quaternion.CreateFromAxisAngle(EngineGlobals.Strafe, pitch);
 
             foreach (var mover in movers)
             {

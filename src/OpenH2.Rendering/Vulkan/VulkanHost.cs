@@ -13,6 +13,7 @@ using Silk.NET.Vulkan.Extensions.KHR;
 using System.Diagnostics;
 using OpenH2.Rendering.Shaders;
 using Silk.NET.Input;
+using System.Threading;
 
 namespace OpenH2.Rendering.Vulkan
 {
@@ -21,7 +22,8 @@ namespace OpenH2.Rendering.Vulkan
         private VulkanGraphicsAdapter adapter;
         private IInputContext inputContext;
         internal IWindow window;
-        
+
+        private ManualResetEventSlim loaded = new ManualResetEventSlim();
 
         public readonly Vk vk;
 
@@ -71,9 +73,16 @@ namespace OpenH2.Rendering.Vulkan
 
         public IGraphicsAdapter GetGraphicsAdapter() => this.adapter;
 
+        private int tick = 0;
         public void RegisterCallbacks(Action<double> updateCallback, Action<double> renderCallback)
         {
-            this.window.Update += updateCallback;
+            
+            this.window.Update += (d) =>
+            {
+                // First delta time includes time between window open and loop start, skipping that one for sanity
+                //      - causes physics engine to step forward multiple seconds before everything is in the scene
+                if (tick++ != 0) updateCallback(d);
+            };
             this.window.Render += renderCallback;
         }
 

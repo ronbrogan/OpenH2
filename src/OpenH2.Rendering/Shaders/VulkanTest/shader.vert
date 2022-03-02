@@ -30,6 +30,7 @@ layout(location = 0) out vec2 texPos;
 
 
 void main() {
-    gl_Position = Globals.ProjectionMatrix * Globals.ViewMatrix * Transform.ModelMatrix * vec4(local_position, 1.0);
+    mat4 modelView = Globals.ViewMatrix * Transform.ModelMatrix;
+    gl_Position = Globals.ProjectionMatrix * modelView * vec4(local_position, 1.0);
     texPos = in_texture;
 }

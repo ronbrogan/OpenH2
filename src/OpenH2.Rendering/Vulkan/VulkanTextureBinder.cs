@@ -65,8 +65,8 @@ namespace OpenH2.Rendering.Vulkan
 
             var size = bmp.Width * bmp.Height * 4; // rgba
 
-            using var tmp = new VkBuffer<byte>(device, size, BufferUsageFlags.BufferUsageTransferSrcBit, MemoryPropertyFlags.MemoryPropertyHostVisibleBit | MemoryPropertyFlags.MemoryPropertyHostCoherentBit);
-            tmp.Load(new Span<byte>((void*)data.Scan0, size));
+            using var tmp = VkBuffer<byte>.CreatePacked(device, size, BufferUsageFlags.BufferUsageTransferSrcBit, MemoryPropertyFlags.MemoryPropertyHostVisibleBit | MemoryPropertyFlags.MemoryPropertyHostCoherentBit);
+            tmp.LoadFull(new Span<byte>((void*)data.Scan0, size));
             bmp.UnlockBits(data);
 
             var image = new VkImage(device, (uint)bmp.Width, (uint)bmp.Height, Format.B8G8R8A8Srgb, generateMips: true);

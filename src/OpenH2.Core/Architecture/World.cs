@@ -1,4 +1,5 @@
 ﻿using OpenH2.Foundation.Physics;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
@@ -60,6 +61,7 @@ namespace OpenH2.Core.Architecture
 
         public abstract T GetGlobalResource<T>() where T : class;
 
+        private int tick = 0;
         public void Update(double timestep)
         {
             this.Scene.ProcessUpdates();
