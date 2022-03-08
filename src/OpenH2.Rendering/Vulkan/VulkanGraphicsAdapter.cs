@@ -3,6 +3,7 @@ using OpenH2.Foundation;
 using OpenH2.Rendering.Abstractions;
 using OpenH2.Rendering.Shaders;
 using OpenH2.Rendering.Vulkan.Internals;
+using OpenH2.Rendering.Vulkan.Internals.GraphicsPipelines;
 using Silk.NET.Vulkan;
 using System;
 using System.Collections.Generic;
@@ -36,7 +37,7 @@ namespace OpenH2.Rendering.Vulkan
         private VkSampler sampler;
         private bool recreateSwapchain = false;
 
-        private Dictionary<MeshElementType, VkDefaultGraphicsPipeline> pipelines = new();
+        private Dictionary<MeshElementType, BaseGraphicsPipeline> pipelines = new();
 
         private int nextModelHandle = 0;
         private (VkBuffer<int> indices, VkBuffer<VertexFormat> vertices)[] models = new (VkBuffer<int> indices, VkBuffer<VertexFormat> vertices)[2048];
@@ -66,8 +67,8 @@ namespace OpenH2.Rendering.Vulkan
             this.renderpass = new VkRenderPass(device, swapchain);
 
             // TODO: precompute all pipelines?
-            this.pipelines.Add(MeshElementType.TriangleList, new VkDefaultGraphicsPipeline(vulkanHost, device, swapchain, renderpass, MeshElementType.TriangleList));
-            this.pipelines.Add(MeshElementType.TriangleStrip, new VkDefaultGraphicsPipeline(vulkanHost, device, swapchain, renderpass, MeshElementType.TriangleStrip));
+            this.pipelines.Add(MeshElementType.TriangleList, new GenericTriListPipeline(device, swapchain, renderpass));
+            this.pipelines.Add(MeshElementType.TriangleStrip, new GenericTriStripPipeline(device, swapchain, renderpass));
 
 
             this.image = this.textureBinder.TestBind();
@@ -288,15 +289,13 @@ namespace OpenH2.Rendering.Vulkan
             recreateSwapchain = false;
             vk.DeviceWaitIdle(device);
 
-            foreach(var (_,p) in this.pipelines)
-                p.DestroyResources();
+            BaseGraphicsPipeline.DestroyAllPipelineResources();
 
             this.swapchain.DestroyResources();
             this.swapchain.CreateResources();
             this.renderpass.InitializeFramebuffers();
 
-            foreach (var (_, p) in this.pipelines)
-                p.CreateResources();
+            BaseGraphicsPipeline.CreateAllPipelineResources();
 
             // TODO: multiple frame support: recreate uniform buffers, command buffers, pools??
         }
@@ -392,7 +391,7 @@ namespace OpenH2.Rendering.Vulkan
         {
             vk.DeviceWaitIdle(device);
 
-            for(var i = 0; i < nextModelHandle; i++)
+            for(var i = 0; i <= nextModelHandle; i++)
             {
                 if(models[i] != default)
                 {
@@ -417,6 +416,8 @@ namespace OpenH2.Rendering.Vulkan
             // destroy pipelines
             foreach (var (_, p) in this.pipelines)
                 p.Dispose();
+
+            this.shaderUniformBuffer.Dispose();
 
             // destroy device
             this.device.Dispose();

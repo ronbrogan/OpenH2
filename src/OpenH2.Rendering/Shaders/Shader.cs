@@ -18,6 +18,7 @@
         Pointviz,
         ComputeGatherLights,
         ShadowMapping,
+        VulkanTest,
 
         // Always at the end, used to create arrays for mapping purposes
         MAX_VALUE
