@@ -137,7 +137,7 @@ namespace OpenH2.Rendering.Vulkan.Internals.GraphicsPipelines
             var alloc = new DescriptorSetAllocateInfo
             {
                 SType = StructureType.DescriptorSetAllocateInfo,
-                DescriptorPool = device.DescriptorPool,
+                DescriptorPool = DescriptorPool,
                 DescriptorSetCount = 1,
                 PSetLayouts = layouts
             };
@@ -385,10 +385,6 @@ namespace OpenH2.Rendering.Vulkan.Internals.GraphicsPipelines
         {
             if (!disposedValue)
             {
-                // per-instance disposal
-                //vk.FreeDescriptorSets(this.device, DescriptorPool, 1, this.DescriptorSet);
-                //this.DescriptorSet = default;
-
                 var remain = Interlocked.Decrement(ref Instances);
 
                 // Per-pipeline disposal
@@ -400,10 +396,12 @@ namespace OpenH2.Rendering.Vulkan.Internals.GraphicsPipelines
                     vk.DestroyDescriptorSetLayout(device, DescriptorSetLayout, null);
                     vk.DestroyPipelineLayout(device, PipelineLayout, null);
 
-                    this.DestroyResources();
+                    vk.DestroyPipeline(device, Pipeline, null);
 
                     vk.DestroyDescriptorPool(this.device, DescriptorPool, null);
-                    BaseGraphicsPipeline.UnregisterOwningInstance(this);
+                    
+                    // TODO: reconcile out of order disposal and the concept owning instances
+                    //BaseGraphicsPipeline.UnregisterOwningInstance(this);
                 }
 
                 disposedValue = true;

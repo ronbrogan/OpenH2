@@ -14,21 +14,21 @@ using PixelFormat = OpenTK.Graphics.OpenGL.PixelFormat;
 
 namespace OpenH2.Rendering.Vulkan
 {
-    internal class VulkanTextureBinder : ITextureBinder
+    internal class VulkanTextureBinder : IDisposable
     {
-        private static Dictionary<TextureFormat, (SizedInternalFormat, PixelFormat)> FormatMappings = new Dictionary<TextureFormat, (SizedInternalFormat, PixelFormat)>
+        private static Dictionary<TextureFormat, Format> FormatMappings = new Dictionary<TextureFormat, Format>
         {
-            { TextureFormat.A8, (SizedInternalFormat.R8, PixelFormat.Red)},
-            { TextureFormat.L8, (SizedInternalFormat.R8, PixelFormat.Red)},
-            { TextureFormat.A8L8, (SizedInternalFormat.Rg16, PixelFormat.Rg)},
-            { TextureFormat.U8V8, (SizedInternalFormat.Rg16, PixelFormat.Rg) },
-            { TextureFormat.R5G6B5, ((SizedInternalFormat)InternalFormat.Rgb4, PixelFormat.Bgr) },
-            { TextureFormat.A4R4G4B4, ((SizedInternalFormat)InternalFormat.Rgba4, PixelFormat.Bgra)},
-            { TextureFormat.R8G8B8, (SizedInternalFormat.Rgba8, PixelFormat.Bgra)},
-            { TextureFormat.A8R8G8B8, (SizedInternalFormat.Rgba8, PixelFormat.Bgra)},
-            { TextureFormat.DXT1, ((SizedInternalFormat)InternalFormat.CompressedRgbS3tcDxt1Ext, (PixelFormat)InternalFormat.CompressedRgbS3tcDxt1Ext) },
-            { TextureFormat.DXT23, ((SizedInternalFormat)InternalFormat.CompressedRgbaS3tcDxt3Ext, (PixelFormat)InternalFormat.CompressedRgbaS3tcDxt3Ext) },
-            { TextureFormat.DXT45, ((SizedInternalFormat)InternalFormat.CompressedRgbaS3tcDxt5Ext, (PixelFormat)InternalFormat.CompressedRgbaS3tcDxt5Ext) },
+            { TextureFormat.A8, Format.R8Unorm },
+            { TextureFormat.L8, Format.R8Unorm },
+            { TextureFormat.A8L8, Format.R8G8Unorm },
+            { TextureFormat.U8V8, Format.R8G8Unorm },
+            { TextureFormat.R5G6B5, Format.B5G6R5UnormPack16 },
+            { TextureFormat.A4R4G4B4, Format.B4G4R4A4UnormPack16},
+            { TextureFormat.R8G8B8, Format.B8G8R8A8Srgb },
+            { TextureFormat.A8R8G8B8, Format.B8G8R8A8Srgb },
+            { TextureFormat.DXT1, Format.BC1RgbUnormBlock },
+            { TextureFormat.DXT23, Format.BC2SrgbBlock },
+            { TextureFormat.DXT45, Format.BC3SrgbBlock },
         };
 
         private static Dictionary<TextureFormat, Func<int, int, int>> MipSizeFuncs = new Dictionary<TextureFormat, Func<int, int, int>>
@@ -46,7 +46,8 @@ namespace OpenH2.Rendering.Vulkan
             { TextureFormat.DXT45, (w,h) => ((w + 3) / 4) * ((h + 3) / 4) * 16 }
         };
 
-        private Dictionary<uint, (int, long)> BoundTextures = new Dictionary<uint, (int, long)>();
+        private Dictionary<uint, (VkImage, VkSampler)> BoundTextures = new Dictionary<uint, (VkImage, VkSampler)>();
+
         private VkDevice device;
         private Vk vk;
 
@@ -77,39 +78,11 @@ namespace OpenH2.Rendering.Vulkan
             return image;
         }
 
-
-
-
-
-        public int Bind(string filename)
+        public unsafe (VkImage, VkSampler) GetOrBind(Core.Tags.BitmapTag bitm)
         {
-            var fullPath = Path.GetFullPath(filename);
-
-            var bmp = new Bitmap(fullPath);
-            var data = bmp.LockBits(new Rectangle(0, 0, bmp.Width, bmp.Height), ImageLockMode.ReadOnly, System.Drawing.Imaging.PixelFormat.Format24bppRgb);
-
-            var texAddr = Bind(data, bmp.Width, bmp.Height);
-            bmp.UnlockBits(data);
-            bmp.Dispose();
-            return texAddr;
-        }
-
-        public int Bind(Stream textureData)
-        {
-            var bmp = new Bitmap(textureData);
-            var data = bmp.LockBits(new Rectangle(0, 0, bmp.Width, bmp.Height), ImageLockMode.ReadOnly, System.Drawing.Imaging.PixelFormat.Format32bppArgb);
-            var texAddr = Bind(data, bmp.Width, bmp.Height, System.Drawing.Imaging.PixelFormat.Format32bppArgb);
-            bmp.UnlockBits(data);
-            bmp.Dispose();
-            return texAddr;
-        }
-
-        public int GetOrBind(Core.Tags.BitmapTag bitm, out long handle)
-        {
-            if(BoundTextures.TryGetValue(bitm.Id, out var ids))
+            if(BoundTextures.TryGetValue(bitm.Id, out var tex))
             {
-                handle = ids.Item2;
-                return ids.Item1;
+                return tex;
             }
 
             // HACK: hard coding texture 0
@@ -118,162 +91,55 @@ namespace OpenH2.Rendering.Vulkan
 
             if(width == 0 || height == 0)
             {
-                handle = long.MaxValue;
-                return int.MaxValue;
+                return default;
             }
 
             var topLod = bitm.TextureInfos[0].LevelsOfDetail[0];
 
-            GL.GenTextures(1, out int texId);
-            GL.BindTexture(TextureTarget.Texture2D, texId);
+            //UploadMips(topLod.Data.Span, bitm.TextureFormat, bitm.TextureInfos[0].Format, width, height, bitm.MipMapCount == 0 ? bitm.TextureInfos[0].MipMapCount2 : bitm.MipMapCount);
 
-            UploadMips(topLod.Data.Span, bitm.TextureFormat, bitm.TextureInfos[0].Format, width, height, bitm.MipMapCount == 0 ? bitm.TextureInfos[0].MipMapCount2 : bitm.MipMapCount);
+            using var tmp = VkBuffer<byte>.CreatePacked(device, topLod.Data.Length, BufferUsageFlags.BufferUsageTransferSrcBit, MemoryPropertyFlags.MemoryPropertyHostVisibleBit | MemoryPropertyFlags.MemoryPropertyHostCoherentBit);
+            tmp.LoadFull(topLod.Data.Span);
 
-            SetCommonTextureParams();
+            var image = new VkImage(device, (uint)width, (uint)height, FormatMappings[bitm.TextureInfos[0].Format], tiling: ImageTiling.Optimal, generateMips: false);
 
-            handle = GL.Arb.GetTextureHandle(texId);
+            image.QueueLoad(tmp);
 
-            GL.Arb.MakeTextureHandleResident(handle);
+            var red = ComponentSwizzle.R;
+            var alpha = ComponentSwizzle.A;
 
-            CheckTextureBindErrors();
-
-            BoundTextures.Add(bitm.Id, (texId, handle));
-            return texId;
-        }
-
-        private void UploadMips(Span<byte> data, TextureCompressionFormat format, TextureFormat format2, int width, int height, int mipMaps)
-        {
-            int offset = 0;
-
-            var (sizedFormat, pixelFormat) = FormatMappings[format2];
-            var size = 0;
-
-            if (mipMaps == 0)
-                mipMaps = 1;
-
-            GL.TexStorage2D(TextureTarget2d.Texture2D, mipMaps, sizedFormat, width, height);
-
-            switch (format2)
+            switch (bitm.TextureInfos[0].Format)
             {
                 case TextureFormat.A8:
-                {
-                    var alpha = (int)PixelFormat.Alpha;
-                    GL.TexParameterI(TextureTarget.Texture2D, TextureParameterName.TextureSwizzleRgba,  new[] { alpha, alpha, alpha, alpha });
-                    break;
-                }
+                        image.CreateView(new (alpha, alpha, alpha, alpha ));
+                        break;
 
                 case TextureFormat.L8:
-                {
-                    var red = (int)PixelFormat.Red;
-                    GL.TexParameterI(TextureTarget.Texture2D, TextureParameterName.TextureSwizzleRgba, new[] { red, red, red, red });
-                    break;
-                }
+                        image.CreateView(new (red, red, red, red ));
+                        break;
 
                 case TextureFormat.A8L8:
-                {
-                    var red = (int)PixelFormat.Red;
-                    var alpha = (int)PixelFormat.Alpha;
-                    GL.TexParameterI(TextureTarget.Texture2D, TextureParameterName.TextureSwizzleRgba, new[] { red, red, red, alpha });
-                    break;
-                }
-            }
-
-            if (width == 0)
-                width = 1;
-            if (height == 0)
-                height = 1;
-
-            var maxSize = MipSizeFuncs[format2](width, height);
-
-            var bytes = new byte[maxSize];
-
-            for (var i = 0; i < mipMaps; i++)
-            {
-                if (width == 0)
-                    width = 1;
-                if (height == 0)
-                    height = 1;
-
-                size = MipSizeFuncs[format2](width, height);
-                 
-                // Handle corrupt images
-                if(data.Length < offset || data.Length < offset+size)
-                {
-                    break;
-                }
-
-                for(var j = 0; j < size; j++)
-                {
-                    bytes[j] = data[offset + j];
-                }
-
-                switch (format)
-                {
-                    case TextureCompressionFormat.DXT1:
-                    case TextureCompressionFormat.DXT23:
-                    case TextureCompressionFormat.DXT45:
-                        GL.CompressedTexSubImage2D(TextureTarget.Texture2D, i, 0, 0, width, height, pixelFormat, size, bytes);
+                        image.CreateView(new (red, red, red, alpha));
                         break;
-                    case TextureCompressionFormat.SixteenBit:
-                    case TextureCompressionFormat.ThirtyTwoBit:
-                    case TextureCompressionFormat.Monochrome:
-                        GL.TexSubImage2D(TextureTarget.Texture2D, i, 0, 0, width, height, pixelFormat, PixelType.UnsignedByte, bytes);
-                        break;
-                }
 
-                offset += size;
-                width >>= 1;
-                height >>= 1;
-            }
-        }
-
-        public int Bind(BitmapData data, int width, int height, System.Drawing.Imaging.PixelFormat inputFormat = System.Drawing.Imaging.PixelFormat.Format24bppRgb)
-        {
-            GL.GenTextures(1, out int texHandle);
-            GL.BindTexture(TextureTarget.Texture2D, texHandle);
-
-            var mipMapLevels = (int)Math.Floor(Math.Log(Math.Max(width, height), 2)) + 1;
-            GL.TexStorage2D(TextureTarget2d.Texture2D, mipMapLevels, SizedInternalFormat.Rgba8, width, height);
-
-            switch (inputFormat)
-            {
-                case System.Drawing.Imaging.PixelFormat.Format32bppArgb:
-                    GL.TexSubImage2D(TextureTarget.Texture2D, 0, 0, 0, width, height, PixelFormat.Bgra, PixelType.UnsignedByte, data.Scan0);
-                    break;
-
-                case System.Drawing.Imaging.PixelFormat.Format24bppRgb:
                 default:
-                    GL.TexSubImage2D(TextureTarget.Texture2D, 0, 0, 0, width, height, PixelFormat.Bgr, PixelType.UnsignedByte, data.Scan0);
+                    image.CreateView();
                     break;
             }
 
-            GL.GenerateMipmap(GenerateMipmapTarget.Texture2D);
+            tex = (image, image.CreateSampler());
 
-            SetCommonTextureParams();
-            CheckTextureBindErrors();
+            BoundTextures.Add(bitm.Id, tex);
 
-            return texHandle;
+            return tex;
         }
 
-        private void SetCommonTextureParams()
+        public void Dispose()
         {
-            GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureWrapS, (int)TextureWrapMode.Repeat);
-            GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureWrapT, (int)TextureWrapMode.Repeat);
-
-            GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMinFilter, (int)TextureMinFilter.LinearMipmapLinear);
-            GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMagFilter, (int)TextureMagFilter.Linear);
-
-            float maxAniso;
-            GL.GetFloat((GetPName)ExtTextureFilterAnisotropic.MaxTextureMaxAnisotropyExt, out maxAniso);
-            GL.TexParameter(TextureTarget.Texture2D, (TextureParameterName)ExtTextureFilterAnisotropic.TextureMaxAnisotropyExt, maxAniso);
-        }
-
-        private void CheckTextureBindErrors()
-        {
-            var error1 = GL.GetError();
-            if (error1 != ErrorCode.NoError)
+            foreach(var (key, item) in this.BoundTextures)
             {
-                Console.WriteLine("-- Error {0} occured at {1}", error1, "some place in texture loader");
+                item.Item2.Dispose();
+                item.Item1.Dispose();
             }
         }
     }

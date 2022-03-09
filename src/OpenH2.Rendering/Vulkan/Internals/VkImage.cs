@@ -17,13 +17,13 @@ namespace OpenH2.Rendering.Vulkan.Internals
 
         public ImageView View { get; private set; }
 
-        public const ImageUsageFlags TransferUsage = ImageUsageFlags.ImageUsageTransferDstBit | ImageUsageFlags.ImageUsageSampledBit;
+        public const ImageUsageFlags TransferUsage = ImageUsageFlags.ImageUsageTransferDstBit | ImageUsageFlags.ImageUsageSampledBit | (ImageUsageFlags)FormatFeatureFlags2.FormatFeature2BlitDstBit;
         public const ImageAspectFlags ColorAspect = ImageAspectFlags.ImageAspectColorBit;
 
-        public VkImage(VkDevice device, Extent2D dims, Format format, ImageUsageFlags usage = TransferUsage, ImageAspectFlags aspectFlags = ColorAspect, bool generateMips = true)
-            : this(device, dims.Width, dims.Height, format, usage, aspectFlags, generateMips) { }
+        public VkImage(VkDevice device, Extent2D dims, Format format, ImageUsageFlags usage = TransferUsage, ImageAspectFlags aspectFlags = ColorAspect, ImageTiling tiling = ImageTiling.Optimal, bool generateMips = false)
+            : this(device, dims.Width, dims.Height, format, usage, aspectFlags, tiling, generateMips) { }
 
-        public VkImage(VkDevice device, uint width, uint height, Format format, ImageUsageFlags usage = TransferUsage, ImageAspectFlags aspectFlags = ColorAspect, bool generateMips = true) : base(device.vk)
+        public VkImage(VkDevice device, uint width, uint height, Format format, ImageUsageFlags usage = TransferUsage, ImageAspectFlags aspectFlags = ColorAspect, ImageTiling tiling = ImageTiling.Optimal, bool generateMips = false) : base(device.vk)
         {
             this.device = device;
             this.width = width;
@@ -38,7 +38,7 @@ namespace OpenH2.Rendering.Vulkan.Internals
             if (mips > 1)
             {
                 // We'll need to blit to generate mips
-                usage |= ImageUsageFlags.ImageUsageTransferSrcBit | ImageUsageFlags.ImageUsageTransferDstBit;
+                usage |= ImageUsageFlags.ImageUsageTransferSrcBit | ImageUsageFlags.ImageUsageTransferDstBit | (ImageUsageFlags)FormatFeatureFlags2.FormatFeature2BlitDstBit;
             }
 
             var imageCreate = new ImageCreateInfo
@@ -49,7 +49,7 @@ namespace OpenH2.Rendering.Vulkan.Internals
                 MipLevels = mips,
                 ArrayLayers = 1,
                 Format = format,
-                Tiling = ImageTiling.Optimal,
+                Tiling = tiling,
                 InitialLayout = ImageLayout.Undefined,
                 Usage = usage,
                 SharingMode = SharingMode.Exclusive,
@@ -141,10 +141,17 @@ namespace OpenH2.Rendering.Vulkan.Internals
         // TODO: make implicit with image creation?
         public void CreateView()
         {
-            View = CreateView(device, image, format, aspectFlags, mips);
+            var defaultSwizzle = new ComponentMapping(ComponentSwizzle.R, ComponentSwizzle.G, ComponentSwizzle.B, ComponentSwizzle.A);
+
+            View = CreateView(device, image, format, aspectFlags, defaultSwizzle, mips);
         }
 
-        public static ImageView CreateView(VkDevice device, Image image, Format format, ImageAspectFlags aspectFlags, uint mipMaps)
+        public void CreateView(ComponentMapping swizzle)
+        {
+            View = CreateView(device, image, format, aspectFlags, swizzle, mips);
+        }
+
+        public static ImageView CreateView(VkDevice device, Image image, Format format, ImageAspectFlags aspectFlags, ComponentMapping swizzle, uint mipMaps)
         {
             var viewCreate = new ImageViewCreateInfo
             {
@@ -152,7 +159,8 @@ namespace OpenH2.Rendering.Vulkan.Internals
                 Image = image,
                 ViewType = ImageViewType.ImageViewType2D,
                 Format = format,
-                SubresourceRange = new ImageSubresourceRange(aspectFlags, 0, mipMaps, 0, 1)
+                SubresourceRange = new ImageSubresourceRange(aspectFlags, 0, mipMaps, 0, 1),
+                Components = swizzle
             };
 
             SUCCESS(device.vk.CreateImageView(device, in viewCreate, null, out var view), "ImageView creation failed");

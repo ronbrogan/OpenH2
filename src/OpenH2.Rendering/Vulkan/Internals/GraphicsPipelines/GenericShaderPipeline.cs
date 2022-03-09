@@ -83,15 +83,17 @@ namespace OpenH2.Rendering.Vulkan.Internals.GraphicsPipelines
 
         protected override DescriptorPool CreateDescriptorPool()
         {
-            var uboPoolSize = new DescriptorPoolSize(DescriptorType.UniformBuffer, 1);
-            var texPoolSize = new DescriptorPoolSize(DescriptorType.CombinedImageSampler, 1);
+            var count = 4096u;
+
+            var uboPoolSize = new DescriptorPoolSize(DescriptorType.UniformBuffer, 4 * count);
+            var texPoolSize = new DescriptorPoolSize(DescriptorType.CombinedImageSampler, 1 * count);
             var sizes = stackalloc DescriptorPoolSize[] { uboPoolSize, texPoolSize };
             var createInfo =  new DescriptorPoolCreateInfo
             {
                 SType = StructureType.DescriptorPoolCreateInfo,
                 PoolSizeCount = 2,
                 PPoolSizes = sizes,
-                MaxSets = 2
+                MaxSets = 1 * count
             };
 
             SUCCESS(vk.CreateDescriptorPool(device, in createInfo, null, out var descriptorPool));

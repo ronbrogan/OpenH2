@@ -42,7 +42,6 @@ namespace OpenH2.Rendering.Vulkan.Internals
         public SurfaceCapabilitiesKHR SurfaceCapabilities => caps;
 
         public CommandPool CommandPool { get; private set; }
-        public DescriptorPool DescriptorPool { get; private set; }
 
         public Extent2D Extent => ChooseSwapExtent();
 
@@ -127,21 +126,7 @@ namespace OpenH2.Rendering.Vulkan.Internals
 
             SUCCESS(vk.CreateCommandPool(device, in poolCreate, null, out var commandPool), "CommandPool create failed");
 
-            var uboPoolSize = new DescriptorPoolSize(DescriptorType.UniformBuffer, 1);
-            var texPoolSize = new DescriptorPoolSize(DescriptorType.CombinedImageSampler, 1);
-            var sizes = stackalloc DescriptorPoolSize[] { uboPoolSize, texPoolSize };
-            var descPoolCreate = new DescriptorPoolCreateInfo
-            {
-                SType = StructureType.DescriptorPoolCreateInfo,
-                PoolSizeCount = 2,
-                PPoolSizes = sizes,
-                MaxSets = 2
-            };
-
-            SUCCESS(vk.CreateDescriptorPool(device, in descPoolCreate, null, out var descriptorPool), "DescriptorPool create failed");
-
             CommandPool = commandPool;
-            DescriptorPool = descriptorPool;
         }
 
         public VkSwapchain CreateSwapchain()
@@ -367,7 +352,6 @@ namespace OpenH2.Rendering.Vulkan.Internals
         public void Dispose()
         {
             vk.DestroyCommandPool(device, CommandPool, null);
-            vk.DestroyDescriptorPool(device, DescriptorPool, null);
 
             if (khrSurfaceExtension != null)
             {

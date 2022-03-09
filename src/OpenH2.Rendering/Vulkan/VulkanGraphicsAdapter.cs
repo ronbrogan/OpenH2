@@ -37,7 +37,7 @@ namespace OpenH2.Rendering.Vulkan
         private VkSampler sampler;
         private bool recreateSwapchain = false;
 
-        private Dictionary<MeshElementType, BaseGraphicsPipeline> pipelines = new();
+        private Dictionary<(MeshElementType, uint), BaseGraphicsPipeline> pipelines = new();
 
         private int nextModelHandle = 0;
         private (VkBuffer<int> indices, VkBuffer<VertexFormat> vertices)[] models = new (VkBuffer<int> indices, VkBuffer<VertexFormat> vertices)[2048];
@@ -66,11 +66,6 @@ namespace OpenH2.Rendering.Vulkan
             this.swapchain = device.CreateSwapchain();
             this.renderpass = new VkRenderPass(device, swapchain);
 
-            // TODO: precompute all pipelines?
-            this.pipelines.Add(MeshElementType.TriangleList, new GenericTriListPipeline(device, swapchain, renderpass));
-            this.pipelines.Add(MeshElementType.TriangleStrip, new GenericTriStripPipeline(device, swapchain, renderpass));
-
-
             this.image = this.textureBinder.TestBind();
             this.sampler = image.CreateSampler();
 
@@ -89,9 +84,6 @@ namespace OpenH2.Rendering.Vulkan
 
             // Leaving mapped so that we can write during render
             this.transformBuffer.Map();
-
-            this.pipelines[MeshElementType.TriangleList].CreateDescriptors(this.globalBuffer, this.transformBuffer, this.shaderUniformBuffer, new[] { (this.image, this.sampler) });
-            this.pipelines[MeshElementType.TriangleStrip].CreateDescriptors(this.globalBuffer, this.transformBuffer, this.shaderUniformBuffer, new[] { (this.image, this.sampler) });
 
             // =======================
             // commandbuffer setup
@@ -162,6 +154,45 @@ namespace OpenH2.Rendering.Vulkan
 
         }
 
+        private BaseGraphicsPipeline GetOrCreatePipeline(DrawCommand command)
+        {
+            if (command.Mesh.Material.DiffuseMap == null)
+                return null;
+
+            var key = (command.ElementType, command.Mesh.Material.DiffuseMap.Id);
+
+            if (this.pipelines.TryGetValue(key, out var pipeline))
+                return pipeline;
+
+            pipeline = CreatePipeline(command.ElementType);
+
+            if (pipeline == null)
+                return null;
+
+            var tex = textureBinder.GetOrBind(command.Mesh.Material.DiffuseMap);
+
+            if (tex == default)
+                return null;
+
+            pipeline.CreateDescriptors(this.globalBuffer, this.transformBuffer, this.shaderUniformBuffer, new[] { tex });
+
+            this.pipelines[key] = pipeline;
+
+            return pipeline;
+        }
+
+        private BaseGraphicsPipeline CreatePipeline(MeshElementType elementType)
+        {
+            return elementType switch
+            {
+                MeshElementType.TriangleList => new GenericTriListPipeline(device, swapchain, renderpass),
+                MeshElementType.TriangleStrip => new GenericTriStripPipeline(device, swapchain, renderpass),
+                MeshElementType.TriangleStripDecal => new GenericTriStripPipeline(device, swapchain, renderpass),
+                MeshElementType.Point => null,
+                _ => null,
+            };
+        }
+
         public void DrawMeshes(DrawCommand[] commands)
         {
             if(this.currentShader != Shader.Generic)
@@ -172,11 +203,7 @@ namespace OpenH2.Rendering.Vulkan
             if (commands.Length == 0)
                 return;
 
-            if (!this.pipelines.TryGetValue(commands[0].ElementType, out var pipeline))
-                return;
-
-            pipeline.Bind(renderCommands);
-
+            
 
             // Find properly aligned offset to write current transform into
             var xformIndex = Interlocked.Increment(ref nextTransformIndex);
@@ -187,7 +214,6 @@ namespace OpenH2.Rendering.Vulkan
             this.transformBuffer.LoadMapped(xformOffset, this.currentTransform);
             // Bind the descriptor with the offset
             Span<uint> dynamics = stackalloc uint[] { (uint)xformOffset };
-            pipeline.BindDescriptors(renderCommands, dynamics);
 
             var vertexBuffers = stackalloc Buffer[1];
             var offsets = stackalloc ulong[] { 0 };
@@ -195,23 +221,20 @@ namespace OpenH2.Rendering.Vulkan
             {
                 ref DrawCommand command = ref commands[i];
 
-                // Upload shader uniform data
-                //BindOrCreateShaderUniform(ref command);
+                var pipeline = GetOrCreatePipeline(command);
 
+                if (pipeline == null)
+                    continue;
 
-                
-
-                // TODO: make pipelines for this purpose, extension not widely available
-                //vk.CmdSetPrimitiveTopology(renderCommands, primitiveType.Item1);
-                //vk.CmdSetPrimitiveRestartEnable(renderCommands, primitiveType.Item2);
-
-
+                // TODO: deduplicate pipeline changes?
+                pipeline.Bind(renderCommands);
+                pipeline.BindDescriptors(renderCommands, dynamics);
 
                 // TODO: We use the same buffers for all commands in a renderable, so we can skip rebinding every loop
                 var (indexBuffer, vertexBuffer) = this.models[commands[i].VaoHandle];
 
                 if (indexBuffer == null || vertexBuffer == null)
-                    return;
+                    continue;
 
                 vertexBuffers[0] = vertexBuffer;
                 offsets[0] = (uint)command.VertexBase * (uint)sizeof(VertexFormat);
@@ -416,6 +439,8 @@ namespace OpenH2.Rendering.Vulkan
             // destroy pipelines
             foreach (var (_, p) in this.pipelines)
                 p.Dispose();
+
+            this.textureBinder.Dispose();
 
             this.shaderUniformBuffer.Dispose();
 
