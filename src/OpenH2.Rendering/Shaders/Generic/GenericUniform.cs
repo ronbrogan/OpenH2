@@ -20,31 +20,31 @@ namespace OpenH2.Rendering.Shaders.Generic
             var material = mesh.Material;
 
             DiffuseColor = material.DiffuseColor;
-            UseDiffuse = bindings.DiffuseHandle != default;
+            UseDiffuse = material.DiffuseMap != null;
             DiffuseHandle = bindings.DiffuseHandle;
             DiffuseAmount = 1f;
 
-            UseDetailMap1 = bindings.Detail1Handle != default;
+            UseDetailMap1 = material.DetailMap1 != null;
             DetailMap1Amount = 1f;
             DetailMap1Handle = bindings.Detail1Handle;
             DetailMap1Scale = material.Detail1Scale;
 
-            UseDetailMap2 = bindings.Detail2Handle != default;
+            UseDetailMap2 = material.DetailMap2 != null;
             DetailMap2Amount = 1f;
             DetailMap2Handle = bindings.Detail2Handle;
             DetailMap2Scale = material.Detail2Scale;
 
             AlphaHandle = bindings.AlphaHandle;
-            UseAlpha = bindings.AlphaHandle != default;
+            UseAlpha = material.AlphaMap != null;
             AlphaChannel = new Vector4(material.AlphaFromRed ? 1f : 0f, 0, 0, material.AlphaFromRed ? 0f : 1f);
             AlphaAmount = 1f;
 
-            UseEmissiveMap = bindings.EmissiveHandle != default;
+            UseEmissiveMap = material.EmissiveMap != null;
             EmissiveMap = bindings.EmissiveHandle;
             EmissiveType = (int)material.EmissiveType;
             EmissiveArguments = material.EmissiveArguments;
 
-            UseNormalMap = bindings.NormalHandle != default;
+            UseNormalMap = material.NormalMap != null;
             NormalMap = bindings.NormalHandle;
             NormalMapAmount = 1f;
             NormalMapScale = material.NormalMapScale;

@@ -2,6 +2,10 @@
 using OpenH2.Foundation;
 using OpenH2.Rendering.Abstractions;
 using OpenH2.Rendering.Shaders;
+using OpenH2.Rendering.Shaders.Generic;
+using OpenH2.Rendering.Shaders.ShadowMapping;
+using OpenH2.Rendering.Shaders.Skybox;
+using OpenH2.Rendering.Shaders.Wireframe;
 using OpenH2.Rendering.Vulkan.Internals;
 using OpenH2.Rendering.Vulkan.Internals.GraphicsPipelines;
 using Silk.NET.Vulkan;
@@ -45,7 +49,7 @@ namespace OpenH2.Rendering.Vulkan
 
         // TODO: need multiple of these to support multiple in-flight frames
         private VkBuffer<GlobalUniform> globalBuffer;
-        private VkBuffer<VulkanTestUniform> shaderUniformBuffer;
+        private VkBuffer<GenericUniform> shaderUniformBuffer;
 
         private int nextTransformIndex = 0;
         private VkBuffer<TransformUniform> transformBuffer;
@@ -74,9 +78,10 @@ namespace OpenH2.Rendering.Vulkan
                 BufferUsageFlags.BufferUsageUniformBufferBit, 
                 MemoryPropertyFlags.MemoryPropertyHostVisibleBit | MemoryPropertyFlags.MemoryPropertyHostCoherentBit);
 
-            this.shaderUniformBuffer = device.CreateBuffer<VulkanTestUniform>(1,
+            this.shaderUniformBuffer = device.CreateBuffer<GenericUniform>(16384,
                 BufferUsageFlags.BufferUsageUniformBufferBit,
                 MemoryPropertyFlags.MemoryPropertyHostVisibleBit | MemoryPropertyFlags.MemoryPropertyHostCoherentBit);
+            this.shaderUniformBuffer.Map();
 
             this.transformBuffer = device.CreateDynamicUniformBuffer<TransformUniform>(16384,
                 BufferUsageFlags.BufferUsageUniformBufferBit,
@@ -154,33 +159,6 @@ namespace OpenH2.Rendering.Vulkan
 
         }
 
-        private BaseGraphicsPipeline GetOrCreatePipeline(DrawCommand command)
-        {
-            if (command.Mesh.Material.DiffuseMap == null)
-                return null;
-
-            var key = (command.ElementType, command.Mesh.Material.DiffuseMap.Id);
-
-            if (this.pipelines.TryGetValue(key, out var pipeline))
-                return pipeline;
-
-            pipeline = CreatePipeline(command.ElementType);
-
-            if (pipeline == null)
-                return null;
-
-            var tex = textureBinder.GetOrBind(command.Mesh.Material.DiffuseMap);
-
-            if (tex == default)
-                return null;
-
-            pipeline.CreateDescriptors(this.globalBuffer, this.transformBuffer, this.shaderUniformBuffer, new[] { tex });
-
-            this.pipelines[key] = pipeline;
-
-            return pipeline;
-        }
-
         private BaseGraphicsPipeline CreatePipeline(MeshElementType elementType)
         {
             return elementType switch
@@ -203,10 +181,8 @@ namespace OpenH2.Rendering.Vulkan
             if (commands.Length == 0)
                 return;
 
-            
-
             // Find properly aligned offset to write current transform into
-            var xformIndex = Interlocked.Increment(ref nextTransformIndex);
+            var xformIndex = (ulong)Interlocked.Increment(ref nextTransformIndex);
             //if (xformIndex >= 255) return;
             var xformOffset = device.AlignUboItem<TransformUniform>(xformIndex);
             // Write the current transform to that offset
@@ -408,6 +384,180 @@ namespace OpenH2.Rendering.Vulkan
             Debug.Assert(success);
 
             this.currentTransform = new TransformUniform(transform, inverted);
+        }
+
+        private BaseGraphicsPipeline GetOrCreatePipeline(DrawCommand command)
+        {
+            if (command.Mesh.Material.DiffuseMap == null)
+                return null;
+
+            var key = (command.ElementType, command.Mesh.Material.DiffuseMap.Id);
+
+            if (this.pipelines.TryGetValue(key, out var pipeline))
+                return pipeline;
+
+            pipeline = CreatePipeline(command.ElementType);
+
+            if (pipeline == null)
+                return null;
+
+            var tex = textureBinder.GetOrBind(command.Mesh.Material.DiffuseMap);
+
+            if (tex == default)
+                return null;
+
+            var textures = BindTexturesAndUniform(ref command);
+
+            if(textures == null)
+            {
+                throw new Exception("No textures bound");
+            }
+
+            var activeShader = Shader.Generic;
+            var slice = this.shaderUniformBuffer.Slice(command.ShaderUniformHandle[(int)activeShader]);
+            pipeline.CreateDescriptors(this.globalBuffer, this.transformBuffer, slice, textures);
+
+            this.pipelines[key] = pipeline;
+
+            return pipeline;
+        }
+
+        private Dictionary<IMaterial<BitmapTag>, int[]> MaterialUniforms = new Dictionary<IMaterial<BitmapTag>, int[]>();
+
+        private int currentlyBoundShaderUniform = -1;
+        private unsafe (VkImage image, VkSampler sampler)[] BindTexturesAndUniform(ref DrawCommand command)
+        {
+            var activeShader = Shader.Generic;
+
+            // If the uniform was already buffered, we'll just reuse that buffered uniform
+            // Currently these material uniforms never change at runtime - if this changes
+            // there will have to be some sort of invalidation to ensure they're updated
+            if (command.ShaderUniformHandle[(int)activeShader] == -1)
+            {
+                if (MaterialUniforms.TryGetValue(command.Mesh.Material, out var uniforms) == false)
+                {
+                    uniforms = new int[(int)Shader.MAX_VALUE];
+                    MaterialUniforms[command.Mesh.Material] = uniforms;
+                }
+
+                var (bindings, textures) = SetupTextures(command.Mesh.Material);
+                command.ShaderUniformHandle[(int)Shader.Generic] = GenerateShaderUniform(command, bindings);
+                uniforms[(int)activeShader] = command.ShaderUniformHandle[(int)activeShader];
+                return textures;
+            }
+
+            return null;
+        }
+
+
+        private Dictionary<IMaterial<BitmapTag>, (MaterialBindings, (VkImage image, VkSampler sampler)[])> boundMaterials = new ();
+        private (MaterialBindings, (VkImage image, VkSampler sampler)[]) SetupTextures(IMaterial<BitmapTag> material)
+        {
+            if (boundMaterials.TryGetValue(material, out var cached))
+            {
+                return cached;
+            }
+
+            var bindings = new MaterialBindings();
+            var textures = new (VkImage image, VkSampler sampler)[8];
+            var texIndex = 0;
+
+            if (material.DiffuseMap != null)
+            {
+                textures[texIndex] = textureBinder.GetOrBind(material.DiffuseMap);
+                bindings.DiffuseHandle = texIndex++;
+            }
+
+            if (material.DetailMap1 != null)
+            {
+                textures[texIndex] = textureBinder.GetOrBind(material.DetailMap1);
+                bindings.Detail1Handle = texIndex++;
+            }
+
+            if (material.DetailMap2 != null)
+            {
+                textures[texIndex] = textureBinder.GetOrBind(material.DetailMap2);
+                bindings.Detail2Handle = texIndex++;
+            }
+
+            if (material.ColorChangeMask != null)
+            {
+                textures[texIndex] = textureBinder.GetOrBind(material.ColorChangeMask);
+                bindings.ColorChangeHandle = texIndex++;
+            }
+
+            if (material.AlphaMap != null)
+            {
+                textures[texIndex] = textureBinder.GetOrBind(material.AlphaMap);
+                bindings.AlphaHandle = texIndex++;
+            }
+
+            if (material.EmissiveMap != null)
+            {
+                textures[texIndex] = textureBinder.GetOrBind(material.EmissiveMap);
+                bindings.EmissiveHandle = texIndex++;
+            }
+
+            if (material.NormalMap != null)
+            {
+                textures[texIndex] = textureBinder.GetOrBind(material.NormalMap);
+                bindings.NormalHandle = texIndex++;
+            }
+
+            boundMaterials.Add(material, (bindings, textures));
+
+            return (bindings, textures);
+        }
+
+        private int GenerateShaderUniform(DrawCommand command, MaterialBindings bindings)
+        {
+            var mesh = command.Mesh;
+            var bufferIndex = 0;
+
+            var activeShader = Shader.Generic;
+
+            switch (activeShader)
+            {
+                case Shader.Skybox:
+                    BindAndBufferShaderUniform(
+                        null,
+                        new SkyboxUniform(mesh.Material, bindings),
+                        out bufferIndex);
+                    break;
+                case Shader.Generic:
+                    BindAndBufferShaderUniform(
+                        this.shaderUniformBuffer,
+                        new GenericUniform(mesh, command.ColorChangeData, bindings),
+                        out bufferIndex);
+
+                    break;
+                case Shader.Wireframe:
+                    BindAndBufferShaderUniform(
+                        null,
+                        new WireframeUniform(mesh.Material),
+                        out bufferIndex);
+                    break;
+                case Shader.ShadowMapping:
+                    BindAndBufferShaderUniform(
+                        null,
+                        new ShadowMappingUniform(),
+                        out bufferIndex);
+                    break;
+                case Shader.Pointviz:
+                case Shader.TextureViewer:
+                    break;
+            }
+
+            return bufferIndex;
+        }
+
+        private int nextUniformIndex = 0;
+        private void BindAndBufferShaderUniform<T>(VkBuffer<T> buffer, in T uniform, out int index) where T: unmanaged
+        {
+            // TODO: index per buffer
+            index = Interlocked.Increment(ref nextUniformIndex);
+
+            buffer.Slice(index).Load(uniform);
         }
 
         public void Dispose()

@@ -1,5 +1,6 @@
 ﻿using OpenH2.Foundation;
 using OpenH2.Rendering.Shaders;
+using OpenH2.Rendering.Shaders.Generic;
 using Silk.NET.Vulkan;
 using System;
 using System.Collections.Generic;
@@ -45,7 +46,7 @@ namespace OpenH2.Rendering.Vulkan.Internals.GraphicsPipelines
         public abstract void Bind(in CommandBuffer commandBuffer);
         public abstract void BindDescriptors(in CommandBuffer commandBuffer);
         public abstract void BindDescriptors(in CommandBuffer commandBuffer, Span<uint> dynamicOffsets);
-        public abstract void CreateDescriptors(VkBuffer<GlobalUniform> globals, VkBuffer<TransformUniform> transform, VkBuffer<VulkanTestUniform> uniform, (VkImage image, VkSampler sampler)[] textures);
+        public abstract void CreateDescriptors(VkBuffer<GlobalUniform> globals, VkBuffer<TransformUniform> transform, VkBufferSlice<GenericUniform> uniform, (VkImage image, VkSampler sampler)[] textures);
         public abstract void Dispose();
     }
 
@@ -131,7 +132,7 @@ namespace OpenH2.Rendering.Vulkan.Internals.GraphicsPipelines
             vk.CmdBindDescriptorSets(commandBuffer, PipelineBindPoint.Graphics, PipelineLayout, 0, 1, in DescriptorSet, (uint)dynamicOffsets.Length, ptr);
         }
 
-        public override void CreateDescriptors(VkBuffer<GlobalUniform> globals, VkBuffer<TransformUniform> transform, VkBuffer<VulkanTestUniform> uniform, (VkImage image, VkSampler sampler)[] textures)
+        public override void CreateDescriptors(VkBuffer<GlobalUniform> globals, VkBuffer<TransformUniform> transform, VkBufferSlice<GenericUniform> uniform, (VkImage image, VkSampler sampler)[] textures)
         {
             var layouts = stackalloc[] { DescriptorSetLayout };
             var alloc = new DescriptorSetAllocateInfo
@@ -145,13 +146,13 @@ namespace OpenH2.Rendering.Vulkan.Internals.GraphicsPipelines
             SUCCESS(vk.AllocateDescriptorSets(device, in alloc, out var descriptorSet), "DescriptorSet allocate failed");
 
             var globalsInfo = new DescriptorBufferInfo(globals, 0, Vk.WholeSize);
-            var uniformInfo = new DescriptorBufferInfo(uniform, 0, Vk.WholeSize);
-            var transformsInfo = new DescriptorBufferInfo(transform, 0, (ulong)device.AlignUboItem<TransformUniform>(1));
+            var uniformInfo = new DescriptorBufferInfo(uniform.Buffer, uniform.Start, uniform.Length);
+            var transformsInfo = new DescriptorBufferInfo(transform, 0, device.AlignUboItem<TransformUniform>(1));
 
             var textureInfos = stackalloc DescriptorImageInfo[8];
             for (int i = 0; i < 8; i++)
             {
-                if (textures.Length > i)
+                if (textures.Length > i && textures[i] != default)
                     textureInfos[i] = new DescriptorImageInfo(textures[i].sampler, textures[i].image.View, ImageLayout.ShaderReadOnlyOptimal);
                 else
                     // TODO: have a fallback texture or something?
@@ -190,6 +191,18 @@ namespace OpenH2.Rendering.Vulkan.Internals.GraphicsPipelines
                     SType = StructureType.WriteDescriptorSet,
                     DstSet = descriptorSet,
                     DstBinding = 2,
+                    DstArrayElement = 0,
+                    DescriptorType = DescriptorType.UniformBuffer,
+                    DescriptorCount = 1,
+                    PBufferInfo = &uniformInfo,
+                    PImageInfo = null,
+                    PTexelBufferView = null
+                },
+                new WriteDescriptorSet
+                {
+                    SType = StructureType.WriteDescriptorSet,
+                    DstSet = descriptorSet,
+                    DstBinding = 3,
                     DstArrayElement = 0,
                     DescriptorType = DescriptorType.CombinedImageSampler,
                     DescriptorCount = 8,

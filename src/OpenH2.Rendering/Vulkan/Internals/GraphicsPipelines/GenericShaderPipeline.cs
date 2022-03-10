@@ -48,21 +48,30 @@ namespace OpenH2.Rendering.Vulkan.Internals.GraphicsPipelines
                 StageFlags = ShaderStageFlags.ShaderStageAllGraphics
             };
 
-            var texBinding = new DescriptorSetLayoutBinding
+            var shaderUniformBinding = new DescriptorSetLayoutBinding
             {
                 Binding = 2,
+                DescriptorType = DescriptorType.UniformBuffer,
+                DescriptorCount = 1,
+                StageFlags = ShaderStageFlags.ShaderStageAllGraphics,
+                PImmutableSamplers = null
+            };
+
+            var texBinding = new DescriptorSetLayoutBinding
+            {
+                Binding = 3,
                 DescriptorType = DescriptorType.CombinedImageSampler,
                 DescriptorCount = 8,
                 StageFlags = ShaderStageFlags.ShaderStageAllGraphics,
                 PImmutableSamplers = null
             };
 
-            var bindings = stackalloc[] { globalsBinding, transformBinding, texBinding };
+            var bindings = stackalloc[] { globalsBinding, transformBinding, shaderUniformBinding, texBinding };
 
             var descCreate = new DescriptorSetLayoutCreateInfo
             {
                 SType = StructureType.DescriptorSetLayoutCreateInfo,
-                BindingCount = 3,
+                BindingCount = 4,
                 PBindings = bindings
             };
 
