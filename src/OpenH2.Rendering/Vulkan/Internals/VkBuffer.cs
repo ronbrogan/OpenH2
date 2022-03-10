@@ -154,7 +154,7 @@ namespace OpenH2.Rendering.Vulkan.Internals
 
         public void Unmap()
         {
-            if (this.bufferPtr != null)
+            if (this.bufferPtr == null)
                 throw new Exception("Buffer was already unmapped");
 
             vk.UnmapMemory(device, bufferMemory);

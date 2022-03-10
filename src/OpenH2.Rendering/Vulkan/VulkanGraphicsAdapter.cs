@@ -44,7 +44,7 @@ namespace OpenH2.Rendering.Vulkan
         private Dictionary<(MeshElementType, uint), BaseGraphicsPipeline> pipelines = new();
 
         private int nextModelHandle = 0;
-        private (VkBuffer<int> indices, VkBuffer<VertexFormat> vertices)[] models = new (VkBuffer<int> indices, VkBuffer<VertexFormat> vertices)[2048];
+        private (VkBuffer<int> indices, VkBuffer<VertexFormat> vertices)[] models = new (VkBuffer<int> indices, VkBuffer<VertexFormat> vertices)[4096];
 
 
         // TODO: need multiple of these to support multiple in-flight frames

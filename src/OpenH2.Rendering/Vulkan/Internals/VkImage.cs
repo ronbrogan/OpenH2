@@ -17,7 +17,7 @@ namespace OpenH2.Rendering.Vulkan.Internals
 
         public ImageView View { get; private set; }
 
-        public const ImageUsageFlags TransferUsage = ImageUsageFlags.ImageUsageTransferDstBit | ImageUsageFlags.ImageUsageSampledBit | (ImageUsageFlags)FormatFeatureFlags2.FormatFeature2BlitDstBit;
+        public const ImageUsageFlags TransferUsage = ImageUsageFlags.ImageUsageTransferDstBit | ImageUsageFlags.ImageUsageSampledBit;
         public const ImageAspectFlags ColorAspect = ImageAspectFlags.ImageAspectColorBit;
 
         public VkImage(VkDevice device, Extent2D dims, Format format, ImageUsageFlags usage = TransferUsage, ImageAspectFlags aspectFlags = ColorAspect, ImageTiling tiling = ImageTiling.Optimal, bool generateMips = false)
@@ -38,7 +38,7 @@ namespace OpenH2.Rendering.Vulkan.Internals
             if (mips > 1)
             {
                 // We'll need to blit to generate mips
-                usage |= ImageUsageFlags.ImageUsageTransferSrcBit | ImageUsageFlags.ImageUsageTransferDstBit | (ImageUsageFlags)FormatFeatureFlags2.FormatFeature2BlitDstBit;
+                usage |= ImageUsageFlags.ImageUsageTransferSrcBit | ImageUsageFlags.ImageUsageTransferDstBit;
             }
 
             var imageCreate = new ImageCreateInfo
@@ -125,6 +125,14 @@ namespace OpenH2.Rendering.Vulkan.Internals
                 sourceStage = PipelineStageFlags.PipelineStageTransferBit;
                 destinationStage = PipelineStageFlags.PipelineStageFragmentShaderBit;
             }
+            else if (oldLayout == ImageLayout.TransferDstOptimal && newLayout == ImageLayout.TransferSrcOptimal)
+            {
+                barrier.SrcAccessMask = AccessFlags.AccessTransferWriteBit;
+                barrier.DstAccessMask = AccessFlags.AccessTransferReadBit;
+
+                sourceStage = PipelineStageFlags.PipelineStageTransferBit;
+                destinationStage = PipelineStageFlags.PipelineStageTransferBit;
+            }
             else
             {
                 throw new Exception($"Unsupported layout transition {oldLayout}->{newLayout}");
@@ -185,6 +193,56 @@ namespace OpenH2.Rendering.Vulkan.Internals
                 };
 
                 vk.CmdCopyBufferToImage(commandBuffer, source, image, ImageLayout.TransferDstOptimal, 1, in copy);
+
+                if (mips > 1)
+                    GenerateMipmaps(commandBuffer);
+                else
+                    TransitionLayout(commandBuffer, ImageLayout.TransferDstOptimal, ImageLayout.ShaderReadOnlyOptimal);
+            });
+        }
+
+        public void QueueLoadForBlit(VkBuffer<byte> source)
+        {
+            device.OneShotCommand(commandBuffer =>
+            {
+                TransitionLayout(commandBuffer, ImageLayout.Undefined, ImageLayout.TransferDstOptimal);
+
+                var copy = new BufferImageCopy
+                {
+                    BufferOffset = 0,
+                    BufferRowLength = 0,
+                    BufferImageHeight = 0,
+
+                    ImageSubresource = new ImageSubresourceLayers(aspectFlags, 0, 0, 1),
+                    ImageOffset = new Offset3D(0, 0, 0),
+                    ImageExtent = new Extent3D(width, height, 1)
+                };
+
+                vk.CmdCopyBufferToImage(commandBuffer, source, image, ImageLayout.TransferDstOptimal, 1, in copy);
+
+                TransitionLayout(commandBuffer, ImageLayout.TransferDstOptimal, ImageLayout.TransferSrcOptimal);
+            });
+        }
+
+        public void BlitFrom(VkImage source)
+        {
+            device.OneShotCommand(commandBuffer =>
+            {
+                TransitionLayout(commandBuffer, ImageLayout.Undefined, ImageLayout.TransferDstOptimal);
+
+                var blit = new ImageBlit
+                {
+                    SrcOffsets = new() { Element0 = new(0, 0, 0), Element1 = new((int)source.width, (int)source.height, 1) },
+                    SrcSubresource = new ImageSubresourceLayers(aspectFlags, 0, 0, 1),
+                    DstOffsets = new() { Element0 = new(0, 0, 0), Element1 = new((int)width, (int)height, 1) },
+                    DstSubresource = new ImageSubresourceLayers(aspectFlags, 0, 0, 1)
+                };
+
+                // WARNING: command buffer must have graphics capability for blitting
+                vk.CmdBlitImage(commandBuffer,
+                    source, ImageLayout.TransferSrcOptimal,
+                    image, ImageLayout.TransferDstOptimal,
+                    1, in blit, Filter.Linear);
 
                 if (mips > 1)
                     GenerateMipmaps(commandBuffer);
