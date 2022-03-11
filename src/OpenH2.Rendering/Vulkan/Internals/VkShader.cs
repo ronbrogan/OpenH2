@@ -22,6 +22,7 @@ namespace OpenH2.Rendering.Vulkan.Internals
             {
                 ShaderType.Vertex => ShaderStageFlags.ShaderStageVertexBit,
                 ShaderType.Fragment => ShaderStageFlags.ShaderStageFragmentBit,
+                ShaderType.Geometry => ShaderStageFlags.ShaderStageGeometryBit,
                 _ => throw new NotSupportedException($"Shader type {type} is not yet supported"),
             };
 

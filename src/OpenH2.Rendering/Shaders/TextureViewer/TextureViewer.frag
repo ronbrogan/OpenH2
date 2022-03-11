@@ -1,4 +1,4 @@
-﻿#version 450
+#version 450
 
 in vec3 world_pos;
 in vec3 world_normal;

@@ -1,4 +1,4 @@
-﻿#version 450
+#version 450
 
 layout(std140, binding = 0) uniform GlobalUniform
 {

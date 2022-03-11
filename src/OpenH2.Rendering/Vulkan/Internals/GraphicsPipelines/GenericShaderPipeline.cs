@@ -24,7 +24,7 @@ namespace OpenH2.Rendering.Vulkan.Internals.GraphicsPipelines
     {
         // TODO: change to Shader.Generic
         public GenericShaderPipeline(VkDevice device, VkSwapchain swapchain, VkRenderPass renderPass, MeshElementType primitiveType) 
-            : base(device, swapchain, renderPass, Shader.VulkanTest, primitiveType)
+            : base(device, swapchain, renderPass, Shader.Generic, primitiveType)
         {
         }
 

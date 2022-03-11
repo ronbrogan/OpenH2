@@ -37,8 +37,6 @@ namespace OpenH2.Rendering.Vulkan
         private VkSwapchain swapchain;
         private VkRenderPass renderpass;
         
-        private VkImage image;
-        private VkSampler sampler;
         private bool recreateSwapchain = false;
 
         private Dictionary<(MeshElementType, uint), BaseGraphicsPipeline> pipelines = new();
@@ -69,10 +67,6 @@ namespace OpenH2.Rendering.Vulkan
             this.textureBinder = new VulkanTextureBinder(this.device);
             this.swapchain = device.CreateSwapchain();
             this.renderpass = new VkRenderPass(device, swapchain);
-
-            this.image = this.textureBinder.TestBind();
-            this.sampler = image.CreateSampler();
-
 
             this.globalBuffer = device.CreateBuffer<GlobalUniform>(1, 
                 BufferUsageFlags.BufferUsageUniformBufferBit, 
@@ -171,6 +165,9 @@ namespace OpenH2.Rendering.Vulkan
             };
         }
 
+        BaseGraphicsPipeline currentPipeline = null;
+        int currentModel = -1;
+        ulong lastXformOffset = ulong.MaxValue;
         public void DrawMeshes(DrawCommand[] commands)
         {
             if(this.currentShader != Shader.Generic)
@@ -202,12 +199,15 @@ namespace OpenH2.Rendering.Vulkan
                 if (pipeline == null)
                     continue;
 
-                // TODO: deduplicate pipeline changes?
-                pipeline.Bind(renderCommands);
-                pipeline.BindDescriptors(renderCommands, dynamics);
+                if (currentPipeline != pipeline || lastXformOffset != xformOffset)
+                {
+                    pipeline.Bind(renderCommands);
+                    pipeline.BindDescriptors(renderCommands, dynamics);
+                }
 
-                // TODO: We use the same buffers for all commands in a renderable, so we can skip rebinding every loop
-                var (indexBuffer, vertexBuffer) = this.models[commands[i].VaoHandle];
+                // We use the same buffers for all commands in a renderable, so we can skip rebinding every loop
+                
+                var (indexBuffer, vertexBuffer) = this.models[command.VaoHandle];
 
                 if (indexBuffer == null || vertexBuffer == null)
                     continue;
@@ -217,7 +217,14 @@ namespace OpenH2.Rendering.Vulkan
 
                 vk.CmdBindVertexBuffers(renderCommands, 0, 1, vertexBuffers, offsets);
 
-                vk.CmdBindIndexBuffer(renderCommands, indexBuffer, 0, IndexType.Uint32);
+                if (currentModel != command.VaoHandle)
+                {
+                    vk.CmdBindIndexBuffer(renderCommands, indexBuffer, 0, IndexType.Uint32);
+
+                    currentModel = command.VaoHandle;
+                }
+
+
 
                 vk.CmdDrawIndexed(renderCommands, (uint)command.IndiciesCount, 1, (uint)command.IndexBase, 0, 0);
             }
@@ -226,6 +233,9 @@ namespace OpenH2.Rendering.Vulkan
         public void EndFrame()
         {
             this.nextTransformIndex = 0;
+            this.currentModel = -1;
+            this.currentPipeline = null;
+            this.lastXformOffset = ulong.MaxValue;
 
             vk.CmdEndRenderPass(renderCommands);
 
@@ -582,9 +592,6 @@ namespace OpenH2.Rendering.Vulkan
 
             this.renderpass.Dispose();
             this.swapchain.Dispose();
-
-            this.image.Dispose();
-            this.sampler.Dispose();
 
             // destroy pipelines
             foreach (var (_, p) in this.pipelines)

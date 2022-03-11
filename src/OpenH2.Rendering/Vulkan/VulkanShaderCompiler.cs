@@ -23,10 +23,11 @@ namespace OpenH2.Rendering.Vulkan
             {
                 ShaderType.Vertex => "vert",
                 ShaderType.Fragment => "frag",
+                ShaderType.Geometry => "geom",
                 _ => throw new NotSupportedException($"Shader type {type} is not yet supported")
             };
 
-            return File.ReadAllBytes(Path.Combine(path, stub + ".spv"));
+            return File.ReadAllBytes(Path.Combine(path, $"{shaderName}.vk.{stub}.spv"));
         }
 
         public unsafe static ShaderModule LoadSpirvShader(VkDevice device, string shaderName, ShaderType type)

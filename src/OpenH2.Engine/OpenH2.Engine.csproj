@@ -16,34 +16,34 @@
     <ProjectReference Include="..\OpenH2.Rendering\OpenH2.Rendering.csproj" />
   </ItemGroup>
 
-    <ItemGroup>
-        <Reference Include="..\..\lib\physxdotnetcore\PhysX.NetCore.dll"></Reference>
-        <None Include="..\..\lib\physxdotnetcore\Ijwhost.dll">
-            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-        </None>
-        <None Include="..\..\lib\physx\win64\PhysX_64.dll">
-            <Link>PhysX_64.dll</Link>
-            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-        </None>
-        <None Include="..\..\lib\physx\win64\PhysXCommon_64.dll">
-            <Link>PhysXCommon_64.dll</Link>
-            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-        </None>
-        <None Include="..\..\lib\physx\win64\PhysXCooking_64.dll">
-            <Link>PhysXCooking_64.dll</Link>
-            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-        </None>
-        <None Include="..\..\lib\physx\win64\PhysXFoundation_64.dll">
-            <Link>PhysXFoundation_64.dll</Link>
-            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-        </None>
-        <None Include="Scripting\ScriptEngine.Cinematics.cs" />
-    </ItemGroup>
+  <ItemGroup>
+    <Reference Include="..\..\lib\physxdotnetcore\PhysX.NetCore.dll"></Reference>
+    <None Include="..\..\lib\physxdotnetcore\Ijwhost.dll">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="..\..\lib\physx\win64\PhysX_64.dll">
+      <Link>PhysX_64.dll</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="..\..\lib\physx\win64\PhysXCommon_64.dll">
+      <Link>PhysXCommon_64.dll</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="..\..\lib\physx\win64\PhysXCooking_64.dll">
+      <Link>PhysXCooking_64.dll</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="..\..\lib\physx\win64\PhysXFoundation_64.dll">
+      <Link>PhysXFoundation_64.dll</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="Scripting\ScriptEngine.Cinematics.cs" />
+  </ItemGroup>
 
-    <ItemGroup>
-      <PackageReference Include="OpenTK" Version="4.7.1" />
-      <PackageReference Include="Silk.NET.Input.Extensions" Version="2.13.0" />
-	  <PackageReference Include="System.Runtime.CompilerServices.Unsafe" Version="6.0.0" />
-	</ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="OpenTK" Version="4.7.1" />
+    <PackageReference Include="Silk.NET.Input.Extensions" Version="2.13.0" />
+    <PackageReference Include="System.Runtime.CompilerServices.Unsafe" Version="6.0.0" />
+  </ItemGroup>
 
 </Project>
