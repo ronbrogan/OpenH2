@@ -18,8 +18,7 @@
     <ProjectReference Include="..\OpenH2.Foundation\OpenH2.Foundation.csproj" />
   </ItemGroup>
 
-  <Target Name="CompileShaders" AfterTargets="GetCopyToOutputDirectoryItems" BeforeTargets="_CopyOutOfDateSourceItemsToOutputDirectory" 
-          Inputs="%(ShaderCompile.FullPath)" Outputs="%(ShaderCompile.FullPath).spv)">
+  <Target Name="CompileShaders" AfterTargets="GetCopyToOutputDirectoryItems" BeforeTargets="_CopyOutOfDateSourceItemsToOutputDirectory" Inputs="%(ShaderCompile.FullPath)" Outputs="%(ShaderCompile.FullPath).spv)">
     <Exec Command="glslc &quot;%(ShaderCompile.FullPath)&quot; -o &quot;%(ShaderCompile.FullPath).spv&quot;" />
   </Target>
 

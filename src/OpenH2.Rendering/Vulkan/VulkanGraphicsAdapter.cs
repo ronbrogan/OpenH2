@@ -21,11 +21,6 @@ using Semaphore = Silk.NET.Vulkan.Semaphore;
 
 namespace OpenH2.Rendering.Vulkan
 {
-    public struct VulkanTestUniform
-    {
-        public Sampler Texture;
-    }
-
     public sealed unsafe class VulkanGraphicsAdapter : VkObject, IGraphicsAdapter, IDisposable
     {
         const int MaxFramesInFlight = 2;
@@ -39,7 +34,7 @@ namespace OpenH2.Rendering.Vulkan
         
         private bool recreateSwapchain = false;
 
-        private Dictionary<(MeshElementType, uint), BaseGraphicsPipeline> pipelines = new();
+        private Dictionary<(Shader, MeshElementType, uint), BaseGraphicsPipeline> pipelines = new();
 
         private int nextModelHandle = 0;
         private (VkBuffer<int> indices, VkBuffer<VertexFormat> vertices)[] models = new (VkBuffer<int> indices, VkBuffer<VertexFormat> vertices)[4096];
@@ -47,7 +42,8 @@ namespace OpenH2.Rendering.Vulkan
 
         // TODO: need multiple of these to support multiple in-flight frames
         private VkBuffer<GlobalUniform> globalBuffer;
-        private VkBuffer<GenericUniform> shaderUniformBuffer;
+
+        private VkBuffer[] shaderUniformBuffers = new VkBuffer[(int)Shader.MAX_VALUE];
 
         private int nextTransformIndex = 0;
         private VkBuffer<TransformUniform> transformBuffer;
@@ -72,10 +68,17 @@ namespace OpenH2.Rendering.Vulkan
                 BufferUsageFlags.BufferUsageUniformBufferBit, 
                 MemoryPropertyFlags.MemoryPropertyHostVisibleBit | MemoryPropertyFlags.MemoryPropertyHostCoherentBit);
 
-            this.shaderUniformBuffer = device.CreateBuffer<GenericUniform>(16384,
+            // TODO: clean up per-shader uniform buffer management
+            this.shaderUniformBuffers[(int)Shader.Generic] = device.CreateBuffer<GenericUniform>(16384,
                 BufferUsageFlags.BufferUsageUniformBufferBit,
                 MemoryPropertyFlags.MemoryPropertyHostVisibleBit | MemoryPropertyFlags.MemoryPropertyHostCoherentBit);
-            this.shaderUniformBuffer.Map();
+
+            this.shaderUniformBuffers[(int)Shader.Skybox] = device.CreateBuffer<SkyboxUniform>(16384,
+                BufferUsageFlags.BufferUsageUniformBufferBit,
+                MemoryPropertyFlags.MemoryPropertyHostVisibleBit | MemoryPropertyFlags.MemoryPropertyHostCoherentBit);
+
+            this.shaderUniformBuffers[(int)Shader.Generic].Map();
+            this.shaderUniformBuffers[(int)Shader.Skybox].Map();
 
             this.transformBuffer = device.CreateDynamicUniformBuffer<TransformUniform>(16384,
                 BufferUsageFlags.BufferUsageUniformBufferBit,
@@ -122,6 +125,12 @@ namespace OpenH2.Rendering.Vulkan
 
         public void BeginFrame(GlobalUniform matricies)
         {
+            this.currentShader = Shader.MAX_VALUE;
+            this.nextTransformIndex = 0;
+            this.currentModel = -1;
+            this.currentPipeline = null;
+            this.lastXformOffset = ulong.MaxValue;
+
             vk.WaitForFences(device, 1, in inFlightFence, true, ulong.MaxValue);
 
             var acquired = swapchain.AcquireNextImage(imageAvailableSemaphore, default, ref imageIndex);
@@ -155,14 +164,30 @@ namespace OpenH2.Rendering.Vulkan
 
         private BaseGraphicsPipeline CreatePipeline(MeshElementType elementType)
         {
-            return elementType switch
+            if(this.currentShader == Shader.Generic)
             {
-                MeshElementType.TriangleList => new GenericTriListPipeline(device, swapchain, renderpass),
-                MeshElementType.TriangleStrip => new GenericTriStripPipeline(device, swapchain, renderpass),
-                MeshElementType.TriangleStripDecal => new GenericTriStripPipeline(device, swapchain, renderpass),
-                MeshElementType.Point => null,
-                _ => null,
-            };
+                return elementType switch
+                {
+                    MeshElementType.TriangleList => new GenericTriListPipeline(device, swapchain, renderpass),
+                    MeshElementType.TriangleStrip => new GenericTriStripPipeline(device, swapchain, renderpass),
+                    MeshElementType.TriangleStripDecal => new GenericTriStripPipeline(device, swapchain, renderpass),
+                    MeshElementType.Point => null,
+                    _ => null,
+                };
+            }
+            else if(this.currentShader == Shader.Skybox)
+            {
+                return elementType switch
+                {
+                    MeshElementType.TriangleList => new SkyboxTriListPipeline(device, swapchain, renderpass),
+                    MeshElementType.TriangleStrip => new SkyboxTriStripPipeline(device, swapchain, renderpass),
+                    MeshElementType.TriangleStripDecal => new SkyboxTriStripPipeline(device, swapchain, renderpass),
+                    MeshElementType.Point => null,
+                    _ => null,
+                };
+            }
+
+            return null;
         }
 
         BaseGraphicsPipeline currentPipeline = null;
@@ -170,7 +195,7 @@ namespace OpenH2.Rendering.Vulkan
         ulong lastXformOffset = ulong.MaxValue;
         public void DrawMeshes(DrawCommand[] commands)
         {
-            if(this.currentShader != Shader.Generic)
+            if(this.currentShader != Shader.Generic && this.currentShader != Shader.Skybox)
             {
                 return;
             }
@@ -232,11 +257,6 @@ namespace OpenH2.Rendering.Vulkan
 
         public void EndFrame()
         {
-            this.nextTransformIndex = 0;
-            this.currentModel = -1;
-            this.currentPipeline = null;
-            this.lastXformOffset = ulong.MaxValue;
-
             vk.CmdEndRenderPass(renderCommands);
 
             SUCCESS(vk.EndCommandBuffer(renderCommands), "Failed to record command buffer");
@@ -401,7 +421,7 @@ namespace OpenH2.Rendering.Vulkan
             if (command.Mesh.Material.DiffuseMap == null)
                 return null;
 
-            var key = (command.ElementType, command.Mesh.Material.DiffuseMap.Id);
+            var key = (currentShader, command.ElementType, command.Mesh.Material.DiffuseMap.Id);
 
             if (this.pipelines.TryGetValue(key, out var pipeline))
                 return pipeline;
@@ -423,8 +443,7 @@ namespace OpenH2.Rendering.Vulkan
                 throw new Exception("No textures bound");
             }
 
-            var activeShader = Shader.Generic;
-            var slice = this.shaderUniformBuffer.Slice(command.ShaderUniformHandle[(int)activeShader]);
+            var slice = this.shaderUniformBuffers[(int)currentShader].Slice(command.ShaderUniformHandle[(int)currentShader]);
             pipeline.CreateDescriptors(this.globalBuffer, this.transformBuffer, slice, textures);
 
             this.pipelines[key] = pipeline;
@@ -437,12 +456,10 @@ namespace OpenH2.Rendering.Vulkan
         private int currentlyBoundShaderUniform = -1;
         private unsafe (VkImage image, VkSampler sampler)[] BindTexturesAndUniform(ref DrawCommand command)
         {
-            var activeShader = Shader.Generic;
-
             // If the uniform was already buffered, we'll just reuse that buffered uniform
             // Currently these material uniforms never change at runtime - if this changes
             // there will have to be some sort of invalidation to ensure they're updated
-            if (command.ShaderUniformHandle[(int)activeShader] == -1)
+            if (command.ShaderUniformHandle[(int)this.currentShader] == -1)
             {
                 if (MaterialUniforms.TryGetValue(command.Mesh.Material, out var uniforms) == false)
                 {
@@ -451,8 +468,8 @@ namespace OpenH2.Rendering.Vulkan
                 }
 
                 var (bindings, textures) = SetupTextures(command.Mesh.Material);
-                command.ShaderUniformHandle[(int)Shader.Generic] = GenerateShaderUniform(command, bindings);
-                uniforms[(int)activeShader] = command.ShaderUniformHandle[(int)activeShader];
+                command.ShaderUniformHandle[(int)this.currentShader] = GenerateShaderUniform(command, bindings);
+                uniforms[(int)this.currentShader] = command.ShaderUniformHandle[(int)this.currentShader];
                 return textures;
             }
 
@@ -524,22 +541,24 @@ namespace OpenH2.Rendering.Vulkan
             var mesh = command.Mesh;
             var bufferIndex = 0;
 
-            var activeShader = Shader.Generic;
+            var buffer = this.shaderUniformBuffers[(int)currentShader];
 
-            switch (activeShader)
+            if (buffer == null)
+                throw new Exception($"Shader buffer is not available for {currentShader}");
+
+            switch (currentShader)
             {
                 case Shader.Skybox:
                     BindAndBufferShaderUniform(
-                        null,
+                        buffer as VkBuffer<SkyboxUniform>,
                         new SkyboxUniform(mesh.Material, bindings),
                         out bufferIndex);
                     break;
                 case Shader.Generic:
                     BindAndBufferShaderUniform(
-                        this.shaderUniformBuffer,
+                        buffer as VkBuffer<GenericUniform>,
                         new GenericUniform(mesh, command.ColorChangeData, bindings),
                         out bufferIndex);
-
                     break;
                 case Shader.Wireframe:
                     BindAndBufferShaderUniform(
@@ -599,7 +618,8 @@ namespace OpenH2.Rendering.Vulkan
 
             this.textureBinder.Dispose();
 
-            this.shaderUniformBuffer.Dispose();
+            foreach(var buf in this.shaderUniformBuffers)
+                buf?.Dispose();
 
             // destroy device
             this.device.Dispose();

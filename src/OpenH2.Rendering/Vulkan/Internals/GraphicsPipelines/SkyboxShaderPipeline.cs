@@ -4,26 +4,26 @@ using Silk.NET.Vulkan;
 
 namespace OpenH2.Rendering.Vulkan.Internals.GraphicsPipelines
 {
-    internal class GenericTriListPipeline : GenericShaderPipeline<GenericTriListPipeline>
+    internal class SkyboxTriListPipeline : SkyboxShaderPipeline<SkyboxTriListPipeline>
     {
-        public GenericTriListPipeline(VkDevice device, VkSwapchain swapchain, VkRenderPass renderPass)
+        public SkyboxTriListPipeline(VkDevice device, VkSwapchain swapchain, VkRenderPass renderPass)
             : base(device, swapchain, renderPass, MeshElementType.TriangleList)
         {
         }
     }
 
-    internal class GenericTriStripPipeline : GenericShaderPipeline<GenericTriStripPipeline>
+    internal class SkyboxTriStripPipeline : SkyboxShaderPipeline<SkyboxTriStripPipeline>
     {
-        public GenericTriStripPipeline(VkDevice device, VkSwapchain swapchain, VkRenderPass renderPass)
+        public SkyboxTriStripPipeline(VkDevice device, VkSwapchain swapchain, VkRenderPass renderPass)
             : base(device, swapchain, renderPass, MeshElementType.TriangleStrip)
         {
         }
     }
 
-    internal unsafe class GenericShaderPipeline<T> : BaseGraphicsPipeline<T>
+    internal unsafe class SkyboxShaderPipeline<T> : BaseGraphicsPipeline<T>
     {
-        public GenericShaderPipeline(VkDevice device, VkSwapchain swapchain, VkRenderPass renderPass, MeshElementType primitiveType) 
-            : base(device, swapchain, renderPass, Shader.Generic, primitiveType)
+        public SkyboxShaderPipeline(VkDevice device, VkSwapchain swapchain, VkRenderPass renderPass, MeshElementType primitiveType) 
+            : base(device, swapchain, renderPass, Shader.Skybox, primitiveType, depthTestEnable: false)
         {
         }
 
@@ -91,7 +91,7 @@ namespace OpenH2.Rendering.Vulkan.Internals.GraphicsPipelines
 
         protected override DescriptorPool CreateDescriptorPool()
         {
-            var count = 4096u;
+            var count = 16u;
 
             var uboPoolSize = new DescriptorPoolSize(DescriptorType.UniformBuffer, 4 * count);
             var texPoolSize = new DescriptorPoolSize(DescriptorType.CombinedImageSampler, 1 * count);

@@ -46,7 +46,7 @@ namespace OpenH2.Rendering.Vulkan.Internals.GraphicsPipelines
         public abstract void Bind(in CommandBuffer commandBuffer);
         public abstract void BindDescriptors(in CommandBuffer commandBuffer);
         public abstract void BindDescriptors(in CommandBuffer commandBuffer, Span<uint> dynamicOffsets);
-        public abstract void CreateDescriptors(VkBuffer<GlobalUniform> globals, VkBuffer<TransformUniform> transform, VkBufferSlice<GenericUniform> uniform, (VkImage image, VkSampler sampler)[] textures);
+        public abstract void CreateDescriptors(VkBuffer<GlobalUniform> globals, VkBuffer<TransformUniform> transform, VkBufferSlice uniform, (VkImage image, VkSampler sampler)[] textures);
         public abstract void Dispose();
     }
 
@@ -67,14 +67,16 @@ namespace OpenH2.Rendering.Vulkan.Internals.GraphicsPipelines
         protected readonly VkSwapchain swapchain;
         protected readonly VkRenderPass renderPass;
         protected readonly MeshElementType primitiveType;
+        private readonly bool depthTestEnable;
         private bool disposedValue;
 
-        protected BaseGraphicsPipeline(VkDevice device, VkSwapchain swapchain, VkRenderPass renderPass, Shader shader, MeshElementType primitiveType) : base(device.vk)
+        protected BaseGraphicsPipeline(VkDevice device, VkSwapchain swapchain, VkRenderPass renderPass, Shader shader, MeshElementType primitiveType, bool depthTestEnable = true) : base(device.vk)
         {
             this.device = device;
             this.swapchain = swapchain;
             this.renderPass = renderPass;
             this.primitiveType = primitiveType;
+            this.depthTestEnable = depthTestEnable;
             this.InstanceId = Interlocked.Increment(ref Instances);
 
             if(this.InstanceId == 1)
@@ -132,7 +134,7 @@ namespace OpenH2.Rendering.Vulkan.Internals.GraphicsPipelines
             vk.CmdBindDescriptorSets(commandBuffer, PipelineBindPoint.Graphics, PipelineLayout, 0, 1, in DescriptorSet, (uint)dynamicOffsets.Length, ptr);
         }
 
-        public override void CreateDescriptors(VkBuffer<GlobalUniform> globals, VkBuffer<TransformUniform> transform, VkBufferSlice<GenericUniform> uniform, (VkImage image, VkSampler sampler)[] textures)
+        public override void CreateDescriptors(VkBuffer<GlobalUniform> globals, VkBuffer<TransformUniform> transform, VkBufferSlice uniform, (VkImage image, VkSampler sampler)[] textures)
         {
             var layouts = stackalloc[] { DescriptorSetLayout };
             var alloc = new DescriptorSetAllocateInfo
@@ -363,7 +365,7 @@ namespace OpenH2.Rendering.Vulkan.Internals.GraphicsPipelines
             var depthStencil = new PipelineDepthStencilStateCreateInfo
             {
                 SType = StructureType.PipelineDepthStencilStateCreateInfo,
-                DepthTestEnable = true,
+                DepthTestEnable = depthTestEnable,
                 DepthWriteEnable = true,
                 DepthCompareOp = CompareOp.Less,
                 DepthBoundsTestEnable = false,
