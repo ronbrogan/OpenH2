@@ -12,11 +12,19 @@ namespace OpenH2.Rendering.Vulkan.Internals
         public ShaderModule module;
         public PipelineShaderStageCreateInfo stageInfo;
 
-        public VkShader(VkDevice device, string shaderName, ShaderType type, string entryPoint = "main")
+        public static VkShader CreateIfPresent(VkDevice device, Shader shader, ShaderType type, string entryPoint = "main")
+        {
+            if (!VulkanShaderCompiler.IsPresent(shader, type))
+                return null;
+
+            return new VkShader(device, shader, type, entryPoint);
+        }
+
+        public VkShader(VkDevice device, Shader shader, ShaderType type, string entryPoint = "main")
         {
             this.device = device;
 
-            module = VulkanShaderCompiler.LoadSpirvShader(device, shaderName, type);
+            module = VulkanShaderCompiler.LoadSpirvShader(device, shader, type);
 
             var stage = type switch
             {

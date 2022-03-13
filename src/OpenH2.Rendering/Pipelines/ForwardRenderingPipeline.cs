@@ -63,8 +63,6 @@ namespace OpenH2.Rendering.Pipelines
                 this.adapter.AddLight(light);
             }
 
-
-
             this.adapter.UseShader(Shader.Skybox);
             for (var i = 0; i < renderables.Count; i++)
             {

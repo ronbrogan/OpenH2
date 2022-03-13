@@ -176,6 +176,7 @@ namespace OpenH2.Rendering.Vulkan
                     MeshElementType.TriangleList => new GenericTriListPipeline(device, swapchain, renderpass),
                     MeshElementType.TriangleStrip => new GenericTriStripPipeline(device, swapchain, renderpass),
                     MeshElementType.TriangleStripDecal => new GenericTriStripPipeline(device, swapchain, renderpass),
+                    (MeshElementType)10 => new GenericTriListPipeline(device, swapchain, renderpass),
                     MeshElementType.Point => null,
                     _ => null,
                 };

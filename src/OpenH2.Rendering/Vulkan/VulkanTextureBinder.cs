@@ -39,21 +39,6 @@ namespace OpenH2.Rendering.Vulkan
             { TextureFormat.DXT45, Format.B8G8R8A8Unorm },
         };
 
-        private static Dictionary<TextureFormat, Func<int, int, int>> MipSizeFuncs = new Dictionary<TextureFormat, Func<int, int, int>>
-        {
-            { TextureFormat.A8, (w,h) => w*h},
-            { TextureFormat.L8, (w,h) => w*h},
-            { TextureFormat.A8L8, (w,h) => w*h*2},
-            { TextureFormat.U8V8, (w,h) => w*h*2},
-            { TextureFormat.R5G6B5, (w,h) => w*h*4 },
-            { TextureFormat.A4R4G4B4, (w,h) => w*h*4},
-            { TextureFormat.R8G8B8, (w,h) => w*h*4},
-            { TextureFormat.A8R8G8B8, (w,h) => w*h*4},
-            { TextureFormat.DXT1, (w,h) => ((w + 3) / 4) * ((h + 3) / 4) * 8 },
-            { TextureFormat.DXT23, (w,h) => ((w + 3) / 4) * ((h + 3) / 4) * 16 },
-            { TextureFormat.DXT45, (w,h) => ((w + 3) / 4) * ((h + 3) / 4) * 16 }
-        };
-
         private Dictionary<uint, (VkImage, VkSampler)> BoundTextures = new Dictionary<uint, (VkImage, VkSampler)>();
 
         private VkDevice device;
@@ -129,6 +114,7 @@ namespace OpenH2.Rendering.Vulkan
             image.QueueLoad(tmp);
 
             var red = ComponentSwizzle.R;
+            var green = ComponentSwizzle.G;
             var alpha = ComponentSwizzle.A;
 
             switch (bitm.TextureInfos[0].Format)
@@ -142,7 +128,7 @@ namespace OpenH2.Rendering.Vulkan
                     break;
 
                 case TextureFormat.A8L8:
-                    image.CreateView(new(red, red, red, alpha));
+                    image.CreateView(new(red, red, red, green));
                     break;
 
                 default:

@@ -10,14 +10,10 @@ namespace OpenH2.Rendering.Vulkan
 
     internal class VulkanShaderCompiler
     {
-        public static byte[] LoadSpirvBytes(string shaderName, ShaderType type)
+        private static string GetPath(Shader shader, ShaderType type)
         {
+            var shaderName = shader.ToString();
             var path = Path.Combine(Directory.GetCurrentDirectory(), "Shaders", shaderName);
-
-            if (Directory.Exists(path) == false)
-            {
-                throw new Exception("Couldn't find shader folder: " + path);
-            }
 
             var stub = type switch
             {
@@ -27,12 +23,17 @@ namespace OpenH2.Rendering.Vulkan
                 _ => throw new NotSupportedException($"Shader type {type} is not yet supported")
             };
 
-            return File.ReadAllBytes(Path.Combine(path, $"{shaderName}.vk.{stub}.spv"));
+            return Path.Combine(path, $"{shaderName}.vk.{stub}.spv");
         }
 
-        public unsafe static ShaderModule LoadSpirvShader(VkDevice device, string shaderName, ShaderType type)
+        public static bool IsPresent(Shader shader, ShaderType type)
         {
-            var bytes = LoadSpirvBytes(shaderName, type);
+            return File.Exists(GetPath(shader, type));
+        }
+
+        public unsafe static ShaderModule LoadSpirvShader(VkDevice device, Shader shader, ShaderType type)
+        {
+            var bytes = File.ReadAllBytes(GetPath(shader, type));
 
             fixed (byte* ptr = bytes)
             {
@@ -43,10 +44,10 @@ namespace OpenH2.Rendering.Vulkan
                     PCode = (uint*)ptr
                 };
 
-                if (device.vk.CreateShaderModule(device, in createInfo, null, out var shader) != Result.Success)
+                if (device.vk.CreateShaderModule(device, in createInfo, null, out var shaderModule) != Result.Success)
                     throw new Exception("Unable to compile shader");
 
-                return shader;
+                return shaderModule;
             }
         }
     }

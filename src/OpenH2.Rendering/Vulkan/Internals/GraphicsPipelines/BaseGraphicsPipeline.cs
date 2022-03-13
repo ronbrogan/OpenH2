@@ -55,6 +55,7 @@ namespace OpenH2.Rendering.Vulkan.Internals.GraphicsPipelines
         private static long Instances = 0;
         protected static DescriptorPool DescriptorPool;
         protected static VkShader VertexShader;
+        protected static VkShader? GeometryShader;
         protected static VkShader FragmentShader;
         protected static DescriptorSetLayout DescriptorSetLayout;
         protected static PipelineLayout PipelineLayout;
@@ -86,8 +87,9 @@ namespace OpenH2.Rendering.Vulkan.Internals.GraphicsPipelines
 
             if(this.InstanceId == 1)
             {
-                VertexShader = new VkShader(device, shader.ToString(), ShaderType.Vertex);
-                FragmentShader = new VkShader(device, shader.ToString(), ShaderType.Fragment);
+                VertexShader = VkShader.CreateIfPresent(device, shader, ShaderType.Vertex);
+                GeometryShader = VkShader.CreateIfPresent(device, shader, ShaderType.Geometry);
+                FragmentShader = VkShader.CreateIfPresent(device, shader, ShaderType.Fragment);
 
                 DescriptorPool = this.CreateDescriptorPool();
 
@@ -368,7 +370,16 @@ namespace OpenH2.Rendering.Vulkan.Internals.GraphicsPipelines
                 PDynamicStates = dynamicStates,
             };
 
-            var shaderStages = stackalloc[] { VertexShader.stageInfo, FragmentShader.stageInfo };
+            var stageIndex = 0;
+            var stageCount = GeometryShader == null ? 2 : 3;
+            var shaderStages = stackalloc PipelineShaderStageCreateInfo[stageCount];
+
+            shaderStages[stageIndex++] = VertexShader.stageInfo;
+            if(GeometryShader != null)
+                shaderStages[stageIndex++] = GeometryShader.stageInfo;
+            shaderStages[stageIndex++] = FragmentShader.stageInfo;
+            
+
 
             var depthStencil = new PipelineDepthStencilStateCreateInfo
             {
@@ -383,7 +394,7 @@ namespace OpenH2.Rendering.Vulkan.Internals.GraphicsPipelines
             var pipelineCreate = new GraphicsPipelineCreateInfo
             {
                 SType = StructureType.GraphicsPipelineCreateInfo,
-                StageCount = 2,
+                StageCount = (uint)stageCount,
                 PStages = shaderStages,
                 PVertexInputState = &vertInput,
                 PInputAssemblyState = &inputAssembly,
