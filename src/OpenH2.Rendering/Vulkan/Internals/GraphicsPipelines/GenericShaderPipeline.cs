@@ -67,11 +67,22 @@ namespace OpenH2.Rendering.Vulkan.Internals.GraphicsPipelines
 
             var bindings = stackalloc[] { globalsBinding, transformBinding, shaderUniformBinding, texBinding };
 
+            var noneBindFlag = (DescriptorBindingFlags)0;
+            var bindingFlagValues = stackalloc[] { noneBindFlag, noneBindFlag, noneBindFlag, DescriptorBindingFlags.DescriptorBindingPartiallyBoundBit };
+
+            var flags = new DescriptorSetLayoutBindingFlagsCreateInfo
+            {
+                SType = StructureType.DescriptorSetLayoutBindingFlagsCreateInfo,
+                BindingCount = 4,
+                PBindingFlags = bindingFlagValues
+            };
+
             var descCreate = new DescriptorSetLayoutCreateInfo
             {
                 SType = StructureType.DescriptorSetLayoutCreateInfo,
                 BindingCount = 4,
-                PBindings = bindings
+                PBindings = bindings,
+                PNext = &flags
             };
 
             SUCCESS(vk.CreateDescriptorSetLayout(device, in descCreate, null, out var descriptorSetLayout), "Descriptor set layout create failed");

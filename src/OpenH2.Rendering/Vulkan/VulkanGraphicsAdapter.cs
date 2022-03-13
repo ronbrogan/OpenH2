@@ -34,7 +34,7 @@ namespace OpenH2.Rendering.Vulkan
         
         private bool recreateSwapchain = false;
 
-        private Dictionary<(Shader, MeshElementType, uint), BaseGraphicsPipeline> pipelines = new();
+        private Dictionary<(Shader, MeshElementType, IMaterial<BitmapTag>), BaseGraphicsPipeline> pipelines = new();
 
         private int nextModelHandle = 0;
         private (VkBuffer<int> indices, VkBuffer<VertexFormat> vertices)[] models = new (VkBuffer<int> indices, VkBuffer<VertexFormat> vertices)[4096];
@@ -77,8 +77,13 @@ namespace OpenH2.Rendering.Vulkan
                 BufferUsageFlags.BufferUsageUniformBufferBit,
                 MemoryPropertyFlags.MemoryPropertyHostVisibleBit | MemoryPropertyFlags.MemoryPropertyHostCoherentBit);
 
+            this.shaderUniformBuffers[(int)Shader.Wireframe] = device.CreateUboAligned<WireframeUniform>(16384,
+                BufferUsageFlags.BufferUsageUniformBufferBit,
+                MemoryPropertyFlags.MemoryPropertyHostVisibleBit | MemoryPropertyFlags.MemoryPropertyHostCoherentBit);
+
             this.shaderUniformBuffers[(int)Shader.Generic].Map();
             this.shaderUniformBuffers[(int)Shader.Skybox].Map();
+            this.shaderUniformBuffers[(int)Shader.Wireframe].Map();
 
             this.transformBuffer = device.CreateUboAligned<TransformUniform>(16384,
                 BufferUsageFlags.BufferUsageUniformBufferBit,
@@ -186,6 +191,17 @@ namespace OpenH2.Rendering.Vulkan
                     _ => null,
                 };
             }
+            else if (this.currentShader == Shader.Wireframe)
+            {
+                return elementType switch
+                {
+                    MeshElementType.TriangleList => new WireframeTriListPipeline(device, swapchain, renderpass),
+                    MeshElementType.TriangleStrip => new WireframeTriStripPipeline(device, swapchain, renderpass),
+                    MeshElementType.TriangleStripDecal => new WireframeTriStripPipeline(device, swapchain, renderpass),
+                    MeshElementType.Point => null,
+                    _ => null,
+                };
+            }
 
             return null;
         }
@@ -195,7 +211,7 @@ namespace OpenH2.Rendering.Vulkan
         ulong lastXformOffset = ulong.MaxValue;
         public void DrawMeshes(DrawCommand[] commands)
         {
-            if(this.currentShader != Shader.Generic && this.currentShader != Shader.Skybox)
+            if(this.currentShader != Shader.Generic && this.currentShader != Shader.Skybox && this.currentShader != Shader.Wireframe)
             {
                 return;
             }
@@ -418,10 +434,7 @@ namespace OpenH2.Rendering.Vulkan
 
         private BaseGraphicsPipeline GetOrCreatePipeline(DrawCommand command)
         {
-            if (command.Mesh.Material.DiffuseMap == null)
-                return null;
-
-            var key = (currentShader, command.ElementType, command.Mesh.Material.DiffuseMap.Id);
+            var key = (currentShader, command.ElementType, command.Mesh.Material);
 
             if (this.pipelines.TryGetValue(key, out var pipeline))
                 return pipeline;
@@ -429,11 +442,6 @@ namespace OpenH2.Rendering.Vulkan
             pipeline = CreatePipeline(command.ElementType);
 
             if (pipeline == null)
-                return null;
-
-            var tex = textureBinder.GetOrBind(command.Mesh.Material.DiffuseMap);
-
-            if (tex == default)
                 return null;
 
             var textures = BindTexturesAndUniform(ref command);
@@ -562,7 +570,7 @@ namespace OpenH2.Rendering.Vulkan
                     break;
                 case Shader.Wireframe:
                     BindAndBufferShaderUniform(
-                        null,
+                        buffer as VkBuffer<WireframeUniform>,
                         new WireframeUniform(mesh.Material),
                         out bufferIndex);
                     break;

@@ -4,31 +4,33 @@ using Silk.NET.Vulkan;
 
 namespace OpenH2.Rendering.Vulkan.Internals.GraphicsPipelines
 {
-    internal class SkyboxTriListPipeline : SkyboxShaderPipeline<SkyboxTriListPipeline>
+    internal class WireframeTriListPipeline : WireframeShaderPipeline<WireframeTriListPipeline>
     {
-        public SkyboxTriListPipeline(VkDevice device, VkSwapchain swapchain, VkRenderPass renderPass)
+        public WireframeTriListPipeline(VkDevice device, VkSwapchain swapchain, VkRenderPass renderPass)
             : base(device, swapchain, renderPass, MeshElementType.TriangleList)
         {
         }
     }
 
-    internal class SkyboxTriStripPipeline : SkyboxShaderPipeline<SkyboxTriStripPipeline>
+    internal class WireframeTriStripPipeline : WireframeShaderPipeline<WireframeTriStripPipeline>
     {
-        public SkyboxTriStripPipeline(VkDevice device, VkSwapchain swapchain, VkRenderPass renderPass)
+        public WireframeTriStripPipeline(VkDevice device, VkSwapchain swapchain, VkRenderPass renderPass)
             : base(device, swapchain, renderPass, MeshElementType.TriangleStrip)
         {
         }
     }
 
-    internal unsafe class SkyboxShaderPipeline<T> : BaseGraphicsPipeline<T>
+    internal unsafe class WireframeShaderPipeline<T> : BaseGraphicsPipeline<T>
     {
-        public SkyboxShaderPipeline(VkDevice device, VkSwapchain swapchain, VkRenderPass renderPass, MeshElementType primitiveType) 
-            : base(device, swapchain, renderPass, Shader.Skybox, primitiveType, depthTestEnable: false)
+        public WireframeShaderPipeline(VkDevice device, VkSwapchain swapchain, VkRenderPass renderPass, MeshElementType primitiveType) 
+            : base(device, swapchain, renderPass, Shader.Wireframe, primitiveType, depthTestEnable: true, PolygonMode.Line, CullModeFlags.CullModeNone)
         {
         }
 
         protected override (DescriptorSetLayout, PipelineLayout) CreateLayouts()
         {
+            
+
             var globalsBinding = new DescriptorSetLayoutBinding
             {
                 Binding = 0,

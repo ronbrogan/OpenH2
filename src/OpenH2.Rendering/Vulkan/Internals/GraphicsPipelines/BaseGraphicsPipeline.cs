@@ -68,15 +68,20 @@ namespace OpenH2.Rendering.Vulkan.Internals.GraphicsPipelines
         protected readonly VkRenderPass renderPass;
         protected readonly MeshElementType primitiveType;
         private readonly bool depthTestEnable;
+        private readonly PolygonMode polyMode;
+        private readonly CullModeFlags cullMode;
         private bool disposedValue;
 
-        protected BaseGraphicsPipeline(VkDevice device, VkSwapchain swapchain, VkRenderPass renderPass, Shader shader, MeshElementType primitiveType, bool depthTestEnable = true) : base(device.vk)
+        protected BaseGraphicsPipeline(VkDevice device, VkSwapchain swapchain, VkRenderPass renderPass, Shader shader, 
+            MeshElementType primitiveType, bool depthTestEnable = true, PolygonMode polyMode = PolygonMode.Fill, CullModeFlags cullMode = CullModeFlags.CullModeBackBit) : base(device.vk)
         {
             this.device = device;
             this.swapchain = swapchain;
             this.renderPass = renderPass;
             this.primitiveType = primitiveType;
             this.depthTestEnable = depthTestEnable;
+            this.polyMode = polyMode;
+            this.cullMode = cullMode;
             this.InstanceId = Interlocked.Increment(ref Instances);
 
             if(this.InstanceId == 1)
@@ -155,11 +160,14 @@ namespace OpenH2.Rendering.Vulkan.Internals.GraphicsPipelines
             for (int i = 0; i < 8; i++)
             {
                 if (textures.Length > i && textures[i] != default)
+                {
                     textureInfos[i] = new DescriptorImageInfo(textures[i].sampler, textures[i].image.View, ImageLayout.ShaderReadOnlyOptimal);
+                }
                 else
-                    // TODO: have a fallback texture or something?
-                    textureInfos[i] = new DescriptorImageInfo(textures[0].sampler, textures[0].image.View, ImageLayout.ShaderReadOnlyOptimal);
-
+                {
+                    var fallback = device.UnboundTexture;
+                    textureInfos[i] = new DescriptorImageInfo(fallback.Item2, fallback.Item1.View, ImageLayout.ShaderReadOnlyOptimal);
+                }
             }
 
             ReadOnlySpan<WriteDescriptorSet> writes = stackalloc[]
@@ -312,9 +320,9 @@ namespace OpenH2.Rendering.Vulkan.Internals.GraphicsPipelines
                 SType = StructureType.PipelineRasterizationStateCreateInfo,
                 DepthClampEnable = false,
                 RasterizerDiscardEnable = false,
-                PolygonMode = PolygonMode.Fill,
+                PolygonMode = this.polyMode,
                 LineWidth = 1,
-                CullMode = CullModeFlags.CullModeBackBit,
+                CullMode = this.cullMode,
                 FrontFace = FrontFace.CounterClockwise,
                 DepthBiasEnable = false,
                 DepthBiasConstantFactor = 0,

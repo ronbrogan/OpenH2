@@ -48,6 +48,7 @@ namespace OpenH2.Rendering.Vulkan.Internals
         public PhysicalDeviceProperties PhysicalProperties { get; private set; }
         public PhysicalDeviceMemoryProperties MemoryProperties { get; private set; }
 
+        public (VkImage, VkSampler) UnboundTexture { get; set; }
 
         public VkDevice(VulkanHost host, VkInstance instance, string[] validationLayers) : base(instance.vk)
         {
@@ -84,7 +85,8 @@ namespace OpenH2.Rendering.Vulkan.Internals
 
             var deviceFeatures = new PhysicalDeviceFeatures
             {
-                SamplerAnisotropy = true
+                SamplerAnisotropy = true,
+                FillModeNonSolid = true
             };
 
 
@@ -100,6 +102,13 @@ namespace OpenH2.Rendering.Vulkan.Internals
                 layerNames[i] = PinnedUtf8.Get(validationLayers[i]);
             }
 
+            var indexingFeatures = new PhysicalDeviceDescriptorIndexingFeatures()
+            {
+                SType = StructureType.PhysicalDeviceDescriptorIndexingFeatures,
+                DescriptorBindingPartiallyBound = true,
+                RuntimeDescriptorArray = true
+            };
+
             var deviceCreate = new DeviceCreateInfo
             {
                 SType = StructureType.DeviceCreateInfo,
@@ -109,7 +118,8 @@ namespace OpenH2.Rendering.Vulkan.Internals
                 EnabledLayerCount = (uint)validationLayers.Length,
                 PpEnabledLayerNames = layerNames,
                 EnabledExtensionCount = deviceExtensionCount,
-                PpEnabledExtensionNames = deviceExtensionNames
+                PpEnabledExtensionNames = deviceExtensionNames,
+                PNext = &indexingFeatures
             };
 
             // Create logical device and grab device-specific resources
@@ -358,6 +368,9 @@ namespace OpenH2.Rendering.Vulkan.Internals
 
         public void Dispose()
         {
+            this.UnboundTexture.Item2.Dispose();
+            this.UnboundTexture.Item1.Dispose();
+
             vk.DestroyCommandPool(device, CommandPool, null);
 
             if (khrSurfaceExtension != null)

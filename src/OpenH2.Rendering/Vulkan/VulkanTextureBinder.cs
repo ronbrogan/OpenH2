@@ -63,6 +63,8 @@ namespace OpenH2.Rendering.Vulkan
         {
             this.device = device;
             this.vk = device.vk;
+
+            this.device.UnboundTexture = this.CreateErrTexture();
         }
 
         public unsafe VkImage TestBind()
@@ -164,6 +166,44 @@ namespace OpenH2.Rendering.Vulkan
             dest.CreateView();
 
             return dest;
+        }
+
+        private unsafe (VkImage, VkSampler) CreateErrTexture()
+        {
+            var width = 4;
+            var height = 4;
+
+            var size = width * height * 4;
+
+            using var tmp = VkBuffer<byte>.CreatePacked(device, size, BufferUsageFlags.BufferUsageTransferSrcBit, MemoryPropertyFlags.MemoryPropertyHostVisibleBit | MemoryPropertyFlags.MemoryPropertyHostCoherentBit);
+            tmp.LoadFull(new byte[]
+            {
+                0xFF, 0x00, 0xFF, 0xFF,
+                0xFF, 0x00, 0xFF, 0xFF,
+                0xFF, 0x00, 0xFF, 0xFF,
+                0xFF, 0x00, 0xFF, 0xFF,
+
+                0x00, 0x00, 0x00, 0xFF,
+                0x00, 0x00, 0x00, 0xFF,
+                0x00, 0x00, 0x00, 0xFF,
+                0x00, 0x00, 0x00, 0xFF,
+
+                0xFF, 0x00, 0xFF, 0xFF,
+                0xFF, 0x00, 0xFF, 0xFF,
+                0xFF, 0x00, 0xFF, 0xFF,
+                0xFF, 0x00, 0xFF, 0xFF,
+
+                0x00, 0x00, 0x00, 0xFF,
+                0x00, 0x00, 0x00, 0xFF,
+                0x00, 0x00, 0x00, 0xFF,
+                0x00, 0x00, 0x00, 0xFF,
+            });
+
+            var image = new VkImage(device, (uint)width, (uint)height, Format.B8G8R8A8Srgb, tiling: ImageTiling.Optimal, generateMips: true);
+            image.QueueLoad(tmp);
+            image.CreateView();
+
+            return (image, image.CreateSampler());
         }
 
         public void Dispose()
