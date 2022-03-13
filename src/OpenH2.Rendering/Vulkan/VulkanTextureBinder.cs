@@ -25,18 +25,18 @@ namespace OpenH2.Rendering.Vulkan
             { TextureFormat.U8V8, Format.R8G8Unorm },
             { TextureFormat.R5G6B5, Format.B5G6R5UnormPack16 },
             { TextureFormat.A4R4G4B4, Format.B4G4R4A4UnormPack16},
-            { TextureFormat.R8G8B8, Format.B8G8R8A8Srgb },
-            { TextureFormat.A8R8G8B8, Format.B8G8R8A8Srgb },
-            { TextureFormat.DXT1, Format.BC1RgbSrgbBlock },
-            { TextureFormat.DXT23, Format.BC2SrgbBlock },
-            { TextureFormat.DXT45, Format.BC3SrgbBlock },
+            { TextureFormat.R8G8B8, Format.B8G8R8A8Unorm },
+            { TextureFormat.A8R8G8B8, Format.B8G8R8A8Unorm },
+            { TextureFormat.DXT1, Format.BC1RgbUnormBlock },
+            { TextureFormat.DXT23, Format.BC2UnormBlock },
+            { TextureFormat.DXT45, Format.BC3UnormBlock },
         };
 
         private static Dictionary<TextureFormat, Format> DecompressedFormatMappings = new Dictionary<TextureFormat, Format>
         {
-            { TextureFormat.DXT1, Format.B8G8R8A8Srgb },
-            { TextureFormat.DXT23, Format.B8G8R8A8Srgb },
-            { TextureFormat.DXT45, Format.B8G8R8A8Srgb },
+            { TextureFormat.DXT1, Format.B8G8R8A8Unorm },
+            { TextureFormat.DXT23, Format.B8G8R8A8Unorm },
+            { TextureFormat.DXT45, Format.B8G8R8A8Unorm },
         };
 
         private static Dictionary<TextureFormat, Func<int, int, int>> MipSizeFuncs = new Dictionary<TextureFormat, Func<int, int, int>>

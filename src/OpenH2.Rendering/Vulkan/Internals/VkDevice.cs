@@ -330,7 +330,7 @@ namespace OpenH2.Rendering.Vulkan.Internals
         {
             foreach (var format in formats)
             {
-                if (format.Format == Format.B8G8R8A8Srgb && format.ColorSpace == ColorSpaceKHR.ColorSpaceSrgbNonlinearKhr)
+                if (format.Format == Format.B8G8R8A8Unorm && format.ColorSpace == ColorSpaceKHR.ColorSpaceSrgbNonlinearKhr)
                     return format;
             }
 
