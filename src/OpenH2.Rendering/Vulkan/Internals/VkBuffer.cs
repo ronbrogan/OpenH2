@@ -12,20 +12,12 @@ namespace OpenH2.Rendering.Vulkan.Internals
         public ulong Start { get; private set; }
         public ulong Length { get; private set; }
 
-        public VkBufferSlice(VkBuffer buffer, ulong itemSize, ulong start, ulong length)
-        {
-            Buffer = buffer;
-            this.index = (int)(start / itemSize);
-            Start = start;
-            Length = length;
-        }
-
-        public VkBufferSlice(VkBuffer buffer, int index, ulong itemSize)
+        public VkBufferSlice(VkBuffer buffer, int index, ulong start, ulong length)
         {
             this.Buffer = buffer;
             this.index = index;
-            this.Start = itemSize * (ulong)index;
-            this.Length = itemSize;
+            this.Start = start;
+            this.Length = length;
         }
 
         public DescriptorBufferInfo GetInfo()
@@ -35,7 +27,7 @@ namespace OpenH2.Rendering.Vulkan.Internals
 
         public void Load<T>(T item) where T: unmanaged
         {
-            this.Buffer.LoadMapped((ulong)(this.index * sizeof(T)), item, flush: true);
+            this.Buffer.LoadMapped(item, Start, Length, flush: true);
         }
     }
 
@@ -79,15 +71,19 @@ namespace OpenH2.Rendering.Vulkan.Internals
         protected readonly VkDevice device;
         protected readonly ulong memorySize;
         private readonly int itemSize;
+        private readonly bool uboAlign;
+
         protected Silk.NET.Vulkan.Buffer buffer;
         protected DeviceMemory bufferMemory;
         protected void* bufferPtr = null;
 
-        protected VkBuffer(VkDevice device, ulong bytes, BufferUsageFlags usage, MemoryPropertyFlags memoryProperties, int itemSize) : base(device.vk)
+        protected VkBuffer(VkDevice device, ulong bytes, BufferUsageFlags usage, MemoryPropertyFlags memoryProperties, int itemSize, bool uboAlign) : base(device.vk)
         {
             this.device = device;
-            memorySize = bytes;
+            this.memorySize = bytes;
             this.itemSize = itemSize;
+            this.uboAlign = uboAlign;
+
             var bufCreate = new BufferCreateInfo
             {
                 SType = StructureType.BufferCreateInfo,
@@ -130,12 +126,17 @@ namespace OpenH2.Rendering.Vulkan.Internals
             this.bufferPtr = null;
         }
 
-        public void LoadMapped<T>(ulong itemOffset, T item, bool flush = false) where T: unmanaged
+        public void LoadMapped<T>(T item, ulong itemOffset, bool flush = false) where T:unmanaged
+        {
+            this.LoadMapped<T>(item, itemOffset, (ulong)sizeof(T), flush);
+        }
+
+        public void LoadMapped<T>(T item, ulong itemOffset, ulong itemSize, bool flush = false) where T: unmanaged
         {
             if (this.bufferPtr == null)
                 throw new Exception("Buffer was not mapped already");
 
-            System.Buffer.MemoryCopy(&item, (byte*)bufferPtr + itemOffset, (long)(memorySize - itemOffset), sizeof(T));
+            System.Buffer.MemoryCopy(&item, (byte*)bufferPtr + itemOffset, (long)(memorySize - itemOffset), (long)itemSize);
 
             if (flush)
             {
@@ -144,14 +145,33 @@ namespace OpenH2.Rendering.Vulkan.Internals
                     SType = StructureType.MappedMemoryRange,
                     Memory = this.bufferMemory,
                     Offset = itemOffset,
-                    Size = (ulong)sizeof(T)
+                    Size = itemSize
                 });
             }
         }
 
         public VkBufferSlice Slice(int itemIndex)
         {
-            return new VkBufferSlice(this, itemIndex, (ulong)this.itemSize);
+            var start = this.Align(itemIndex, (ulong)this.itemSize);
+            var end = this.Align(itemIndex+1, (ulong)this.itemSize);
+
+            return new VkBufferSlice(this, itemIndex, start, end-start);
+        }
+
+        public ulong Align(int index, ulong itemSize)
+        {
+            if (this.uboAlign)
+                return this.device.AlignUboItem(itemSize, (ulong)index);
+
+            return itemSize * (ulong)index;
+        }
+
+        public ulong Align<T>(int index) where T : unmanaged
+        {
+            if (this.uboAlign)
+                return this.device.AlignUboItem<T>((ulong)index);
+
+            return (ulong)sizeof(T) * (ulong)index;
         }
 
         public void Dispose()
@@ -169,10 +189,10 @@ namespace OpenH2.Rendering.Vulkan.Internals
     internal unsafe class VkBuffer<T> : VkBuffer where T : unmanaged
     {
 
-        public static VkBuffer<T> CreateDynamicUniformBuffer(VkDevice device, ulong count, BufferUsageFlags usage, MemoryPropertyFlags memoryProperties)
+        public static VkBuffer<T> CreateUboAligned(VkDevice device, ulong count, BufferUsageFlags usage, MemoryPropertyFlags memoryProperties)
         {
             var bytes = device.AlignUboItem<T>(1) * count;
-            return new VkBuffer<T>(device, bytes, usage, memoryProperties);
+            return new VkBuffer<T>(device, bytes, usage, memoryProperties, uboAlign: true);
         }
 
         public static VkBuffer<T> CreatePacked(VkDevice device, int count, BufferUsageFlags usage, MemoryPropertyFlags memoryProperties)
@@ -181,8 +201,8 @@ namespace OpenH2.Rendering.Vulkan.Internals
             return new VkBuffer<T>(device, bytes, usage, memoryProperties);
         }
 
-        public VkBuffer(VkDevice device, ulong bytes, BufferUsageFlags usage, MemoryPropertyFlags memoryProperties) 
-            : base(device, bytes, usage, memoryProperties, sizeof(T))
+        public VkBuffer(VkDevice device, ulong bytes, BufferUsageFlags usage, MemoryPropertyFlags memoryProperties, bool uboAlign = false) 
+            : base(device, bytes, usage, memoryProperties, sizeof(T), uboAlign)
         {
         }
 

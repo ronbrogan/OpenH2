@@ -139,9 +139,9 @@ namespace OpenH2.Rendering.Vulkan.Internals
             return VkBuffer<T>.CreatePacked(this, count, usage, memoryProperties);
         }
 
-        public VkBuffer<T> CreateDynamicUniformBuffer<T>(ulong count, BufferUsageFlags usage, MemoryPropertyFlags memoryProperties) where T : unmanaged
+        public VkBuffer<T> CreateUboAligned<T>(ulong count, BufferUsageFlags usage, MemoryPropertyFlags memoryProperties) where T : unmanaged
         {
-            return VkBuffer<T>.CreateDynamicUniformBuffer(this, count, usage, memoryProperties);
+            return VkBuffer<T>.CreateUboAligned(this, count, usage, memoryProperties);
         }
 
         public uint FindMemoryType(uint typeFilter, MemoryPropertyFlags properties)
@@ -161,6 +161,13 @@ namespace OpenH2.Rendering.Vulkan.Internals
         {
             var align = (ulong)this.PhysicalProperties.Limits.MinUniformBufferOffsetAlignment;
             var alignedChunksPerItem = (ulong)MathF.Ceiling(sizeof(T) / (float)align);
+            return alignedChunksPerItem * align * index;
+        }
+
+        public ulong AlignUboItem(ulong itemSize, ulong index)
+        {
+            var align = (ulong)this.PhysicalProperties.Limits.MinUniformBufferOffsetAlignment;
+            var alignedChunksPerItem = (ulong)MathF.Ceiling(itemSize / (float)align);
             return alignedChunksPerItem * align * index;
         }
 

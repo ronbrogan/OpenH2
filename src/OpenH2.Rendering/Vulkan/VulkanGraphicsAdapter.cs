@@ -73,14 +73,14 @@ namespace OpenH2.Rendering.Vulkan
                 BufferUsageFlags.BufferUsageUniformBufferBit,
                 MemoryPropertyFlags.MemoryPropertyHostVisibleBit | MemoryPropertyFlags.MemoryPropertyHostCoherentBit);
 
-            this.shaderUniformBuffers[(int)Shader.Skybox] = device.CreateBuffer<SkyboxUniform>(16384,
+            this.shaderUniformBuffers[(int)Shader.Skybox] = device.CreateUboAligned<SkyboxUniform>(16384,
                 BufferUsageFlags.BufferUsageUniformBufferBit,
                 MemoryPropertyFlags.MemoryPropertyHostVisibleBit | MemoryPropertyFlags.MemoryPropertyHostCoherentBit);
 
             this.shaderUniformBuffers[(int)Shader.Generic].Map();
             this.shaderUniformBuffers[(int)Shader.Skybox].Map();
 
-            this.transformBuffer = device.CreateDynamicUniformBuffer<TransformUniform>(16384,
+            this.transformBuffer = device.CreateUboAligned<TransformUniform>(16384,
                 BufferUsageFlags.BufferUsageUniformBufferBit,
                 MemoryPropertyFlags.MemoryPropertyHostVisibleBit | MemoryPropertyFlags.MemoryPropertyHostCoherentBit);
 
