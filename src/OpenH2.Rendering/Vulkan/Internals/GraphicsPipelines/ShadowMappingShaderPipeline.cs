@@ -147,7 +147,7 @@ namespace OpenH2.Rendering.Vulkan.Internals.GraphicsPipelines
 
             var extent = new Extent2D(ShadowMapPass.MapSize, ShadowMapPass.MapSize);
 
-            var viewport = new Viewport(0, extent.Height, extent.Width, -extent.Height, 0, 1f);
+            var viewport = new Viewport(0, 0, extent.Width, extent.Height, 0, 1f);
             var scissor = new Rect2D(new Offset2D(0, 0), extent);
 
             var viewportState = new PipelineViewportStateCreateInfo

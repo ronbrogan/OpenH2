@@ -69,18 +69,20 @@ namespace OpenH2.Rendering.Vulkan.Internals.GraphicsPipelines
 
         protected readonly VkSwapchain swapchain;
         protected readonly VkRenderPass renderPass;
+        protected readonly ShadowMapPass shadowPass;
         protected readonly MeshElementType primitiveType;
         protected readonly bool depthTestEnable;
         protected readonly PolygonMode polyMode;
         protected readonly CullModeFlags cullMode;
         private bool disposedValue;
 
-        protected BaseGraphicsPipeline(VkDevice device, VkSwapchain swapchain, VkRenderPass renderPass, Shader shader, 
+        protected BaseGraphicsPipeline(VkDevice device, VkSwapchain swapchain, VkRenderPass renderPass, ShadowMapPass shadowPass, Shader shader, 
             MeshElementType primitiveType, bool depthTestEnable = true, PolygonMode polyMode = PolygonMode.Fill, CullModeFlags cullMode = CullModeFlags.CullModeBackBit)
             : base(device)
         {
             this.swapchain = swapchain;
             this.renderPass = renderPass;
+            this.shadowPass = shadowPass;
             this.primitiveType = primitiveType;
             this.depthTestEnable = depthTestEnable;
             this.polyMode = polyMode;
@@ -175,6 +177,9 @@ namespace OpenH2.Rendering.Vulkan.Internals.GraphicsPipelines
                 }
             }
 
+
+            var shadowInfo = new DescriptorImageInfo(shadowPass.Texture.sampler, shadowPass.Texture.view, ImageLayout.DepthStencilReadOnlyOptimal);
+
             ReadOnlySpan<WriteDescriptorSet> writes = stackalloc[]
             {
                 new WriteDescriptorSet
@@ -223,6 +228,18 @@ namespace OpenH2.Rendering.Vulkan.Internals.GraphicsPipelines
                     DescriptorCount = 8,
                     PBufferInfo = null,
                     PImageInfo = textureInfos,
+                    PTexelBufferView = null
+                },
+                new WriteDescriptorSet
+                {
+                    SType = StructureType.WriteDescriptorSet,
+                    DstSet = descriptorSet,
+                    DstBinding = 16,
+                    DstArrayElement = 0,
+                    DescriptorType = DescriptorType.CombinedImageSampler,
+                    DescriptorCount = 1,
+                    PBufferInfo = null,
+                    PImageInfo = &shadowInfo,
                     PTexelBufferView = null
                 }
             };

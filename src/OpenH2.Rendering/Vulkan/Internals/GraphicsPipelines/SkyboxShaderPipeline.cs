@@ -6,24 +6,24 @@ namespace OpenH2.Rendering.Vulkan.Internals.GraphicsPipelines
 {
     internal class SkyboxTriListPipeline : SkyboxShaderPipeline<SkyboxTriListPipeline>
     {
-        public SkyboxTriListPipeline(VkDevice device, VkSwapchain swapchain, VkRenderPass renderPass)
-            : base(device, swapchain, renderPass, MeshElementType.TriangleList)
+        public SkyboxTriListPipeline(VkDevice device, VkSwapchain swapchain, VkRenderPass renderPass, ShadowMapPass shadowPass)
+            : base(device, swapchain, renderPass, shadowPass, MeshElementType.TriangleList)
         {
         }
     }
 
     internal class SkyboxTriStripPipeline : SkyboxShaderPipeline<SkyboxTriStripPipeline>
     {
-        public SkyboxTriStripPipeline(VkDevice device, VkSwapchain swapchain, VkRenderPass renderPass)
-            : base(device, swapchain, renderPass, MeshElementType.TriangleStrip)
+        public SkyboxTriStripPipeline(VkDevice device, VkSwapchain swapchain, VkRenderPass renderPass, ShadowMapPass shadowPass)
+            : base(device, swapchain, renderPass, shadowPass, MeshElementType.TriangleStrip)
         {
         }
     }
 
     internal unsafe class SkyboxShaderPipeline<T> : BaseGraphicsPipeline<T>
     {
-        public SkyboxShaderPipeline(VkDevice device, VkSwapchain swapchain, VkRenderPass renderPass, MeshElementType primitiveType) 
-            : base(device, swapchain, renderPass, Shader.Skybox, primitiveType, depthTestEnable: false)
+        public SkyboxShaderPipeline(VkDevice device, VkSwapchain swapchain, VkRenderPass renderPass, ShadowMapPass shadowPass, MeshElementType primitiveType) 
+            : base(device, swapchain, renderPass, shadowPass, Shader.Skybox, primitiveType, depthTestEnable: false)
         {
         }
 
@@ -65,22 +65,31 @@ namespace OpenH2.Rendering.Vulkan.Internals.GraphicsPipelines
                 PImmutableSamplers = null
             };
 
-            var bindings = stackalloc[] { globalsBinding, transformBinding, shaderUniformBinding, texBinding };
+            var shadowMapBinding = new DescriptorSetLayoutBinding
+            {
+                Binding = 16,
+                DescriptorType = DescriptorType.CombinedImageSampler,
+                DescriptorCount = 1,
+                StageFlags = ShaderStageFlags.ShaderStageAllGraphics,
+                PImmutableSamplers = null
+            };
+
+            var bindings = stackalloc[] { globalsBinding, transformBinding, shaderUniformBinding, texBinding, shadowMapBinding };
 
             var noneBindFlag = (DescriptorBindingFlags)0;
-            var bindingFlagValues = stackalloc[] { noneBindFlag, noneBindFlag, noneBindFlag, DescriptorBindingFlags.DescriptorBindingPartiallyBoundBit };
+            var bindingFlagValues = stackalloc[] { noneBindFlag, noneBindFlag, noneBindFlag, DescriptorBindingFlags.DescriptorBindingPartiallyBoundBit, noneBindFlag };
 
             var flags = new DescriptorSetLayoutBindingFlagsCreateInfo
             {
                 SType = StructureType.DescriptorSetLayoutBindingFlagsCreateInfo,
-                BindingCount = 4,
+                BindingCount = 5,
                 PBindingFlags = bindingFlagValues
             };
 
             var descCreate = new DescriptorSetLayoutCreateInfo
             {
                 SType = StructureType.DescriptorSetLayoutCreateInfo,
-                BindingCount = 4,
+                BindingCount = 5,
                 PBindings = bindings,
                 PNext = &flags
             };

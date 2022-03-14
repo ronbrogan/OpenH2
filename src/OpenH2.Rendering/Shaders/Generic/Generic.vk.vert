@@ -61,6 +61,8 @@ layout(std140, binding = 2) uniform GenericUniform
 
 layout(binding = 3) uniform sampler2D Textures[8];
 
+layout(binding = 16) uniform sampler2DArray shadowMap;
+
 layout(location = 0) in vec3 local_position;
 layout(location = 1) in vec2 in_texture;
 layout(location = 2) in vec3 local_normal;

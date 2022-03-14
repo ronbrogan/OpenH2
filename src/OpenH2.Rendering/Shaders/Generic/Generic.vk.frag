@@ -64,6 +64,7 @@ layout(std140, binding = 2) uniform GenericUniform
 } Data;
 
 layout(binding = 3) uniform sampler2D Textures[8];
+
 layout(binding = 16) uniform sampler2DArray shadowMap;
 
 layout(location = 0) in vec3 frag_pos;
@@ -134,7 +135,7 @@ void main() {
     finalColor = vec4(diffuseColor.rgb * 0.3, diffuseColor.a);
 
     // Adds global lighting
-    float shadow = 0.0;//shadowCalculation(frag_pos);   
+    float shadow = shadowCalculation(frag_pos);
     finalColor += ((1.0 - shadow) * globalLighting(diffuseColor));
 
     if(Data.UseEmissiveMap)

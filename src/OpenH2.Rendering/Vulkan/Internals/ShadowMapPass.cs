@@ -13,14 +13,15 @@ namespace OpenH2.Rendering.Vulkan.Internals
         private RenderPass renderPass;
         private Extent3D extent = new Extent3D(MapSize, MapSize, CascadeCount);
         public Framebuffer Framebuffer { get; private set; }
-
+        public VkImageArray Image { get; private set; }
+        public (VkSampler sampler, ImageView view) Texture { get; private set; }
 
         public ShadowMapPass(VkDevice device) : base(device.vk)
         {
             this.device = device;
 
             this.renderPass = CreatePass();
-            this.Framebuffer = CreateFramebuffer();
+            CreateFramebuffer();
         }
 
         public RenderPass CreatePass()
@@ -86,7 +87,7 @@ namespace OpenH2.Rendering.Vulkan.Internals
             return renderPass;
         }
 
-        public Framebuffer CreateFramebuffer()
+        public void CreateFramebuffer()
         {
             // TODO find a supported depth format instead of hardcoding D32Sfloat
             var depthImage = new VkImageArray(device, extent, Format.D32Sfloat, ImageUsageFlags.ImageUsageDepthStencilAttachmentBit | ImageUsageFlags.ImageUsageSampledBit, ImageAspectFlags.ImageAspectDepthBit);
@@ -109,7 +110,10 @@ namespace OpenH2.Rendering.Vulkan.Internals
             };
 
             SUCCESS(vk.CreateFramebuffer(device, in framebufferCreate, null, out var fb));
-            return fb;
+
+            this.Framebuffer = fb;
+            this.Image = depthImage;
+            this.Texture = (depthSampler, depthImage.View);
         }
 
         public virtual void Begin(in CommandBuffer commandBuffer)
@@ -134,6 +138,8 @@ namespace OpenH2.Rendering.Vulkan.Internals
 
         public void Dispose()
         {
+            this.Texture.sampler?.Dispose();
+            this.Image?.Dispose();
             vk.DestroyRenderPass(device, renderPass, null);
         }
     }

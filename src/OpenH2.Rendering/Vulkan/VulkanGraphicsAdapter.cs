@@ -180,10 +180,10 @@ namespace OpenH2.Rendering.Vulkan
             {
                 return elementType switch
                 {
-                    MeshElementType.TriangleList => new GenericTriListPipeline(device, swapchain, renderpass),
-                    MeshElementType.TriangleStrip => new GenericTriStripPipeline(device, swapchain, renderpass),
-                    MeshElementType.TriangleStripDecal => new GenericTriStripPipeline(device, swapchain, renderpass),
-                    (MeshElementType)10 => new GenericTriListPipeline(device, swapchain, renderpass),
+                    MeshElementType.TriangleList => new GenericTriListPipeline(device, swapchain, renderpass, shadowpass),
+                    MeshElementType.TriangleStrip => new GenericTriStripPipeline(device, swapchain, renderpass, shadowpass),
+                    MeshElementType.TriangleStripDecal => new GenericTriStripPipeline(device, swapchain, renderpass, shadowpass),
+                    (MeshElementType)10 => new GenericTriListPipeline(device, swapchain, renderpass, shadowpass),
                     MeshElementType.Point => null,
                     _ => null,
                 };
@@ -192,9 +192,9 @@ namespace OpenH2.Rendering.Vulkan
             {
                 return elementType switch
                 {
-                    MeshElementType.TriangleList => new SkyboxTriListPipeline(device, swapchain, renderpass),
-                    MeshElementType.TriangleStrip => new SkyboxTriStripPipeline(device, swapchain, renderpass),
-                    MeshElementType.TriangleStripDecal => new SkyboxTriStripPipeline(device, swapchain, renderpass),
+                    MeshElementType.TriangleList => new SkyboxTriListPipeline(device, swapchain, renderpass, shadowpass),
+                    MeshElementType.TriangleStrip => new SkyboxTriStripPipeline(device, swapchain, renderpass, shadowpass),
+                    MeshElementType.TriangleStripDecal => new SkyboxTriStripPipeline(device, swapchain, renderpass, shadowpass),
                     MeshElementType.Point => null,
                     _ => null,
                 };
@@ -203,9 +203,9 @@ namespace OpenH2.Rendering.Vulkan
             {
                 return elementType switch
                 {
-                    MeshElementType.TriangleList => new WireframeTriListPipeline(device, swapchain, renderpass),
-                    MeshElementType.TriangleStrip => new WireframeTriStripPipeline(device, swapchain, renderpass),
-                    MeshElementType.TriangleStripDecal => new WireframeTriStripPipeline(device, swapchain, renderpass),
+                    MeshElementType.TriangleList => new WireframeTriListPipeline(device, swapchain, renderpass, shadowpass),
+                    MeshElementType.TriangleStrip => new WireframeTriStripPipeline(device, swapchain, renderpass, shadowpass),
+                    MeshElementType.TriangleStripDecal => new WireframeTriStripPipeline(device, swapchain, renderpass, shadowpass),
                     MeshElementType.Point => null,
                     _ => null,
                 };
