@@ -167,7 +167,7 @@ namespace OpenH2.Rendering.Vulkan.Internals.GraphicsPipelines
                 PolygonMode = PolygonMode.Fill,
                 LineWidth = 1,
                 CullMode = CullModeFlags.CullModeBackBit,
-                FrontFace = FrontFace.CounterClockwise,
+                FrontFace = FrontFace.Clockwise,
                 DepthBiasEnable = false,
                 DepthBiasConstantFactor = 0,
                 DepthBiasClamp = 0,

@@ -260,7 +260,7 @@ float shadowCalculation(vec3 fragPosWorldSpace)
     vec3 projCoords = fragPosLightSpace.xyz / fragPosLightSpace.w;
 
     // transform to [0,1] range
-    projCoords = projCoords * 0.5 + 0.5;
+    vec3 texCoords = projCoords * 0.5 + 0.5;
 
     // get depth of current fragment from light's perspective
     float currentDepth = projCoords.z;
@@ -293,8 +293,8 @@ float shadowCalculation(vec3 fragPosWorldSpace)
     {
         for(int y = -1; y <= 1; ++y)
         {
-            float pcfDepth = texture(shadowMap, vec3(projCoords.xy + vec2(x, y) * texelSize, layer)).r;
-            shadow += (currentDepth - bias) > pcfDepth ? 1.0 : 0.0;        
+            float pcfDepth = texture(shadowMap, vec3(texCoords.xy + vec2(x, y) * texelSize, layer)).r;
+            shadow += (currentDepth - bias) > pcfDepth ? 1.0 : 0.0;
         }    
     }
     shadow /= 9.0;
