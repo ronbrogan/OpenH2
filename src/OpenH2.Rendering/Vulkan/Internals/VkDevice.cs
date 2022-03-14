@@ -86,7 +86,8 @@ namespace OpenH2.Rendering.Vulkan.Internals
             var deviceFeatures = new PhysicalDeviceFeatures
             {
                 SamplerAnisotropy = true,
-                FillModeNonSolid = true
+                FillModeNonSolid = true,
+                GeometryShader = true
             };
 
 

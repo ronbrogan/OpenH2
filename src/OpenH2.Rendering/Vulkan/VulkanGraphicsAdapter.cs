@@ -30,8 +30,11 @@ namespace OpenH2.Rendering.Vulkan
         private VkDevice device;
         private VulkanTextureBinder textureBinder;
         private VkSwapchain swapchain;
+
         private VkRenderPass renderpass;
-        
+        private ShadowMapPass shadowpass;
+        private object currentPass = null;
+
         private bool recreateSwapchain = false;
 
         private Dictionary<(Shader, MeshElementType, IMaterial<BitmapTag>), BaseGraphicsPipeline> pipelines = new();
@@ -63,6 +66,7 @@ namespace OpenH2.Rendering.Vulkan
             this.textureBinder = new VulkanTextureBinder(this.device);
             this.swapchain = device.CreateSwapchain();
             this.renderpass = new VkRenderPass(device, swapchain);
+            this.shadowpass = new ShadowMapPass(device);
 
             this.globalBuffer = device.CreateBuffer<GlobalUniform>(1, 
                 BufferUsageFlags.BufferUsageUniformBufferBit, 
@@ -81,9 +85,14 @@ namespace OpenH2.Rendering.Vulkan
                 BufferUsageFlags.BufferUsageUniformBufferBit,
                 MemoryPropertyFlags.MemoryPropertyHostVisibleBit | MemoryPropertyFlags.MemoryPropertyHostCoherentBit);
 
+            this.shaderUniformBuffers[(int)Shader.ShadowMapping] = device.CreateUboAligned<ShadowMappingUniform>(1,
+                BufferUsageFlags.BufferUsageUniformBufferBit,
+                MemoryPropertyFlags.MemoryPropertyHostVisibleBit | MemoryPropertyFlags.MemoryPropertyHostCoherentBit);
+
             this.shaderUniformBuffers[(int)Shader.Generic].Map();
             this.shaderUniformBuffers[(int)Shader.Skybox].Map();
             this.shaderUniformBuffers[(int)Shader.Wireframe].Map();
+            this.shaderUniformBuffers[(int)Shader.ShadowMapping].Map();
 
             this.transformBuffer = device.CreateUboAligned<TransformUniform>(16384,
                 BufferUsageFlags.BufferUsageUniformBufferBit,
@@ -135,6 +144,7 @@ namespace OpenH2.Rendering.Vulkan
             this.currentModel = -1;
             this.currentPipeline = null;
             this.lastXformOffset = ulong.MaxValue;
+            this.currentPass = null;
 
             vk.WaitForFences(device, 1, in inFlightFence, true, ulong.MaxValue);
 
@@ -162,9 +172,6 @@ namespace OpenH2.Rendering.Vulkan
             };
 
             SUCCESS(vk.BeginCommandBuffer(renderCommands, in bufBegin), "Unable to begin writing to command buffer");
-
-            this.renderpass.Begin(renderCommands, imageIndex);
-
         }
 
         private BaseGraphicsPipeline CreatePipeline(MeshElementType elementType)
@@ -203,6 +210,18 @@ namespace OpenH2.Rendering.Vulkan
                     _ => null,
                 };
             }
+            else if (this.currentShader == Shader.ShadowMapping)
+            {
+                return elementType switch
+                {
+                    MeshElementType.TriangleList => new ShadowMappingTriListPipeline(device, shadowpass),
+                    MeshElementType.TriangleStrip => new ShadowMappingTriStripPipeline(device, shadowpass),
+                    MeshElementType.TriangleStripDecal => new ShadowMappingTriStripPipeline(device, shadowpass),
+                    (MeshElementType)10 => new ShadowMappingTriListPipeline(device, shadowpass),
+                    MeshElementType.Point => null,
+                    _ => null,
+                };
+            }
 
             return null;
         }
@@ -212,9 +231,26 @@ namespace OpenH2.Rendering.Vulkan
         ulong lastXformOffset = ulong.MaxValue;
         public void DrawMeshes(DrawCommand[] commands)
         {
-            if(this.currentShader != Shader.Generic && this.currentShader != Shader.Skybox && this.currentShader != Shader.Wireframe)
+            if(this.currentShader == Shader.ShadowMapping && this.currentPass != this.shadowpass)
             {
-                return;
+                if (this.currentPass != null)
+                {
+                    vk.CmdEndRenderPass(this.renderCommands);
+                }
+
+                this.shadowpass.Begin(this.renderCommands);
+                this.currentPass = this.shadowpass;
+            }
+
+            if(this.currentShader != Shader.ShadowMapping && this.currentPass != this.renderpass)
+            {
+                if(this.currentPass != null)
+                {
+                    vk.CmdEndRenderPass(this.renderCommands);
+                }
+
+                this.renderpass.Begin(this.renderCommands, imageIndex);
+                this.currentPass = this.renderpass;
             }
 
             if (commands.Length == 0)
@@ -265,8 +301,6 @@ namespace OpenH2.Rendering.Vulkan
 
                     currentModel = command.VaoHandle;
                 }
-
-
 
                 vk.CmdDrawIndexed(renderCommands, (uint)command.IndiciesCount, 1, (uint)command.IndexBase, 0, 0);
             }
@@ -552,9 +586,6 @@ namespace OpenH2.Rendering.Vulkan
 
             var buffer = this.shaderUniformBuffers[(int)currentShader];
 
-            if (buffer == null)
-                throw new Exception($"Shader buffer is not available for {currentShader}");
-
             switch (currentShader)
             {
                 case Shader.Skybox:
@@ -576,10 +607,6 @@ namespace OpenH2.Rendering.Vulkan
                         out bufferIndex);
                     break;
                 case Shader.ShadowMapping:
-                    BindAndBufferShaderUniform(
-                        null,
-                        new ShadowMappingUniform(),
-                        out bufferIndex);
                     break;
                 case Shader.Pointviz:
                 case Shader.TextureViewer:
@@ -592,6 +619,9 @@ namespace OpenH2.Rendering.Vulkan
         private int nextUniformIndex = 0;
         private void BindAndBufferShaderUniform<T>(VkBuffer<T> buffer, in T uniform, out int index) where T: unmanaged
         {
+            if (buffer == null)
+                throw new Exception($"Shader buffer is not available for {currentShader}");
+
             // TODO: index per buffer
             index = Interlocked.Increment(ref nextUniformIndex);
 

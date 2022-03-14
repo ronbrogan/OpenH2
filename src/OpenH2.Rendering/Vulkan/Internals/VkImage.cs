@@ -6,14 +6,15 @@ namespace OpenH2.Rendering.Vulkan.Internals
     internal unsafe sealed class VkImage : VkObject, IDisposable
     {
         private readonly VkDevice device;
-        private readonly uint width;
-        private readonly uint height;
-        private readonly uint mips;
         private readonly Format format;
         private readonly ImageAspectFlags aspectFlags;
 
         private Image image;
         private DeviceMemory memory;
+
+        public readonly uint Width;
+        public readonly uint Height;
+        public readonly uint Mips;
 
         public ImageView View { get; private set; }
 
@@ -26,16 +27,16 @@ namespace OpenH2.Rendering.Vulkan.Internals
         public VkImage(VkDevice device, uint width, uint height, Format format, ImageUsageFlags usage = TransferUsage, ImageAspectFlags aspectFlags = ColorAspect, ImageTiling tiling = ImageTiling.Optimal, bool generateMips = false) : base(device.vk)
         {
             this.device = device;
-            this.width = width;
-            this.height = height;
+            this.Width = width;
+            this.Height = height;
             this.format = format;
             this.aspectFlags = aspectFlags;
 
-            mips = generateMips
+            Mips = generateMips
                 ? CalculateMips(width, height)
                 : 1;
 
-            if (mips > 1)
+            if (Mips > 1)
             {
                 // We'll need to blit to generate mips
                 usage |= ImageUsageFlags.ImageUsageTransferSrcBit | ImageUsageFlags.ImageUsageTransferDstBit;
@@ -46,7 +47,7 @@ namespace OpenH2.Rendering.Vulkan.Internals
                 SType = StructureType.ImageCreateInfo,
                 ImageType = ImageType.ImageType2D,
                 Extent = new Extent3D(width, height, 1),
-                MipLevels = mips,
+                MipLevels = Mips,
                 ArrayLayers = 1,
                 Format = format,
                 Tiling = tiling,
@@ -75,7 +76,7 @@ namespace OpenH2.Rendering.Vulkan.Internals
 
         public VkSampler CreateSampler()
         {
-            return new VkSampler(device, (int)mips);
+            return new VkSampler(device, (int)Mips);
         }
 
         private static uint CalculateMips(uint width, uint height)
@@ -103,7 +104,7 @@ namespace OpenH2.Rendering.Vulkan.Internals
                 DstQueueFamilyIndex = Vk.QueueFamilyIgnored,
 
                 Image = image,
-                SubresourceRange = new ImageSubresourceRange(aspectFlags, 0, mips, 0, 1),
+                SubresourceRange = new ImageSubresourceRange(aspectFlags, 0, Mips, 0, 1),
             };
 
             PipelineStageFlags sourceStage;
@@ -151,12 +152,12 @@ namespace OpenH2.Rendering.Vulkan.Internals
         {
             var defaultSwizzle = new ComponentMapping(ComponentSwizzle.R, ComponentSwizzle.G, ComponentSwizzle.B, ComponentSwizzle.A);
 
-            View = CreateView(device, image, format, aspectFlags, defaultSwizzle, mips);
+            View = CreateView(device, image, format, aspectFlags, defaultSwizzle, Mips);
         }
 
         public void CreateView(ComponentMapping swizzle)
         {
-            View = CreateView(device, image, format, aspectFlags, swizzle, mips);
+            View = CreateView(device, image, format, aspectFlags, swizzle, Mips);
         }
 
         public static ImageView CreateView(VkDevice device, Image image, Format format, ImageAspectFlags aspectFlags, ComponentMapping swizzle, uint mipMaps)
@@ -189,12 +190,12 @@ namespace OpenH2.Rendering.Vulkan.Internals
 
                     ImageSubresource = new ImageSubresourceLayers(aspectFlags, 0, 0, 1),
                     ImageOffset = new Offset3D(0, 0, 0),
-                    ImageExtent = new Extent3D(width, height, 1)
+                    ImageExtent = new Extent3D(Width, Height, 1)
                 };
 
                 vk.CmdCopyBufferToImage(commandBuffer, source, image, ImageLayout.TransferDstOptimal, 1, in copy);
 
-                if (mips > 1)
+                if (Mips > 1)
                     GenerateMipmaps(commandBuffer);
                 else
                     TransitionLayout(commandBuffer, ImageLayout.TransferDstOptimal, ImageLayout.ShaderReadOnlyOptimal);
@@ -215,7 +216,7 @@ namespace OpenH2.Rendering.Vulkan.Internals
 
                     ImageSubresource = new ImageSubresourceLayers(aspectFlags, 0, 0, 1),
                     ImageOffset = new Offset3D(0, 0, 0),
-                    ImageExtent = new Extent3D(width, height, 1)
+                    ImageExtent = new Extent3D(Width, Height, 1)
                 };
 
                 vk.CmdCopyBufferToImage(commandBuffer, source, image, ImageLayout.TransferDstOptimal, 1, in copy);
@@ -232,9 +233,9 @@ namespace OpenH2.Rendering.Vulkan.Internals
 
                 var blit = new ImageBlit
                 {
-                    SrcOffsets = new() { Element0 = new(0, 0, 0), Element1 = new((int)source.width, (int)source.height, 1) },
+                    SrcOffsets = new() { Element0 = new(0, 0, 0), Element1 = new((int)source.Width, (int)source.Height, 1) },
                     SrcSubresource = new ImageSubresourceLayers(aspectFlags, 0, 0, 1),
-                    DstOffsets = new() { Element0 = new(0, 0, 0), Element1 = new((int)width, (int)height, 1) },
+                    DstOffsets = new() { Element0 = new(0, 0, 0), Element1 = new((int)Width, (int)Height, 1) },
                     DstSubresource = new ImageSubresourceLayers(aspectFlags, 0, 0, 1)
                 };
 
@@ -244,7 +245,7 @@ namespace OpenH2.Rendering.Vulkan.Internals
                     image, ImageLayout.TransferDstOptimal,
                     1, in blit, Filter.Linear);
 
-                if (mips > 1)
+                if (Mips > 1)
                     GenerateMipmaps(commandBuffer);
                 else
                     TransitionLayout(commandBuffer, ImageLayout.TransferDstOptimal, ImageLayout.ShaderReadOnlyOptimal);
@@ -267,10 +268,10 @@ namespace OpenH2.Rendering.Vulkan.Internals
                 SubresourceRange = new ImageSubresourceRange(aspectFlags, 0, 1, 0, 1)
             };
 
-            var mipWidth = (int)width;
-            var mipHeight = (int)height;
+            var mipWidth = (int)Width;
+            var mipHeight = (int)Height;
 
-            for (var i = 1; i < mips; i++)
+            for (var i = 1; i < Mips; i++)
             {
                 barrier.SubresourceRange.BaseMipLevel = (uint)(i - 1);
                 barrier.OldLayout = ImageLayout.TransferDstOptimal;
@@ -314,7 +315,7 @@ namespace OpenH2.Rendering.Vulkan.Internals
             }
 
             // Barrier on last mip's transition
-            barrier.SubresourceRange.BaseMipLevel = mips - 1;
+            barrier.SubresourceRange.BaseMipLevel = Mips - 1;
             barrier.OldLayout = ImageLayout.TransferDstOptimal;
             barrier.NewLayout = ImageLayout.ShaderReadOnlyOptimal;
             barrier.SrcAccessMask = AccessFlags.AccessTransferWriteBit;

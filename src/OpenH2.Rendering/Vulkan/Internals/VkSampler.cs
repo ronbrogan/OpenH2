@@ -8,16 +8,16 @@ namespace OpenH2.Rendering.Vulkan.Internals
         private readonly VkDevice device;
         private Sampler sampler;
 
-        public VkSampler(VkDevice device, int mipmapCount) : base(device.vk)
+        public VkSampler(VkDevice device, int mipmapCount, SamplerAddressMode addressMode = SamplerAddressMode.Repeat) : base(device.vk)
         {
             var samplerCreate = new SamplerCreateInfo
             {
                 SType = StructureType.SamplerCreateInfo,
                 MagFilter = Filter.Linear,
                 MinFilter = Filter.Linear,
-                AddressModeU = SamplerAddressMode.Repeat,
-                AddressModeV = SamplerAddressMode.Repeat,
-                AddressModeW = SamplerAddressMode.Repeat,
+                AddressModeU = addressMode,
+                AddressModeV = addressMode,
+                AddressModeW = addressMode,
                 AnisotropyEnable = true,
                 MaxAnisotropy = device.PhysicalProperties.Limits.MaxSamplerAnisotropy,
                 BorderColor = BorderColor.IntOpaqueWhite,

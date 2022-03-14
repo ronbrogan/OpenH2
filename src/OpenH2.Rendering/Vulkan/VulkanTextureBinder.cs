@@ -24,7 +24,7 @@ namespace OpenH2.Rendering.Vulkan
             { TextureFormat.A8L8, Format.R8G8Unorm },
             { TextureFormat.U8V8, Format.R8G8Unorm },
             { TextureFormat.R5G6B5, Format.B5G6R5UnormPack16 },
-            { TextureFormat.A4R4G4B4, Format.B4G4R4A4UnormPack16},
+            { TextureFormat.A4R4G4B4, Format.B4G4R4A4UnormPack16 },
             { TextureFormat.R8G8B8, Format.B8G8R8A8Unorm },
             { TextureFormat.A8R8G8B8, Format.B8G8R8A8Unorm },
             { TextureFormat.DXT1, Format.BC1RgbUnormBlock },

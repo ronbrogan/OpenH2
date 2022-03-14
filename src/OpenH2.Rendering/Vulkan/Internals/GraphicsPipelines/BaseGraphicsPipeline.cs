@@ -13,9 +13,11 @@ namespace OpenH2.Rendering.Vulkan.Internals.GraphicsPipelines
     internal abstract class BaseGraphicsPipeline : VkObject, IDisposable
     {
         private static List<BaseGraphicsPipeline> owningInstances = new();
+        protected readonly VkDevice device;
 
-        public BaseGraphicsPipeline(Vk vkApi) : base(vkApi)
+        public BaseGraphicsPipeline(VkDevice device) : base(device.vk)
         {
+            this.device = device;
         }
 
         protected abstract void DestroyResources();
@@ -53,6 +55,8 @@ namespace OpenH2.Rendering.Vulkan.Internals.GraphicsPipelines
     internal unsafe abstract class BaseGraphicsPipeline<T> : BaseGraphicsPipeline, IDisposable
     {
         private static long Instances = 0;
+        private long InstanceId = -1;
+
         protected static DescriptorPool DescriptorPool;
         protected static VkShader VertexShader;
         protected static VkShader? GeometryShader;
@@ -61,31 +65,30 @@ namespace OpenH2.Rendering.Vulkan.Internals.GraphicsPipelines
         protected static PipelineLayout PipelineLayout;
         protected static Pipeline Pipeline;
 
-        private long InstanceId = -1;
         protected DescriptorSet DescriptorSet;
 
-        protected readonly VkDevice device;
         protected readonly VkSwapchain swapchain;
         protected readonly VkRenderPass renderPass;
         protected readonly MeshElementType primitiveType;
-        private readonly bool depthTestEnable;
-        private readonly PolygonMode polyMode;
-        private readonly CullModeFlags cullMode;
+        protected readonly bool depthTestEnable;
+        protected readonly PolygonMode polyMode;
+        protected readonly CullModeFlags cullMode;
         private bool disposedValue;
 
         protected BaseGraphicsPipeline(VkDevice device, VkSwapchain swapchain, VkRenderPass renderPass, Shader shader, 
-            MeshElementType primitiveType, bool depthTestEnable = true, PolygonMode polyMode = PolygonMode.Fill, CullModeFlags cullMode = CullModeFlags.CullModeBackBit) : base(device.vk)
+            MeshElementType primitiveType, bool depthTestEnable = true, PolygonMode polyMode = PolygonMode.Fill, CullModeFlags cullMode = CullModeFlags.CullModeBackBit)
+            : base(device)
         {
-            this.device = device;
             this.swapchain = swapchain;
             this.renderPass = renderPass;
             this.primitiveType = primitiveType;
             this.depthTestEnable = depthTestEnable;
             this.polyMode = polyMode;
             this.cullMode = cullMode;
+
             this.InstanceId = Interlocked.Increment(ref Instances);
 
-            if(this.InstanceId == 1)
+            if (this.InstanceId == 1)
             {
                 VertexShader = VkShader.CreateIfPresent(device, shader, ShaderType.Vertex);
                 GeometryShader = VkShader.CreateIfPresent(device, shader, ShaderType.Geometry);

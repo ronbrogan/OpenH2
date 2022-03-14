@@ -3,10 +3,11 @@ using System;
 
 namespace OpenH2.Rendering.Vulkan.Internals
 {
-    internal unsafe sealed class VkRenderPass : VkObject, IDisposable
+
+    internal unsafe class VkRenderPass : VkObject, IDisposable
     {
-        private readonly VkDevice device;
-        private readonly VkSwapchain swapchain;
+        protected readonly VkDevice device;
+        protected readonly VkSwapchain swapchain;
 
         private RenderPass renderPass;
 
@@ -14,6 +15,14 @@ namespace OpenH2.Rendering.Vulkan.Internals
         {
             this.device = device;
             this.swapchain = swapchain;
+
+            this.renderPass = CreateResources();
+
+            InitializeFramebuffers();
+        }
+
+        public virtual RenderPass CreateResources()
+        {
             var colorAttach = new AttachmentDescription
             {
                 Format = device.SurfaceFormat.Format,
@@ -72,9 +81,8 @@ namespace OpenH2.Rendering.Vulkan.Internals
                 PDependencies = &dependency
             };
 
-            SUCCESS(vk.CreateRenderPass(device, in renderPassCreate, null, out renderPass), "Render pass create failed");
-
-            InitializeFramebuffers();
+            SUCCESS(vk.CreateRenderPass(device, in renderPassCreate, null, out var renderPass), "Render pass create failed");
+            return renderPass;
         }
 
         public void InitializeFramebuffers()
@@ -82,7 +90,7 @@ namespace OpenH2.Rendering.Vulkan.Internals
             swapchain.InitializeFramebuffers(renderPass);
         }
 
-        public void Begin(in CommandBuffer commandBuffer, uint imageIndex)
+        public virtual void Begin(in CommandBuffer commandBuffer, uint imageIndex)
         {
             var clearColors = stackalloc[] {
                 new ClearValue(new ClearColorValue(0f, 0f, 0f, 1f)),
