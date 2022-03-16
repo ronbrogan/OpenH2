@@ -259,7 +259,7 @@ float shadowCalculation(vec3 fragPosWorldSpace)
     // perform perspective divide
     vec3 projCoords = fragPosLightSpace.xyz / fragPosLightSpace.w;
 
-    // transform to [0,1] range
+    // transform to [0,1] range for sampling, depth is already 0,1
     vec3 texCoords = projCoords * 0.5 + 0.5;
 
     // get depth of current fragment from light's perspective

@@ -61,7 +61,7 @@ namespace OpenH2.Rendering.Vulkan.Internals
 
             SUCCESS(vk.AllocateMemory(device, in allocateInfo, null, out memory), "Image allocation failed");
 
-            vk.BindImageMemory(device, image, memory, 0);
+            SUCCESS(vk.BindImageMemory(device, image, memory, 0));
 
             View = CreateView(device, image, format, aspectFlags, mips, layers);
         }

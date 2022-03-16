@@ -21,10 +21,10 @@ namespace OpenH2.Rendering.Vulkan.Internals
         public const ImageUsageFlags TransferUsage = ImageUsageFlags.ImageUsageTransferDstBit | ImageUsageFlags.ImageUsageSampledBit;
         public const ImageAspectFlags ColorAspect = ImageAspectFlags.ImageAspectColorBit;
 
-        public VkImage(VkDevice device, Extent2D dims, Format format, ImageUsageFlags usage = TransferUsage, ImageAspectFlags aspectFlags = ColorAspect, ImageTiling tiling = ImageTiling.Optimal, bool generateMips = false)
-            : this(device, dims.Width, dims.Height, format, usage, aspectFlags, tiling, generateMips) { }
+        public VkImage(VkDevice device, Extent2D dims, Format format, ImageUsageFlags usage = TransferUsage, ImageAspectFlags aspectFlags = ColorAspect, ImageTiling tiling = ImageTiling.Optimal, bool generateMips = false, SampleCountFlags sampleCountFlags = SampleCountFlags.SampleCount1Bit)
+            : this(device, dims.Width, dims.Height, format, usage, aspectFlags, tiling, generateMips, sampleCountFlags) { }
 
-        public VkImage(VkDevice device, uint width, uint height, Format format, ImageUsageFlags usage = TransferUsage, ImageAspectFlags aspectFlags = ColorAspect, ImageTiling tiling = ImageTiling.Optimal, bool generateMips = false) : base(device.vk)
+        public VkImage(VkDevice device, uint width, uint height, Format format, ImageUsageFlags usage = TransferUsage, ImageAspectFlags aspectFlags = ColorAspect, ImageTiling tiling = ImageTiling.Optimal, bool generateMips = false, SampleCountFlags sampleCountFlags = SampleCountFlags.SampleCount1Bit) : base(device.vk)
         {
             this.device = device;
             this.Width = width;
@@ -54,7 +54,7 @@ namespace OpenH2.Rendering.Vulkan.Internals
                 InitialLayout = ImageLayout.Undefined,
                 Usage = usage,
                 SharingMode = SharingMode.Exclusive,
-                Samples = SampleCountFlags.SampleCount1Bit,
+                Samples = sampleCountFlags,
                 Flags = 0,
             };
 

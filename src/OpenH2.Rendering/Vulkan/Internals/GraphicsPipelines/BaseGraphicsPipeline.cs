@@ -356,7 +356,7 @@ namespace OpenH2.Rendering.Vulkan.Internals.GraphicsPipelines
             {
                 SType = StructureType.PipelineMultisampleStateCreateInfo,
                 SampleShadingEnable = false,
-                RasterizationSamples = SampleCountFlags.SampleCount1Bit,
+                RasterizationSamples = SampleCountFlags.SampleCount8Bit,
                 MinSampleShading = 1
             };
 

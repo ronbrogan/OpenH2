@@ -26,20 +26,20 @@ namespace OpenH2.Rendering.Vulkan.Internals
             var colorAttach = new AttachmentDescription
             {
                 Format = device.SurfaceFormat.Format,
-                Samples = SampleCountFlags.SampleCount1Bit,
+                Samples = SampleCountFlags.SampleCount8Bit,
                 LoadOp = AttachmentLoadOp.Clear,
                 StoreOp = AttachmentStoreOp.Store,
                 StencilLoadOp = AttachmentLoadOp.DontCare,
                 StencilStoreOp = AttachmentStoreOp.DontCare,
                 InitialLayout = ImageLayout.Undefined,
-                FinalLayout = ImageLayout.PresentSrcKhr
+                FinalLayout = ImageLayout.ColorAttachmentOptimal
             };
 
             // TODO: derive depth format from common place
             var depthAttach = new AttachmentDescription
             {
                 Format = Format.D32Sfloat,
-                Samples = SampleCountFlags.SampleCount1Bit,
+                Samples = SampleCountFlags.SampleCount8Bit,
                 LoadOp = AttachmentLoadOp.Clear,
                 StoreOp = AttachmentStoreOp.DontCare,
                 StencilLoadOp = AttachmentLoadOp.DontCare,
@@ -48,8 +48,21 @@ namespace OpenH2.Rendering.Vulkan.Internals
                 FinalLayout = ImageLayout.DepthStencilAttachmentOptimal
             };
 
+            var colorAttachmentResolve = new AttachmentDescription
+            {
+                Format = device.SurfaceFormat.Format,
+                Samples = SampleCountFlags.SampleCount1Bit,
+                LoadOp = AttachmentLoadOp.DontCare,
+                StoreOp = AttachmentStoreOp.Store,
+                StencilLoadOp = AttachmentLoadOp.DontCare,
+                StencilStoreOp = AttachmentStoreOp.DontCare,
+                InitialLayout = ImageLayout.Undefined,
+                FinalLayout = ImageLayout.PresentSrcKhr,
+            };
+
             var colorAttachRef = new AttachmentReference(0, ImageLayout.ColorAttachmentOptimal);
             var depthAttachRef = new AttachmentReference(1, ImageLayout.DepthStencilAttachmentOptimal);
+            var resolveRef = new AttachmentReference(2, ImageLayout.ColorAttachmentOptimal);
 
             var subpass = new SubpassDescription
             {
@@ -57,6 +70,7 @@ namespace OpenH2.Rendering.Vulkan.Internals
                 ColorAttachmentCount = 1,
                 PColorAttachments = &colorAttachRef,
                 PDepthStencilAttachment = &depthAttachRef,
+                PResolveAttachments = &resolveRef,
             };
 
             var dependency = new SubpassDependency
@@ -69,11 +83,11 @@ namespace OpenH2.Rendering.Vulkan.Internals
                 DstAccessMask = AccessFlags.AccessColorAttachmentWriteBit | AccessFlags.AccessDepthStencilAttachmentWriteBit,
             };
 
-            var attachments = stackalloc[] { colorAttach, depthAttach };
+            var attachments = stackalloc[] { colorAttach, depthAttach, colorAttachmentResolve };
             var renderPassCreate = new RenderPassCreateInfo
             {
                 SType = StructureType.RenderPassCreateInfo,
-                AttachmentCount = 2,
+                AttachmentCount = 3,
                 PAttachments = attachments,
                 SubpassCount = 1,
                 PSubpasses = &subpass,

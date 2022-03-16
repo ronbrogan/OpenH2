@@ -23,6 +23,7 @@ namespace OpenH2.Rendering.Vulkan.Internals
         private Framebuffer[] swapchainFramebuffers;
         private (Format format, Extent2D extent) swapchainParams;
         private VkImage depthImage;
+        private VkImage colorImage;
         private readonly VulkanHost vulkanHost;
 
 
@@ -56,24 +57,29 @@ namespace OpenH2.Rendering.Vulkan.Internals
         public void InitializeFramebuffers(in RenderPass renderPass)
         {
             // TODO find a supported depth format instead of hardcoding D32Sfloat
-            depthImage = new VkImage(device, Extent, Format.D32Sfloat, ImageUsageFlags.ImageUsageDepthStencilAttachmentBit, ImageAspectFlags.ImageAspectDepthBit);
+            depthImage = new VkImage(device, Extent, Format.D32Sfloat, ImageUsageFlags.ImageUsageDepthStencilAttachmentBit, ImageAspectFlags.ImageAspectDepthBit, sampleCountFlags: SampleCountFlags.SampleCount8Bit);
             depthImage.CreateView();
 
-            var attachments = stackalloc ImageView[2];
+            colorImage = new VkImage(device, Extent, this.device.SurfaceFormat.Format, ImageUsageFlags.ImageUsageTransientAttachmentBit | ImageUsageFlags.ImageUsageColorAttachmentBit,
+                tiling: ImageTiling.Optimal, generateMips: false, sampleCountFlags: SampleCountFlags.SampleCount8Bit);
+            colorImage.CreateView();
+
+            var attachments = stackalloc ImageView[3];
             for (int i = 0; i < swapchainImageviews.Length; i++)
             {
-                attachments[0] = swapchainImageviews[i];
+                attachments[0] = colorImage.View;
                 attachments[1] = depthImage.View;
+                attachments[2] = swapchainImageviews[i];
 
                 var framebufferCreate = new FramebufferCreateInfo
                 {
                     SType = StructureType.FramebufferCreateInfo,
                     RenderPass = renderPass,
-                    AttachmentCount = 2,
+                    AttachmentCount = 3,
                     PAttachments = attachments,
                     Width = Extent.Width,
                     Height = Extent.Height,
-                    Layers = 1
+                    Layers = 1,
                 };
 
                 vk.CreateFramebuffer(device, in framebufferCreate, null, out swapchainFramebuffers[i]);
