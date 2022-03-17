@@ -579,7 +579,7 @@ namespace OpenH2.Rendering.Vulkan
             return (bindings, textures);
         }
 
-        private int GenerateShaderUniform(DrawCommand command, MaterialBindings bindings)
+        private int GenerateShaderUniform(in DrawCommand command, in MaterialBindings bindings)
         {
             var mesh = command.Mesh;
             var bufferIndex = 0;

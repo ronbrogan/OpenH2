@@ -136,7 +136,7 @@ void main() {
 
     // Adds global lighting
     float shadow = shadowCalculation(frag_pos);
-    finalColor += ((1.0 - shadow) * globalLighting(diffuseColor));
+    finalColor += (1.0 - shadow) * globalLighting(diffuseColor) * 0.5;
 
     if(Data.UseEmissiveMap)
     {
@@ -299,5 +299,5 @@ float shadowCalculation(vec3 fragPosWorldSpace)
     }
     shadow /= 9.0;
         
-    return shadow;
+    return clamp(shadow, 0, 1);
 }  
