@@ -71,7 +71,7 @@ namespace OpenH2.Rendering.Vulkan.Internals
             return new VkSampler(device, (int)mips, SamplerAddressMode.ClampToEdge);
         }
 
-        public static ImageView CreateView(VkDevice device, Image image, Format format, ImageAspectFlags aspectFlags, uint mipMaps, uint layers)
+        private static ImageView CreateView(VkDevice device, Image image, Format format, ImageAspectFlags aspectFlags, uint mipMaps, uint layers)
         {
             var viewCreate = new ImageViewCreateInfo
             {

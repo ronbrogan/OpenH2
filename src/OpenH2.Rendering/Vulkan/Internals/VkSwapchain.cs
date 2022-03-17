@@ -161,6 +161,7 @@ namespace OpenH2.Rendering.Vulkan.Internals
         public void DestroyResources()
         {
             depthImage.Dispose();
+            colorImage.Dispose();
 
             foreach (var buf in swapchainFramebuffers)
             {

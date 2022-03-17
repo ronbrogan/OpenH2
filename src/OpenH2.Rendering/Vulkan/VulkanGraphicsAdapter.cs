@@ -648,6 +648,7 @@ namespace OpenH2.Rendering.Vulkan
             vk.DestroySemaphore(device, renderFinishedSemaphore, null);
             vk.DestroyFence(device, inFlightFence, null);
 
+            this.shadowpass.Dispose();
             this.renderpass.Dispose();
             this.swapchain.Dispose();
 

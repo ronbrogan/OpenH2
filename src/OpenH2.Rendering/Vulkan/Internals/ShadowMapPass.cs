@@ -12,6 +12,7 @@ namespace OpenH2.Rendering.Vulkan.Internals
 
         private RenderPass renderPass;
         private Extent3D extent = new Extent3D(MapSize, MapSize, CascadeCount);
+
         public Framebuffer Framebuffer { get; private set; }
         public VkImageArray Image { get; private set; }
         public (VkSampler sampler, ImageView view) Texture { get; private set; }
@@ -138,6 +139,7 @@ namespace OpenH2.Rendering.Vulkan.Internals
 
         public void Dispose()
         {
+            vk.DestroyFramebuffer(device, this.Framebuffer, null);
             this.Texture.sampler?.Dispose();
             this.Image?.Dispose();
             vk.DestroyRenderPass(device, renderPass, null);

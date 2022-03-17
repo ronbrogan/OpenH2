@@ -401,6 +401,7 @@ namespace OpenH2.Rendering.Vulkan.Internals.GraphicsPipelines
                 if (remain == 0)
                 {
                     VertexShader?.Dispose();
+                    GeometryShader?.Dispose();
                     FragmentShader?.Dispose();
 
                     vk.DestroyDescriptorSetLayout(device, DescriptorSetLayout, null);
