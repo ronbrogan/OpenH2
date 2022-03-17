@@ -1,4 +1,5 @@
 ﻿using OpenH2.Core.Extensions;
+using OpenH2.Rendering.Shaders;
 using Silk.NET.Vulkan;
 using Silk.NET.Vulkan.Extensions.KHR;
 using System;
@@ -42,6 +43,8 @@ namespace OpenH2.Rendering.Vulkan.Internals
         public SurfaceCapabilitiesKHR SurfaceCapabilities => caps;
 
         public CommandPool CommandPool { get; private set; }
+
+        private VulkanShaderCompiler shaderCompiler;
 
         public Extent2D Extent => ChooseSwapExtent();
 
@@ -138,6 +141,8 @@ namespace OpenH2.Rendering.Vulkan.Internals
             SUCCESS(vk.CreateCommandPool(device, in poolCreate, null, out var commandPool), "CommandPool create failed");
 
             CommandPool = commandPool;
+
+            this.shaderCompiler = new VulkanShaderCompiler(this);
         }
 
         public VkSwapchain CreateSwapchain()
@@ -153,6 +158,12 @@ namespace OpenH2.Rendering.Vulkan.Internals
         public VkBuffer<T> CreateUboAligned<T>(ulong count, BufferUsageFlags usage, MemoryPropertyFlags memoryProperties) where T : unmanaged
         {
             return VkBuffer<T>.CreateUboAligned(this, count, usage, memoryProperties);
+        }
+
+        public bool TryGetShader(Shader shader, ShaderType type, out VkShader shaderInstance)
+        {
+            shaderInstance = this.shaderCompiler.GetShader(shader, type);
+            return shaderInstance != null;
         }
 
         public uint FindMemoryType(uint typeFilter, MemoryPropertyFlags properties)
@@ -379,6 +390,8 @@ namespace OpenH2.Rendering.Vulkan.Internals
                 khrSurfaceExtension.DestroySurface(instance, surface, null);
                 khrSurfaceExtension.Dispose();
             }
+
+            this.shaderCompiler.Dispose();
 
             vk.DestroyDevice(device, null);
         }

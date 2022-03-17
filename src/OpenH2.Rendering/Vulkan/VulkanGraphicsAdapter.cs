@@ -33,11 +33,15 @@ namespace OpenH2.Rendering.Vulkan
 
         private VkRenderPass renderpass;
         private ShadowMapPass shadowpass;
+        private PipelineStore pipelineStore;
+        private Dictionary<(Shader, MeshElementType, IMaterial<BitmapTag>), DescriptorSet> descriptorSets = new();
+        private Dictionary<IMaterial<BitmapTag>, (MaterialBindings, (VkImage image, VkSampler sampler)[])> boundMaterials = new();
+        private Dictionary<IMaterial<BitmapTag>, int[]> materialUniforms = new Dictionary<IMaterial<BitmapTag>, int[]>();
+
         private object currentPass = null;
 
         private bool recreateSwapchain = false;
 
-        private Dictionary<(Shader, MeshElementType, IMaterial<BitmapTag>), BaseGraphicsPipeline> pipelines = new();
 
         private int nextModelHandle = 0;
         private (VkBuffer<int> indices, VkBuffer<VertexFormat> vertices)[] models = new (VkBuffer<int> indices, VkBuffer<VertexFormat> vertices)[4096];
@@ -67,6 +71,7 @@ namespace OpenH2.Rendering.Vulkan
             this.swapchain = device.CreateSwapchain();
             this.renderpass = new VkRenderPass(device, swapchain);
             this.shadowpass = new ShadowMapPass(device);
+            this.pipelineStore = new PipelineStore(this.device, this.swapchain, this.renderpass, this.shadowpass);
 
             this.globalBuffer = device.CreateBuffer<GlobalUniform>(1, 
                 BufferUsageFlags.BufferUsageUniformBufferBit, 
@@ -174,59 +179,7 @@ namespace OpenH2.Rendering.Vulkan
             SUCCESS(vk.BeginCommandBuffer(renderCommands, in bufBegin), "Unable to begin writing to command buffer");
         }
 
-        private BaseGraphicsPipeline CreatePipeline(MeshElementType elementType)
-        {
-            if(this.currentShader == Shader.Generic)
-            {
-                return elementType switch
-                {
-                    MeshElementType.TriangleList => new GenericTriListPipeline(device, swapchain, renderpass, shadowpass),
-                    MeshElementType.TriangleStrip => new GenericTriStripPipeline(device, swapchain, renderpass, shadowpass),
-                    MeshElementType.TriangleStripDecal => new GenericTriStripPipeline(device, swapchain, renderpass, shadowpass),
-                    (MeshElementType)10 => new GenericTriListPipeline(device, swapchain, renderpass, shadowpass),
-                    MeshElementType.Point => null,
-                    _ => null,
-                };
-            }
-            else if(this.currentShader == Shader.Skybox)
-            {
-                return elementType switch
-                {
-                    MeshElementType.TriangleList => new SkyboxTriListPipeline(device, swapchain, renderpass, shadowpass),
-                    MeshElementType.TriangleStrip => new SkyboxTriStripPipeline(device, swapchain, renderpass, shadowpass),
-                    MeshElementType.TriangleStripDecal => new SkyboxTriStripPipeline(device, swapchain, renderpass, shadowpass),
-                    MeshElementType.Point => null,
-                    _ => null,
-                };
-            }
-            else if (this.currentShader == Shader.Wireframe)
-            {
-                return elementType switch
-                {
-                    MeshElementType.TriangleList => new WireframeTriListPipeline(device, swapchain, renderpass, shadowpass),
-                    MeshElementType.TriangleStrip => new WireframeTriStripPipeline(device, swapchain, renderpass, shadowpass),
-                    MeshElementType.TriangleStripDecal => new WireframeTriStripPipeline(device, swapchain, renderpass, shadowpass),
-                    MeshElementType.Point => null,
-                    _ => null,
-                };
-            }
-            else if (this.currentShader == Shader.ShadowMapping)
-            {
-                return elementType switch
-                {
-                    MeshElementType.TriangleList => new ShadowMappingTriListPipeline(device, shadowpass),
-                    MeshElementType.TriangleStrip => new ShadowMappingTriStripPipeline(device, shadowpass),
-                    MeshElementType.TriangleStripDecal => new ShadowMappingTriStripPipeline(device, shadowpass),
-                    (MeshElementType)10 => new ShadowMappingTriListPipeline(device, shadowpass),
-                    MeshElementType.Point => null,
-                    _ => null,
-                };
-            }
-
-            return null;
-        }
-
-        BaseGraphicsPipeline currentPipeline = null;
+        GeneralGraphicsPipeline currentPipeline = null;
         int currentModel = -1;
         ulong lastXformOffset = ulong.MaxValue;
         public void DrawMeshes(DrawCommand[] commands)
@@ -272,7 +225,7 @@ namespace OpenH2.Rendering.Vulkan
             {
                 ref DrawCommand command = ref commands[i];
 
-                var pipeline = GetOrCreatePipeline(command);
+                var (pipeline, descriptorSet) = GetOrCreatePipeline(command);
 
                 if (pipeline == null)
                     continue;
@@ -280,7 +233,7 @@ namespace OpenH2.Rendering.Vulkan
                 if (currentPipeline != pipeline || lastXformOffset != xformOffset)
                 {
                     pipeline.Bind(renderCommands);
-                    pipeline.BindDescriptors(renderCommands, dynamics);
+                    pipeline.BindDescriptors(renderCommands, in descriptorSet, dynamics);
                 }
 
                 // We use the same buffers for all commands in a renderable, so we can skip rebinding every loop
@@ -369,13 +322,13 @@ namespace OpenH2.Rendering.Vulkan
             recreateSwapchain = false;
             vk.DeviceWaitIdle(device);
 
-            BaseGraphicsPipeline.DestroyAllPipelineResources();
+            this.pipelineStore.DestroySwapchainResources();
 
             this.swapchain.DestroyResources();
             this.swapchain.CreateResources();
             this.renderpass.InitializeFramebuffers();
 
-            BaseGraphicsPipeline.CreateAllPipelineResources();
+            this.pipelineStore.CreateSwapchainResources();
 
             // TODO: multiple frame support: recreate uniform buffers, command buffers, pools??
         }
@@ -455,7 +408,6 @@ namespace OpenH2.Rendering.Vulkan
 
         public void UseShader(Shader shader)
         {
-            // TODO: lookup and bind appropriate pipeline
             this.currentShader = shader;
         }
 
@@ -467,17 +419,16 @@ namespace OpenH2.Rendering.Vulkan
             this.currentTransform = new TransformUniform(transform, inverted);
         }
 
-        private BaseGraphicsPipeline GetOrCreatePipeline(DrawCommand command)
+        private (GeneralGraphicsPipeline, DescriptorSet) GetOrCreatePipeline(DrawCommand command)
         {
             var key = (currentShader, command.ElementType, command.Mesh.Material);
 
-            if (this.pipelines.TryGetValue(key, out var pipeline))
-                return pipeline;
-
-            pipeline = CreatePipeline(command.ElementType);
-
-            if (pipeline == null)
-                return null;
+            var pipeline = this.pipelineStore.GetOrCreate(currentShader, command.ElementType);
+            
+            if(this.descriptorSets.TryGetValue(key, out var descriptorSet))
+            {
+                return (pipeline, descriptorSet);
+            }
 
             var textures = BindTexturesAndUniform(ref command);
 
@@ -487,16 +438,14 @@ namespace OpenH2.Rendering.Vulkan
             }
 
             var slice = this.shaderUniformBuffers[(int)currentShader].Slice(command.ShaderUniformHandle[(int)currentShader]);
-            pipeline.CreateDescriptors(this.globalBuffer, this.transformBuffer, slice, textures);
+            descriptorSet = pipeline.CreateDescriptors(this.globalBuffer, this.transformBuffer, slice, textures, this.shadowpass);
 
-            this.pipelines[key] = pipeline;
+            this.descriptorSets[key] = descriptorSet;
 
-            return pipeline;
+            return (pipeline, descriptorSet);
         }
 
-        private Dictionary<IMaterial<BitmapTag>, int[]> MaterialUniforms = new Dictionary<IMaterial<BitmapTag>, int[]>();
 
-        private int currentlyBoundShaderUniform = -1;
         private unsafe (VkImage image, VkSampler sampler)[] BindTexturesAndUniform(ref DrawCommand command)
         {
             // If the uniform was already buffered, we'll just reuse that buffered uniform
@@ -504,10 +453,10 @@ namespace OpenH2.Rendering.Vulkan
             // there will have to be some sort of invalidation to ensure they're updated
             if (command.ShaderUniformHandle[(int)this.currentShader] == -1)
             {
-                if (MaterialUniforms.TryGetValue(command.Mesh.Material, out var uniforms) == false)
+                if (materialUniforms.TryGetValue(command.Mesh.Material, out var uniforms) == false)
                 {
                     uniforms = new int[(int)Shader.MAX_VALUE];
-                    MaterialUniforms[command.Mesh.Material] = uniforms;
+                    materialUniforms[command.Mesh.Material] = uniforms;
                 }
 
                 var (bindings, textures) = SetupTextures(command.Mesh.Material);
@@ -520,7 +469,6 @@ namespace OpenH2.Rendering.Vulkan
         }
 
 
-        private Dictionary<IMaterial<BitmapTag>, (MaterialBindings, (VkImage image, VkSampler sampler)[])> boundMaterials = new ();
         private (MaterialBindings, (VkImage image, VkSampler sampler)[]) SetupTextures(IMaterial<BitmapTag> material)
         {
             if (boundMaterials.TryGetValue(material, out var cached))
@@ -652,9 +600,7 @@ namespace OpenH2.Rendering.Vulkan
             this.renderpass.Dispose();
             this.swapchain.Dispose();
 
-            // destroy pipelines
-            foreach (var (_, p) in this.pipelines)
-                p.Dispose();
+            this.pipelineStore.Dispose();
 
             this.textureBinder.Dispose();
 

@@ -12,14 +12,6 @@ namespace OpenH2.Rendering.Vulkan.Internals
         public ShaderModule module;
         public PipelineShaderStageCreateInfo stageInfo;
 
-        public static VkShader CreateIfPresent(VkDevice device, Shader shader, ShaderType type, string entryPoint = "main")
-        {
-            if (!VulkanShaderCompiler.IsPresent(shader, type))
-                return null;
-
-            return new VkShader(device, shader, type, entryPoint);
-        }
-
         public VkShader(VkDevice device, Shader shader, ShaderType type, string entryPoint = "main")
         {
             this.device = device;

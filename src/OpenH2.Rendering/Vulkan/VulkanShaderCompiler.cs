@@ -2,14 +2,37 @@
 using OpenH2.Rendering.Vulkan.Internals;
 using Silk.NET.Vulkan;
 using System;
+using System.Collections.Concurrent;
 using System.IO;
 
 
 namespace OpenH2.Rendering.Vulkan
 {
 
-    internal class VulkanShaderCompiler
+    internal class VulkanShaderCompiler : IDisposable
     {
+        private ConcurrentDictionary<(Shader, ShaderType), VkShader> shaderCache = new();
+        private VkDevice device;
+
+        public VulkanShaderCompiler(VkDevice device)
+        {
+            this.device = device;
+        }
+
+        public VkShader? GetShader(Shader shader, ShaderType type, string entryPoint = "main")
+        {
+            if(shaderCache.TryGetValue((shader, type), out var instance))
+            {
+                return instance;
+            }
+
+            if (VulkanShaderCompiler.IsPresent(shader, type))
+                instance = new VkShader(device, shader, type, entryPoint);
+
+            shaderCache.TryAdd((shader, type), instance);
+            return instance;
+        }
+
         private static string GetPath(Shader shader, ShaderType type)
         {
             var shaderName = shader.ToString();
@@ -48,6 +71,14 @@ namespace OpenH2.Rendering.Vulkan
                     throw new Exception("Unable to compile shader");
 
                 return shaderModule;
+            }
+        }
+
+        public void Dispose()
+        {
+            foreach(var (_,shader) in this.shaderCache)
+            {
+                shader?.Dispose();
             }
         }
     }
