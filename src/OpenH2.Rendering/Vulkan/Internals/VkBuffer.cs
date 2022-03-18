@@ -1,6 +1,7 @@
 ﻿using Silk.NET.Vulkan;
 using System;
 using System.Diagnostics;
+using VMASharp;
 
 namespace OpenH2.Rendering.Vulkan.Internals
 {
@@ -9,10 +10,10 @@ namespace OpenH2.Rendering.Vulkan.Internals
         private int index;
 
         public VkBuffer Buffer { get; private set; }
-        public ulong Start { get; private set; }
-        public ulong Length { get; private set; }
+        public long Start { get; private set; }
+        public long Length { get; private set; }
 
-        public VkBufferSlice(VkBuffer buffer, int index, ulong start, ulong length)
+        public VkBufferSlice(VkBuffer buffer, int index, long start, long length)
         {
             this.Buffer = buffer;
             this.index = index;
@@ -22,7 +23,7 @@ namespace OpenH2.Rendering.Vulkan.Internals
 
         public DescriptorBufferInfo GetInfo()
         {
-            return new DescriptorBufferInfo(this.Buffer, this.Start, this.Length);
+            return new DescriptorBufferInfo(this.Buffer, (ulong)this.Start, (ulong)this.Length);
         }
 
         public void Load<T>(T item) where T: unmanaged
@@ -74,10 +75,10 @@ namespace OpenH2.Rendering.Vulkan.Internals
         private readonly bool uboAlign;
 
         protected Silk.NET.Vulkan.Buffer buffer;
-        protected DeviceMemory bufferMemory;
+        protected Allocation bufferMemory;
         protected void* bufferPtr = null;
 
-        protected VkBuffer(VkDevice device, ulong bytes, BufferUsageFlags usage, MemoryPropertyFlags memoryProperties, int itemSize, bool uboAlign) : base(device.vk)
+        protected VkBuffer(VkDevice device, ulong bytes, BufferUsageFlags usage, MemoryPropertyFlags memoryProperties, int itemSize, bool uboAlign) : base(device)
         {
             this.device = device;
             this.memorySize = bytes;
@@ -103,8 +104,7 @@ namespace OpenH2.Rendering.Vulkan.Internals
                 MemoryTypeIndex = device.FindMemoryType(memReq.MemoryTypeBits, memoryProperties)
             };
 
-            SUCCESS(vk.AllocateMemory(device, in vertAlloc, null, out bufferMemory), "Unable to allocate buffer memory");
-            vk.BindBufferMemory(device, buffer, bufferMemory, 0);
+            this.bufferMemory = vma.AllocateMemoryForBuffer(buffer, new AllocationCreateInfo(requiredFlags: memoryProperties), bindToBuffer: true);
         }
 
         public static implicit operator Silk.NET.Vulkan.Buffer(VkBuffer @this) => @this.buffer;
@@ -114,7 +114,7 @@ namespace OpenH2.Rendering.Vulkan.Internals
             if (this.bufferPtr != null)
                 return;
 
-            vk.MapMemory(device, bufferMemory, 0, memorySize, 0, ref bufferPtr);
+            this.bufferPtr = (void*)this.bufferMemory.Map();
         }
 
         public void Unmap()
@@ -122,48 +122,42 @@ namespace OpenH2.Rendering.Vulkan.Internals
             if (this.bufferPtr == null)
                 throw new Exception("Buffer was already unmapped");
 
-            vk.UnmapMemory(device, bufferMemory);
+            this.bufferMemory.Unmap();
             this.bufferPtr = null;
         }
 
-        public void LoadMapped<T>(T item, ulong itemOffset, bool flush = false) where T:unmanaged
+        public void LoadMapped<T>(T item, long itemOffset, bool flush = false) where T:unmanaged
         {
-            this.LoadMapped<T>(item, itemOffset, (ulong)sizeof(T), flush);
+            this.LoadMapped<T>(item, itemOffset, sizeof(T), flush);
         }
 
-        public void LoadMapped<T>(T item, ulong itemOffset, ulong itemSize, bool flush = false) where T: unmanaged
+        public void LoadMapped<T>(T item, long itemOffset, long itemSize, bool flush = false) where T: unmanaged
         {
             if (this.bufferPtr == null)
                 throw new Exception("Buffer was not mapped already");
 
-            System.Buffer.MemoryCopy(&item, (byte*)bufferPtr + itemOffset, (long)(memorySize - itemOffset), (long)itemSize);
+            System.Buffer.MemoryCopy(&item, (byte*)bufferPtr + itemOffset, ((long)memorySize - itemOffset), (long)itemSize);
 
             if (flush)
             {
-                vk.FlushMappedMemoryRanges(device, 1, new MappedMemoryRange
-                {
-                    SType = StructureType.MappedMemoryRange,
-                    Memory = this.bufferMemory,
-                    Offset = itemOffset,
-                    Size = itemSize
-                });
+                this.bufferMemory.Flush(itemOffset, itemSize);
             }
         }
 
         public VkBufferSlice Slice(int itemIndex)
         {
-            var start = this.Align(itemIndex, (ulong)this.itemSize);
-            var end = this.Align(itemIndex+1, (ulong)this.itemSize);
+            var start = this.Align(itemIndex, this.itemSize);
+            var end = this.Align(itemIndex+1, this.itemSize);
 
             return new VkBufferSlice(this, itemIndex, start, end-start);
         }
 
-        public ulong Align(int index, ulong itemSize)
+        public long Align(int index, long itemSize)
         {
             if (this.uboAlign)
-                return this.device.AlignUboItem(itemSize, (ulong)index);
+                return (long)this.device.AlignUboItem((ulong)itemSize, (ulong)index);
 
-            return itemSize * (ulong)index;
+            return itemSize * index;
         }
 
         public ulong Align<T>(int index) where T : unmanaged
@@ -182,7 +176,7 @@ namespace OpenH2.Rendering.Vulkan.Internals
             }
 
             vk.DestroyBuffer(device, buffer, null);
-            vk.FreeMemory(device, bufferMemory, null);
+            this.bufferMemory.Dispose();
         }
     }
 
@@ -215,27 +209,24 @@ namespace OpenH2.Rendering.Vulkan.Internals
 
         public void LoadFull(ReadOnlySpan<T> items)
         {
-            void* data = null;
-            vk.MapMemory(device, bufferMemory, 0, memorySize, 0, ref data);
+            void* data = (void*)this.bufferMemory.Map();
             fixed (T* itemsPtr = items)
                 System.Buffer.MemoryCopy(itemsPtr, data, memorySize, memorySize);
-            vk.UnmapMemory(device, bufferMemory);
+            this.bufferMemory.Unmap();
         }
 
         public void LoadFull(T item)
         {
-            void* data = null;
-            vk.MapMemory(device, bufferMemory, 0, memorySize, 0, ref data);
+            void* data = (void*)this.bufferMemory.Map();
             System.Buffer.MemoryCopy(&item, data, memorySize, memorySize);
-            vk.UnmapMemory(device, bufferMemory);
+            this.bufferMemory.Unmap();
         }
 
         public void Load(ulong itemOffset, T item)
         {
-            void* data = null;
-            vk.MapMemory(device, bufferMemory, 0, memorySize, 0, ref data);
+            void* data = (void*)this.bufferMemory.Map();
             System.Buffer.MemoryCopy(&item, (byte*)bufferPtr + itemOffset, (long)(memorySize - itemOffset), sizeof(T));
-            vk.UnmapMemory(device, bufferMemory);
+            this.bufferMemory.Unmap();
         }
 
         public void LoadMapped(ulong itemOffset, T item, bool flush = false)
@@ -247,13 +238,7 @@ namespace OpenH2.Rendering.Vulkan.Internals
 
             if(flush)
             {
-                vk.FlushMappedMemoryRanges(device, 1, new MappedMemoryRange
-                {
-                    SType = StructureType.MappedMemoryRange,
-                    Memory = this.bufferMemory,
-                    Offset = itemOffset,
-                    Size = (ulong)sizeof(T)
-                });
+                this.bufferMemory.Flush((long)itemOffset, sizeof(T));
             }
         }
 

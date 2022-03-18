@@ -1,5 +1,6 @@
 ﻿using Silk.NET.Vulkan;
 using System;
+using VMASharp;
 
 namespace OpenH2.Rendering.Vulkan.Internals
 {
@@ -14,7 +15,7 @@ namespace OpenH2.Rendering.Vulkan.Internals
         private readonly ImageAspectFlags aspectFlags;
 
         private Image image;
-        private DeviceMemory memory;
+        private Allocation memory;
 
         public ImageView View { get; private set; }
 
@@ -22,7 +23,7 @@ namespace OpenH2.Rendering.Vulkan.Internals
         public const ImageAspectFlags ColorAspect = ImageAspectFlags.ImageAspectColorBit;
 
         public VkImageArray(VkDevice device, Extent3D dims, Format format, ImageUsageFlags usage = TransferUsage, ImageAspectFlags aspectFlags = ColorAspect, ImageTiling tiling = ImageTiling.Optimal, bool generateMips = false)
-             : base(device.vk)
+             : base(device)
         {
             this.device = device;
             this.width = dims.Width;
@@ -59,9 +60,7 @@ namespace OpenH2.Rendering.Vulkan.Internals
                 MemoryTypeIndex = device.FindMemoryType(reqs.MemoryTypeBits, MemoryPropertyFlags.MemoryPropertyDeviceLocalBit)
             };
 
-            SUCCESS(vk.AllocateMemory(device, in allocateInfo, null, out memory), "Image allocation failed");
-
-            SUCCESS(vk.BindImageMemory(device, image, memory, 0));
+            this.memory = vma.AllocateMemoryForImage(image, new AllocationCreateInfo(requiredFlags: MemoryPropertyFlags.MemoryPropertyDeviceLocalBit), bindToImage: true);
 
             View = CreateView(device, image, format, aspectFlags, mips, layers);
         }
@@ -92,7 +91,7 @@ namespace OpenH2.Rendering.Vulkan.Internals
         {
             vk.DestroyImageView(device, View, null);
             vk.DestroyImage(device, image, null);
-            vk.FreeMemory(device, memory, null);
+            this.memory?.Dispose();
         }
     }
 }

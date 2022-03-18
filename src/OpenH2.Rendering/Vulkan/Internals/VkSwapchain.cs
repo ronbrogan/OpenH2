@@ -34,7 +34,7 @@ namespace OpenH2.Rendering.Vulkan.Internals
         public ImageView[] ImageViews => swapchainImageviews;
         public Framebuffer[] Framebuffers => swapchainFramebuffers;
 
-        public VkSwapchain(VulkanHost host, VkInstance instance, VkDevice device) : base(host.vk)
+        public VkSwapchain(VulkanHost host, VkInstance instance, VkDevice device) : base(device)
         {
             this.instance = instance;
             this.device = device;

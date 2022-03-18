@@ -11,7 +11,7 @@ namespace OpenH2.Rendering.Vulkan.Internals
 
         private RenderPass renderPass;
 
-        public VkRenderPass(VkDevice device, VkSwapchain swapchain) : base(device.vk)
+        public VkRenderPass(VkDevice device, VkSwapchain swapchain) : base(device)
         {
             this.device = device;
             this.swapchain = swapchain;

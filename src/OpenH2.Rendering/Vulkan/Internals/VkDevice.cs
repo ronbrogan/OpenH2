@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using VMASharp;
 
 namespace OpenH2.Rendering.Vulkan.Internals
 {
@@ -45,6 +46,7 @@ namespace OpenH2.Rendering.Vulkan.Internals
         public CommandPool CommandPool { get; private set; }
 
         private VulkanShaderCompiler shaderCompiler;
+        public new readonly VulkanMemoryAllocator vma;
 
         public Extent2D Extent => ChooseSwapExtent();
 
@@ -53,7 +55,7 @@ namespace OpenH2.Rendering.Vulkan.Internals
 
         public (VkImage, VkSampler) UnboundTexture { get; set; }
 
-        public VkDevice(VulkanHost host, VkInstance instance, string[] validationLayers) : base(instance.vk)
+        public VkDevice(VulkanHost host, VkInstance instance, string[] validationLayers) : base(instance.vk, null)
         {
             vulkanHost = host;
             this.instance = instance;
@@ -143,6 +145,8 @@ namespace OpenH2.Rendering.Vulkan.Internals
             CommandPool = commandPool;
 
             this.shaderCompiler = new VulkanShaderCompiler(this);
+
+            this.vma = new VulkanMemoryAllocator(new VulkanMemoryAllocatorCreateInfo(instance.Version, vk, instance, physicalDevice, device));
         }
 
         public VkSwapchain CreateSwapchain()
@@ -392,6 +396,8 @@ namespace OpenH2.Rendering.Vulkan.Internals
             }
 
             this.shaderCompiler.Dispose();
+
+            this.vma.Dispose();
 
             vk.DestroyDevice(device, null);
         }

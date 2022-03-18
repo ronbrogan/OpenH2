@@ -1,23 +1,29 @@
 ﻿using OpenH2.Core.Extensions;
+using Silk.NET.Core;
 using Silk.NET.Vulkan;
 using Silk.NET.Vulkan.Extensions.KHR;
 using System;
 using System.Text;
+using VMASharp;
 
 namespace OpenH2.Rendering.Vulkan.Internals
 {
+    
+
     internal unsafe class VkInstance : VkObject, IDisposable
     {
         private string[] validationLayers = new[] { "VK_LAYER_KHRONOS_validation" };
 
         private readonly VulkanHost host;
-
+        
         private Instance _instance;
         public Instance Instance => _instance;
+        public readonly Version32 Version;
 
-        public VkInstance(VulkanHost host) : base(host.vk)
+        public VkInstance(VulkanHost host) : base(host.vk, null)
         {
             this.host = host;
+            this.Version = Vk.Version12;
 
             var extensionStrings = host.window.VkSurface.GetRequiredExtensions(out var reqExtensionCount);
 
@@ -56,7 +62,7 @@ namespace OpenH2.Rendering.Vulkan.Internals
                 ApplicationVersion = Vk.MakeVersion(0, 0, 1),
                 PEngineName = PinnedUtf8.Get("OpenH2.Engine"),
                 EngineVersion = Vk.MakeVersion(0, 0, 1),
-                ApiVersion = Vk.Version12
+                ApiVersion = Version
             };
 
             var instanceInfo = new InstanceCreateInfo

@@ -8,7 +8,7 @@ namespace OpenH2.Rendering.Vulkan.Internals
         private readonly VkDevice device;
         private Sampler sampler;
 
-        public VkSampler(VkDevice device, int mipmapCount, SamplerAddressMode addressMode = SamplerAddressMode.Repeat) : base(device.vk)
+        public VkSampler(VkDevice device, int mipmapCount, SamplerAddressMode addressMode = SamplerAddressMode.Repeat) : base(device)
         {
             var samplerCreate = new SamplerCreateInfo
             {

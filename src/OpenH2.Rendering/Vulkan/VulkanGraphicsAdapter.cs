@@ -59,7 +59,7 @@ namespace OpenH2.Rendering.Vulkan
         private Semaphore renderFinishedSemaphore;
         private Fence inFlightFence;
 
-        public VulkanGraphicsAdapter(VulkanHost vulkanHost) : base(vulkanHost.vk)
+        public VulkanGraphicsAdapter(VulkanHost vulkanHost) : base(vulkanHost.vk, null)
         {
             this.vulkanHost = vulkanHost;
 
@@ -67,6 +67,7 @@ namespace OpenH2.Rendering.Vulkan
 
             this.instance = new VkInstance(vulkanHost);
             this.device = instance.CreateDevice();
+
             this.textureBinder = new VulkanTextureBinder(this.device);
             this.swapchain = device.CreateSwapchain();
             this.renderpass = new VkRenderPass(device, swapchain);

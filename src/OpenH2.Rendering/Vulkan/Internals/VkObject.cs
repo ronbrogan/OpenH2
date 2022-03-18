@@ -4,16 +4,25 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using VMASharp;
 
 namespace OpenH2.Rendering.Vulkan.Internals
 {
     public abstract class VkObject
     {
         public readonly Vk vk;
+        public readonly VulkanMemoryAllocator vma;
 
-        public VkObject(Vk vkApi)
+        public VkObject(Vk vk, VulkanMemoryAllocator vma)
         {
-            vk = vkApi;
+            this.vk = vk;
+            this.vma = vma;
+        }
+
+        internal VkObject(VkDevice device)
+        {
+            this.vk = device.vk;
+            this.vma = device.vma;
         }
 
         protected static void SUCCESS(Result result, string description = null)

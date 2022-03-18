@@ -39,7 +39,7 @@ namespace OpenH2.Rendering.Vulkan.Internals.GraphicsPipelines
             PipelineConfig config,
             MeshElementType primitiveType,
             bool swapchainTarget)
-            : base(device.vk)
+            : base(device)
         {
             this.device = device;
             this.renderPass = renderPass;
@@ -156,7 +156,7 @@ namespace OpenH2.Rendering.Vulkan.Internals.GraphicsPipelines
             SUCCESS(vk.AllocateDescriptorSets(device, in alloc, out var descriptorSet), "DescriptorSet allocate failed");
 
             var globalsInfo = new DescriptorBufferInfo(globals, 0, Vk.WholeSize);
-            var uniformInfo = new DescriptorBufferInfo(uniform.Buffer, uniform.Start, uniform.Length);
+            var uniformInfo = new DescriptorBufferInfo(uniform.Buffer, (ulong)uniform.Start, (ulong)uniform.Length);
             var transformsInfo = new DescriptorBufferInfo(transform, 0, device.AlignUboItem<TransformUniform>(1));
 
             var textureInfos = stackalloc DescriptorImageInfo[8];

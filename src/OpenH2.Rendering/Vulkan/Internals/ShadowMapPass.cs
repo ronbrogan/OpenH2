@@ -17,7 +17,7 @@ namespace OpenH2.Rendering.Vulkan.Internals
         public VkImageArray Image { get; private set; }
         public (VkSampler sampler, ImageView view) Texture { get; private set; }
 
-        public ShadowMapPass(VkDevice device) : base(device.vk)
+        public ShadowMapPass(VkDevice device) : base(device)
         {
             this.device = device;
 

@@ -1,5 +1,6 @@
 ﻿using Silk.NET.Vulkan;
 using System;
+using VMASharp;
 
 namespace OpenH2.Rendering.Vulkan.Internals
 {
@@ -10,8 +11,7 @@ namespace OpenH2.Rendering.Vulkan.Internals
         private readonly ImageAspectFlags aspectFlags;
 
         private Image image;
-        private DeviceMemory memory;
-
+        private Allocation memory;
         public readonly uint Width;
         public readonly uint Height;
         public readonly uint Mips;
@@ -24,7 +24,7 @@ namespace OpenH2.Rendering.Vulkan.Internals
         public VkImage(VkDevice device, Extent2D dims, Format format, ImageUsageFlags usage = TransferUsage, ImageAspectFlags aspectFlags = ColorAspect, ImageTiling tiling = ImageTiling.Optimal, bool generateMips = false, SampleCountFlags sampleCountFlags = SampleCountFlags.SampleCount1Bit)
             : this(device, dims.Width, dims.Height, format, usage, aspectFlags, tiling, generateMips, sampleCountFlags) { }
 
-        public VkImage(VkDevice device, uint width, uint height, Format format, ImageUsageFlags usage = TransferUsage, ImageAspectFlags aspectFlags = ColorAspect, ImageTiling tiling = ImageTiling.Optimal, bool generateMips = false, SampleCountFlags sampleCountFlags = SampleCountFlags.SampleCount1Bit) : base(device.vk)
+        public VkImage(VkDevice device, uint width, uint height, Format format, ImageUsageFlags usage = TransferUsage, ImageAspectFlags aspectFlags = ColorAspect, ImageTiling tiling = ImageTiling.Optimal, bool generateMips = false, SampleCountFlags sampleCountFlags = SampleCountFlags.SampleCount1Bit) : base(device)
         {
             this.device = device;
             this.Width = width;
@@ -69,9 +69,10 @@ namespace OpenH2.Rendering.Vulkan.Internals
                 MemoryTypeIndex = device.FindMemoryType(reqs.MemoryTypeBits, MemoryPropertyFlags.MemoryPropertyDeviceLocalBit)
             };
 
-            SUCCESS(vk.AllocateMemory(device, in allocateInfo, null, out memory), "Image allocation failed");
+            this.memory = vma.AllocateMemoryForImage(image, new AllocationCreateInfo(requiredFlags: MemoryPropertyFlags.MemoryPropertyDeviceLocalBit), bindToImage: true);
 
-            vk.BindImageMemory(device, image, memory, 0);
+            //SUCCESS(vk.AllocateMemory(device, in allocateInfo, null, out memory), "Image allocation failed");
+            //vk.BindImageMemory(device, image, memory, 0);
         }
 
         public VkSampler CreateSampler()
@@ -334,7 +335,7 @@ namespace OpenH2.Rendering.Vulkan.Internals
         {
             vk.DestroyImageView(device, View, null);
             vk.DestroyImage(device, image, null);
-            vk.FreeMemory(device, memory, null);
+            this.memory.Dispose();
         }
     }
 }
