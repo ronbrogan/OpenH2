@@ -6,7 +6,7 @@ using OpenH2.Foundation;
 using OpenH2.Rendering.Shaders;
 using Silk.NET.Vulkan;
 
-namespace OpenH2.Rendering.Vulkan.Internals.GraphicsPipelines
+namespace OpenH2.Rendering.Vulkan.Internals
 {
     internal record PipelineConfig(Shader shader,
             PipelineBinding[] bindings,
@@ -47,7 +47,7 @@ namespace OpenH2.Rendering.Vulkan.Internals.GraphicsPipelines
             this.primitiveType = primitiveType;
             this.swapchainTarget = swapchainTarget;
 
-            DescriptorPool = this.CreateDescriptorPool(config.descriptorSetCount, config.bindings);
+            DescriptorPool = CreateDescriptorPool(config.descriptorSetCount, config.bindings);
 
             var (descSet, pipeline) = CreateLayouts(config.bindings);
             DescriptorSetLayout = descSet;
@@ -56,7 +56,7 @@ namespace OpenH2.Rendering.Vulkan.Internals.GraphicsPipelines
             Pipeline = CreateGraphicsPipeline(viewport);
         }
 
-        public bool ShouldRecreate() => this.swapchainTarget;
+        public bool ShouldRecreate() => swapchainTarget;
 
         protected (DescriptorSetLayout, PipelineLayout) CreateLayouts(PipelineBinding[] bindings)
         {
@@ -160,7 +160,7 @@ namespace OpenH2.Rendering.Vulkan.Internals.GraphicsPipelines
             var transformsInfo = new DescriptorBufferInfo(transform, 0, device.AlignUboItem<TransformUniform>(1));
 
             var textureInfos = stackalloc DescriptorImageInfo[8];
-            for (int i = 0; i < 8; i++)
+            for (var i = 0; i < 8; i++)
             {
                 if (textures.Length > i && textures[i] != default)
                 {
@@ -178,7 +178,7 @@ namespace OpenH2.Rendering.Vulkan.Internals.GraphicsPipelines
 
             Span<WriteDescriptorSet> writes = stackalloc WriteDescriptorSet[config.bindings.Length];
 
-            for (int i = 0; i < config.bindings.Length; i++)
+            for (var i = 0; i < config.bindings.Length; i++)
             {
                 var binding = config.bindings[i];
 
@@ -196,7 +196,7 @@ namespace OpenH2.Rendering.Vulkan.Internals.GraphicsPipelines
                 };
 
                 // TODO: better mapping for binding data
-                switch(binding.location)
+                switch (binding.location)
                 {
                     case 0: write.PBufferInfo = &globalsInfo; break;
                     case 1: write.PBufferInfo = &transformsInfo; break;
@@ -273,7 +273,7 @@ namespace OpenH2.Rendering.Vulkan.Internals.GraphicsPipelines
                 PVertexAttributeDescriptions = attrs
             };
 
-            var (topology, restart) = this.primitiveType switch
+            var (topology, restart) = primitiveType switch
             {
                 MeshElementType.TriangleList => (PrimitiveTopology.TriangleList, false),
                 MeshElementType.TriangleStrip => (PrimitiveTopology.TriangleStrip, true),
@@ -351,13 +351,13 @@ namespace OpenH2.Rendering.Vulkan.Internals.GraphicsPipelines
             var stageIndex = 0;
             var shaderStages = stackalloc PipelineShaderStageCreateInfo[3];
 
-            if(this.device.TryGetShader(config.shader, ShaderType.Vertex, out var vert))
+            if (device.TryGetShader(config.shader, ShaderType.Vertex, out var vert))
                 shaderStages[stageIndex++] = vert.stageInfo;
 
-            if (this.device.TryGetShader(config.shader, ShaderType.Geometry, out var geom))
+            if (device.TryGetShader(config.shader, ShaderType.Geometry, out var geom))
                 shaderStages[stageIndex++] = geom.stageInfo;
 
-            if (this.device.TryGetShader(config.shader, ShaderType.Fragment, out var frag))
+            if (device.TryGetShader(config.shader, ShaderType.Fragment, out var frag))
                 shaderStages[stageIndex++] = frag.stageInfo;
 
             var depthStencil = new PipelineDepthStencilStateCreateInfo
@@ -411,7 +411,7 @@ namespace OpenH2.Rendering.Vulkan.Internals.GraphicsPipelines
 
             vk.DestroyPipeline(device, Pipeline, null);
 
-            vk.DestroyDescriptorPool(this.device, DescriptorPool, null);
+            vk.DestroyDescriptorPool(device, DescriptorPool, null);
         }
 
         ~GeneralGraphicsPipeline()

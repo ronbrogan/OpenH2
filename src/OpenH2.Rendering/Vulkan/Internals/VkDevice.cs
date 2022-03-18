@@ -1,12 +1,11 @@
-﻿using OpenH2.Core.Extensions;
-using OpenH2.Rendering.Shaders;
-using Silk.NET.Vulkan;
-using Silk.NET.Vulkan.Extensions.KHR;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
+using OpenH2.Core.Extensions;
+using OpenH2.Rendering.Shaders;
+using Silk.NET.Vulkan;
+using Silk.NET.Vulkan.Extensions.KHR;
 using VMASharp;
 
 namespace OpenH2.Rendering.Vulkan.Internals

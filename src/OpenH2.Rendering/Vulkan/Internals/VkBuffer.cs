@@ -1,22 +1,18 @@
-﻿using Silk.NET.Vulkan;
-using System;
-using System.Diagnostics;
+﻿using System;
+using Silk.NET.Vulkan;
 using VMASharp;
 
 namespace OpenH2.Rendering.Vulkan.Internals
 {
     internal unsafe struct VkBufferSlice
     {
-        private int index;
-
         public VkBuffer Buffer { get; private set; }
         public long Start { get; private set; }
         public long Length { get; private set; }
 
-        public VkBufferSlice(VkBuffer buffer, int index, long start, long length)
+        public VkBufferSlice(VkBuffer buffer, long start, long length)
         {
             this.Buffer = buffer;
-            this.index = index;
             this.Start = start;
             this.Length = length;
         }
@@ -95,15 +91,6 @@ namespace OpenH2.Rendering.Vulkan.Internals
 
             SUCCESS(vk.CreateBuffer(device, in bufCreate, null, out buffer), "Buffer create failed");
 
-            vk.GetBufferMemoryRequirements(device, buffer, out var memReq);
-
-            var vertAlloc = new MemoryAllocateInfo
-            {
-                SType = StructureType.MemoryAllocateInfo,
-                AllocationSize = memReq.Size,
-                MemoryTypeIndex = device.FindMemoryType(memReq.MemoryTypeBits, memoryProperties)
-            };
-
             this.bufferMemory = vma.AllocateMemoryForBuffer(buffer, new AllocationCreateInfo(requiredFlags: memoryProperties), bindToBuffer: true);
         }
 
@@ -149,7 +136,7 @@ namespace OpenH2.Rendering.Vulkan.Internals
             var start = this.Align(itemIndex, this.itemSize);
             var end = this.Align(itemIndex+1, this.itemSize);
 
-            return new VkBufferSlice(this, itemIndex, start, end-start);
+            return new VkBufferSlice(this, start, end-start);
         }
 
         public long Align(int index, long itemSize)

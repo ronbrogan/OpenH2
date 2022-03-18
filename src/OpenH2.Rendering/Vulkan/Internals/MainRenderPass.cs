@@ -4,14 +4,14 @@ using System;
 namespace OpenH2.Rendering.Vulkan.Internals
 {
 
-    internal unsafe class VkRenderPass : VkObject, IDisposable
+    internal unsafe class MainRenderPass : VkObject, IDisposable
     {
         protected readonly VkDevice device;
         protected readonly VkSwapchain swapchain;
 
         private RenderPass renderPass;
 
-        public VkRenderPass(VkDevice device, VkSwapchain swapchain) : base(device)
+        public MainRenderPass(VkDevice device, VkSwapchain swapchain) : base(device)
         {
             this.device = device;
             this.swapchain = swapchain;
@@ -123,7 +123,7 @@ namespace OpenH2.Rendering.Vulkan.Internals
             vk.CmdBeginRenderPass(commandBuffer, in renderBegin, SubpassContents.Inline);
         }
 
-        public static implicit operator RenderPass(VkRenderPass @this) => @this.renderPass;
+        public static implicit operator RenderPass(MainRenderPass @this) => @this.renderPass;
 
         public void Dispose()
         {

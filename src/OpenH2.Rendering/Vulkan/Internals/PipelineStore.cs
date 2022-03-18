@@ -1,18 +1,17 @@
 ﻿using System;
 using System.Collections.Concurrent;
-using OpenH2.Core.Tags;
 using OpenH2.Foundation;
 using OpenH2.Rendering.Shaders;
 using Silk.NET.Vulkan;
 
-namespace OpenH2.Rendering.Vulkan.Internals.GraphicsPipelines
+namespace OpenH2.Rendering.Vulkan.Internals
 {
     internal class PipelineStore : IDisposable
     {
         private ConcurrentDictionary<(Shader, MeshElementType), GeneralGraphicsPipeline> pipelines = new();
         private readonly VkDevice device;
         private readonly VkSwapchain swapchain;
-        private readonly VkRenderPass renderPass;
+        private readonly MainRenderPass renderPass;
         private readonly ShadowMapPass shadowPass;
         private PipelineConfig[] shaderConfigs = new PipelineConfig[(int)Shader.MAX_VALUE];
         private PipelineBinding[] defaultBindings = new PipelineBinding[]
@@ -30,7 +29,7 @@ namespace OpenH2.Rendering.Vulkan.Internals.GraphicsPipelines
             new (1, DescriptorType.UniformBufferDynamic)
         };
 
-        public PipelineStore(VkDevice device, VkSwapchain swapchain, VkRenderPass renderPass, ShadowMapPass shadowPass)
+        public PipelineStore(VkDevice device, VkSwapchain swapchain, MainRenderPass renderPass, ShadowMapPass shadowPass)
         {
             this.device = device;
             this.swapchain = swapchain;
@@ -54,14 +53,14 @@ namespace OpenH2.Rendering.Vulkan.Internals.GraphicsPipelines
                 ? this.shadowPass
                 : this.renderPass;
 
-            Extent2D size = shader == Shader.ShadowMapping
+            var size = shader == Shader.ShadowMapping
                 ? new Extent2D(ShadowMapPass.MapSize, ShadowMapPass.MapSize)
-                : this.swapchain.Extent;
+                : swapchain.Extent;
 
-            bool swapchainTarget = shader != Shader.ShadowMapping;
+            var swapchainTarget = shader != Shader.ShadowMapping;
 
-            return pipelines.GetOrAdd((shader, primitiveType), 
-                k => new GeneralGraphicsPipeline(this.device, pipelinePass, size, config, primitiveType, swapchainTarget));
+            return pipelines.GetOrAdd((shader, primitiveType),
+                k => new GeneralGraphicsPipeline(device, pipelinePass, size, config, primitiveType, swapchainTarget));
         }
 
         public void DestroySwapchainResources()
@@ -74,8 +73,8 @@ namespace OpenH2.Rendering.Vulkan.Internals.GraphicsPipelines
         public void CreateSwapchainResources()
         {
             foreach (var (_, inst) in pipelines)
-                if(inst.ShouldRecreate())
-                    inst.CreateResources(this.swapchain.Extent);
+                if (inst.ShouldRecreate())
+                    inst.CreateResources(swapchain.Extent);
         }
 
         public void Dispose()

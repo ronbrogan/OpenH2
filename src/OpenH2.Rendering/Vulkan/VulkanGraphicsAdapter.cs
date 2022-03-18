@@ -7,7 +7,6 @@ using OpenH2.Rendering.Shaders.ShadowMapping;
 using OpenH2.Rendering.Shaders.Skybox;
 using OpenH2.Rendering.Shaders.Wireframe;
 using OpenH2.Rendering.Vulkan.Internals;
-using OpenH2.Rendering.Vulkan.Internals.GraphicsPipelines;
 using Silk.NET.Vulkan;
 using System;
 using System.Collections.Generic;
@@ -31,7 +30,7 @@ namespace OpenH2.Rendering.Vulkan
         private VulkanTextureBinder textureBinder;
         private VkSwapchain swapchain;
 
-        private VkRenderPass renderpass;
+        private Internals.MainRenderPass renderpass;
         private ShadowMapPass shadowpass;
         private PipelineStore pipelineStore;
         private Dictionary<(Shader, MeshElementType, IMaterial<BitmapTag>), DescriptorSet> descriptorSets = new();
@@ -70,7 +69,7 @@ namespace OpenH2.Rendering.Vulkan
 
             this.textureBinder = new VulkanTextureBinder(this.device);
             this.swapchain = device.CreateSwapchain();
-            this.renderpass = new VkRenderPass(device, swapchain);
+            this.renderpass = new Internals.MainRenderPass(device, swapchain);
             this.shadowpass = new ShadowMapPass(device);
             this.pipelineStore = new PipelineStore(this.device, this.swapchain, this.renderpass, this.shadowpass);
 

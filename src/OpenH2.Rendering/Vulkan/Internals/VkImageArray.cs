@@ -51,15 +51,6 @@ namespace OpenH2.Rendering.Vulkan.Internals
 
             SUCCESS(vk.CreateImage(device, in imageCreate, null, out image), "Image create failed");
 
-            vk.GetImageMemoryRequirements(device, image, out var reqs);
-
-            var allocateInfo = new MemoryAllocateInfo
-            {
-                SType = StructureType.MemoryAllocateInfo,
-                AllocationSize = reqs.Size,
-                MemoryTypeIndex = device.FindMemoryType(reqs.MemoryTypeBits, MemoryPropertyFlags.MemoryPropertyDeviceLocalBit)
-            };
-
             this.memory = vma.AllocateMemoryForImage(image, new AllocationCreateInfo(requiredFlags: MemoryPropertyFlags.MemoryPropertyDeviceLocalBit), bindToImage: true);
 
             View = CreateView(device, image, format, aspectFlags, mips, layers);
