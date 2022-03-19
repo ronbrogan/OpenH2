@@ -1,5 +1,7 @@
 #version 450
 
+#extension GL_EXT_nonuniform_qualifier : enable
+
 const int EmissiveTypeEmissiveOnly = 0;   // fusion coil bloom?
 const int EmissiveTypeDiffuseBlended = 1; // flag base
 const int EmissiveTypeThreeChannel = 2;     // ascension
@@ -63,7 +65,7 @@ layout(std140, binding = 2) uniform GenericUniform
     vec4 ColorChangeColor;
 } Data;
 
-layout(binding = 3) uniform sampler2D Textures[8];
+layout(set = 1, binding = 3) uniform sampler2D Textures[];
 
 layout(binding = 16) uniform sampler2DArray shadowMap;
 

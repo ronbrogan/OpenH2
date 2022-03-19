@@ -91,7 +91,8 @@ namespace OpenH2.Rendering.Vulkan.Internals
             {
                 SamplerAnisotropy = true,
                 FillModeNonSolid = true,
-                GeometryShader = true
+                GeometryShader = true,
+                ShaderSampledImageArrayDynamicIndexing = true,
             };
 
 
@@ -111,7 +112,9 @@ namespace OpenH2.Rendering.Vulkan.Internals
             {
                 SType = StructureType.PhysicalDeviceDescriptorIndexingFeatures,
                 DescriptorBindingPartiallyBound = true,
-                RuntimeDescriptorArray = true
+                RuntimeDescriptorArray = true,
+                DescriptorBindingSampledImageUpdateAfterBind = true,
+                DescriptorBindingVariableDescriptorCount = true
             };
 
             var deviceCreate = new DeviceCreateInfo

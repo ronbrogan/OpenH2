@@ -1,5 +1,7 @@
 #version 450
 
+#extension GL_EXT_nonuniform_qualifier : enable
+
 layout(std140, binding = 0) uniform GlobalUniform
 {
     mat4 ViewMatrix;
@@ -59,7 +61,7 @@ layout(std140, binding = 2) uniform GenericUniform
     vec4 ColorChangeColor;
 } Data;
 
-layout(binding = 3) uniform sampler2D Textures[8];
+layout(set = 1, binding = 3) uniform sampler2D Textures[];
 
 layout(binding = 16) uniform sampler2DArray shadowMap;
 

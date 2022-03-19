@@ -1,5 +1,7 @@
 #version 450
 
+#extension GL_EXT_nonuniform_qualifier : enable
+
 layout(std140, binding = 0) uniform GlobalUniform
 {
     mat4 ViewMatrix;
@@ -24,7 +26,7 @@ layout(std140, binding = 2) uniform SkyboxUniform
 	vec4 DiffuseColor;
 } Data;
 
-layout(binding = 3) uniform sampler2D Textures[8];
+layout(set = 1, binding = 3) uniform sampler2D Textures[];
 
 layout(location = 0) in vec3 local_position;
 layout(location = 1) in vec2 in_texture;

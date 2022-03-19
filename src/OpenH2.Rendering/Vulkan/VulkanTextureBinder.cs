@@ -1,17 +1,12 @@
-﻿using OpenBlam.Core.Texturing;
-using OpenH2.Core.Enums.Texture;
-using OpenH2.Core.Tags;
-using OpenH2.Rendering.OpenGL;
-using OpenH2.Rendering.Vulkan.Internals;
-using OpenTK.Graphics.OpenGL;
-using Silk.NET.Vulkan;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Drawing.Imaging;
 using System.IO;
-using System.Runtime.InteropServices;
-using PixelFormat = OpenTK.Graphics.OpenGL.PixelFormat;
+using OpenBlam.Core.Texturing;
+using OpenH2.Core.Tags;
+using OpenH2.Rendering.Vulkan.Internals;
+using Silk.NET.Vulkan;
 
 namespace OpenH2.Rendering.Vulkan
 {
@@ -39,15 +34,18 @@ namespace OpenH2.Rendering.Vulkan
             { TextureFormat.DXT45, Format.B8G8R8A8Unorm },
         };
 
-        private Dictionary<uint, (VkImage, VkSampler)> BoundTextures = new Dictionary<uint, (VkImage, VkSampler)>();
+        private Dictionary<uint, (VkImage, VkSampler)> UploadedTextures = new Dictionary<uint, (VkImage, VkSampler)>();
+        private Dictionary<uint, int> BoundTextureIndexes = new Dictionary<uint, int>();
 
         private VkDevice device;
         private Vk vk;
+        private TextureSet textures;
 
-        public VulkanTextureBinder(VkDevice device)
+        public VulkanTextureBinder(VkDevice device, TextureSet textures)
         {
             this.device = device;
             this.vk = device.vk;
+            this.textures = textures;
 
             this.device.UnboundTexture = this.CreateErrTexture();
         }
@@ -73,9 +71,21 @@ namespace OpenH2.Rendering.Vulkan
             return image;
         }
 
-        public unsafe (VkImage, VkSampler) GetOrBind(Core.Tags.BitmapTag bitm)
+        public int GetOrBind(BitmapTag bitm)
         {
-            if (BoundTextures.TryGetValue(bitm.Id, out var tex))
+            if (BoundTextureIndexes.TryGetValue(bitm.Id, out var index))
+                return index;
+
+            var (img, sampler) = Upload(bitm);
+
+            index = this.textures.AddTexture(img, sampler);
+            BoundTextureIndexes[bitm.Id] = index;
+            return index;
+        }
+
+        public unsafe (VkImage, VkSampler) Upload(Core.Tags.BitmapTag bitm)
+        {
+            if (UploadedTextures.TryGetValue(bitm.Id, out var tex))
             {
                 return tex;
             }
@@ -103,7 +113,7 @@ namespace OpenH2.Rendering.Vulkan
 
             tex = (image, image.CreateSampler());
 
-            BoundTextures.Add(bitm.Id, tex);
+            UploadedTextures.Add(bitm.Id, tex);
 
             return tex;
         }
@@ -194,7 +204,7 @@ namespace OpenH2.Rendering.Vulkan
 
         public void Dispose()
         {
-            foreach(var (key, item) in this.BoundTextures)
+            foreach(var (key, item) in this.UploadedTextures)
             {
                 item.Item2.Dispose();
                 item.Item1.Dispose();

@@ -1,4 +1,10 @@
-﻿using OpenH2.Core.Tags;
+﻿using System;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.Linq;
+using System.Numerics;
+using System.Threading;
+using OpenH2.Core.Tags;
 using OpenH2.Foundation;
 using OpenH2.Rendering.Abstractions;
 using OpenH2.Rendering.Shaders;
@@ -8,13 +14,6 @@ using OpenH2.Rendering.Shaders.Skybox;
 using OpenH2.Rendering.Shaders.Wireframe;
 using OpenH2.Rendering.Vulkan.Internals;
 using Silk.NET.Vulkan;
-using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
-using System.Numerics;
-using System.Runtime.InteropServices;
-using System.Threading;
 using Buffer = Silk.NET.Vulkan.Buffer;
 using Semaphore = Silk.NET.Vulkan.Semaphore;
 
@@ -33,9 +32,12 @@ namespace OpenH2.Rendering.Vulkan
         private Internals.MainRenderPass renderpass;
         private ShadowMapPass shadowpass;
         private PipelineStore pipelineStore;
+
+
         private Dictionary<(Shader, MeshElementType, IMaterial<BitmapTag>), DescriptorSet> descriptorSets = new();
-        private Dictionary<IMaterial<BitmapTag>, (MaterialBindings, (VkImage image, VkSampler sampler)[])> boundMaterials = new();
-        private Dictionary<IMaterial<BitmapTag>, int[]> materialUniforms = new Dictionary<IMaterial<BitmapTag>, int[]>();
+        private Dictionary<IMaterial<BitmapTag>, MaterialBindings> boundMaterials = new();
+        private Dictionary<IMaterial<BitmapTag>, int[]> materialUniforms = new ();
+        private TextureSet textures;
 
         private object currentPass = null;
 
@@ -67,11 +69,13 @@ namespace OpenH2.Rendering.Vulkan
             this.instance = new VkInstance(vulkanHost);
             this.device = instance.CreateDevice();
 
-            this.textureBinder = new VulkanTextureBinder(this.device);
+            this.textures = new TextureSet(this.device);
+            this.textureBinder = new VulkanTextureBinder(this.device, this.textures);
+
             this.swapchain = device.CreateSwapchain();
             this.renderpass = new Internals.MainRenderPass(device, swapchain);
             this.shadowpass = new ShadowMapPass(device);
-            this.pipelineStore = new PipelineStore(this.device, this.swapchain, this.renderpass, this.shadowpass);
+            this.pipelineStore = new PipelineStore(this.device, this.swapchain, this.renderpass, this.textures, this.shadowpass);
 
             this.globalBuffer = device.CreateBuffer<GlobalUniform>(1, 
                 BufferUsageFlags.BufferUsageUniformBufferBit, 
@@ -261,6 +265,7 @@ namespace OpenH2.Rendering.Vulkan
 
         public void EndFrame()
         {
+            this.textures.EnsureUpdated();
             vk.CmdEndRenderPass(renderCommands);
 
             SUCCESS(vk.EndCommandBuffer(renderCommands), "Failed to record command buffer");
@@ -430,15 +435,10 @@ namespace OpenH2.Rendering.Vulkan
                 return (pipeline, descriptorSet);
             }
 
-            var textures = BindTexturesAndUniform(ref command);
-
-            if(textures == null)
-            {
-                throw new Exception("No textures bound");
-            }
+            BindTexturesAndUniform(ref command);
 
             var slice = this.shaderUniformBuffers[(int)currentShader].Slice(command.ShaderUniformHandle[(int)currentShader]);
-            descriptorSet = pipeline.CreateDescriptors(this.globalBuffer, this.transformBuffer, slice, textures, this.shadowpass);
+            descriptorSet = pipeline.CreateDescriptors(this.globalBuffer, this.transformBuffer, slice, this.shadowpass);
 
             this.descriptorSets[key] = descriptorSet;
 
@@ -446,7 +446,7 @@ namespace OpenH2.Rendering.Vulkan
         }
 
 
-        private unsafe (VkImage image, VkSampler sampler)[] BindTexturesAndUniform(ref DrawCommand command)
+        private unsafe void BindTexturesAndUniform(ref DrawCommand command)
         {
             // If the uniform was already buffered, we'll just reuse that buffered uniform
             // Currently these material uniforms never change at runtime - if this changes
@@ -459,17 +459,14 @@ namespace OpenH2.Rendering.Vulkan
                     materialUniforms[command.Mesh.Material] = uniforms;
                 }
 
-                var (bindings, textures) = SetupTextures(command.Mesh.Material);
+                var bindings = SetupTextures(command.Mesh.Material);
                 command.ShaderUniformHandle[(int)this.currentShader] = GenerateShaderUniform(command, bindings);
                 uniforms[(int)this.currentShader] = command.ShaderUniformHandle[(int)this.currentShader];
-                return textures;
             }
-
-            return null;
         }
 
 
-        private (MaterialBindings, (VkImage image, VkSampler sampler)[]) SetupTextures(IMaterial<BitmapTag> material)
+        private MaterialBindings SetupTextures(IMaterial<BitmapTag> material)
         {
             if (boundMaterials.TryGetValue(material, out var cached))
             {
@@ -477,54 +474,45 @@ namespace OpenH2.Rendering.Vulkan
             }
 
             var bindings = new MaterialBindings();
-            var textures = new (VkImage image, VkSampler sampler)[8];
-            var texIndex = 0;
 
             if (material.DiffuseMap != null)
             {
-                textures[texIndex] = textureBinder.GetOrBind(material.DiffuseMap);
-                bindings.DiffuseHandle = texIndex++;
+                bindings.DiffuseHandle = textureBinder.GetOrBind(material.DiffuseMap);
             }
 
             if (material.DetailMap1 != null)
             {
-                textures[texIndex] = textureBinder.GetOrBind(material.DetailMap1);
-                bindings.Detail1Handle = texIndex++;
+                bindings.Detail1Handle = textureBinder.GetOrBind(material.DetailMap1);
             }
 
             if (material.DetailMap2 != null)
             {
-                textures[texIndex] = textureBinder.GetOrBind(material.DetailMap2);
-                bindings.Detail2Handle = texIndex++;
+                bindings.Detail2Handle = textureBinder.GetOrBind(material.DetailMap2);
             }
 
             if (material.ColorChangeMask != null)
             {
-                textures[texIndex] = textureBinder.GetOrBind(material.ColorChangeMask);
-                bindings.ColorChangeHandle = texIndex++;
+                bindings.ColorChangeHandle = textureBinder.GetOrBind(material.ColorChangeMask);
             }
 
             if (material.AlphaMap != null)
             {
-                textures[texIndex] = textureBinder.GetOrBind(material.AlphaMap);
-                bindings.AlphaHandle = texIndex++;
+                bindings.AlphaHandle = textureBinder.GetOrBind(material.AlphaMap);
             }
 
             if (material.EmissiveMap != null)
             {
-                textures[texIndex] = textureBinder.GetOrBind(material.EmissiveMap);
-                bindings.EmissiveHandle = texIndex++;
+                bindings.EmissiveHandle = textureBinder.GetOrBind(material.EmissiveMap);
             }
 
             if (material.NormalMap != null)
             {
-                textures[texIndex] = textureBinder.GetOrBind(material.NormalMap);
-                bindings.NormalHandle = texIndex++;
+                bindings.NormalHandle = textureBinder.GetOrBind(material.NormalMap);
             }
 
-            boundMaterials.Add(material, (bindings, textures));
+            boundMaterials.Add(material, bindings);
 
-            return (bindings, textures);
+            return bindings;
         }
 
         private int GenerateShaderUniform(in DrawCommand command, in MaterialBindings bindings)
@@ -603,6 +591,7 @@ namespace OpenH2.Rendering.Vulkan
             this.pipelineStore.Dispose();
 
             this.textureBinder.Dispose();
+            this.textures.Dispose();
 
             foreach(var buf in this.shaderUniformBuffers)
                 buf?.Dispose();

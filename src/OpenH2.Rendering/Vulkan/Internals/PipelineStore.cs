@@ -12,6 +12,7 @@ namespace OpenH2.Rendering.Vulkan.Internals
         private readonly VkDevice device;
         private readonly VkSwapchain swapchain;
         private readonly MainRenderPass renderPass;
+        private readonly TextureSet textureSet;
         private readonly ShadowMapPass shadowPass;
         private PipelineConfig[] shaderConfigs = new PipelineConfig[(int)Shader.MAX_VALUE];
         private PipelineBinding[] defaultBindings = new PipelineBinding[]
@@ -19,7 +20,6 @@ namespace OpenH2.Rendering.Vulkan.Internals
             new (0, DescriptorType.UniformBuffer),
             new (1, DescriptorType.UniformBufferDynamic),
             new (2, DescriptorType.UniformBuffer),
-            new (3, DescriptorType.CombinedImageSampler, 8, DescriptorBindingFlags.DescriptorBindingPartiallyBoundBit),
             new (16, DescriptorType.CombinedImageSampler),
         };
 
@@ -29,11 +29,12 @@ namespace OpenH2.Rendering.Vulkan.Internals
             new (1, DescriptorType.UniformBufferDynamic)
         };
 
-        public PipelineStore(VkDevice device, VkSwapchain swapchain, MainRenderPass renderPass, ShadowMapPass shadowPass)
+        public PipelineStore(VkDevice device, VkSwapchain swapchain, MainRenderPass renderPass, TextureSet textureSet, ShadowMapPass shadowPass)
         {
             this.device = device;
             this.swapchain = swapchain;
             this.renderPass = renderPass;
+            this.textureSet = textureSet;
             this.shadowPass = shadowPass;
 
             shaderConfigs[(int)Shader.Skybox] = new(Shader.Skybox, defaultBindings, 16, depthTest: false);
@@ -60,7 +61,7 @@ namespace OpenH2.Rendering.Vulkan.Internals
             var swapchainTarget = shader != Shader.ShadowMapping;
 
             return pipelines.GetOrAdd((shader, primitiveType),
-                k => new GeneralGraphicsPipeline(device, pipelinePass, size, config, primitiveType, swapchainTarget));
+                k => new GeneralGraphicsPipeline(device, textureSet, pipelinePass, size, config, primitiveType, swapchainTarget));
         }
 
         public void DestroySwapchainResources()

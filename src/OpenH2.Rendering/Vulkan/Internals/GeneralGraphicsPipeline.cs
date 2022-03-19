@@ -27,6 +27,7 @@ namespace OpenH2.Rendering.Vulkan.Internals
         protected Pipeline Pipeline;
 
         private readonly VkDevice device;
+        private readonly TextureSet textureSet;
         private readonly RenderPass renderPass;
 
         private readonly PipelineConfig config;
@@ -34,6 +35,7 @@ namespace OpenH2.Rendering.Vulkan.Internals
         private readonly bool swapchainTarget;
 
         public GeneralGraphicsPipeline(VkDevice device,
+            TextureSet textureSet,
             RenderPass renderPass,
             Extent2D viewport,
             PipelineConfig config,
@@ -42,6 +44,7 @@ namespace OpenH2.Rendering.Vulkan.Internals
             : base(device)
         {
             this.device = device;
+            this.textureSet = textureSet;
             this.renderPass = renderPass;
             this.config = config;
             this.primitiveType = primitiveType;
@@ -93,11 +96,11 @@ namespace OpenH2.Rendering.Vulkan.Internals
 
             SUCCESS(vk.CreateDescriptorSetLayout(device, in descCreate, null, out var descriptorSetLayout), "Descriptor set layout create failed");
 
-            var descriptors = stackalloc[] { descriptorSetLayout };
+            var descriptors = stackalloc[] { descriptorSetLayout, this.textureSet.DescriptorSetLayout };
             var layoutCreate = new PipelineLayoutCreateInfo
             {
                 SType = StructureType.PipelineLayoutCreateInfo,
-                SetLayoutCount = 1,
+                SetLayoutCount = 2,
                 PSetLayouts = descriptors
             };
 
@@ -115,9 +118,10 @@ namespace OpenH2.Rendering.Vulkan.Internals
                 var createInfo = new DescriptorPoolCreateInfo
                 {
                     SType = StructureType.DescriptorPoolCreateInfo,
-                    PoolSizeCount = 2,
+                    PoolSizeCount = (uint)sizes.Length,
                     PPoolSizes = pSizes,
-                    MaxSets = 1 * setCount
+                    MaxSets = 1 * setCount,
+                    Flags = DescriptorPoolCreateFlags.DescriptorPoolCreateUpdateAfterBindBit
                 };
 
                 SUCCESS(vk.CreateDescriptorPool(device, in createInfo, null, out var descriptorPool));
@@ -133,6 +137,9 @@ namespace OpenH2.Rendering.Vulkan.Internals
         public void BindDescriptors(in CommandBuffer commandBuffer, in DescriptorSet descriptorSet)
         {
             vk.CmdBindDescriptorSets(commandBuffer, PipelineBindPoint.Graphics, PipelineLayout, 0, 1, in descriptorSet, 0, null);
+
+            var texSet = textureSet.DescriptorSet;
+            vk.CmdBindDescriptorSets(commandBuffer, PipelineBindPoint.Graphics, PipelineLayout, 1, 1, in texSet, 0, null);
         }
 
         public void BindDescriptors(in CommandBuffer commandBuffer, in DescriptorSet descriptorSet, Span<uint> dynamicOffsets)
@@ -140,9 +147,12 @@ namespace OpenH2.Rendering.Vulkan.Internals
             Debug.Assert(dynamicOffsets.Length > 0);
             var ptr = (uint*)Unsafe.AsPointer(ref dynamicOffsets[0]);
             vk.CmdBindDescriptorSets(commandBuffer, PipelineBindPoint.Graphics, PipelineLayout, 0, 1, in descriptorSet, (uint)dynamicOffsets.Length, ptr);
+
+            var texSet = textureSet.DescriptorSet;
+            vk.CmdBindDescriptorSets(commandBuffer, PipelineBindPoint.Graphics, PipelineLayout, 1, 1, in texSet, 0, null);
         }
 
-        public DescriptorSet CreateDescriptors(VkBuffer<GlobalUniform> globals, VkBuffer<TransformUniform> transform, VkBufferSlice uniform, (VkImage image, VkSampler sampler)[] textures, ShadowMapPass shadowPass)
+        public DescriptorSet CreateDescriptors(VkBuffer<GlobalUniform> globals, VkBuffer<TransformUniform> transform, VkBufferSlice uniform, ShadowMapPass shadowPass)
         {
             var layouts = stackalloc[] { DescriptorSetLayout };
             var alloc = new DescriptorSetAllocateInfo
@@ -158,21 +168,6 @@ namespace OpenH2.Rendering.Vulkan.Internals
             var globalsInfo = new DescriptorBufferInfo(globals, 0, Vk.WholeSize);
             var uniformInfo = new DescriptorBufferInfo(uniform.Buffer, (ulong)uniform.Start, (ulong)uniform.Length);
             var transformsInfo = new DescriptorBufferInfo(transform, 0, device.AlignUboItem<TransformUniform>(1));
-
-            var textureInfos = stackalloc DescriptorImageInfo[8];
-            for (var i = 0; i < 8; i++)
-            {
-                if (textures.Length > i && textures[i] != default)
-                {
-                    textureInfos[i] = new DescriptorImageInfo(textures[i].sampler, textures[i].image.View, ImageLayout.ShaderReadOnlyOptimal);
-                }
-                else
-                {
-                    var fallback = device.UnboundTexture;
-                    textureInfos[i] = new DescriptorImageInfo(fallback.Item2, fallback.Item1.View, ImageLayout.ShaderReadOnlyOptimal);
-                }
-            }
-
 
             var shadowInfo = new DescriptorImageInfo(shadowPass.Texture.sampler, shadowPass.Texture.view, ImageLayout.DepthStencilReadOnlyOptimal);
 
@@ -201,7 +196,6 @@ namespace OpenH2.Rendering.Vulkan.Internals
                     case 0: write.PBufferInfo = &globalsInfo; break;
                     case 1: write.PBufferInfo = &transformsInfo; break;
                     case 2: write.PBufferInfo = &uniformInfo; break;
-                    case 3: write.PImageInfo = textureInfos; break;
                     case 16: write.PImageInfo = &shadowInfo; break;
                 }
 
