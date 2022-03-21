@@ -33,8 +33,7 @@ namespace OpenH2.Rendering.Vulkan
         private ShadowMapPass shadowpass;
         private PipelineStore pipelineStore;
 
-
-        private Dictionary<(Shader, MeshElementType, IMaterial<BitmapTag>), DescriptorSet> descriptorSets = new();
+        private Dictionary<(Shader, MeshElementType, Material<BitmapTag>), DescriptorSet> descriptorSets = new();
         private Dictionary<IMaterial<BitmapTag>, MaterialBindings> boundMaterials = new();
         private Dictionary<IMaterial<BitmapTag>, int[]> materialUniforms = new ();
         private TextureSet textures;
@@ -52,6 +51,7 @@ namespace OpenH2.Rendering.Vulkan
         private VkBuffer<GlobalUniform> globalBuffer;
 
         private VkBuffer[] shaderUniformBuffers = new VkBuffer[(int)Shader.MAX_VALUE];
+        private int[] shaderUniformBufferOffsets = new int[(int)Shader.MAX_VALUE];
 
         private int nextTransformIndex = 0;
         private VkBuffer<TransformUniform> transformBuffer;
@@ -152,6 +152,7 @@ namespace OpenH2.Rendering.Vulkan
             this.nextTransformIndex = 0;
             this.currentModel = -1;
             this.currentPipeline = null;
+            this.currentDescriptorSet = ulong.MaxValue;
             this.lastXformOffset = ulong.MaxValue;
             this.currentPass = null;
 
@@ -184,6 +185,7 @@ namespace OpenH2.Rendering.Vulkan
         }
 
         GeneralGraphicsPipeline currentPipeline = null;
+        ulong currentDescriptorSet = ulong.MaxValue;
         int currentModel = -1;
         ulong lastXformOffset = ulong.MaxValue;
         public void DrawMeshes(DrawCommand[] commands)
@@ -229,43 +231,44 @@ namespace OpenH2.Rendering.Vulkan
             {
                 ref DrawCommand command = ref commands[i];
 
-                var (pipeline, descriptorSet) = GetOrCreatePipeline(command);
+                var (pipeline, descriptorSet) = GetOrCreatePipeline(ref command);
 
                 if (pipeline == null)
                     continue;
 
-                if (currentPipeline != pipeline || lastXformOffset != xformOffset)
+                if(currentPipeline != pipeline)
                 {
                     pipeline.Bind(renderCommands);
-                    pipeline.BindDescriptors(renderCommands, in descriptorSet, dynamics);
+                    currentPipeline = pipeline;
                 }
-
-                // We use the same buffers for all commands in a renderable, so we can skip rebinding every loop
                 
+                pipeline.BindDescriptors(renderCommands, in descriptorSet, dynamics);
+
                 var (indexBuffer, vertexBuffer) = this.models[command.VaoHandle];
 
                 if (indexBuffer == null || vertexBuffer == null)
                     continue;
 
-                vertexBuffers[0] = vertexBuffer;
-                offsets[0] = (uint)command.VertexBase * (uint)sizeof(VertexFormat);
-
-                vk.CmdBindVertexBuffers(renderCommands, 0, 1, vertexBuffers, offsets);
-
-                if (currentModel != command.VaoHandle)
+                // We use the same buffers for all commands in a renderable, so we can skip rebinding every loop
+                if (i == 0 && currentModel != command.VaoHandle)
                 {
+                    vertexBuffers[0] = vertexBuffer;
+                    offsets[0] = 0;
+
+                    vk.CmdBindVertexBuffers(renderCommands, 0, 1, vertexBuffers, offsets);
                     vk.CmdBindIndexBuffer(renderCommands, indexBuffer, 0, IndexType.Uint32);
 
                     currentModel = command.VaoHandle;
                 }
 
-                vk.CmdDrawIndexed(renderCommands, (uint)command.IndiciesCount, 1, (uint)command.IndexBase, 0, 0);
+                vk.CmdDrawIndexed(renderCommands, (uint)command.IndiciesCount, 1, (uint)command.IndexBase, command.VertexBase, 0);
             }
         }
 
         public void EndFrame()
         {
             this.textures.EnsureUpdated();
+
             vk.CmdEndRenderPass(renderCommands);
 
             SUCCESS(vk.EndCommandBuffer(renderCommands), "Failed to record command buffer");
@@ -424,9 +427,9 @@ namespace OpenH2.Rendering.Vulkan
             this.currentTransform = new TransformUniform(transform, inverted);
         }
 
-        private (GeneralGraphicsPipeline, DescriptorSet) GetOrCreatePipeline(DrawCommand command)
+        private (GeneralGraphicsPipeline, DescriptorSet) GetOrCreatePipeline(ref DrawCommand command)
         {
-            var key = (currentShader, command.ElementType, command.Mesh.Material);
+            var key = (currentShader, command.ElementType, command.Mesh.Material as Material<BitmapTag>);
 
             var pipeline = this.pipelineStore.GetOrCreate(currentShader, command.ElementType);
             
@@ -460,7 +463,7 @@ namespace OpenH2.Rendering.Vulkan
                 }
 
                 var bindings = SetupTextures(command.Mesh.Material);
-                command.ShaderUniformHandle[(int)this.currentShader] = GenerateShaderUniform(command, bindings);
+                command.ShaderUniformHandle[(int)this.currentShader] = GenerateShaderUniform(in command, bindings);
                 uniforms[(int)this.currentShader] = command.ShaderUniformHandle[(int)this.currentShader];
             }
         }
@@ -473,42 +476,16 @@ namespace OpenH2.Rendering.Vulkan
                 return cached;
             }
 
-            var bindings = new MaterialBindings();
-
-            if (material.DiffuseMap != null)
+            var bindings = new MaterialBindings
             {
-                bindings.DiffuseHandle = textureBinder.GetOrBind(material.DiffuseMap);
-            }
-
-            if (material.DetailMap1 != null)
-            {
-                bindings.Detail1Handle = textureBinder.GetOrBind(material.DetailMap1);
-            }
-
-            if (material.DetailMap2 != null)
-            {
-                bindings.Detail2Handle = textureBinder.GetOrBind(material.DetailMap2);
-            }
-
-            if (material.ColorChangeMask != null)
-            {
-                bindings.ColorChangeHandle = textureBinder.GetOrBind(material.ColorChangeMask);
-            }
-
-            if (material.AlphaMap != null)
-            {
-                bindings.AlphaHandle = textureBinder.GetOrBind(material.AlphaMap);
-            }
-
-            if (material.EmissiveMap != null)
-            {
-                bindings.EmissiveHandle = textureBinder.GetOrBind(material.EmissiveMap);
-            }
-
-            if (material.NormalMap != null)
-            {
-                bindings.NormalHandle = textureBinder.GetOrBind(material.NormalMap);
-            }
+                DiffuseHandle = textureBinder.GetOrBind(material.DiffuseMap),
+                Detail1Handle = textureBinder.GetOrBind(material.DetailMap1),
+                Detail2Handle = textureBinder.GetOrBind(material.DetailMap2),
+                ColorChangeHandle = textureBinder.GetOrBind(material.ColorChangeMask),
+                AlphaHandle = textureBinder.GetOrBind(material.AlphaMap),
+                EmissiveHandle = textureBinder.GetOrBind(material.EmissiveMap),
+                NormalHandle = textureBinder.GetOrBind(material.NormalMap)
+            };
 
             boundMaterials.Add(material, bindings);
 
@@ -521,24 +498,28 @@ namespace OpenH2.Rendering.Vulkan
             var bufferIndex = 0;
 
             var buffer = this.shaderUniformBuffers[(int)currentShader];
+            ref int offset = ref this.shaderUniformBufferOffsets[(int)currentShader];
 
             switch (currentShader)
             {
                 case Shader.Skybox:
                     BindAndBufferShaderUniform(
                         buffer as VkBuffer<SkyboxUniform>,
+                        ref offset,
                         new SkyboxUniform(mesh.Material, bindings),
                         out bufferIndex);
                     break;
                 case Shader.Generic:
                     BindAndBufferShaderUniform(
                         buffer as VkBuffer<GenericUniform>,
+                        ref offset,
                         new GenericUniform(mesh, command.ColorChangeData, bindings),
                         out bufferIndex);
                     break;
                 case Shader.Wireframe:
                     BindAndBufferShaderUniform(
                         buffer as VkBuffer<WireframeUniform>,
+                        ref offset,
                         new WireframeUniform(mesh.Material),
                         out bufferIndex);
                     break;
@@ -552,14 +533,12 @@ namespace OpenH2.Rendering.Vulkan
             return bufferIndex;
         }
 
-        private int nextUniformIndex = 0;
-        private void BindAndBufferShaderUniform<T>(VkBuffer<T> buffer, in T uniform, out int index) where T: unmanaged
+        private void BindAndBufferShaderUniform<T>(VkBuffer<T> buffer, ref int uniformIndex, in T uniform, out int index) where T: unmanaged
         {
             if (buffer == null)
                 throw new Exception($"Shader buffer is not available for {currentShader}");
 
-            // TODO: index per buffer
-            index = Interlocked.Increment(ref nextUniformIndex);
+            index = Interlocked.Increment(ref uniformIndex);
 
             buffer.Slice(index).Load(uniform);
         }

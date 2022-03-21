@@ -71,7 +71,11 @@ namespace OpenH2.Rendering.Vulkan.Internals
                 PApplicationInfo = &appInfo,
                 EnabledExtensionCount = reqExtensionCount,
                 PpEnabledExtensionNames = extensionStrings,
+#if DEBUG
                 EnabledLayerCount = (uint)validationLayers.Length,
+#else
+                EnabledLayerCount = 0,
+#endif
                 PpEnabledLayerNames = layerNames
             };
 

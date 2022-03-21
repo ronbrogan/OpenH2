@@ -19,8 +19,9 @@ namespace OpenH2.Rendering.Vulkan.Internals
         private readonly DescriptorSet descriptorSet;
         public DescriptorSet DescriptorSet => descriptorSet;
         public DescriptorSetLayout DescriptorSetLayout => layout;
+        public int State => boundTextureSlot;
 
-        private int boundTextureSlot = -1;
+        private int boundTextureSlot = 0;
         private (VkImage image, VkSampler sampler)[] textures = new (VkImage image, VkSampler sampler)[TextureCount];
         private ConcurrentQueue<int> texturesToUpload = new();
 

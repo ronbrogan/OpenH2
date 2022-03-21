@@ -35,7 +35,7 @@ namespace OpenH2.Rendering.Vulkan
         };
 
         private Dictionary<uint, (VkImage, VkSampler)> UploadedTextures = new Dictionary<uint, (VkImage, VkSampler)>();
-        private Dictionary<uint, int> BoundTextureIndexes = new Dictionary<uint, int>();
+        private Dictionary<uint, long> BoundTextureIndexes = new Dictionary<uint, long>();
 
         private VkDevice device;
         private Vk vk;
@@ -71,8 +71,11 @@ namespace OpenH2.Rendering.Vulkan
             return image;
         }
 
-        public int GetOrBind(BitmapTag bitm)
+        public long GetOrBind(BitmapTag bitm)
         {
+            if (bitm == null) 
+                return 0;
+
             if (BoundTextureIndexes.TryGetValue(bitm.Id, out var index))
                 return index;
 
@@ -83,7 +86,7 @@ namespace OpenH2.Rendering.Vulkan
             return index;
         }
 
-        public unsafe (VkImage, VkSampler) Upload(Core.Tags.BitmapTag bitm)
+        public unsafe (VkImage, VkSampler) Upload(BitmapTag bitm)
         {
             if (UploadedTextures.TryGetValue(bitm.Id, out var tex))
             {

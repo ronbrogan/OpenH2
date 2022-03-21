@@ -25,6 +25,7 @@ namespace OpenH2.Rendering.Vulkan.Internals
         protected DescriptorSetLayout DescriptorSetLayout;
         protected PipelineLayout PipelineLayout;
         protected Pipeline Pipeline;
+        private int LastTextureState = int.MinValue;
 
         private readonly VkDevice device;
         private readonly TextureSet textureSet;
@@ -136,20 +137,17 @@ namespace OpenH2.Rendering.Vulkan.Internals
 
         public void BindDescriptors(in CommandBuffer commandBuffer, in DescriptorSet descriptorSet)
         {
-            vk.CmdBindDescriptorSets(commandBuffer, PipelineBindPoint.Graphics, PipelineLayout, 0, 1, in descriptorSet, 0, null);
-
-            var texSet = textureSet.DescriptorSet;
-            vk.CmdBindDescriptorSets(commandBuffer, PipelineBindPoint.Graphics, PipelineLayout, 1, 1, in texSet, 0, null);
+            var sets = stackalloc[] { descriptorSet, textureSet.DescriptorSet };
+            vk.CmdBindDescriptorSets(commandBuffer, PipelineBindPoint.Graphics, PipelineLayout, 0, 2, sets, 0, null);
         }
 
         public void BindDescriptors(in CommandBuffer commandBuffer, in DescriptorSet descriptorSet, Span<uint> dynamicOffsets)
         {
             Debug.Assert(dynamicOffsets.Length > 0);
-            var ptr = (uint*)Unsafe.AsPointer(ref dynamicOffsets[0]);
-            vk.CmdBindDescriptorSets(commandBuffer, PipelineBindPoint.Graphics, PipelineLayout, 0, 1, in descriptorSet, (uint)dynamicOffsets.Length, ptr);
 
-            var texSet = textureSet.DescriptorSet;
-            vk.CmdBindDescriptorSets(commandBuffer, PipelineBindPoint.Graphics, PipelineLayout, 1, 1, in texSet, 0, null);
+            var sets = stackalloc[] { descriptorSet, textureSet.DescriptorSet };
+
+            vk.CmdBindDescriptorSets(commandBuffer, PipelineBindPoint.Graphics, PipelineLayout, 0, 2, sets, (uint)dynamicOffsets.Length, (uint*)Unsafe.AsPointer(ref dynamicOffsets[0]));
         }
 
         public DescriptorSet CreateDescriptors(VkBuffer<GlobalUniform> globals, VkBuffer<TransformUniform> transform, VkBufferSlice uniform, ShadowMapPass shadowPass)
