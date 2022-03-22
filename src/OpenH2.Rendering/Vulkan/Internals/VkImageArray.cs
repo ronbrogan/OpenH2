@@ -58,7 +58,7 @@ namespace OpenH2.Rendering.Vulkan.Internals
 
         public VkSampler CreateSampler()
         {
-            return new VkSampler(device, (int)mips, SamplerAddressMode.ClampToEdge);
+            return new VkSampler(device, (int)mips, SamplerAddressMode.ClampToBorder, BorderColor.FloatOpaqueWhite);
         }
 
         private static ImageView CreateView(VkDevice device, Image image, Format format, ImageAspectFlags aspectFlags, uint mipMaps, uint layers)
@@ -69,7 +69,7 @@ namespace OpenH2.Rendering.Vulkan.Internals
                 Image = image,
                 ViewType = ImageViewType.ImageViewType2DArray,
                 Format = format,
-                SubresourceRange = new ImageSubresourceRange(aspectFlags, 0, mipMaps, 0, layers),
+                SubresourceRange = new ImageSubresourceRange(aspectFlags, 0, mipMaps, 0, layers)
             };
 
             SUCCESS(device.vk.CreateImageView(device, in viewCreate, null, out var view), "ImageView creation failed");

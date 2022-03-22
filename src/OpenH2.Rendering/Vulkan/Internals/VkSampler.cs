@@ -8,7 +8,7 @@ namespace OpenH2.Rendering.Vulkan.Internals
         private readonly VkDevice device;
         private Sampler sampler;
 
-        public VkSampler(VkDevice device, int mipmapCount, SamplerAddressMode addressMode = SamplerAddressMode.Repeat) : base(device)
+        public VkSampler(VkDevice device, int mipmapCount, SamplerAddressMode addressMode = SamplerAddressMode.Repeat, BorderColor border = BorderColor.IntOpaqueWhite) : base(device)
         {
             var samplerCreate = new SamplerCreateInfo
             {
@@ -20,7 +20,7 @@ namespace OpenH2.Rendering.Vulkan.Internals
                 AddressModeW = addressMode,
                 AnisotropyEnable = true,
                 MaxAnisotropy = device.PhysicalProperties.Limits.MaxSamplerAnisotropy,
-                BorderColor = BorderColor.IntOpaqueWhite,
+                BorderColor = border,
                 UnnormalizedCoordinates = false,
                 CompareEnable = false,
                 CompareOp = CompareOp.Always,

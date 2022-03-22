@@ -19,7 +19,7 @@
   </ItemGroup>
 
   <Target Name="CompileShaders" AfterTargets="GetCopyToOutputDirectoryItems" BeforeTargets="_CopyOutOfDateSourceItemsToOutputDirectory" Inputs="%(ShaderCompile.FullPath)" Outputs="%(ShaderCompile.FullPath).spv)">
-    <Exec Command="glslc &quot;%(ShaderCompile.FullPath)&quot; -o &quot;%(ShaderCompile.FullPath).spv&quot;" />
+    <Exec Command="glslc &quot;%(ShaderCompile.FullPath)&quot; -o &quot;%(ShaderCompile.FullPath).spv&quot; -g" />
   </Target>
 
   <ItemGroup>
