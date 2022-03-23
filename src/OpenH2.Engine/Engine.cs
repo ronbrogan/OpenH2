@@ -36,7 +36,7 @@ namespace OpenH2.Engine
 
         public Engine()
         {
-            var host = new VulkanHost();
+            var host = new OpenGLHost();
             gameInputGetter = host.GetInputContext;
 
             graphicsHostDisposable = host;

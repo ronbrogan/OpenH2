@@ -1,19 +1,12 @@
-﻿using OpenH2.Foundation.Engine;
-using OpenH2.Rendering.Abstractions;
-using System;
-using System.Collections.Generic;
-using System.Linq;
+﻿using System;
 using System.Numerics;
-using System.Text;
-using System.Threading.Tasks;
-using Silk.NET.Windowing;
+using System.Threading;
+using OpenH2.Foundation.Engine;
+using OpenH2.Rendering.Abstractions;
+using Silk.NET.Input;
 using Silk.NET.Maths;
 using Silk.NET.Vulkan;
-using Silk.NET.Vulkan.Extensions.KHR;
-using System.Diagnostics;
-using OpenH2.Rendering.Shaders;
-using Silk.NET.Input;
-using System.Threading;
+using Silk.NET.Windowing;
 
 namespace OpenH2.Rendering.Vulkan
 {
@@ -23,15 +16,13 @@ namespace OpenH2.Rendering.Vulkan
         private IInputContext inputContext;
         internal IWindow window;
 
-        private ManualResetEventSlim loaded = new ManualResetEventSlim();
-
         public readonly Vk vk;
 
         public bool AspectRatioChanged { get; private set; }
 
         public float AspectRatio { get; private set; }
 
-        public System.Numerics.Vector2 ViewportSize { get; private set; }
+        public Vector2 ViewportSize { get; private set; }
 
         public VulkanHost()
         {

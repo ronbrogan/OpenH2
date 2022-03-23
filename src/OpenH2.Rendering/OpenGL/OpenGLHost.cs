@@ -1,19 +1,22 @@
 ﻿using OpenH2.Foundation.Engine;
 using OpenH2.Rendering.Abstractions;
-using OpenTK.Graphics.OpenGL;
-using OpenTK.Mathematics;
-using OpenTK.Windowing.Common;
-using OpenTK.Windowing.Desktop;
+using Silk.NET.Input;
+using Silk.NET.Maths;
+using Silk.NET.OpenGL;
+using Silk.NET.Windowing;
 using System;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
+using System.Threading;
 
 namespace OpenH2.Rendering.OpenGL
 {
-    public class OpenGLHost : IGraphicsHost, IGameLoopSource
+    public class OpenGLHost : IGraphicsHost, IGameLoopSource, IDisposable
     {
-        private readonly IGraphicsAdapter adapter;
-        private GameWindow window;
+        internal GL gl;
+        private IGraphicsAdapter adapter;
+        private IWindow window;
+        private IInputContext inputContext;
 
         public bool AspectRatioChanged { get; private set; }
 
@@ -23,7 +26,6 @@ namespace OpenH2.Rendering.OpenGL
 
         public OpenGLHost()
         {
-            this.adapter = new OpenGLGraphicsAdapter(this);
         }
 
         public IGraphicsAdapter GetGraphicsAdapter()
@@ -32,30 +34,38 @@ namespace OpenH2.Rendering.OpenGL
         }
 
         // TODO: this is for input, abstract that system to remove this leak
-        public GameWindow GetWindow()
+        public IWindow GetWindow()
         {
             return window;
         }
 
+        public IInputContext GetInputContext()
+        {
+            return this.inputContext;
+        }
+
+        private ManualResetEventSlim loaded = new ManualResetEventSlim();
         public void CreateWindow(System.Numerics.Vector2 size, bool hidden = false)
         {
-            var settings = new GameWindowSettings()
-            {
-                IsMultiThreaded = false
-            };
-
-            var nsettings = new NativeWindowSettings()
+            var options = new WindowOptions(ViewOptions.DefaultVulkan);
+            options.Size = new Vector2D<int>((int)size.X, (int)size.Y);
+            options.API = new GraphicsAPI
             {
                 API = ContextAPI.OpenGL,
-                AutoLoadBindings = true,
-                Size = new Vector2i((int)size.X, (int)size.Y),
-                Title = "OpenH2",
-                Flags = ContextFlags.Debug,
-                APIVersion = new Version(4, 6),
-                NumberOfSamples = 8
+                Profile = ContextProfile.Core,
+                Version = new APIVersion(4, 5)
             };
 
-            window = new GameWindow(settings, nsettings);
+            this.window = Window.Create(options);
+            this.window.Load += Window_Load;
+            
+
+            this.window.Resize += a =>
+            {
+                this.ViewportSize = new System.Numerics.Vector2(a.X, a.Y);
+                this.AspectRatio = a.X / (float)a.Y;
+                this.AspectRatioChanged = true;
+            };
 
             window.Resize += this.Window_Resize;
             this.AspectRatio = size.X / size.Y;
@@ -63,13 +73,23 @@ namespace OpenH2.Rendering.OpenGL
 
             window.IsVisible = !hidden;
 
-            window.Closed += this.Window_Closed;
+            //window.Closing += this.Window_Closed;
+            this.window.Initialize();
+            loaded.Wait();
+        }
 
-            GL.Enable(EnableCap.DepthTest);
-            GL.Enable(EnableCap.CullFace);
-            GL.Enable(EnableCap.AlphaTest);
-            GL.BlendFunc(BlendingFactor.SrcAlpha, BlendingFactor.OneMinusSrcAlpha);
-            GL.Enable(EnableCap.Blend);
+        private void Window_Load()
+        {
+            this.gl = GL.GetApi(this.window);
+            this.inputContext = this.window.CreateInput();
+            this.adapter = new OpenGLGraphicsAdapter(this);
+
+            gl.Enable(EnableCap.DepthTest);
+            gl.Enable(EnableCap.CullFace);
+            gl.Enable(GLEnum.Alpha);
+            gl.BlendFunc(BlendingFactor.SrcAlpha, BlendingFactor.OneMinusSrcAlpha);
+            gl.Enable(EnableCap.Blend);
+            loaded.Set();
         }
 
         private void Window_Closed()
@@ -77,59 +97,55 @@ namespace OpenH2.Rendering.OpenGL
             Environment.Exit(0);
         }
 
-        private void Window_Resize(ResizeEventArgs a)
+        private void Window_Resize(Vector2D<int> a)
         {
-            GL.Viewport(0, 0, a.Width, a.Height);
-            this.ViewportSize = new System.Numerics.Vector2(a.Width, a.Height);
-            this.AspectRatio = a.Width / (float)a.Height;
+            gl.Viewport(0, 0, (uint)a.X, (uint)a.Y);
+            this.ViewportSize = new System.Numerics.Vector2(a.X, a.Y);
+            this.AspectRatio = a.X / (float)a.Y;
             this.AspectRatioChanged = true;
         }
 
         public void RegisterCallbacks(Action<double> updateCallback, Action<double> renderCallback)
         {
-            window.UpdateFrame += f => updateCallback(f.Time);
-            window.RenderFrame += f =>
+            window.Update += f => updateCallback(f);
+            window.Render += f =>
             {
-                GL.ClearColor(0.2f, 0.2f, 0.2f, 1f);
-                GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
+                gl.ClearColor(0.2f, 0.2f, 0.2f, 1f);
+                gl.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
 
-
-                renderCallback(f.Time);
+                renderCallback(f);
                 window.SwapBuffers();
             };
         }
 
         public void Start(int updatesPerSecond, int framesPerSecond)
         {
-            window.UpdateFrequency = updatesPerSecond;
-            window.RenderFrequency = framesPerSecond;
+            window.UpdatesPerSecond = updatesPerSecond;
+            window.FramesPerSecond = framesPerSecond;
             window.Run();
         }
 
         public void EnableConsoleDebug()
         {
-            GL.Enable(EnableCap.DebugOutput);
+            gl.Enable(EnableCap.DebugOutput);
 
-            GL.DebugMessageCallback(callbackWrapper, IntPtr.Zero);
+            gl.DebugMessageCallback(callbackWrapper, IntPtr.Zero);
         }
 
         private static DebugProc callbackWrapper = DebugCallbackF;
 
-        private static void DebugCallbackF(DebugSource source, DebugType type, int id, DebugSeverity severity, int length, IntPtr message, IntPtr userParam)
+        private static void DebugCallbackF(GLEnum source, GLEnum type, int id, GLEnum severity, int length, IntPtr message, IntPtr userParam)
         {
-            if (severity == DebugSeverity.DebugSeverityNotification)
+            if ((DebugSeverity)severity == DebugSeverity.DebugSeverityNotification)
                 return;
 
             string msg = Marshal.PtrToStringAnsi(message, length);
             Console.WriteLine(msg);
         }
 
-        public IEnumerable<string> ListSupportedExtensions()
+        public void Dispose()
         {
-            var count = GL.GetInteger(GetPName.NumExtensions);
-
-            for(var i = 0; i < count; i++)
-                yield return GL.GetString(StringNameIndexed.Extensions, i);
+            this.window?.Dispose();
         }
     }
 }

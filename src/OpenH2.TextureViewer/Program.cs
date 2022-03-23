@@ -86,7 +86,7 @@ namespace OpenH2.TextureViewer
                 ViewPosition = Vector3.Zero
             };
 
-            ShaderHandle = ShaderCompiler.CreateShader(Shader.TextureViewer);
+            ShaderHandle = OpenGLShaderCompiler.CreateShader(Shader.TextureViewer);
         }
 
         static KeyboardState keyboardState, lastKeyboardState;
