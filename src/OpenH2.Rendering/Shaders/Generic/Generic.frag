@@ -155,16 +155,6 @@ void main() {
     float shadow = shadowCalculation(vertex.frag_pos);   
     finalColor += ((1.0 - shadow) * globalLighting(diffuseColor));
 
-    // Accumulates point lights
-    for(int i = 0; i < 10; i++)
-    {
-        if(Lighting.pointLights[i].ColorAndRange.a <= 0.0) 
-        {
-            continue;
-        }
-        finalColor += lightCalculation(Lighting.pointLights[i], diffuseColor);
-    }
-
     if(Data.UseEmissiveMap)
     {
         vec4 emissiveSample = texture(Data.EmissiveMap, vertex.texcoord);

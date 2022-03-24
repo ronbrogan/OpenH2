@@ -138,23 +138,23 @@ namespace OpenH2.Rendering.OpenGL
             {
                 case TextureFormat.A8:
                 {
-                    var alpha = (int)PixelFormat.Alpha;
-                    gl.TexParameterI((GLEnum)TextureTarget.Texture2D, (GLEnum)TextureParameterName.TextureSwizzleRgba,  new[] { alpha, alpha, alpha, alpha });
+                    var alpha = (int)GLEnum.Alpha;
+                    gl.TexParameter(GLEnum.Texture2D, GLEnum.TextureSwizzleRgba,  new[] { alpha, alpha, alpha, alpha });
                     break;
                 }
-
+            
                 case TextureFormat.L8:
                 {
-                    var red = (int)PixelFormat.Red;
-                    gl.TexParameterI((GLEnum)TextureTarget.Texture2D, (GLEnum)TextureParameterName.TextureSwizzleRgba, new[] { red, red, red, red });
+                    var red = (int)GLEnum.Red;
+                    gl.TexParameter(GLEnum.Texture2D, GLEnum.TextureSwizzleRgba, new[] { red, red, red, red });
                     break;
                 }
-
+            
                 case TextureFormat.A8L8:
                 {
-                    var red = (int)PixelFormat.Red;
-                    var alpha = (int)PixelFormat.Alpha;
-                    gl.TexParameterI((GLEnum)TextureTarget.Texture2D, (GLEnum)TextureParameterName.TextureSwizzleRgba, new[] { red, red, red, alpha });
+                    var red = (int)GLEnum.Red;
+                    var alpha = (int)GLEnum.Alpha;
+                    gl.TexParameter(GLEnum.Texture2D, GLEnum.TextureSwizzleRgba, new[] { red, red, red, alpha });
                     break;
                 }
             }

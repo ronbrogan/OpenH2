@@ -81,6 +81,15 @@ namespace OpenH2.Rendering.OpenGL
                 gl.BindFramebuffer(FramebufferTarget.Framebuffer, 0);
                 gl.Clear(ClearBufferMask.DepthBufferBit | ClearBufferMask.ColorBufferBit);
             };
+
+            this.shaderBeginActions[(int)Shader.Generic] = () =>
+            {
+                // Bind shadow maps
+                gl.ActiveTexture(TextureUnit.Texture16);
+                gl.BindTexture(TextureTarget.Texture2DArray, this.shadowBuffers.depthMaps);
+                gl.Uniform1(gl.GetUniformLocation(shaderHandles[(int)activeShader], "shadowMap"), 16);
+                //gl.BindSampler(16, 16);
+            };
         }
 
         public void BeginFrame(GlobalUniform global)
@@ -251,7 +260,7 @@ namespace OpenH2.Rendering.OpenGL
             SetupTransformUniform(new TransformUniform(transform, inverted));
         }
 
-        public void DrawMeshes(DrawCommand[] commands)
+        public unsafe void DrawMeshes(DrawCommand[] commands)
         {
             for (var i = 0; i < commands.Length; i++)
             {
@@ -271,10 +280,12 @@ namespace OpenH2.Rendering.OpenGL
                     _ => PrimitiveType.Triangles
                 };
 
+                var indexBaseOffset = command.IndexBase * sizeof(int);
+
                 gl.DrawElementsBaseVertex((GLEnum)primitiveType,
                     (uint)command.IndiciesCount,
-                    (GLEnum)DrawElementsType.UnsignedInt,
-                    (IntPtr)(command.IndexBase * sizeof(int)),
+                    GLEnum.UnsignedInt,
+                    (void*)indexBaseOffset,
                     command.VertexBase);
             }
         }
@@ -292,8 +303,8 @@ namespace OpenH2.Rendering.OpenGL
             gl.GenTextures(1, out uint depthMap);
 
             gl.BindTexture(TextureTarget.Texture2DArray, depthMap);
-            gl.TexImage3D(TextureTarget.Texture2DArray, 0, (int)GLEnum.DepthComponent32f,
-                ShadowMapSize, ShadowMapSize, ShadowCascadeCount + 1, 0, PixelFormat.DepthComponent, PixelType.Float, IntPtr.Zero);
+            gl.TexImage3D<float>(TextureTarget.Texture2DArray, 0, (int)GLEnum.DepthComponent32f,
+                ShadowMapSize, ShadowMapSize, ShadowCascadeCount + 1, 0, PixelFormat.DepthComponent, PixelType.Float, new float[0]);
 
             gl.TexParameter(TextureTarget.Texture2DArray, TextureParameterName.TextureMinFilter, (float)TextureMinFilter.Nearest);
             gl.TexParameter(TextureTarget.Texture2DArray, TextureParameterName.TextureMagFilter, (float)TextureMagFilter.Nearest);
@@ -443,12 +454,6 @@ namespace OpenH2.Rendering.OpenGL
 
             gl.BindBufferBase(GLEnum.UniformBuffer, UniformIndices.Global, GlobalUniformHandle);
             gl.BindBuffer(GLEnum.UniformBuffer, 0);
-
-            // Bind shadow maps
-            gl.Uniform1(16, 16);
-            gl.ActiveTexture(TextureUnit.Texture16);
-            gl.BindTexture(TextureTarget.Texture2DArray, this.shadowBuffers.depthMaps);
-            gl.BindSampler(16, 16);
         }
 
         private void BindAndBufferShaderUniform<T>(Shader shader, T uniform, int size, out uint handle) where T : unmanaged
@@ -493,7 +498,7 @@ namespace OpenH2.Rendering.OpenGL
                 gl.BindBuffer(GLEnum.UniformBuffer, LightingUniformHandle);
             }
 
-            gl.BufferSubData(GLEnum.UniformBuffer, IntPtr.Zero, 320, in LightingUniform.PointLights[0]);
+            //gl.BufferSubData<byte>(GLEnum.UniformBuffer, IntPtr.Zero, 320, in LightingUniform.PointLights[0]);
 
             gl.BindBufferBase(GLEnum.UniformBuffer, 3, LightingUniformHandle);
             gl.BindBuffer(GLEnum.UniformBuffer, 0);

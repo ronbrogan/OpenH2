@@ -53,7 +53,8 @@ namespace OpenH2.Rendering.OpenGL
             {
                 API = ContextAPI.OpenGL,
                 Profile = ContextProfile.Core,
-                Version = new APIVersion(4, 5)
+                Flags = ContextFlags.Debug,
+                Version = new APIVersion(4, 6)
             };
 
             this.window = Window.Create(options);
@@ -84,11 +85,26 @@ namespace OpenH2.Rendering.OpenGL
             this.inputContext = this.window.CreateInput();
             this.adapter = new OpenGLGraphicsAdapter(this);
 
+            this.ViewportSize = new System.Numerics.Vector2(window.FramebufferSize.X, window.FramebufferSize.Y);
+            this.AspectRatio = window.FramebufferSize.X / (float)window.FramebufferSize.Y;
+
+            if (this.enableDebug)
+            {
+                gl.Enable(EnableCap.DebugOutput);
+                gl.DebugMessageCallback(callbackWrapper, IntPtr.Zero);
+            }
+
             gl.Enable(EnableCap.DepthTest);
             gl.Enable(EnableCap.CullFace);
-            gl.Enable(GLEnum.Alpha);
             gl.BlendFunc(BlendingFactor.SrcAlpha, BlendingFactor.OneMinusSrcAlpha);
             gl.Enable(EnableCap.Blend);
+
+            var error1 = gl.GetError();
+            if (error1 != GLEnum.NoError)
+            {
+                Console.WriteLine("-- Error {0} occured during setup", error1);
+            }
+
             loaded.Set();
         }
 
@@ -127,12 +143,11 @@ namespace OpenH2.Rendering.OpenGL
 
         public void EnableConsoleDebug()
         {
-            gl.Enable(EnableCap.DebugOutput);
-
-            gl.DebugMessageCallback(callbackWrapper, IntPtr.Zero);
+            this.enableDebug = true;
         }
 
         private static DebugProc callbackWrapper = DebugCallbackF;
+        private bool enableDebug;
 
         private static void DebugCallbackF(GLEnum source, GLEnum type, int id, GLEnum severity, int length, IntPtr message, IntPtr userParam)
         {

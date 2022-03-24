@@ -37,6 +37,7 @@ namespace OpenH2.Engine
         public Engine()
         {
             var host = new OpenGLHost();
+            host.EnableConsoleDebug();
             gameInputGetter = host.GetInputContext;
 
             graphicsHostDisposable = host;
