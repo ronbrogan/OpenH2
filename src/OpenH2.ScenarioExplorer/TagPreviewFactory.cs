@@ -95,7 +95,7 @@ namespace OpenH2.ScenarioExplorer
 
                 gl.BindVertexArray(meshId);
 
-                gl.DrawElements(PrimitiveType.Triangles, 6, DrawElementsType.UnsignedInt, 0);
+                gl.DrawElements(PrimitiveType.Triangles, 6, DrawElementsType.UnsignedInt, (void*)0);
 
                 gl.Flush();
 
@@ -257,23 +257,23 @@ namespace OpenH2.ScenarioExplorer
 
             // Attributes for VertexFormat.Position
             gl.EnableVertexAttribArray(0);
-            gl.VertexAttribPointer(0, 3, GLEnum.Float, false, (uint)VertexFormat.Size, (void*)0);
+            gl.VertexAttribPointer(0, 3, VertexAttribPointerType.Float, false, (uint)VertexFormat.Size, (void*)0);
 
             // Attributes for VertexFormat.TexCoords
             gl.EnableVertexAttribArray(1);
-            gl.VertexAttribPointer(1, 2, GLEnum.Float, false, (uint)VertexFormat.Size, (void*)12);
+            gl.VertexAttribPointer(1, 2, VertexAttribPointerType.Float, false, (uint)VertexFormat.Size, (void*)12);
 
             // Attributes for VertexFormat.Normal
             gl.EnableVertexAttribArray(2);
-            gl.VertexAttribPointer(2, 3, GLEnum.Float, false, (uint)VertexFormat.Size, (void*)20);
+            gl.VertexAttribPointer(2, 3, VertexAttribPointerType.Float, false, (uint)VertexFormat.Size, (void*)20);
 
             // Attributes for VertexFormat.Tangent
             gl.EnableVertexAttribArray(3);
-            gl.VertexAttribPointer(3, 3, GLEnum.Float, false, (uint)VertexFormat.Size, (void*)32);
+            gl.VertexAttribPointer(3, 3, VertexAttribPointerType.Float, false, (uint)VertexFormat.Size, (void*)32);
 
             // Attributes for VertexFormat.Bitangent
             gl.EnableVertexAttribArray(4);
-            gl.VertexAttribPointer(4, 3, GLEnum.Float, false, (uint)VertexFormat.Size, (void*)44);
+            gl.VertexAttribPointer(4, 3, VertexAttribPointerType.Float, false, (uint)VertexFormat.Size, (void*)44);
 
             return vao;
         }
