@@ -23,7 +23,6 @@ namespace OpenH2.Engine
             var actorSystem = new ActorSystem(this);
             var animationSystem = new AnimationSystem(this);
             // new up systems, order here will be order of update
-            //Systems.Add(new OpenTKInputSystem(this, window));
             Systems.Add(new SilkInputSystem(this, inputContext));
             Systems.Add(new BspSystem(this));
             Systems.Add(new PhysxPhysicsSystem(this));

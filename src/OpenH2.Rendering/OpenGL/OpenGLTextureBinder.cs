@@ -47,12 +47,24 @@ namespace OpenH2.Rendering.OpenGL
 
         private Dictionary<uint, (uint, ulong)> BoundTextures = new Dictionary<uint, (uint, ulong)>();
         private readonly OpenGLHost host;
-        private GL gl => host.gl;
+        private readonly GL api;
+
+        private GL gl => host?.gl ?? api;
         private Lazy<ArbBindlessTexture> bindless;
 
         public OpenGLTextureBinder(OpenGLHost host)
         {
             this.host = host;
+            this.bindless = new(() =>
+            {
+                Debug.Assert(gl.TryGetExtension<ArbBindlessTexture>(out var bindless));
+                return bindless;
+            });
+        }
+
+        public OpenGLTextureBinder(GL api)
+        {
+            this.api = api;
             this.bindless = new(() =>
             {
                 Debug.Assert(gl.TryGetExtension<ArbBindlessTexture>(out var bindless));
