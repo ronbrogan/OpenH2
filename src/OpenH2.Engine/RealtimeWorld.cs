@@ -1,11 +1,10 @@
-﻿using OpenH2.Audio.Abstractions;
+﻿using System.Collections.Generic;
+using OpenH2.Audio.Abstractions;
 using OpenH2.Core.Architecture;
 using OpenH2.Engine.Stores;
 using OpenH2.Engine.Systems;
 using OpenH2.Rendering.Abstractions;
-using OpenTK.Windowing.Desktop;
 using Silk.NET.Input;
-using System.Collections.Generic;
 
 namespace OpenH2.Engine
 {

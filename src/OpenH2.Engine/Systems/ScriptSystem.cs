@@ -1,11 +1,10 @@
-﻿using OpenH2.Core.Architecture;
+﻿using System.Diagnostics;
+using OpenH2.Core.Architecture;
 using OpenH2.Core.Scripting.Execution;
 using OpenH2.Engine.Scripting;
 using OpenH2.Engine.Stores;
 using OpenH2.Foundation.Logging;
-using OpenTK.Windowing.GraphicsLibraryFramework;
 using Silk.NET.Input;
-using System.Diagnostics;
 
 namespace OpenH2.Engine.Systems
 {

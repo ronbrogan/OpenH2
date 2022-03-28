@@ -16,12 +16,12 @@ namespace OpenH2.OpenAL.Audio
 
         public ISoundEmitter CreateEmitter()
         {
-            return new ALSoundEmitter();
+            return new ALSoundEmitter(this.host.al);
         }
 
         public ISoundListener CreateListener()
         {
-            return new ALSoundListener(host.forward, host.up);
+            return new ALSoundListener(host.al, host.forward, host.up);
         }
 
         public void DestroyEmitter(ISoundEmitter emitter)

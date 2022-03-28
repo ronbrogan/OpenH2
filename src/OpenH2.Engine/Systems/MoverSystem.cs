@@ -1,16 +1,12 @@
-﻿using OpenH2.Core.Architecture;
-using OpenH2.Core.Extensions;
+﻿using System;
+using System.Collections.Generic;
+using System.Numerics;
+using OpenH2.Core.Architecture;
 using OpenH2.Engine.Components;
 using OpenH2.Engine.Stores;
 using OpenH2.Engine.Systems.Movement;
-using OpenH2.Foundation.Extensions;
 using OpenH2.Foundation.Logging;
-using OpenTK.Windowing.Common.Input;
-using OpenTK.Windowing.GraphicsLibraryFramework;
 using Silk.NET.Input;
-using System;
-using System.Collections.Generic;
-using System.Numerics;
 
 namespace OpenH2.Engine.Systems
 {

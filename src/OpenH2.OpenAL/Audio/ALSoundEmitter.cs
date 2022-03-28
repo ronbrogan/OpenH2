@@ -1,6 +1,7 @@
 ﻿using OpenH2.Audio;
 using OpenH2.Audio.Abstractions;
-using OpenTK.Audio.OpenAL;
+using Silk.NET.OpenAL;
+using Silk.NET.OpenAL.Native.Extensions.EXT;
 using System;
 using System.Numerics;
 using System.Runtime.InteropServices;
@@ -8,32 +9,43 @@ using System.Threading;
 
 namespace OpenH2.OpenAL.Audio
 {
+    public static class ALExt
+    {
+        public static SourceState GetSourceState(this AL al, uint source)
+        {
+            al.GetSourceProperty(source, GetSourceInteger.SourceState, out int val);
+            return (SourceState)val;
+        }
+    }
+
     public class ALSoundEmitter : ISoundEmitter, IDisposable
     {
-        private readonly int source;
-        private int primarySamples;
+        private readonly uint source;
+        private readonly AL al;
+        private uint primarySamples;
         private int primarySampleRate;
-        private int primaryBuffer;
-        private int backBuffer;
+        private uint primaryBuffer;
+        private uint backBuffer;
 
-        public ALSoundEmitter()
+        public ALSoundEmitter(AL al)
         {
-            this.source = AL.GenSource();
-            this.primaryBuffer = AL.GenBuffer();
-            this.backBuffer = AL.GenBuffer();
+            this.source = al.GenSource();
+            this.primaryBuffer = al.GenBuffer();
+            this.backBuffer = al.GenBuffer();
+            this.al = al;
         }
 
         public void PlayImmediate<TSample>(AudioEncoding encoding, SampleRate rate, Span<TSample> data) where TSample : unmanaged
         {
             Interlocked.Exchange(ref backBuffer, Interlocked.Exchange(ref primaryBuffer, backBuffer));
 
-            if(AL.GetSourceState(this.source) != ALSourceState.Stopped)
-                AL.SourceStop(this.source);
+            if(al.GetSourceState(this.source) != SourceState.Stopped)
+                al.SourceStop(this.source);
 
             this.primarySamples = BufferData(encoding, rate, data, this.primaryBuffer);
             this.primarySampleRate = rate.Rate;
-            AL.Source(this.source, ALSourcei.Buffer, this.primaryBuffer);
-            AL.SourcePlay(this.source);
+            al.SetSourceProperty(this.source, SourceInteger.Buffer, this.primaryBuffer);
+            al.SourcePlay(this.source);
         }
 
         public void QueueSound()
@@ -43,14 +55,14 @@ namespace OpenH2.OpenAL.Audio
 
         public TimeSpan RemainingTime()
         {
-            var state = AL.GetSourceState(this.source);
+            var state = al.GetSourceState(this.source);
 
-            if(state != ALSourceState.Playing)
+            if(state != SourceState.Playing)
             {
                 return TimeSpan.Zero;
             }
 
-            AL.GetSource(this.source, ALGetSourcei.SampleOffset, out var currentSample);
+            al.GetSourceProperty(this.source, GetSourceInteger.SampleOffset, out var currentSample);
 
             var remainingSeconds = (this.primarySamples - currentSample) / (float)this.primarySampleRate;
 
@@ -59,37 +71,39 @@ namespace OpenH2.OpenAL.Audio
 
         public void SetGain(float gain)
         {
-            AL.Source(this.source, ALSourcef.Gain, gain);
+            al.SetSourceProperty(this.source, SourceFloat.Gain, gain);
         }
 
         public void SetPosition(Vector3 position)
         {
-            AL.Source(this.source, ALSource3f.Position, position.X, position.Y, position.Z);
+            al.SetSourceProperty(this.source, SourceVector3.Position, position.X, position.Y, position.Z);
         }
 
         public void SetVelocity(Vector3 velocity)
         {
-            AL.Source(this.source, ALSource3f.Velocity, velocity.X, velocity.Y, velocity.Z);
+            al.SetSourceProperty(this.source, SourceVector3.Velocity, velocity.X, velocity.Y, velocity.Z);
         }
 
         public void Stop()
         {
-            AL.SourceStop(this.source);
+            al.SourceStop(this.source);
         }
 
-        private int BufferData<TSample>(AudioEncoding encoding, SampleRate rate, Span<TSample> data, int buffer) where TSample : unmanaged
+        private unsafe uint BufferData<TSample>(AudioEncoding encoding, SampleRate rate, Span<TSample> data, uint buffer) where TSample : unmanaged
         {
             var dataBytes = data.Length * Marshal.SizeOf<TSample>();
 
             var (format, samplesPerByte) = encoding switch
             {
-                AudioEncoding.Mono16 => (ALFormat.Mono16, 0.5f),
-                AudioEncoding.MonoImaAdpcm => (ALFormat.MonoIma4Ext, 2),
-                AudioEncoding.StereoImaAdpcm => (ALFormat.StereoIma4Ext, 1),
+                AudioEncoding.Mono16 => (BufferFormat.Mono16, 0.5f),
+                AudioEncoding.MonoImaAdpcm => ((BufferFormat)IMA4BufferFormat.Mono, 2),
+                AudioEncoding.StereoImaAdpcm => ((BufferFormat)IMA4BufferFormat.Stereo, 1),
             };
 
-            AL.BufferData<TSample>(buffer, format, data, rate.Rate);
-            return (int)(dataBytes * samplesPerByte);
+            fixed(TSample* pb = data)
+                al.BufferData(buffer, format, pb, sizeof(TSample) * data.Length, rate.Rate);
+
+            return (uint)(dataBytes * samplesPerByte);
         }
 
         public void Dispose()
@@ -97,8 +111,8 @@ namespace OpenH2.OpenAL.Audio
             if(this.source > 0)
             {
                 Stop();
-                AL.DeleteBuffer(this.primaryBuffer);
-                AL.DeleteSource(this.source);
+                al.DeleteBuffer(this.primaryBuffer);
+                al.DeleteSource(this.source);
             }
         }
     }
