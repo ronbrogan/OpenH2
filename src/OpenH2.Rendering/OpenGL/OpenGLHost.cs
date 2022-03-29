@@ -121,10 +121,17 @@ namespace OpenH2.Rendering.OpenGL
             this.AspectRatioChanged = true;
         }
 
+        private ulong tick = 0;
         public void RegisterCallbacks(Action<double> updateCallback, Action<double> renderCallback)
         {
-            window.Update += f => updateCallback(f);
-            window.Render += f =>
+            this.window.Update += d =>
+            {
+                // First delta time includes time between window open and loop start, skipping that one for sanity
+                //      - causes physics engine to step forward multiple seconds before everything is in the scene
+                if (tick++ != 0) updateCallback(d);
+            };
+
+            this.window.Render += f =>
             {
                 gl.ClearColor(0.2f, 0.2f, 0.2f, 1f);
                 gl.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);

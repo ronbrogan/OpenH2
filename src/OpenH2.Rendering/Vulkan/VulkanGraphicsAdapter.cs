@@ -269,7 +269,11 @@ namespace OpenH2.Rendering.Vulkan
         {
             this.textures.EnsureUpdated();
 
-            vk.CmdEndRenderPass(renderCommands);
+            // Only end the pass if we're in one
+            if (this.currentPass != null)
+            {
+                vk.CmdEndRenderPass(renderCommands);
+            }
 
             SUCCESS(vk.EndCommandBuffer(renderCommands), "Failed to record command buffer");
 

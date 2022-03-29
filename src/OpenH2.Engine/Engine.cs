@@ -17,6 +17,7 @@ using OpenH2.Foundation.Engine;
 using OpenH2.OpenAL.Audio;
 using OpenH2.Rendering.Abstractions;
 using OpenH2.Rendering.OpenGL;
+using OpenH2.Rendering.Vulkan;
 using Silk.NET.Input;
 
 namespace OpenH2.Engine
@@ -34,7 +35,7 @@ namespace OpenH2.Engine
 
         public Engine()
         {
-            var host = new OpenGLHost();
+            var host = new VulkanHost();
             host.EnableConsoleDebug();
             gameInputGetter = host.GetInputContext;
 
@@ -47,8 +48,6 @@ namespace OpenH2.Engine
 
         public void Start(EngineStartParameters parameters)
         {
-            graphicsHost.CreateWindow(new Vector2(1600, 900));
-
             var mapPath = parameters.LoadPathOverride ?? @"D:\H2vMaps\lockout.map";
             var configPath = Environment.GetEnvironmentVariable(ConfigurationConstants.ConfigPathOverrideEnvironmentVariable);
 
@@ -71,6 +70,8 @@ namespace OpenH2.Engine
             {
                 LoadMap(factory, mapFilename, matFactory);
             });
+
+            graphicsHost.CreateWindow(new Vector2(1600, 900));
 
             world = new RealtimeWorld(gameInputGetter(), 
                 audioHost.GetAudioAdapter(), 

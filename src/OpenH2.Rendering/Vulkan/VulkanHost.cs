@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Numerics;
-using System.Threading;
 using OpenH2.Foundation.Engine;
 using OpenH2.Rendering.Abstractions;
 using Silk.NET.Input;
@@ -64,10 +63,9 @@ namespace OpenH2.Rendering.Vulkan
 
         public IGraphicsAdapter GetGraphicsAdapter() => this.adapter;
 
-        private int tick = 0;
+        private ulong tick = 0;
         public void RegisterCallbacks(Action<double> updateCallback, Action<double> renderCallback)
         {
-            
             this.window.Update += (d) =>
             {
                 // First delta time includes time between window open and loop start, skipping that one for sanity
