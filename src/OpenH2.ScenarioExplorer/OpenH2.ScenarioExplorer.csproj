@@ -5,6 +5,7 @@
     <TargetFramework>net5.0</TargetFramework>
     <Platforms>AnyCPU;x64</Platforms>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
 
   <ItemGroup>
@@ -31,7 +32,7 @@
     <PackageReference Include="Avalonia.Desktop" Version="0.10.6" />
     <PackageReference Include="System.Text.Json" Version="5.0.2" />
     <PackageReference Include="PropertyChanged.Fody" Version="3.4.0" />
-    <PackageReference Include="TextCopy" Version="4.3.1" />
+    <PackageReference Include="TextCopy" Version="6.1.0" />
   </ItemGroup>
 
   <ItemGroup>
