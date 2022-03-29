@@ -18,7 +18,7 @@ namespace OpenH2.Rendering.Shaders.Skybox
         public SkyboxUniform(IMaterial<BitmapTag> material, MaterialBindings bindings)
         {
             DiffuseColor = material.DiffuseColor;
-            UseDiffuse = bindings.DiffuseHandle != default;
+            UseDiffuse = material.DiffuseMap != null;
             DiffuseHandle = bindings.DiffuseHandle;
             DiffuseAmount = 1f;
         }

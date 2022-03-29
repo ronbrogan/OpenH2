@@ -1,12 +1,18 @@
 ﻿using System;
 using System.IO;
-using OpenTK.Graphics.OpenGL;
+using Silk.NET.OpenGL;
+using Shader = OpenH2.Rendering.Shaders.Shader;
 
-namespace OpenH2.Rendering.Shaders
+namespace OpenH2.Rendering.OpenGL
 {
-    public static class ShaderCompiler
+    public static class OpenGLShaderCompiler
     {
-        public static int CreateShader(Shader shader)
+        private static OpenGLHost host;
+        private static GL gl => host.gl;
+
+        public static void UseHost(OpenGLHost host) { OpenGLShaderCompiler.host = host; }
+
+        public static uint CreateShader(Shader shader)
         {
             var shaderName = shader.ToString();
             string vertSrc = null;
@@ -35,41 +41,41 @@ namespace OpenH2.Rendering.Shaders
             return 0;
         }
 
-        public static int CreateShader(string shaderName, string vertexSource, string fragmentSource, string geomSource = null)
+        public static uint CreateShader(string shaderName, string vertexSource, string fragmentSource, string geomSource = null)
         {
-            var vertexShader = 0;
-            var fragmentShader = 0;
-            var geometryShader = 0;
+            var vertexShader = 0u;
+            var fragmentShader = 0u;
+            var geometryShader = 0u;
 
             if (string.IsNullOrWhiteSpace(vertexSource) == false)
-                vertexShader = CompileShader(ShaderType.VertexShader, vertexSource, "vertex::" + shaderName);
+                vertexShader = CompileShader(Silk.NET.OpenGL.ShaderType.VertexShader, vertexSource, "vertex::" + shaderName);
 
             if (string.IsNullOrWhiteSpace(fragmentSource) == false)
-                fragmentShader = CompileShader(ShaderType.FragmentShader, fragmentSource, "fragment::" + shaderName);
+                fragmentShader = CompileShader(Silk.NET.OpenGL.ShaderType.FragmentShader, fragmentSource, "fragment::" + shaderName);
 
             if (string.IsNullOrWhiteSpace(geomSource) == false)
-                geometryShader = CompileShader(ShaderType.GeometryShader, geomSource, "geom::" + shaderName);
+                geometryShader = CompileShader(Silk.NET.OpenGL.ShaderType.GeometryShader, geomSource, "geom::" + shaderName);
 
-            var program = GL.CreateProgram();
+            var program = gl.CreateProgram();
 
             if (vertexShader != 0)
-                GL.AttachShader(program, vertexShader);
+                gl.AttachShader(program, vertexShader);
 
             if (fragmentShader != 0)
-                GL.AttachShader(program, fragmentShader);
+                gl.AttachShader(program, fragmentShader);
 
             if (geometryShader != 0)
-                GL.AttachShader(program, geometryShader);
+                gl.AttachShader(program, geometryShader);
 
-            GL.LinkProgram(program);
+            gl.LinkProgram(program);
 
             var linkResult = 0;
-            GL.GetProgram(program, GetProgramParameterName.LinkStatus, out linkResult);
+            gl.GetProgram(program, GLEnum.LinkStatus, out linkResult);
             if (linkResult == 0)
             {
                 string linkLog;
 
-                GL.GetProgramInfoLog(program, out linkLog);
+                gl.GetProgramInfoLog(program, out linkLog);
 
                 Console.WriteLine("CREATE PROGRAM FAILED");
                 Console.WriteLine(linkLog);
@@ -79,18 +85,18 @@ namespace OpenH2.Rendering.Shaders
             return program;
         }
 
-        private static int CompileShader(ShaderType type, string sourceCode, string shaderName)
+        private static uint CompileShader(Silk.NET.OpenGL.ShaderType type, string sourceCode, string shaderName)
         {
             var statusCode = 0;
-            var shader = GL.CreateShader(type);
+            var shader = gl.CreateShader(type);
 
-            GL.ShaderSource(shader, sourceCode);
+            gl.ShaderSource(shader, sourceCode);
 
-            GL.CompileShader(shader);
+            gl.CompileShader(shader);
 
-            var shaderStatus = GL.GetShaderInfoLog(shader);
+            var shaderStatus = gl.GetShaderInfoLog(shader);
 
-            GL.GetShader(shader, ShaderParameter.CompileStatus, out statusCode);
+            gl.GetShader(shader, GLEnum.CompileStatus, out statusCode);
 
             if (statusCode != 0)
                 return shader;

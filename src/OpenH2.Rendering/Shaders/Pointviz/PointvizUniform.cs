@@ -3,7 +3,7 @@ using OpenH2.Foundation;
 using System.Numerics;
 using System.Runtime.InteropServices;
 
-namespace OpenH2.Rendering.Shaders.Wireframe
+namespace OpenH2.Rendering.Shaders.Pointviz
 {
     [StructLayout(LayoutKind.Sequential)]
     public struct PointvizUniform

@@ -1,6 +1,6 @@
-﻿using OpenH2.Audio.Abstractions;
-using OpenTK.Audio.OpenAL;
-using System.Numerics;
+﻿using System.Numerics;
+using OpenH2.Audio.Abstractions;
+using Silk.NET.OpenAL;
 
 namespace OpenH2.OpenAL.Audio
 {
@@ -12,47 +12,59 @@ namespace OpenH2.OpenAL.Audio
         public static int Auto = 2;
     }
 
-    public class OpenALHost : IAudioHost
+    public unsafe class OpenALHost : IAudioHost
     {
-        private readonly ALDevice device;
-        private readonly ALContext context;
+        public readonly AL al;
+        private readonly ALContext alc;
+        private readonly Device* device;
+        private readonly Context* context;
         internal readonly Vector3 forward;
         internal readonly Vector3 up;
 
-        private OpenALHost(ALDevice device, ALContext context, Vector3 forward, Vector3 up)
+        private OpenALHost(AL al, ALContext alc, Device* device, Context* context, Vector3 forward, Vector3 up)
         {
+            this.al = al;
+            this.alc = alc;
             this.device = device;
             this.context = context;
             this.forward = forward;
             this.up = up;
         }
 
-        public static OpenALHost Open(Vector3 forward, Vector3 up)
+        public unsafe static OpenALHost Open(Vector3 forward, Vector3 up)
         {
-            var devices = ALC.GetStringList(GetEnumerationStringList.DeviceSpecifier);
+            var alc = ALContext.GetApi(soft: false);
+
+            var al = AL.GetApi(soft: false);
+
+            //var devices = alc.GetStringList(GetEnumerationStringList.DeviceSpecifier);
 
             // Get the default device, then go though all devices and select the AL soft device if it exists.
-            string deviceName = ALC.GetString(ALDevice.Null, AlcGetString.DefaultDeviceSpecifier);
-            foreach (var d in devices)
-            {
-                if (d.Contains("OpenAL Soft"))
-                {
-                    deviceName = d;
-                }
-            }
+            string deviceName = alc.GetContextProperty(null, GetContextString.DeviceSpecifier);
+            //foreach (var d in devices)
+            //{
+            //    if (d.Contains("OpenAL Soft"))
+            //    {
+            //        deviceName = d;
+            //    }
+            //}
 
-            var device = ALC.OpenDevice(deviceName);
-            var context = ALC.CreateContext(device, new int[] { 
-                AlSoft.HRTF, AlSoft.Enable
-            });
-            ALC.MakeContextCurrent(context);
+            var device = alc.OpenDevice(deviceName);
 
-            return new OpenALHost(device, context, forward, up);
+            int* attrs = stackalloc int[] {
+                AlSoft.HRTF,
+                AlSoft.Enable
+            };
+
+            var context = alc.CreateContext(device, attrs);
+            alc.MakeContextCurrent(context);
+
+            return new OpenALHost(al, alc, device, context, forward, up);
         }
 
         public void MakeCurrent()
         {
-            ALC.MakeContextCurrent(this.context);
+            alc.MakeContextCurrent(this.context);
         }
 
         public IAudioAdapter GetAudioAdapter()
@@ -62,9 +74,9 @@ namespace OpenH2.OpenAL.Audio
 
         public void Shutdown()
         {
-            ALC.MakeContextCurrent(ALContext.Null);
-            ALC.CloseDevice(this.device);
-            ALC.DestroyContext(this.context);
+            alc.MakeContextCurrent(null);
+            alc.CloseDevice(this.device);
+            alc.DestroyContext(this.context);
         }
     }
 }

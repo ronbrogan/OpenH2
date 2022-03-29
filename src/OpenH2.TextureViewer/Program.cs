@@ -1,19 +1,20 @@
-﻿using OpenH2.Core.Factories;
-using OpenH2.Core.Maps.Vista;
-using OpenH2.Core.Tags;
-using OpenH2.Foundation;
-using OpenH2.Rendering.OpenGL;
-using OpenH2.Rendering.Shaders;
-using OpenTK.Graphics.OpenGL;
-using OpenTK.Windowing.Common.Input;
-using OpenTK.Windowing.Desktop;
-using OpenTK.Windowing.GraphicsLibraryFramework;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Numerics;
 using System.Runtime.InteropServices;
+using OpenH2.Core.Factories;
+using OpenH2.Core.Maps.Vista;
+using OpenH2.Core.Tags;
+using OpenH2.Foundation;
+using OpenH2.Rendering.OpenGL;
+using OpenH2.Rendering.Shaders;
+using Silk.NET.Input;
+using Silk.NET.Input.Extensions;
+using Silk.NET.OpenGL;
+using Silk.NET.Windowing;
+using Shader = OpenH2.Rendering.Shaders.Shader;
 
 namespace OpenH2.TextureViewer
 {
@@ -24,13 +25,15 @@ namespace OpenH2.TextureViewer
 
         private static Dictionary<int, int> BitmTextureIdLookup = new Dictionary<int, int>();
 
-        public static int MatriciesUniformHandle;
+        public static uint MatriciesUniformHandle;
         public static GlobalUniform MatriciesUniform;
         private static uint QuadMeshId;
         private static Mesh<BitmapTag> quadMesh;
-        private static int ShaderHandle;
-        private static OpenGLTextureBinder textureBinder = new OpenGLTextureBinder();
-        private static GameWindow window;
+        private static uint ShaderHandle;
+        private static OpenGLTextureBinder textureBinder;
+        private static IWindow window;
+        private static IInputContext input;
+        private static GL gl;
 
         static void Main(string[] args)
         {
@@ -61,22 +64,26 @@ namespace OpenH2.TextureViewer
             var host = new OpenGLHost();
             host.CreateWindow(new Vector2(1600, 900));
             window = host.GetWindow();
-            Setup();
+            input = window.CreateInput();
+            Setup(host);
 
             host.RegisterCallbacks(Update, Render);
             host.Start(30, 30);
         }
 
         private static DebugProc callback = DebugCallbackF;
-        public static void Setup()
+        public static void Setup(OpenGLHost host)
         {
-            GL.DebugMessageCallback(callback, (IntPtr.Zero));
+            textureBinder = new OpenGLTextureBinder(host);
+            gl = GL.GetApi(host.GetWindow());
 
-            GL.Enable(EnableCap.DebugOutput);
-            GL.Enable(EnableCap.DepthTest);
-            GL.Enable(EnableCap.Multisample);
-            GL.Enable(EnableCap.CullFace);
-            GL.BlendFunc(BlendingFactor.SrcAlpha, BlendingFactor.OneMinusSrcAlpha);
+            gl.DebugMessageCallback(callback, (IntPtr.Zero));
+
+            gl.Enable(EnableCap.DebugOutput);
+            gl.Enable(EnableCap.DepthTest);
+            gl.Enable(EnableCap.Multisample);
+            gl.Enable(EnableCap.CullFace);
+            gl.BlendFunc(BlendingFactor.SrcAlpha, BlendingFactor.OneMinusSrcAlpha);
 
             UploadQuadMesh();
             MatriciesUniform = new GlobalUniform()
@@ -86,19 +93,20 @@ namespace OpenH2.TextureViewer
                 ViewPosition = Vector3.Zero
             };
 
-            ShaderHandle = ShaderCompiler.CreateShader(Shader.TextureViewer);
+            ShaderHandle = OpenGLShaderCompiler.CreateShader(Shader.TextureViewer);
         }
 
         static KeyboardState keyboardState, lastKeyboardState;
         private static void Update(double time)
         {
             // read button down, increment CurrentBitmap
-            keyboardState = window.KeyboardState.GetSnapshot();
-            if (KeyPress(Keys.Left))
+            var state = input.CaptureState();
+            keyboardState = state.Keyboards[0];
+            if (KeyPress(Key.Left))
             {
                 SetNextBitmap(-1);
             }
-            if (KeyPress(Keys.Right))
+            if (KeyPress(Key.Right))
             {
                 SetNextBitmap(1);
             }
@@ -112,13 +120,13 @@ namespace OpenH2.TextureViewer
                 BitmTextureIdLookup[CurrentBitmap] = handle;
             }
 
-            GL.ActiveTexture(TextureUnit.Texture0);
-            GL.BindTexture(TextureTarget.Texture2D, handle);
+            gl.ActiveTexture(TextureUnit.Texture0);
+            gl.BindTexture(GLEnum.Texture2D, (uint)handle);
         }
 
-        public static bool KeyPress(Keys key)
+        public static bool KeyPress(Key key)
         {
-            return (keyboardState[key] && (keyboardState[key] != lastKeyboardState[key]));
+            return (keyboardState.IsKeyPressed(key) && (keyboardState.IsKeyPressed(key) != lastKeyboardState.IsKeyPressed(key)));
         }
 
         private static void SetNextBitmap(int offset)
@@ -146,13 +154,13 @@ namespace OpenH2.TextureViewer
             Console.WriteLine("[" + CurrentBitmap + "] @ " + candidate.TextureInfos[0].ID + ", " + candidate.Name);
         }
 
-        private static void Render(double time)
+        private static unsafe void Render(double time)
         {
-            GL.UseProgram(ShaderHandle);
+            gl.UseProgram(ShaderHandle);
 
             SetupMatrixUniform();
 
-            GL.BindVertexArray(QuadMeshId);
+            gl.BindVertexArray(QuadMeshId);
 
             var type = quadMesh.ElementType;
             var indicies = quadMesh.Indicies;
@@ -160,10 +168,10 @@ namespace OpenH2.TextureViewer
             switch (type)
             {
                 case MeshElementType.TriangleList:
-                    GL.DrawElements(PrimitiveType.Triangles, indicies.Length, DrawElementsType.UnsignedInt, 0);
+                    gl.DrawElements(GLEnum.Triangles, (uint)indicies.Length, GLEnum.UnsignedInt, (void*)0);
                     break;
                 case MeshElementType.TriangleStrip:
-                    GL.DrawElements(PrimitiveType.TriangleStrip, indicies.Length, DrawElementsType.UnsignedInt, 0);
+                    gl.DrawElements(GLEnum.TriangleStrip, (uint)indicies.Length, GLEnum.UnsignedInt, (void*)0);
                     break;
             }
         }
@@ -188,61 +196,61 @@ namespace OpenH2.TextureViewer
 
             uint vao, vbo, ibo;
 
-            GL.GenVertexArrays(1, out vao);
-            GL.BindVertexArray(vao);
+            gl.GenVertexArrays(1, out vao);
+            gl.BindVertexArray(vao);
 
-            GL.GenBuffers(1, out vbo);
-            GL.BindBuffer(BufferTarget.ArrayBuffer, vbo);
-            GL.BufferData(BufferTarget.ArrayBuffer, (IntPtr)(verticies.Length * VertexFormat.Size), verticies, BufferUsageHint.StaticDraw);
+            gl.GenBuffers(1, out vbo);
+            gl.BindBuffer(GLEnum.ArrayBuffer, vbo);
+            gl.BufferData<VertexFormat>(GLEnum.ArrayBuffer, (nuint)(verticies.Length * VertexFormat.Size), verticies, GLEnum.StaticDraw);
 
-            GL.GenBuffers(1, out ibo);
-            GL.BindBuffer(BufferTarget.ElementArrayBuffer, ibo);
-            GL.BufferData(BufferTarget.ElementArrayBuffer, (IntPtr)(indicies.Length * sizeof(uint)), indicies, BufferUsageHint.StaticDraw);
+            gl.GenBuffers(1, out ibo);
+            gl.BindBuffer(GLEnum.ElementArrayBuffer, ibo);
+            gl.BufferData<int>(GLEnum.ElementArrayBuffer, (nuint)(indicies.Length * sizeof(uint)), indicies, GLEnum.StaticDraw);
 
             SetupVertexFormatAttributes();
 
             QuadMeshId = vao;
         }
 
-        private static void SetupVertexFormatAttributes()
+        private static unsafe void SetupVertexFormatAttributes()
         {
             // Attributes for VertexFormat.Position
-            GL.EnableVertexAttribArray(0);
-            GL.VertexAttribPointer(0, 3, VertexAttribPointerType.Float, false, VertexFormat.Size, 0);
+            gl.EnableVertexAttribArray(0);
+            gl.VertexAttribPointer(0, 3, VertexAttribPointerType.Float, false, (uint)VertexFormat.Size, (void*)0);
 
             // Attributes for VertexFormat.TexCoords
-            GL.EnableVertexAttribArray(1);
-            GL.VertexAttribPointer(1, 2, VertexAttribPointerType.Float, false, VertexFormat.Size, 12);
+            gl.EnableVertexAttribArray(1);
+            gl.VertexAttribPointer(1, 2, VertexAttribPointerType.Float, false, (uint)VertexFormat.Size, (void*)12);
 
             // Attributes for VertexFormat.Normal
-            GL.EnableVertexAttribArray(2);
-            GL.VertexAttribPointer(2, 3, VertexAttribPointerType.Float, false, VertexFormat.Size, 20);
+            gl.EnableVertexAttribArray(2);
+            gl.VertexAttribPointer(2, 3, VertexAttribPointerType.Float, false, (uint)VertexFormat.Size, (void*)20);
 
             // Attributes for VertexFormat.Tangent
-            GL.EnableVertexAttribArray(3);
-            GL.VertexAttribPointer(3, 3, VertexAttribPointerType.Float, false, VertexFormat.Size, 32);
+            gl.EnableVertexAttribArray(3);
+            gl.VertexAttribPointer(3, 3, VertexAttribPointerType.Float, false, (uint)VertexFormat.Size, (void*)32);
 
             // Attributes for VertexFormat.Bitangent
-            GL.EnableVertexAttribArray(4);
-            GL.VertexAttribPointer(4, 3, VertexAttribPointerType.Float, false, VertexFormat.Size, 44);
+            gl.EnableVertexAttribArray(4);
+            gl.VertexAttribPointer(4, 3, VertexAttribPointerType.Float, false, (uint)VertexFormat.Size, (void*)44);
         }
 
         private static void SetupMatrixUniform()
         {
             if (MatriciesUniformHandle == default(int))
-                GL.GenBuffers(1, out MatriciesUniformHandle);
+                gl.GenBuffers(1, out MatriciesUniformHandle);
 
-            GL.BindBuffer(BufferTarget.UniformBuffer, MatriciesUniformHandle);
+            gl.BindBuffer(GLEnum.UniformBuffer, MatriciesUniformHandle);
 
-            GL.BufferData(BufferTarget.UniformBuffer, GlobalUniform.Size, ref MatriciesUniform, BufferUsageHint.DynamicDraw);
+            gl.BufferData(GLEnum.UniformBuffer, (uint)GlobalUniform.Size, MatriciesUniform, GLEnum.DynamicDraw);
 
-            GL.BindBufferBase(BufferRangeTarget.UniformBuffer, 0, MatriciesUniformHandle);
-            GL.BindBuffer(BufferTarget.UniformBuffer, 0);
+            gl.BindBufferBase(GLEnum.UniformBuffer, 0, MatriciesUniformHandle);
+            gl.BindBuffer(GLEnum.UniformBuffer, 0);
         }
 
-        public static void DebugCallbackF(DebugSource source, DebugType type, int id, DebugSeverity severity, int length, IntPtr message, IntPtr userParam)
+        public static void DebugCallbackF(GLEnum source, GLEnum type, int id, GLEnum severity, int length, IntPtr message, IntPtr userParam)
         {
-            if (severity == DebugSeverity.DebugSeverityNotification)
+            if (severity == GLEnum.DebugSeverityNotification)
                 return;
 
             string msg = Marshal.PtrToStringAnsi(message, length);

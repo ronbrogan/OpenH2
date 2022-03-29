@@ -1,5 +1,13 @@
 ﻿namespace OpenH2.Rendering.Shaders
 {
+    public enum ShaderType
+    {
+        Vertex,
+        Fragment,
+        Geometry,
+        Compute
+    }
+
     public enum Shader
     {
         Depth,

@@ -1,4 +1,9 @@
-﻿using OpenH2.Core.Architecture;
+﻿using System;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.Linq;
+using System.Numerics;
+using OpenH2.Core.Architecture;
 using OpenH2.Engine.Components;
 using OpenH2.Engine.Components.Globals;
 using OpenH2.Engine.Stores;
@@ -10,14 +15,8 @@ using OpenH2.Physics.Core;
 using OpenH2.Physics.Proxying;
 using OpenH2.Physx.Extensions;
 using OpenH2.Physx.Proxies;
-using OpenTK.Windowing.GraphicsLibraryFramework;
 using PhysX;
 using PhysX.VisualDebugger;
-using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
-using System.Numerics;
 using ErrorCode = PhysX.ErrorCode;
 using PxFoundation = PhysX.Foundation;
 using PxPhysics = PhysX.Physics;
@@ -182,7 +181,7 @@ namespace OpenH2.Engine.Systems
         }
 
 
-        private float stepSize = 1f / 100f;
+        private const float stepSize = 1f / 100f;
         private double totalTime = 0d;
         private double simulatedTime = 0d;
         public override void Update(double timestep)

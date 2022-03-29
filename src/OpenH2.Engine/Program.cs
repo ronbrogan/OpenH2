@@ -9,7 +9,7 @@ namespace OpenH2.Engine
         {
             try
             {
-                var engine = new Engine();
+                using var engine = new Engine();
                 var startArgs = new EngineStartParameters();
 
                 if (args.Length > 0)

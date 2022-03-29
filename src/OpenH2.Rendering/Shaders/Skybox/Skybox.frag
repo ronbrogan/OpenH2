@@ -1,6 +1,8 @@
-﻿#version 450
+#version 450
 
 #extension GL_ARB_bindless_texture : require
+
+layout(binding=16) uniform sampler2DArray shadowMap;
 
 layout(std140, binding = 0) uniform GlobalUniform
 {

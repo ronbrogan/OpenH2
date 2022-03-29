@@ -1,8 +1,7 @@
-﻿using OpenH2.Foundation.Physics;
-using System.Collections.Generic;
-using System.Linq;
+﻿using System.Collections.Generic;
 using System.Numerics;
 using System.Threading.Tasks;
+using OpenH2.Foundation.Physics;
 
 namespace OpenH2.Core.Architecture
 {

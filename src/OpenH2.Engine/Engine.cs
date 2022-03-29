@@ -1,4 +1,8 @@
-﻿using OpenH2.Audio.Abstractions;
+﻿using System;
+using System.Diagnostics;
+using System.IO;
+using System.Numerics;
+using OpenH2.Audio.Abstractions;
 using OpenH2.Core.Architecture;
 using OpenH2.Core.Configuration;
 using OpenH2.Core.Extensions;
@@ -13,28 +17,29 @@ using OpenH2.Foundation.Engine;
 using OpenH2.OpenAL.Audio;
 using OpenH2.Rendering.Abstractions;
 using OpenH2.Rendering.OpenGL;
-using OpenTK.Windowing.Desktop;
-using System;
-using System.Diagnostics;
-using System.IO;
-using System.Numerics;
+using OpenH2.Rendering.Vulkan;
+using Silk.NET.Input;
 
 namespace OpenH2.Engine
 {
-    public class Engine
+    public class Engine : IDisposable
     {
+        IDisposable? graphicsHostDisposable = null;
         IGraphicsHost graphicsHost;
         IAudioHost audioHost;
         IGameLoopSource gameLoop;
-        Func<GameWindow> gameWindowGetter;
+        Func<IInputContext> gameInputGetter;
 
         private World world;
+        private FlatFileMetricSink sink;
 
         public Engine()
         {
-            var host = new OpenGLHost();
-            gameWindowGetter = host.GetWindow;
+            var host = new VulkanHost();
+            host.EnableConsoleDebug();
+            gameInputGetter = host.GetInputContext;
 
+            graphicsHostDisposable = host;
             graphicsHost = host;
             gameLoop = host;
 
@@ -43,8 +48,6 @@ namespace OpenH2.Engine
 
         public void Start(EngineStartParameters parameters)
         {
-            graphicsHost.CreateWindow(new Vector2(1600, 900));
-
             var mapPath = parameters.LoadPathOverride ?? @"D:\H2vMaps\lockout.map";
             var configPath = Environment.GetEnvironmentVariable(ConfigurationConstants.ConfigPathOverrideEnvironmentVariable);
 
@@ -68,7 +71,9 @@ namespace OpenH2.Engine
                 LoadMap(factory, mapFilename, matFactory);
             });
 
-            world = new RealtimeWorld(gameWindowGetter(), 
+            graphicsHost.CreateWindow(new Vector2(1600, 900));
+
+            world = new RealtimeWorld(gameInputGetter(), 
                 audioHost.GetAudioAdapter(), 
                 graphicsHost);
 
@@ -122,9 +127,9 @@ namespace OpenH2.Engine
             var timestamp = DateTime.Now.ToString("yy-MM-ddTHH-mm");
             var sinkPath = Path.Combine(Environment.CurrentDirectory, "diagnostics", $"{timestamp}-metrics.csv");
             Directory.CreateDirectory(Path.GetDirectoryName(sinkPath));
-            var sink = new FlatFileMetricSink(sinkPath);
-            scene.UseMetricSink(sink);
-            sink.Start();
+            this.sink = new FlatFileMetricSink(sinkPath);
+            scene.UseMetricSink(this.sink);
+            this.sink.Start();
         }
 
         private void PlaceLights(Scene destination)
@@ -158,5 +163,12 @@ namespace OpenH2.Engine
                 destination.Entities.Add(Guid.NewGuid(), item);
             }
         }
+
+        public void Dispose()
+        {
+            this.sink.Stop();
+            this.graphicsHostDisposable?.Dispose();
+        }
+
     }
 }

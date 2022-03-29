@@ -1,4 +1,4 @@
-﻿#version 450
+#version 450
 
 #extension GL_ARB_bindless_texture : require
 
@@ -8,7 +8,7 @@ layout(std140, binding = 0) uniform GlobalUniform
 {
     mat4 ViewMatrix;
     mat4 ProjectionMatrix;
-	mat4 SunLightMatrix[4];
+    mat4 SunLightMatrix[4];
     vec4 SunLightDistances;
     vec4 SunLightDirection;
     vec4 ViewPosition;
@@ -154,16 +154,6 @@ void main() {
     // Adds global lighting
     float shadow = shadowCalculation(vertex.frag_pos);   
     finalColor += ((1.0 - shadow) * globalLighting(diffuseColor));
-
-    // Accumulates point lights
-    for(int i = 0; i < 10; i++)
-    {
-        if(Lighting.pointLights[i].ColorAndRange.a <= 0.0) 
-        {
-            continue;
-        }
-        finalColor += lightCalculation(Lighting.pointLights[i], diffuseColor);
-    }
 
     if(Data.UseEmissiveMap)
     {

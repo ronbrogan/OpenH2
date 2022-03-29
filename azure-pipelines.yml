@@ -31,6 +31,7 @@ steps:
   inputs:
     command: build
     projects: '$(solution)'
+    arguments: ' -p:CompileShaders=false'
 
 # dotnet test --no-build --filter skip!=true
 - task: DotNetCoreCLI@2

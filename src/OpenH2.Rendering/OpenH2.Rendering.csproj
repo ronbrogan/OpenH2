@@ -2,13 +2,14 @@
 
   <PropertyGroup>
     <TargetFramework>net5.0</TargetFramework>
-	<AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="OpenTK.Graphics" Version="4.6.4" />
-    <PackageReference Include="OpenTK.Windowing.Desktop" Version="4.6.4" />
+    <PackageReference Include="Silk.NET" Version="2.14.0" />
+    <PackageReference Include="Silk.NET.OpenGL.Extensions.ARB" Version="2.14.0" />
     <PackageReference Include="System.Drawing.Common" Version="5.0.2" />
+    <PackageReference Include="System.Runtime.CompilerServices.Unsafe" Version="6.0.0" />
   </ItemGroup>
 
   <ItemGroup>
@@ -16,58 +17,29 @@
     <ProjectReference Include="..\OpenH2.Foundation\OpenH2.Foundation.csproj" />
   </ItemGroup>
 
+  <Target Name="CompileShaders" AfterTargets="GetCopyToOutputDirectoryItems" BeforeTargets="_CopyOutOfDateSourceItemsToOutputDirectory" Inputs="%(ShaderCompile.FullPath)" Outputs="%(ShaderCompile.FullPath).spv)">
+    <Exec Condition="$(CompileShaders) != 'false'" Command="glslc &quot;%(ShaderCompile.FullPath)&quot; -o &quot;%(ShaderCompile.FullPath).spv&quot; -g" />
+  </Target>
+
   <ItemGroup>
-    <None Update="Shaders\ShadowMapping\ShadowMapping.geom">
+    <ShaderCompile Include="Shaders\**\*.vk.vert"></ShaderCompile>
+    <ShaderCompile Include="Shaders\**\*.vk.frag"></ShaderCompile>
+    <ShaderCompile Include="Shaders\**\*.vk.geom"></ShaderCompile>
+
+    <None Update="Shaders\**\*.vert">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Update="Shaders\ShadowMapping\ShadowMapping.frag">
+    <None Update="Shaders\**\*.frag">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Update="Shaders\ShadowMapping\ShadowMapping.vert">
+    <None Update="Shaders\**\*.geom">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Update="Shaders\Generic\Generic.frag">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Update="Shaders\Generic\Generic.vert">
+    <None Update="Shaders\**\*.spv" Hidden="true">
+      <DependentUpon>$([System.String]::Copy(%(Filename)).Replace('.spv', ''))</DependentUpon>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Update="Shaders\Depth\Depth.frag">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Update="Shaders\Depth\Depth.vert">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Update="Shaders\Skybox\Skybox.frag">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Update="Shaders\Skybox\Skybox.vert">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Update="Shaders\TextureViewer\TextureViewer.frag">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Update="Shaders\TextureViewer\TextureViewer.vert">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Update="Shaders\Pointviz\Pointviz.frag">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Update="Shaders\Pointviz\Pointviz.geom">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Update="Shaders\Pointviz\Pointviz.vert">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Update="Shaders\Wireframe\Wireframe.geom">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Update="Shaders\Wireframe\Wireframe.frag">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Update="Shaders\Wireframe\Wireframe.vert">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
+
   </ItemGroup>
 
 </Project>

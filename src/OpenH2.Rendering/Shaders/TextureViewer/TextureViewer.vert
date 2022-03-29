@@ -1,11 +1,14 @@
-﻿#version 450
+#version 450
 
 
 layout(std140, binding = 0) uniform MatrixUniform
 {
-	mat4 ViewMatrix;
-	mat4 ProjectionMatrix;
-	vec3 ViewPosition;
+    mat4 ViewMatrix;
+    mat4 ProjectionMatrix;
+    mat4 SunLightMatrix[4];
+    vec4 SunLightDistances;
+    vec4 SunLightDirection;
+    vec4 ViewPosition;
 } Matricies;
 
 

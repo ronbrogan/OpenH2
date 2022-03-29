@@ -2,6 +2,7 @@
 
   <PropertyGroup>
     <TargetFramework>net5.0</TargetFramework>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
 
   <ItemGroup>
@@ -12,7 +13,9 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="OpenTK.OpenAL" Version="4.6.4" />
+    <PackageReference Include="Silk.NET" Version="2.14.0" />
+    <PackageReference Include="Silk.NET.OpenAL.Extensions.EXT" Version="2.14.0" />
+    <PackageReference Include="Silk.NET.OpenAL.Extensions.Soft" Version="2.14.0" />
   </ItemGroup>
 
   <ItemGroup>

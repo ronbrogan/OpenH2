@@ -4,8 +4,7 @@ using OpenH2.Engine.Stores;
 using OpenH2.Foundation;
 using OpenH2.Rendering;
 using OpenH2.Rendering.Abstractions;
-using OpenTK.Windowing.GraphicsLibraryFramework;
-using System.Diagnostics;
+using Silk.NET.Input;
 using System.Numerics;
 
 namespace OpenH2.Engine.Systems
@@ -30,22 +29,22 @@ namespace OpenH2.Engine.Systems
 
         public override void Update(double timestep)
         {
-            if (inputStore.WasPressed(Keys.F2))
+            if (inputStore.WasPressed(Key.F2))
             {
                 enabledLayers ^= RenderLayers.Normal;
             }
 
-            if (inputStore.WasPressed(Keys.F3))
+            if (inputStore.WasPressed(Key.F3))
             {
                 enabledLayers ^= RenderLayers.Debug;
             }
 
-            if (inputStore.WasPressed(Keys.F4))
+            if (inputStore.WasPressed(Key.F4))
             {
                 enabledLayers ^= RenderLayers.Collision;
             }
 
-            if (inputStore.WasPressed(Keys.F5))
+            if (inputStore.WasPressed(Key.F5))
             {
                 enabledLayers ^= RenderLayers.Scripting;
             }

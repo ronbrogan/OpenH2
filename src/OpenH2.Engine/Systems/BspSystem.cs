@@ -1,12 +1,9 @@
-﻿using OpenH2.Core.Architecture;
-using OpenH2.Engine.Entities;
+﻿using System.Collections;
+using System.Collections.Generic;
+using OpenH2.Core.Architecture;
 using OpenH2.Engine.Stores;
 using OpenH2.Foundation.Logging;
-using OpenTK.Windowing.GraphicsLibraryFramework;
-using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.Text;
+using Silk.NET.Input;
 
 namespace OpenH2.Engine.Systems
 {
@@ -142,51 +139,51 @@ namespace OpenH2.Engine.Systems
         {
             var bspIndex = -1;
 
-            if (this.inputStore.WasPressed(Keys.KeyPad0))
+            if (this.inputStore.WasPressed(Key.Keypad0))
             {
                 bspIndex = 0;
             }
-            else if (this.inputStore.WasPressed(Keys.KeyPad1))
+            else if (this.inputStore.WasPressed(Key.Keypad1))
             {
                 bspIndex = 1;
             }
-            else if (this.inputStore.WasPressed(Keys.KeyPad2))
+            else if (this.inputStore.WasPressed(Key.Keypad2))
             {
                 bspIndex = 2;
             }
-            else if (this.inputStore.WasPressed(Keys.KeyPad3))
+            else if (this.inputStore.WasPressed(Key.Keypad3))
             {
                 bspIndex = 3;
             }
-            else if (this.inputStore.WasPressed(Keys.KeyPad4))
+            else if (this.inputStore.WasPressed(Key.Keypad4))
             {
                 bspIndex = 4;
             }
-            else if (this.inputStore.WasPressed(Keys.KeyPad5))
+            else if (this.inputStore.WasPressed(Key.Keypad5))
             {
                 bspIndex = 5;
             }
-            else if (this.inputStore.WasPressed(Keys.KeyPad6))
+            else if (this.inputStore.WasPressed(Key.Keypad6))
             {
                 bspIndex = 6;
             }
-            else if (this.inputStore.WasPressed(Keys.KeyPad7))
+            else if (this.inputStore.WasPressed(Key.Keypad7))
             {
                 bspIndex = 7;
             }
-            else if (this.inputStore.WasPressed(Keys.KeyPad8))
+            else if (this.inputStore.WasPressed(Key.Keypad8))
             {
                 bspIndex = 8;
             }
-            else if (this.inputStore.WasPressed(Keys.KeyPad9))
+            else if (this.inputStore.WasPressed(Key.Keypad9))
             {
                 bspIndex = 9;
             }
 
             if(bspIndex >= 0)
             {
-                var toggle = this.inputStore.IsDown(Keys.LeftControl)
-                || this.inputStore.IsDown(Keys.RightControl);
+                var toggle = this.inputStore.IsDown(Key.ControlLeft)
+                || this.inputStore.IsDown(Key.ControlRight);
 
                 SwitchBsp(bspIndex, toggle);
             }

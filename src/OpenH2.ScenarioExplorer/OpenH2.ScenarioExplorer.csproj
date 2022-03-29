@@ -5,6 +5,7 @@
     <TargetFramework>net5.0</TargetFramework>
     <Platforms>AnyCPU;x64</Platforms>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
 
   <ItemGroup>

@@ -1,20 +1,18 @@
-﻿using OpenH2.Core.Tags;
-using OpenH2.ScenarioExplorer.ViewModels;
-using System;
+﻿using System;
 using System.Diagnostics;
 using System.IO;
+using System.Numerics;
+using System.Runtime.InteropServices;
 using System.Text;
-using OpenTK.Graphics.OpenGL;
+using Avalonia;
+using Avalonia.Media.Imaging;
+using OpenH2.Core.Tags;
+using OpenH2.Foundation;
 using OpenH2.Rendering.OpenGL;
 using OpenH2.Rendering.Shaders;
-using System.Numerics;
-using OpenH2.Foundation;
-using PixelFormat = OpenTK.Graphics.OpenGL.PixelFormat;
-using System.Runtime.InteropServices;
-using Avalonia.Media.Imaging;
-using Avalonia;
-using OpenTK.Windowing.Common;
-using OpenTK.Windowing.Desktop;
+using OpenH2.ScenarioExplorer.ViewModels;
+using Silk.NET.OpenGL;
+using Shader = OpenH2.Rendering.Shaders.Shader;
 
 namespace OpenH2.ScenarioExplorer
 {
@@ -38,7 +36,7 @@ namespace OpenH2.ScenarioExplorer
             }
         }
 
-        private static TagPreviewViewModel GetBitmPreview(BitmapTag bitm)
+        private unsafe static TagPreviewViewModel GetBitmPreview(BitmapTag bitm)
         {
             var preview = new TagPreviewViewModel();
 
@@ -52,32 +50,20 @@ namespace OpenH2.ScenarioExplorer
                 if (bitm.TextureInfos[0].Width == 0 || bitm.TextureInfos[0].Height == 0)
                     return null;
 
-                var textureBinder = new OpenGLTextureBinder();
+                var host = new OpenGLHost();
+                host.CreateWindow(new Vector2(bitm.TextureInfos[0].Width, bitm.TextureInfos[0].Height), hidden: true);
+                var window = host.GetWindow();
 
-                var settings = new GameWindowSettings();
+                var textureBinder = new OpenGLTextureBinder(host);
+                gl = GL.GetApi(window);
 
-                var nsettings = new NativeWindowSettings()
-                {
-                    API = ContextAPI.OpenGL,
-                    AutoLoadBindings = true,
-                    Size = new OpenTK.Mathematics.Vector2i(bitm.TextureInfos[0].Width, bitm.TextureInfos[0].Height),
-                    Title = "OpenH2",
-                    Flags = ContextFlags.Debug | ContextFlags.Offscreen,
-                    APIVersion = new Version(4, 0)
-                };
+                gl.Enable(EnableCap.DebugOutput);
+                gl.DebugMessageCallback(callback, (IntPtr.Zero));
 
-                var window = new GameWindow(settings, nsettings);
-
-                window.IsVisible = false;
-                window.MakeCurrent();
-
-                GL.Enable(EnableCap.DebugOutput);
-                GL.DebugMessageCallback(callback, (IntPtr.Zero));
-
-                GL.Enable(EnableCap.DepthTest);
-                GL.Enable(EnableCap.CullFace);
-                GL.Enable(EnableCap.Blend);
-                GL.BlendFunc(BlendingFactor.SrcAlpha, BlendingFactor.OneMinusSrcAlpha);
+                gl.Enable(EnableCap.DepthTest);
+                gl.Enable(EnableCap.CullFace);
+                gl.Enable(EnableCap.Blend);
+                gl.BlendFunc(BlendingFactor.SrcAlpha, BlendingFactor.OneMinusSrcAlpha);
 
                 var meshId = UploadQuadMesh();
                 var matriciesUniform = new GlobalUniform()
@@ -87,36 +73,36 @@ namespace OpenH2.ScenarioExplorer
                     ViewPosition = Vector3.Zero
                 };
 
-                var shader = ShaderCompiler.CreateShader(Shader.TextureViewer);
+                var shader = OpenGLShaderCompiler.CreateShader(Shader.TextureViewer);
 
-                var handle = textureBinder.GetOrBind(bitm, out var _);
-                GL.ActiveTexture(TextureUnit.Texture0);
-                GL.BindTexture(TextureTarget.Texture2D, handle);
+                var handle = (uint)textureBinder.GetOrBind(bitm, out var _);
+                gl.ActiveTexture(TextureUnit.Texture0);
+                gl.BindTexture(GLEnum.Texture2D, handle);
 
-                GL.ClearColor(0f, 0f, 0f, 1f);
-                GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
+                gl.ClearColor(0f, 0f, 0f, 1f);
+                gl.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
 
-                GL.UseProgram(shader);
+                gl.UseProgram(shader);
 
-                GL.GenBuffers(1, out uint MatriciesUniformHandle);
+                gl.GenBuffers(1, out uint MatriciesUniformHandle);
 
-                GL.BindBuffer(BufferTarget.UniformBuffer, MatriciesUniformHandle);
+                gl.BindBuffer(GLEnum.UniformBuffer, MatriciesUniformHandle);
 
-                GL.BufferData(BufferTarget.UniformBuffer, GlobalUniform.Size, ref matriciesUniform, BufferUsageHint.DynamicDraw);
+                gl.BufferData(GLEnum.UniformBuffer, (uint)GlobalUniform.Size, matriciesUniform, GLEnum.DynamicDraw);
 
-                GL.BindBufferBase(BufferRangeTarget.UniformBuffer, 0, MatriciesUniformHandle);
-                GL.BindBuffer(BufferTarget.UniformBuffer, 0);
+                gl.BindBufferBase(GLEnum.UniformBuffer, 0, MatriciesUniformHandle);
+                gl.BindBuffer(GLEnum.UniformBuffer, 0);
 
-                GL.BindVertexArray(meshId);
+                gl.BindVertexArray(meshId);
 
-                GL.DrawElements(PrimitiveType.Triangles, 6, DrawElementsType.UnsignedInt, 0);
+                gl.DrawElements(PrimitiveType.Triangles, 6, DrawElementsType.UnsignedInt, (void*)0);
 
-                GL.Flush();
+                gl.Flush();
 
                 var bmp = new WriteableBitmap(new PixelSize(bitm.TextureInfos[0].Width, bitm.TextureInfos[0].Height), new Avalonia.Vector(72, 72), Avalonia.Platform.PixelFormat.Rgba8888);
                 using (var buf = bmp.Lock())
                 {
-                    GL.ReadPixels(0, 0, bitm.TextureInfos[0].Width, bitm.TextureInfos[0].Height, PixelFormat.Rgba, PixelType.UnsignedByte, buf.Address);
+                    gl.ReadPixels(0, 0, (uint)bitm.TextureInfos[0].Width, (uint)bitm.TextureInfos[0].Height, GLEnum.Rgba, GLEnum.UnsignedByte, (void*)buf.Address);
                 }
 
                 window.Close();
@@ -229,17 +215,18 @@ namespace OpenH2.ScenarioExplorer
 #region Render Helpers
 
         private static DebugProc callback = DebugCallbackF;
+        private static GL gl;
 
-        public static void DebugCallbackF(DebugSource source, DebugType type, int id, DebugSeverity severity, int length, IntPtr message, IntPtr userParam)
+        public static void DebugCallbackF(GLEnum source, GLEnum type, int id, GLEnum severity, int length, IntPtr message, IntPtr userParam)
         {
-            if (severity == DebugSeverity.DebugSeverityNotification)
+            if (severity == GLEnum.DebugSeverityNotification)
                 return;
 
             string msg = Marshal.PtrToStringAnsi(message, length);
             Console.WriteLine(msg);
         }
 
-        public static uint UploadQuadMesh()
+        public static unsafe uint UploadQuadMesh()
         {
             var mesh = new Mesh<BitmapTag>();
             mesh.Verticies = new VertexFormat[]
@@ -257,36 +244,36 @@ namespace OpenH2.ScenarioExplorer
             var indicies = mesh.Indicies;
 
 
-            GL.GenVertexArrays(1, out uint vao);
-            GL.BindVertexArray(vao);
+            gl.GenVertexArrays(1, out uint vao);
+            gl.BindVertexArray(vao);
 
-            GL.GenBuffers(1, out uint vbo);
-            GL.BindBuffer(BufferTarget.ArrayBuffer, vbo);
-            GL.BufferData(BufferTarget.ArrayBuffer, (IntPtr)(verticies.Length * VertexFormat.Size), verticies, BufferUsageHint.StaticDraw);
+            gl.GenBuffers(1, out uint vbo);
+            gl.BindBuffer(GLEnum.ArrayBuffer, vbo);
+            gl.BufferData<VertexFormat>(GLEnum.ArrayBuffer, (nuint)(verticies.Length * VertexFormat.Size), verticies, GLEnum.StaticDraw);
 
-            GL.GenBuffers(1, out uint ibo);
-            GL.BindBuffer(BufferTarget.ElementArrayBuffer, ibo);
-            GL.BufferData(BufferTarget.ElementArrayBuffer, (IntPtr)(indicies.Length * sizeof(uint)), indicies, BufferUsageHint.StaticDraw);
+            gl.GenBuffers(1, out uint ibo);
+            gl.BindBuffer(GLEnum.ElementArrayBuffer, ibo);
+            gl.BufferData<int>(GLEnum.ElementArrayBuffer, (nuint)(indicies.Length * sizeof(uint)), indicies, GLEnum.StaticDraw);
 
             // Attributes for VertexFormat.Position
-            GL.EnableVertexAttribArray(0);
-            GL.VertexAttribPointer(0, 3, VertexAttribPointerType.Float, false, VertexFormat.Size, 0);
+            gl.EnableVertexAttribArray(0);
+            gl.VertexAttribPointer(0, 3, VertexAttribPointerType.Float, false, (uint)VertexFormat.Size, (void*)0);
 
             // Attributes for VertexFormat.TexCoords
-            GL.EnableVertexAttribArray(1);
-            GL.VertexAttribPointer(1, 2, VertexAttribPointerType.Float, false, VertexFormat.Size, 12);
+            gl.EnableVertexAttribArray(1);
+            gl.VertexAttribPointer(1, 2, VertexAttribPointerType.Float, false, (uint)VertexFormat.Size, (void*)12);
 
             // Attributes for VertexFormat.Normal
-            GL.EnableVertexAttribArray(2);
-            GL.VertexAttribPointer(2, 3, VertexAttribPointerType.Float, false, VertexFormat.Size, 20);
+            gl.EnableVertexAttribArray(2);
+            gl.VertexAttribPointer(2, 3, VertexAttribPointerType.Float, false, (uint)VertexFormat.Size, (void*)20);
 
             // Attributes for VertexFormat.Tangent
-            GL.EnableVertexAttribArray(3);
-            GL.VertexAttribPointer(3, 3, VertexAttribPointerType.Float, false, VertexFormat.Size, 32);
+            gl.EnableVertexAttribArray(3);
+            gl.VertexAttribPointer(3, 3, VertexAttribPointerType.Float, false, (uint)VertexFormat.Size, (void*)32);
 
             // Attributes for VertexFormat.Bitangent
-            GL.EnableVertexAttribArray(4);
-            GL.VertexAttribPointer(4, 3, VertexAttribPointerType.Float, false, VertexFormat.Size, 44);
+            gl.EnableVertexAttribArray(4);
+            gl.VertexAttribPointer(4, 3, VertexAttribPointerType.Float, false, (uint)VertexFormat.Size, (void*)44);
 
             return vao;
         }

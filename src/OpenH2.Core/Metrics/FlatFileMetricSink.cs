@@ -6,6 +6,7 @@ namespace OpenH2.Core.Metrics
 {
     public class FlatFileMetricSink : IMetricSink
     {
+        private CancellationTokenSource cts = new();
         private ConcurrentQueue<string> messages = new();
         private Thread? worker = null;
         private FileStream outFile;
@@ -27,7 +28,7 @@ namespace OpenH2.Core.Metrics
         {
             if(worker != null)
             {
-                worker.Abort();
+                this.cts.Cancel();
                 worker.Join();
             }
         }
@@ -39,7 +40,7 @@ namespace OpenH2.Core.Metrics
 
         private void Work()
         {
-            while(true)
+            while(!cts.IsCancellationRequested)
             {
                 var batchSize = 100;
                 while(batchSize > 0 && messages.TryDequeue(out var msg))
