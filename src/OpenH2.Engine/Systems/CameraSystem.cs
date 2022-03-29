@@ -143,32 +143,5 @@ namespace OpenH2.Engine.Systems
 
             camera.ProjectionMatrix = Matrix4x4.CreatePerspectiveFieldOfView(camera.FieldOfView, camera.AspectRatio, near1, far1);
         }
-
-        public static Matrix4x4 glmCreateLookAt(Vector3 cameraPosition, Vector3 cameraTarget, Vector3 cameraUpVector)
-        {
-            var f = Vector3.Normalize(cameraTarget - cameraPosition);
-            var s = Vector3.Normalize(Vector3.Cross(f, cameraUpVector));
-            var u = Vector3.Cross(s, f);
-
-            Matrix4x4 result = Matrix4x4.Identity;
-
-            result.M11 = s.X;
-            result.M12 = s.Y;
-            result.M13 = s.Z;
-
-            result.M21 = u.X;
-            result.M22 = u.Y;
-            result.M23 = u.Z;
-
-            result.M31 = -f.X;
-            result.M32 = -f.Y;
-            result.M33 = -f.Z;
-
-            result.M41 = -Vector3.Dot(s, cameraPosition);
-            result.M42 = -Vector3.Dot(u, cameraPosition);
-            result.M43 = Vector3.Dot(f, cameraPosition);
-
-            return result;
-        }
     }
 }
