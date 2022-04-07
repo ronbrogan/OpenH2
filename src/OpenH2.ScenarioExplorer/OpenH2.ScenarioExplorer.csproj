@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-    <TargetFramework>net5.0</TargetFramework>
+    <TargetFramework>net6.0</TargetFramework>
     <Platforms>AnyCPU;x64</Platforms>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
@@ -26,11 +26,10 @@
   <ItemGroup>
     <PackageReference Include="Avalonia" Version="0.10.6" />
     <PackageReference Include="Avalonia.Diagnostics" Version="0.10.6" />
-    <PackageReference Include="Microsoft.CodeAnalysis.Common" Version="3.11.0" />
-    <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="3.11.0" />
+    <PackageReference Include="Microsoft.CodeAnalysis.Common" Version="4.1.0" />
+    <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="4.1.0" />
     <PackageReference Include="Avalonia.ReactiveUI" Version="0.10.6" />
     <PackageReference Include="Avalonia.Desktop" Version="0.10.6" />
-    <PackageReference Include="System.Text.Json" Version="5.0.2" />
     <PackageReference Include="PropertyChanged.Fody" Version="3.4.0" />
     <PackageReference Include="TextCopy" Version="6.1.0" />
   </ItemGroup>

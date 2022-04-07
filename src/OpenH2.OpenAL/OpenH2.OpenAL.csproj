@@ -1,7 +1,7 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net5.0</TargetFramework>
+    <TargetFramework>net6.0</TargetFramework>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
 
@@ -13,9 +13,9 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Silk.NET" Version="2.14.0" />
-    <PackageReference Include="Silk.NET.OpenAL.Extensions.EXT" Version="2.14.0" />
-    <PackageReference Include="Silk.NET.OpenAL.Extensions.Soft" Version="2.14.0" />
+    <PackageReference Include="Silk.NET" Version="2.15.0" />
+    <PackageReference Include="Silk.NET.OpenAL.Extensions.EXT" Version="2.15.0" />
+    <PackageReference Include="Silk.NET.OpenAL.Extensions.Soft" Version="2.15.0" />
   </ItemGroup>
 
   <ItemGroup>

@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net5.0</TargetFramework>
+    <TargetFramework>net6.0</TargetFramework>
     <LangVersion>preview</LangVersion>
     <!--<DebugSerializerGeneration>True</DebugSerializerGeneration>-->
     <GenerateSerializersInto>$(MSBuildProjectDirectory)\$(BaseIntermediateOutputPath)\GeneratedSerializers</GenerateSerializersInto>
@@ -23,10 +23,9 @@
   <ItemGroup>
     <PackageReference Include="OpenBlam.Core" Version="1.1.0" />
     <PackageReference Include="OpenBlam.Serialization" Version="1.2.1" />
-    <PackageReference Include="System.Text.Json" Version="5.0.2" />
     <PackageReference Include="System.Numerics.Vectors" Version="4.5.0" />
     <PackageReference Include="System.Runtime.Numerics" Version="4.3.0" />
-    <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="3.11.0" />
+    <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="4.1.0" />
   </ItemGroup>
 
   <ItemGroup>

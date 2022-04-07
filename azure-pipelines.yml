@@ -20,7 +20,7 @@ steps:
   displayName: 'Use .NET 5 sdk'
   inputs:
     packageType: sdk
-    version: 5.0.400
+    version: '6.x'
 
 - task: DotNetCoreCLI@2
   inputs:
