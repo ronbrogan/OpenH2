@@ -1,5 +1,5 @@
-﻿using OpenH2.Audio;
-using OpenH2.Audio.Abstractions;
+﻿using OpenH2.Core.Audio;
+using OpenH2.Core.Audio.Abstractions;
 using Silk.NET.OpenAL;
 using Silk.NET.OpenAL.Native.Extensions.EXT;
 using System;

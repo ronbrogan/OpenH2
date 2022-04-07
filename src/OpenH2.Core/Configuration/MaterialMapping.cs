@@ -1,5 +1,4 @@
-﻿using OpenH2.Core.Tags;
-using OpenH2.Foundation;
+﻿using OpenH2.Foundation;
 using System.Text.Json.Serialization;
 
 namespace OpenH2.Core.Configuration

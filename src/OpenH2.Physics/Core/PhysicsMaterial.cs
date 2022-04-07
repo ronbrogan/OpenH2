@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace OpenH2.Physics.Core
+﻿namespace OpenH2.Physics.Core
 {
     public class PhysicsMaterial
     {

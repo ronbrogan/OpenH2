@@ -1,9 +1,6 @@
 ﻿using Silk.NET.Vulkan;
 using System;
 using System.Diagnostics;
-using System.Collections.Generic;
-using System.Text;
-using VMASharp;
 
 namespace VMASharp
 {

@@ -1,9 +1,6 @@
 ﻿using OpenH2.Core.Offsets;
 using OpenH2.Core.Tags;
 using OpenBlam.Serialization.Layout;
-using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace OpenH2.Core.Maps.MCC
 {

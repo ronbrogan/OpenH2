@@ -1,10 +1,8 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Threading;
 using System.Runtime.CompilerServices;
 
 using Silk.NET.Vulkan;
-using VMASharp;
 
 namespace VMASharp
 {

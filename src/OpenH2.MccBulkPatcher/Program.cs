@@ -1,5 +1,4 @@
 ﻿using CommandLine;
-using System;
 
 namespace OpenH2.MccBulkPatcher
 {

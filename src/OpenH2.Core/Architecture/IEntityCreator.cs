@@ -1,5 +1,4 @@
-﻿using OpenH2.Core.GameObjects;
-using OpenH2.Core.Tags;
+﻿using OpenH2.Core.Tags;
 using OpenH2.Core.Tags.Scenario;
 
 namespace OpenH2.Core.Architecture

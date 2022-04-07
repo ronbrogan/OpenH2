@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace OpenH2.Audio
+﻿namespace OpenH2.Core.Audio
 {
     public enum AudioEncoding
     {

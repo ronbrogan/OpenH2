@@ -3,10 +3,8 @@ using OpenH2.Core.Tags.Scenario;
 using OpenH2.Foundation;
 using OpenH2.Rendering.Abstractions;
 using OpenH2.Rendering.Shaders;
-using System;
 using System.Collections.Generic;
 using System.Numerics;
-using System.Text;
 
 namespace OpenH2.Rendering.Pipelines
 {

@@ -1,7 +1,6 @@
 ﻿#pragma warning disable CA1063
 
 using System;
-using System.Collections.Generic;
 using System.Threading;
 using System.Diagnostics;
 

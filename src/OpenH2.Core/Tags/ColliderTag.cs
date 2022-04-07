@@ -1,5 +1,4 @@
-﻿using OpenH2.Core.Maps;
-using OpenH2.Core.Tags.Common.Collision;
+﻿using OpenH2.Core.Tags.Common.Collision;
 using OpenH2.Core.Tags.Layout;
 using OpenBlam.Serialization.Layout;
 

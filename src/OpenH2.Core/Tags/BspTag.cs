@@ -1,5 +1,4 @@
 ﻿using OpenH2.Core.Offsets;
-using OpenH2.Core.Parsing;
 using OpenH2.Core.Maps;
 using OpenH2.Core.Tags.Common.Collision;
 using OpenH2.Core.Tags.Common.Models;
@@ -9,10 +8,8 @@ using System;
 using System.Numerics;
 using System.Text.Json.Serialization;
 using OpenBlam.Core.MapLoading;
-using OpenBlam.Serialization.Materialization;
 using OpenBlam.Serialization;
 using System.Diagnostics;
-using System.IO;
 using OpenH2.Core.Extensions;
 
 namespace OpenH2.Core.Tags

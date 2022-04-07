@@ -1,7 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Threading;
-using System.Runtime.CompilerServices;
 using System.Diagnostics;
 
 using Silk.NET.Vulkan;

@@ -1,5 +1,4 @@
 using Avalonia;
-using OpenH2.Launcher.Preferences;
 
 namespace OpenH2.Launcher
 {

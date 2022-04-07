@@ -6,7 +6,6 @@ using OpenH2.Core.Tags.Scenario;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 
 namespace OpenH2.Core.Architecture

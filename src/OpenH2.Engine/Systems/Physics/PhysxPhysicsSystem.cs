@@ -8,7 +8,6 @@ using OpenH2.Engine.Components;
 using OpenH2.Engine.Components.Globals;
 using OpenH2.Engine.Stores;
 using OpenH2.Engine.Systems.Movement;
-using OpenH2.Engine.Systems.Physics;
 using OpenH2.Foundation.Physics;
 using OpenH2.Physics.Colliders;
 using OpenH2.Physics.Core;
@@ -23,7 +22,7 @@ using PxPhysics = PhysX.Physics;
 using PxScene = PhysX.Scene;
 using PxTolerancesScale = PhysX.TolerancesScale;
 
-namespace OpenH2.Engine.Systems
+namespace OpenH2.Engine.Systems.Physics
 {
     public class PhysxPhysicsSystem : WorldSystem
     {
@@ -55,30 +54,30 @@ namespace OpenH2.Engine.Systems
         {
             // Setup PhysX infra here
 
-            this.physxFoundation = new PxFoundation(new ConsoleErrorCallback());
-            this.physxScale = new PxTolerancesScale()
+            physxFoundation = new PxFoundation(new ConsoleErrorCallback());
+            physxScale = new PxTolerancesScale()
             {
                 Length = 0.1f,
                 Speed = 98.1f
             };
 
 #if DEBUG
-            pvd = new Pvd(this.physxFoundation);
+            pvd = new Pvd(physxFoundation);
             pvd.Connect("localhost", 5425, TimeSpan.FromSeconds(2), InstrumentationFlag.Debug);
-            this.physxPhysics = new PxPhysics(this.physxFoundation, this.physxScale, false, pvd);
+            physxPhysics = new PxPhysics(physxFoundation, physxScale, false, pvd);
 #else
             this.physxPhysics = new PxPhysics(this.physxFoundation, this.physxScale);
 #endif
-            this.defaultMat = this.physxPhysics.CreateMaterial(0.5f, 0.5f, 0.1f);
+            defaultMat = physxPhysics.CreateMaterial(0.5f, 0.5f, 0.1f);
 
-            this.characterControlMat = this.physxPhysics.CreateMaterial(0.5f, 0.5f, 0f);
-            this.characterControlMat.RestitutionCombineMode = CombineMode.Minimum;
+            characterControlMat = physxPhysics.CreateMaterial(0.5f, 0.5f, 0f);
+            characterControlMat.RestitutionCombineMode = CombineMode.Minimum;
 
-            this.frictionlessMat = this.physxPhysics.CreateMaterial(0f, 0f, 0f);
-            this.frictionlessMat.RestitutionCombineMode = CombineMode.Minimum;
-            this.frictionlessMat.Flags = MaterialFlags.DisableFriction;
+            frictionlessMat = physxPhysics.CreateMaterial(0f, 0f, 0f);
+            frictionlessMat.RestitutionCombineMode = CombineMode.Minimum;
+            frictionlessMat.Flags = MaterialFlags.DisableFriction;
 
-            var sceneDesc = new SceneDesc(this.physxScale)
+            var sceneDesc = new SceneDesc(physxScale)
             {
                 BroadPhaseType = BroadPhaseType.SweepAndPrune,
                 Gravity = world.Gravity,
@@ -88,21 +87,21 @@ namespace OpenH2.Engine.Systems
                 BounceThresholdVelocity = 0.2f * world.Gravity.Length()
             };
 
-            this.physxScene = this.physxPhysics.CreateScene(sceneDesc);
+            physxScene = physxPhysics.CreateScene(sceneDesc);
 
 #if DEBUG
-            this.physxScene.SetVisualizationParameter(VisualizationParameter.ContactPoint, true);
-            this.physxScene.SetVisualizationParameter(VisualizationParameter.ContactNormal, true);
-            this.physxScene.SetVisualizationParameter(VisualizationParameter.ContactForce, true);
-            this.physxScene.SetVisualizationParameter(VisualizationParameter.ContactError, true);
+            physxScene.SetVisualizationParameter(VisualizationParameter.ContactPoint, true);
+            physxScene.SetVisualizationParameter(VisualizationParameter.ContactNormal, true);
+            physxScene.SetVisualizationParameter(VisualizationParameter.ContactForce, true);
+            physxScene.SetVisualizationParameter(VisualizationParameter.ContactError, true);
 
-            var pvdClient = this.physxScene.GetPvdSceneClient();
+            var pvdClient = physxScene.GetPvdSceneClient();
             pvdClient.SetScenePvdFlags(SceneVisualizationFlags.TransmitContacts | SceneVisualizationFlags.TransmitConstraints | SceneVisualizationFlags.TransmitSceneQueries);
 #endif
 
             var cookingParams = new CookingParams()
             {
-                Scale = this.physxScale,
+                Scale = physxScale,
                 AreaTestEpsilon = 0.001f,
                 MidphaseDesc = new MidphaseDesc()
                 {
@@ -116,32 +115,32 @@ namespace OpenH2.Engine.Systems
                 MeshWeldTolerance = 0.001f
             };
 
-            this.cooker = this.physxPhysics.CreateCooking(cookingParams);
-            this.controllerManager = this.physxScene.CreateControllerManager();
+            cooker = physxPhysics.CreateCooking(cookingParams);
+            controllerManager = physxScene.CreateControllerManager();
 
             var contactProv = new ContactModifyProxy();
-            this.contactProvider = contactProv;
-            this.physxScene.ContactModifyCallback = contactProv;
+            contactProvider = contactProv;
+            physxScene.ContactModifyCallback = contactProv;
 
-            this.simCallback = new SimulationCallback();
-            this.physxScene.SetSimulationEventCallback(simCallback);
+            simCallback = new SimulationCallback();
+            physxScene.SetSimulationEventCallback(simCallback);
         }
 
         public override void Initialize(Core.Architecture.Scene scene)
         {
             // Setup materials from globals
-            this.adhocMaterials.Clear();
-            this.materialList = world.Components<MaterialListComponent>().FirstOrDefault();
-            Debug.Assert(this.materialList != null);
-            var allMaterials = this.materialList.GetPhysicsMaterials();
+            adhocMaterials.Clear();
+            materialList = world.Components<MaterialListComponent>().FirstOrDefault();
+            Debug.Assert(materialList != null);
+            var allMaterials = materialList.GetPhysicsMaterials();
 
-            this.globalMaterials = new Material[allMaterials.Length + 1];
-            this.globalMaterials[0] = this.defaultMat;
+            globalMaterials = new Material[allMaterials.Length + 1];
+            globalMaterials[0] = defaultMat;
             Debug.Assert(allMaterials.Length > allMaterials.Max(m => m.Id));
 
-            foreach(var mat in allMaterials)
+            foreach (var mat in allMaterials)
             {
-                this.GetOrCreateMaterial(mat.Id);
+                GetOrCreateMaterial(mat.Id);
             }
 
             // Cook terrain and static geom meshes
@@ -153,31 +152,31 @@ namespace OpenH2.Engine.Systems
             }
 
             var sceneries = world.Components<StaticGeometryComponent>();
-            foreach(var scenery in sceneries)
+            foreach (var scenery in sceneries)
             {
                 AddStaticGeom(scenery);
             }
 
-            var rigidBodies = this.world.Components<RigidBodyComponent>();
-            foreach(var body in rigidBodies)
+            var rigidBodies = world.Components<RigidBodyComponent>();
+            foreach (var body in rigidBodies)
             {
                 AddRigidBodyComponent(body);
             }
 
-            var movers = this.world.Components<MoverComponent>();
+            var movers = world.Components<MoverComponent>();
             foreach (var mover in movers)
             {
                 AddCharacterController(mover);
             }
 
-            var triggers = this.world.Components<TriggerGeometryComponent>();
+            var triggers = world.Components<TriggerGeometryComponent>();
             foreach (var trigger in triggers)
             {
                 AddTrigger(trigger);
             }
 
-            scene.OnEntityAdd += this.AddEntity;
-            scene.OnEntityRemove += this.RemoveEntity;
+            scene.OnEntityAdd += AddEntity;
+            scene.OnEntityRemove += RemoveEntity;
         }
 
 
@@ -189,7 +188,7 @@ namespace OpenH2.Engine.Systems
             totalTime += timestep;
 
             // Take fixed-size steps until we've caught up with reality
-            while(totalTime - simulatedTime > stepSize)
+            while (totalTime - simulatedTime > stepSize)
             {
                 simulatedTime += stepSize;
 
@@ -200,28 +199,28 @@ namespace OpenH2.Engine.Systems
         private void TakeStep(float step)
         {
             // Split simulation to allow modification of current simulation step
-            this.physxScene.Collide(step);
-            this.physxScene.FetchCollision(block: true);
+            physxScene.Collide(step);
+            physxScene.FetchCollision(block: true);
 
             // Need to apply any forces here, between FetchCollision and Advance.
             // However, contacts aren't available here - we'll need to record contacts or something during ContactModify via the Collide phase
-            foreach (var (body, velocity) in this.queuedForces.VelocityChanges)
+            foreach (var (body, velocity) in queuedForces.VelocityChanges)
             {
                 body.AddVelocity(velocity);
             }
 
-            foreach (var (body, force) in this.queuedForces.ForceChanges)
+            foreach (var (body, force) in queuedForces.ForceChanges)
             {
                 body.AddForce(force);
             }
 
-            this.queuedForces.Clear();
+            queuedForces.Clear();
 
-            this.physxScene.Advance();
-            this.physxScene.FetchResults(block: true);
+            physxScene.Advance();
+            physxScene.FetchResults(block: true);
 
             // Update all engine transforms
-            foreach (var actor in this.physxScene.RigidDynamicActors)
+            foreach (var actor in physxScene.RigidDynamicActors)
             {
                 if (actor.UserData is RigidBodyComponent rigid)
                 {
@@ -234,7 +233,7 @@ namespace OpenH2.Engine.Systems
                 }
             }
 
-            foreach (var controller in this.controllerManager.Controllers)
+            foreach (var controller in controllerManager.Controllers)
             {
                 if (controller.Actor.UserData is MoverComponent mover)
                 {
@@ -244,7 +243,7 @@ namespace OpenH2.Engine.Systems
             }
 
             // TODO: track touch found/lost somwhere
-            foreach (var triggerSet in this.simCallback.TriggerEventSets)
+            foreach (var triggerSet in simCallback.TriggerEventSets)
             {
                 foreach (var triggerEvent in triggerSet)
                 {
@@ -255,27 +254,27 @@ namespace OpenH2.Engine.Systems
                 }
             }
 
-            this.simCallback.TriggerEventSets.Clear();
+            simCallback.TriggerEventSets.Clear();
         }
 
         public void AddEntity(Entity entity)
         {
-            if(entity.TryGetChild<RigidBodyComponent>(out var rigidBody))
+            if (entity.TryGetChild<RigidBodyComponent>(out var rigidBody))
             {
                 AddRigidBodyComponent(rigidBody);
             }
 
-            if(entity.TryGetChild<MoverComponent>(out var mover))
+            if (entity.TryGetChild<MoverComponent>(out var mover))
             {
                 AddCharacterController(mover);
             }
 
-            foreach(var trigger in entity.GetChildren<TriggerGeometryComponent>())
+            foreach (var trigger in entity.GetChildren<TriggerGeometryComponent>())
             {
                 AddTrigger(trigger);
             }
 
-            if(entity.TryGetChild<StaticTerrainComponent>(out var terrain))
+            if (entity.TryGetChild<StaticTerrainComponent>(out var terrain))
             {
                 AddTerrain(terrain);
             }
@@ -318,7 +317,7 @@ namespace OpenH2.Engine.Systems
         {
             if (component.PhysicsImplementation is not RigidDynamic dynamic)
             {
-                dynamic = this.physxPhysics.CreateRigidDynamic(component.Transform.TransformationMatrix);
+                dynamic = physxPhysics.CreateRigidDynamic(component.Transform.TransformationMatrix);
                 dynamic.CenterOfMassLocalPose = Matrix4x4.CreateTranslation(component.CenterOfMass);
                 dynamic.MassSpaceInertiaTensor = MathUtil.Diagonalize(component.InertiaTensor);
                 dynamic.Mass = component.Mass;
@@ -335,9 +334,9 @@ namespace OpenH2.Engine.Systems
                 AddCollider(dynamic, component.Collider);
             }
 
-            this.physxScene.AddActor(dynamic);
+            physxScene.AddActor(dynamic);
 
-            if(component.IsDynamic)
+            if (component.IsDynamic)
             {
                 dynamic.PutToSleep();
             }
@@ -353,12 +352,12 @@ namespace OpenH2.Engine.Systems
             var radius = 0.175f;
 
             // TODO: reduce duplicated code
-            if(component.Mode == MoverComponent.MovementMode.Freecam)
+            if (component.Mode == MoverComponent.MovementMode.Freecam)
             {
                 var posPose = Matrix4x4.CreateTranslation(component.Transform.TransformationMatrix.Translation);
                 var rot = Matrix4x4.CreateRotationY(MathF.PI / -2f);
 
-                var body = this.physxPhysics.CreateRigidDynamic(rot * posPose);
+                var body = physxPhysics.CreateRigidDynamic(rot * posPose);
                 body.MassSpaceInertiaTensor = new Vector3(0, 0, 0);
                 body.Mass = 175f;
                 body.UserData = component;
@@ -375,13 +374,13 @@ namespace OpenH2.Engine.Systems
 
                 var bodyProxy = new RigidBodyProxy(body);
                 component.PhysicsImplementation = bodyProxy;
-                this.physxScene.AddActor(body);
+                physxScene.AddActor(body);
             }
             if (component.Mode == MoverComponent.MovementMode.KinematicCharacterControl)
             {
                 var desc = new CapsuleControllerDesc()
                 {
-                    Height = config.Height-.02f - (2 * radius),
+                    Height = config.Height - .02f - 2 * radius,
                     Position = component.Transform.Position,
                     Radius = radius,
                     MaxJumpHeight = 1f,
@@ -393,25 +392,25 @@ namespace OpenH2.Engine.Systems
                     ReportCallback = new CustomHitReport()
                 };
 
-                var controller = this.controllerManager.CreateController<CapsuleController>(desc);
+                var controller = controllerManager.CreateController<CapsuleController>(desc);
 
                 controller.Actor.UserData = component;
                 component.PhysicsImplementation = new KinematicCharacterControllerProxy(controller);
 
-                this.ControllerMap.Add(component, controller);
+                ControllerMap.Add(component, controller);
             }
-            else if(component.Mode == MoverComponent.MovementMode.DynamicCharacterControl)
+            else if (component.Mode == MoverComponent.MovementMode.DynamicCharacterControl)
             {
                 var posPose = Matrix4x4.CreateTranslation(component.Transform.TransformationMatrix.Translation);
                 var rot = Matrix4x4.CreateRotationY(MathF.PI / -2f);
 
-                var body = this.physxPhysics.CreateRigidDynamic(rot * posPose);
+                var body = physxPhysics.CreateRigidDynamic(rot * posPose);
                 body.MassSpaceInertiaTensor = new Vector3(0, 0, 0);
                 body.Mass = 175f;
                 body.UserData = component;
 
                 var capsuleDesc = new CapsuleGeometry(radius, config.Height / 2f - radius);
-                
+
                 var shape = RigidActorExt.CreateExclusiveShape(body, capsuleDesc, characterControlMat);
                 // TODO: centralize filter data construction
                 shape.SimulationFilterData = new FilterData((uint)OpenH2FilterData.PlayerCharacter, 0, 0, 0);
@@ -421,12 +420,12 @@ namespace OpenH2.Engine.Systems
 
                 var bodyProxy = new RigidBodyProxy(body);
                 component.PhysicsImplementation = bodyProxy;
-                this.physxScene.AddActor(body);
+                physxScene.AddActor(body);
 
-                if(component.State is DynamicMovementController dynamicMover)
+                if (component.State is DynamicMovementController dynamicMover)
                 {
                     var contactInfo = ContactCallbackData.Normal;
-                    this.contactProvider.RegisterContactCallback(body, contactInfo, dynamicMover.ContactFound);
+                    contactProvider.RegisterContactCallback(body, contactInfo, dynamicMover.ContactFound);
                 }
             }
         }
@@ -438,7 +437,7 @@ namespace OpenH2.Engine.Systems
             var rot = Matrix4x4.CreateFromQuaternion(component.Transform.Orientation);
             var posCorrection = Matrix4x4.CreateTranslation(halfSize);
 
-            var body = this.physxPhysics.CreateRigidStatic(posCorrection * rot * posPose);
+            var body = physxPhysics.CreateRigidStatic(posCorrection * rot * posPose);
             body.Name = component.Name;
 
             Geometry volume = component.Shape switch
@@ -450,38 +449,38 @@ namespace OpenH2.Engine.Systems
             shape.SimulationFilterData = new FilterData((uint)OpenH2FilterData.TriggerVolume, 0, 0, 0);
 
             body.UserData = component;
-            this.physxScene.AddActor(body);
+            physxScene.AddActor(body);
         }
 
         private void AddStaticGeom(StaticGeometryComponent geom)
         {
             if (geom.PhysicsActor is RigidStatic existingRigid)
             {
-                this.physxScene.AddActor(existingRigid);
+                physxScene.AddActor(existingRigid);
                 return;
             }
 
-            var rigid = this.physxPhysics.CreateRigidStatic(geom.Transform.TransformationMatrix);
+            var rigid = physxPhysics.CreateRigidStatic(geom.Transform.TransformationMatrix);
 
             AddCollider(rigid, geom.Collider);
 
-            this.physxScene.AddActor(rigid);
+            physxScene.AddActor(rigid);
             geom.PhysicsActor = rigid;
         }
 
         private void AddTerrain(StaticTerrainComponent terrain)
         {
-            if(terrain.PhysicsActor is RigidStatic existingRigid)
+            if (terrain.PhysicsActor is RigidStatic existingRigid)
             {
-                this.physxScene.AddActor(existingRigid);
+                physxScene.AddActor(existingRigid);
                 return;
             }
 
-            var rigid = this.physxPhysics.CreateRigidStatic();
+            var rigid = physxPhysics.CreateRigidStatic();
 
             AddCollider(rigid, terrain.Collider);
 
-            this.physxScene.AddActor(rigid);
+            physxScene.AddActor(rigid);
             terrain.PhysicsActor = rigid;
         }
 
@@ -489,7 +488,7 @@ namespace OpenH2.Engine.Systems
         {
             if (geom.PhysicsActor is RigidStatic rigid)
             {
-                this.physxScene.RemoveActor(rigid);
+                physxScene.RemoveActor(rigid);
             }
         }
 
@@ -497,7 +496,7 @@ namespace OpenH2.Engine.Systems
         {
             if (terrain.PhysicsActor is RigidStatic rigid)
             {
-                this.physxScene.RemoveActor(rigid);
+                physxScene.RemoveActor(rigid);
             }
         }
 
@@ -505,7 +504,7 @@ namespace OpenH2.Engine.Systems
         {
             if (component.PhysicsImplementation is RigidBodyProxy p)
             {
-                this.physxScene.RemoveActor(p.RigidBody);
+                physxScene.RemoveActor(p.RigidBody);
             }
         }
 
@@ -524,7 +523,7 @@ namespace OpenH2.Engine.Systems
 
         private void AddCollider(RigidActor actor, ICollider collider)
         {
-            if(collider is AggregateCollider agg)
+            if (collider is AggregateCollider agg)
             {
                 foreach (var c in agg.ColliderComponents)
                     AddCollider(actor, c);
@@ -536,7 +535,7 @@ namespace OpenH2.Engine.Systems
                 // Avoiding offline cook path for now because
                 //   1. Comments in Physx.Net imply memory leak using streams
                 //   2. I don't want to deal with disk caching cooks yet
-                var finalMesh = this.physxPhysics.CreateTriangleMesh(cooker, desc);
+                var finalMesh = physxPhysics.CreateTriangleMesh(cooker, desc);
 
                 var meshGeom = new TriangleMeshGeometry(finalMesh);
 
@@ -551,7 +550,7 @@ namespace OpenH2.Engine.Systems
                     // Avoiding offline cook path for now because
                     //   1. Comments in Physx.Net imply memory leak using streams
                     //   2. I don't want to deal with disk caching cooks yet
-                    var finalMesh = this.physxPhysics.CreateTriangleMesh(cooker, desc);
+                    var finalMesh = physxPhysics.CreateTriangleMesh(cooker, desc);
 
                     var meshGeom = new TriangleMeshGeometry(finalMesh);
 
@@ -562,9 +561,9 @@ namespace OpenH2.Engine.Systems
             {
                 var desc = new ConvexMeshDesc() { Flags = ConvexFlag.ComputeConvex };
                 desc.SetPositions(vertCollider.GetTransformedVertices());
-                var mesh = this.physxPhysics.CreateConvexMesh(this.cooker, desc);
+                var mesh = physxPhysics.CreateConvexMesh(cooker, desc);
                 var geom = new ConvexMeshGeometry(mesh);
-                var mat = this.GetOrCreateMaterial(vertCollider.PhysicsMaterial);
+                var mat = GetOrCreateMaterial(vertCollider.PhysicsMaterial);
                 // TODO: re-use shared shapes instead of creating exclusive
                 RigidActorExt.CreateExclusiveShape(actor, geom, mat);
             }
@@ -574,9 +573,9 @@ namespace OpenH2.Engine.Systems
                 {
                     var desc = new ConvexMeshDesc() { Flags = ConvexFlag.ComputeConvex };
                     desc.SetPositions(verts);
-                    var mesh = this.physxPhysics.CreateConvexMesh(this.cooker, desc);
+                    var mesh = physxPhysics.CreateConvexMesh(cooker, desc);
                     var geom = new ConvexMeshGeometry(mesh);
-                    var mat = this.GetOrCreateMaterial(modelCollider.PhysicsMaterial);
+                    var mat = GetOrCreateMaterial(modelCollider.PhysicsMaterial);
                     // TODO: re-use shared shapes instead of creating exclusive
                     RigidActorExt.CreateExclusiveShape(actor, geom, mat);
                 }
@@ -591,24 +590,24 @@ namespace OpenH2.Engine.Systems
             Material mat;
 
             // If it's a valid index and the expanded mats array can hold it, and it's not null, use it
-            if (id >= 0 && this.globalMaterials.Length-1 > id && this.globalMaterials[id+1] != null)
-                return this.globalMaterials[id+1];
-            else if (this.adhocMaterials.TryGetValue(id, out mat))
+            if (id >= 0 && globalMaterials.Length - 1 > id && globalMaterials[id + 1] != null)
+                return globalMaterials[id + 1];
+            else if (adhocMaterials.TryGetValue(id, out mat))
                 return mat;
 
             // Get original def with raw id
-            var matDef = this.materialList?.GetPhysicsMaterial(id);
+            var matDef = materialList?.GetPhysicsMaterial(id);
 
             if (matDef == null)
-                return this.defaultMat;
+                return defaultMat;
 
-            mat = this.physxPhysics.CreateMaterial(matDef.StaticFriction, matDef.DynamicFriction, matDef.Restitution);
+            mat = physxPhysics.CreateMaterial(matDef.StaticFriction, matDef.DynamicFriction, matDef.Restitution);
 
             // If it's a valid index and the expanded mats array can hold it, set it
-            if (id >= 0 && this.globalMaterials.Length-1 > id)
-                this.globalMaterials[id+1] = mat;
+            if (id >= 0 && globalMaterials.Length - 1 > id)
+                globalMaterials[id + 1] = mat;
             else
-                this.adhocMaterials[id] = mat;
+                adhocMaterials[id] = mat;
 
             return mat;
         }

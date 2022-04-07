@@ -2,7 +2,6 @@
 using OpenBlam.Serialization.Layout;
 using OpenH2.Core.Enums;
 using OpenH2.Core.Maps;
-using System.IO;
 
 namespace OpenH2.Core.Tags
 {

@@ -1,5 +1,4 @@
 ﻿using OpenH2.Core.Metrics;
-using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace OpenH2.Core.Scripting.Execution

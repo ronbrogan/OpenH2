@@ -1,9 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
+﻿
 using Silk.NET.Vulkan;
-using VMASharp;
 using Buffer = Silk.NET.Vulkan.Buffer;
 
 namespace VMASharp.Defragmentation

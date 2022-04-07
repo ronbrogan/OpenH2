@@ -2,7 +2,6 @@
 using OpenH2.Engine.Stores;
 using Silk.NET.Input;
 using Silk.NET.Input.Extensions;
-using System;
 
 namespace OpenH2.Engine.Systems
 {

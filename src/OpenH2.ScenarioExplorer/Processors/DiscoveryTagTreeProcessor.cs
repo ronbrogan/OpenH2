@@ -1,7 +1,6 @@
 ﻿using OpenBlam.Core.Extensions;
 using OpenH2.Core.Extensions;
 using OpenH2.Core.Maps;
-using OpenH2.Core.Maps.Vista;
 using OpenH2.Core.Tags;
 using OpenH2.ScenarioExplorer.ViewModels;
 using System;

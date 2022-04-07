@@ -4,7 +4,6 @@ using Microsoft.CodeAnalysis.CSharp.Syntax;
 using OpenH2.Core.Scripting.Generation;
 using OpenH2.Core.Tags.Scenario;
 using System;
-using System.Diagnostics;
 
 namespace OpenH2.Core.Scripting.GenerationState
 {

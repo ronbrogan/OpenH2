@@ -2,8 +2,6 @@
 using OpenH2.Core.Scripting;
 using OpenH2.Core.Scripting.Execution;
 using OpenH2.Core.Tags.Scenario;
-using OpenH2.Engine.Entities;
-using OpenH2.Engine.EntityFactories;
 using System;
 
 namespace OpenH2.Engine.Scripting

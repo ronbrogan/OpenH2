@@ -2,10 +2,8 @@
 using Microsoft.Extensions.FileSystemGlobbing;
 using Microsoft.Extensions.FileSystemGlobbing.Abstractions;
 using OpenH2.Core.Maps.MCC;
-using OpenBlam.Serialization;
 using System;
 using System.IO;
-using System.IO.Compression;
 using System.Threading.Tasks;
 
 namespace OpenH2.MccUtil

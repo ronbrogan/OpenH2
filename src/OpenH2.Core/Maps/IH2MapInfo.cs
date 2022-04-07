@@ -1,6 +1,4 @@
-﻿using OpenBlam.Core.MapLoading;
-using OpenBlam.Core.Maps;
-using System;
+﻿using OpenBlam.Core.Maps;
 
 namespace OpenH2.Core.Maps
 {

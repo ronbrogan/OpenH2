@@ -1,4 +1,4 @@
-﻿namespace OpenH2.Audio
+﻿namespace OpenH2.Core.Audio
 {
     public class SampleRate
     {
@@ -8,7 +8,7 @@
         public int Rate { get; }
         public SampleRate(int rate)
         {
-            this.Rate = rate;
+            Rate = rate;
         }
     }
 }

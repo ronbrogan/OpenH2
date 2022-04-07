@@ -1,5 +1,5 @@
 ﻿using System.Numerics;
-using OpenH2.Audio.Abstractions;
+using OpenH2.Core.Audio.Abstractions;
 using Silk.NET.OpenAL;
 
 namespace OpenH2.OpenAL.Audio

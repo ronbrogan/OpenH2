@@ -1,5 +1,4 @@
 ﻿using OpenH2.Core.Architecture;
-using System;
 using System.Numerics;
 
 namespace OpenH2.Engine.Components

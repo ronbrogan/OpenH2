@@ -1,8 +1,6 @@
 ﻿using Silk.NET.Input;
 using Silk.NET.Input.Extensions;
-using System.Collections.Generic;
 using System.Numerics;
-using System.Threading;
 
 namespace OpenH2.Engine.Stores
 {

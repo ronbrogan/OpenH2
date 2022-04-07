@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Numerics;
 
-namespace OpenH2.Audio.Abstractions
+namespace OpenH2.Core.Audio.Abstractions
 {
     public interface ISoundEmitter
     {

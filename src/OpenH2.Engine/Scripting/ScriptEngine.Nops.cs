@@ -1,7 +1,6 @@
 ﻿using OpenH2.Core.GameObjects;
 using OpenH2.Core.Scripting;
 using OpenH2.Core.Tags;
-using OpenH2.Core.Tags.Scenario;
 using System.Threading.Tasks;
 
 namespace OpenH2.Engine.Scripting

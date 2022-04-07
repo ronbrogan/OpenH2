@@ -1,9 +1,7 @@
 ﻿using OpenH2.Foundation._3D;
 using OpenH2.Foundation.Extensions;
 using System;
-using System.Collections.Generic;
 using System.Numerics;
-using System.Text;
 using Xunit;
 using Xunit.Abstractions;
 

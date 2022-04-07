@@ -1,14 +1,12 @@
 ﻿using OpenH2.Core.Extensions;
 using Silk.NET.Core;
 using Silk.NET.Vulkan;
-using Silk.NET.Vulkan.Extensions.KHR;
 using System;
 using System.Text;
-using VMASharp;
 
 namespace OpenH2.Rendering.Vulkan.Internals
 {
-    
+
 
     internal unsafe class VkInstance : VkObject, IDisposable
     {

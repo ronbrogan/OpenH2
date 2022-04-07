@@ -2,7 +2,6 @@
 using OpenH2.Core.Tags;
 using OpenH2.Foundation;
 using OpenH2.Rendering;
-using System;
 
 namespace OpenH2.Engine.Components
 {

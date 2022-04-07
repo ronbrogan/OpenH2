@@ -6,7 +6,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\OpenH2.Audio\OpenH2.Audio.csproj" />
     <ProjectReference Include="..\OpenH2.Core\OpenH2.Core.csproj" />
   </ItemGroup>
 

@@ -1,5 +1,4 @@
 ﻿using OpenH2.Core.Maps;
-using OpenH2.Core.Maps.Vista;
 using OpenH2.Core.Tags;
 using OpenH2.Core.Tags.Layout;
 using OpenH2.ScenarioExplorer.ViewModels;

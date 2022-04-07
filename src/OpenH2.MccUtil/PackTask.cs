@@ -2,21 +2,13 @@
 using OpenH2.Core.Extensions;
 using OpenH2.Core.Maps.MCC;
 using OpenBlam.Serialization;
-using OpenBlam.Serialization.Layout;
-using System;
-using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
-using System.IO.Compression;
-using System.Linq;
-using System.Reflection;
-using System.Text;
 using System.Threading.Tasks;
 using OpenH2.Core.Maps;
 
 namespace OpenH2.MccUtil
 {
-    
+
     [Verb("pack")]
     public class PackCommandLineArguments
     {

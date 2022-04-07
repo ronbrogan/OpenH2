@@ -1,7 +1,5 @@
 ﻿using OpenH2.Core.Factories;
-using OpenH2.Core.ExternalFormats;
 using OpenH2.Core.Tags;
-using OpenH2.Core.Tags.Common.Models;
 using System;
 using System.Collections.Generic;
 using System.IO;

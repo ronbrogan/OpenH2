@@ -1,5 +1,4 @@
-﻿using OpenH2.Core.Scripting;
-using OpenH2.Core.Tags.Layout;
+﻿using OpenH2.Core.Tags.Layout;
 using OpenBlam.Serialization.Layout;
 using System.Text.Json.Serialization;
 

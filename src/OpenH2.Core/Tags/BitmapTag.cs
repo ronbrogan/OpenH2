@@ -1,6 +1,5 @@
 ﻿using OpenH2.Core.Enums.Texture;
 using OpenH2.Core.Offsets;
-using OpenH2.Core.Parsing;
 using OpenH2.Core.Tags.Layout;
 using OpenBlam.Serialization.Layout;
 using System;

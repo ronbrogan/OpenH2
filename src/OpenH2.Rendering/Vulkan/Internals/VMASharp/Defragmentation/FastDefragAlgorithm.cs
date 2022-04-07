@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using Silk.NET.Vulkan;
-using VMASharp;
 
 namespace VMASharp.Defragmentation
 {

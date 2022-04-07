@@ -2,8 +2,8 @@
 using System.Diagnostics;
 using System.IO;
 using System.Numerics;
-using OpenH2.Audio.Abstractions;
 using OpenH2.Core.Architecture;
+using OpenH2.Core.Audio.Abstractions;
 using OpenH2.Core.Configuration;
 using OpenH2.Core.Extensions;
 using OpenH2.Core.Factories;
@@ -16,7 +16,6 @@ using OpenH2.Foundation;
 using OpenH2.Foundation.Engine;
 using OpenH2.OpenAL.Audio;
 using OpenH2.Rendering.Abstractions;
-using OpenH2.Rendering.OpenGL;
 using OpenH2.Rendering.Vulkan;
 using Silk.NET.Input;
 

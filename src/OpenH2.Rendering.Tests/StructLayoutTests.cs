@@ -1,4 +1,3 @@
-using OpenH2.Rendering.Shaders;
 using OpenH2.Rendering.Shaders.Generic;
 using System.Reflection;
 using System.Runtime.InteropServices;

@@ -1,6 +1,5 @@
 ﻿using Silk.NET.Vulkan;
 using Silk.NET.Core;
-using Silk.NET.Vulkan.Extensions.KHR;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -14,7 +13,6 @@ using Buffer = Silk.NET.Vulkan.Buffer;
 namespace VMASharp
 {
     using Defragmentation;
-    using VMASharp;
 
     public sealed unsafe class VulkanMemoryAllocator : IDisposable
     {

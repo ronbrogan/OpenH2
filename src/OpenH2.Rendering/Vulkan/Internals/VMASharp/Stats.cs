@@ -1,5 +1,4 @@
-﻿using System;
-using Silk.NET.Vulkan;
+﻿using Silk.NET.Vulkan;
 
 namespace VMASharp
 {

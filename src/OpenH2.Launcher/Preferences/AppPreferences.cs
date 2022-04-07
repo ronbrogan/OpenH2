@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace OpenH2.Launcher.Preferences
+﻿namespace OpenH2.Launcher.Preferences
 {
     public class AppPreferences
     {

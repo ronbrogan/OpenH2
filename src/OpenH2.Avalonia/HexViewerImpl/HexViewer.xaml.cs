@@ -11,16 +11,13 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
-using Avalonia.Metadata;
 using PropertyChanged;
 using OpenH2.AvaloniaControls.HexViewerImpl;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Primitives;
 using Avalonia.Media.TextFormatting;
-using DynamicData.Binding;
 using Avalonia.Threading;
-using System.Threading;
 
 //[assembly: XmlnsDefinition("https://github.com/ronbrogan/openh2/avaloniacontrols", "OpenH2.AvaloniaControls.HexViewer")]
 namespace OpenH2.AvaloniaControls

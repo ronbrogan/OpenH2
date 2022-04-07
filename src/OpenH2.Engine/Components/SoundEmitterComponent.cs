@@ -1,5 +1,5 @@
-﻿using OpenH2.Audio.Abstractions;
-using OpenH2.Core.Architecture;
+﻿using OpenH2.Core.Architecture;
+using OpenH2.Core.Audio.Abstractions;
 
 namespace OpenH2.Engine.Components
 {

@@ -1,5 +1,4 @@
 ﻿using OpenH2.Core.Architecture;
-using OpenH2.Core.Extensions;
 using OpenH2.Core.Maps.Vista;
 using OpenH2.Core.Tags;
 using OpenH2.Core.Tags.Common.Models;

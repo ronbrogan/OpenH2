@@ -2,7 +2,6 @@
 using OpenH2.Core.Maps.Vista;
 using System;
 using System.IO;
-using System.Numerics;
 
 namespace OpenH2.TriggerAnalysis
 {

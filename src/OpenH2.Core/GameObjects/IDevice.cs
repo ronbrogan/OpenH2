@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace OpenH2.Core.GameObjects
+﻿namespace OpenH2.Core.GameObjects
 {
     public interface IDevice : IGameObject
     {

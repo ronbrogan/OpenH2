@@ -1,10 +1,7 @@
 ﻿using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
-using Avalonia.Diagnostics;
 using Avalonia.Markup.Xaml;
-using Avalonia.Markup.Xaml.Styling;
 using Avalonia.ReactiveUI;
-using Avalonia.Styling;
 using OpenH2.AvaloniaControls;
 using PropertyChanged;
 using System;

@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace OpenH2.Audio.Abstractions
+﻿namespace OpenH2.Core.Audio.Abstractions
 {
     public interface IAudioHost
     {

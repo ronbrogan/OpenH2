@@ -1,15 +1,9 @@
 ﻿using CommandLine;
-using OpenH2.Core.Extensions;
 using OpenH2.Core.Factories;
 using OpenH2.Core.Maps.MCC;
-using OpenH2.Core.Scripting;
 using OpenH2.Core.Scripting.LowLevel;
-using OpenH2.Core.Tags.Scenario;
-using OpenBlam.Serialization;
-using OpenBlam.Serialization.Layout;
 using System;
 using System.IO;
-using System.Reflection;
 using System.Threading.Tasks;
 
 namespace OpenH2.MccUtil

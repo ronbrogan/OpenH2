@@ -1,6 +1,5 @@
 ﻿using OpenH2.Core.GameObjects;
 using OpenH2.Core.Scripting;
-using OpenH2.Core.Tags.Scenario;
 
 namespace OpenH2.Engine.Scripting
 {

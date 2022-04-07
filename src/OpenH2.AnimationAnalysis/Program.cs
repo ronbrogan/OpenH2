@@ -1,13 +1,10 @@
 ﻿using OpenH2.Core.Factories;
-using OpenH2.Core.Maps;
 using OpenH2.Core.Tags;
-using OpenBlam.Serialization.Materialization;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Linq.Expressions;
-using System.Numerics;
 using System.Text;
 using OpenH2.Core.Maps.Vista;
 using OpenH2.Core.Animation;

@@ -1,6 +1,4 @@
 ﻿using CommandLine;
-using Microsoft.Extensions.FileSystemGlobbing;
-using Microsoft.Extensions.FileSystemGlobbing.Abstractions;
 using OpenH2.Core.Extensions;
 using OpenH2.Core.Factories;
 using OpenH2.Core.Maps.MCC;

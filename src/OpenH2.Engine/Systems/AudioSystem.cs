@@ -1,14 +1,13 @@
-﻿using OpenH2.Audio;
-using OpenH2.Audio.Abstractions;
-using OpenH2.Core.Architecture;
+﻿using OpenH2.Core.Architecture;
+using OpenH2.Core.Audio;
+using OpenH2.Core.Audio.Abstractions;
 using OpenH2.Core.GameObjects;
 using OpenH2.Core.Tags;
 using OpenH2.Engine.Components;
 using OpenH2.Engine.Entities;
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using SampleRate = OpenH2.Audio.SampleRate;
+using SampleRate = OpenH2.Core.Audio.SampleRate;
 
 namespace OpenH2.Engine.Systems
 {

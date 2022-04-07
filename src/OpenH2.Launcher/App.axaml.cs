@@ -1,7 +1,6 @@
 using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
-using OpenH2.Launcher.Preferences;
 using PropertyChanged;
 
 namespace OpenH2.Launcher

@@ -1,13 +1,12 @@
-﻿using OpenBlam.Core.ExternalFormats;
-using OpenH2.Audio;
-using OpenH2.Core.Factories;
-using OpenH2.Core.Maps.Vista;
-using OpenH2.Core.Tags;
-using System;
+﻿using System;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
+using OpenBlam.Core.ExternalFormats;
+using OpenH2.Core.Factories;
+using OpenH2.Core.Maps.Vista;
+using OpenH2.Core.Tags;
 
 namespace OpenH2.AudioAnalysis
 {

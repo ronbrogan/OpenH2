@@ -1,6 +1,4 @@
 ﻿using System.Collections.Generic;
-using System.Numerics;
-using OpenH2.Core.Tags.Scenario;
 using OpenH2.Foundation;
 using OpenH2.Rendering.Shaders;
 

@@ -1,5 +1,4 @@
 ﻿using OpenH2.Core.Tags;
-using OpenH2.Core.Tags.Common.Collision;
 using OpenH2.Foundation;
 using OpenH2.Rendering.Shaders;
 using System.Numerics;

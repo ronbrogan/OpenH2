@@ -1,8 +1,4 @@
-﻿using OpenBlam.Core.Extensions;
-using OpenH2.Core.Extensions;
-using System;
-using System.Diagnostics;
-using System.Numerics;
+﻿using System;
 
 namespace OpenH2.Core.Animation
 {

@@ -1,11 +1,6 @@
-﻿using OpenH2.Core.Extensions;
-using Silk.NET.Vulkan;
+﻿using Silk.NET.Vulkan;
 using Silk.NET.Vulkan.Extensions.KHR;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace OpenH2.Rendering.Vulkan.Internals
 {

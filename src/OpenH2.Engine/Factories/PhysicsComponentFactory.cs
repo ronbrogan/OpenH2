@@ -6,9 +6,6 @@ using OpenH2.Core.Tags.Common.Collision;
 using OpenH2.Engine.Components;
 using OpenH2.Physics.Colliders;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Numerics;
 using static OpenH2.Core.Tags.BspTag;
 
 namespace OpenH2.Engine.Factories

@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace OpenH2.Core.Configuration
+﻿namespace OpenH2.Core.Configuration
 {
     public static class ConfigurationConstants
     {

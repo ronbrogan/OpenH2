@@ -1,7 +1,5 @@
-﻿using OpenH2.Audio.Abstractions;
+﻿using OpenH2.Core.Audio.Abstractions;
 using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace OpenH2.OpenAL.Audio
 {

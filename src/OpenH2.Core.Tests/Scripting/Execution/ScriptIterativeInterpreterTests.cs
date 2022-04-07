@@ -4,7 +4,6 @@ using OpenH2.Core.Scripting.Execution;
 using OpenH2.Core.Tags.Scenario;
 using System;
 using System.Text;
-using System.Threading.Tasks;
 using Xunit;
 using Xunit.Abstractions;
 
