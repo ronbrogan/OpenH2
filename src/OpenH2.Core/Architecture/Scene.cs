@@ -76,7 +76,11 @@ namespace OpenH2.Core.Architecture
 
             foreach (var tv in this.Map.Scenario.TriggerVolumes)
             {
-                this.AddEntity(EntityCreator.FromTriggerVolume(tv));
+                // parented triggers will be added to the scene as children of the relevant entity
+                if (tv.ParentId == ushort.MaxValue)
+                {
+                    this.AddEntity(EntityCreator.FromTriggerVolume(tv));
+                }
             }
 
             this.AddEntity(EntityCreator.FromGlobals());

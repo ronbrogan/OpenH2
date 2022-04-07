@@ -30,6 +30,13 @@ namespace OpenH2.Engine.Factories
             return meshes.GetOrAdd(key, _ => Create(map, hlmtReference, damageLevel));
         }
 
+        public static Mesh<BitmapTag>[] GetRenderModel(H2vMap map, HaloModelTag hlmtReference, RenderModelTag model, int damageLevel = 0)
+        {
+            var key = (((ulong)hlmtReference.Id) << 32) | (ulong)damageLevel;
+
+            return meshes.GetOrAdd(key, _ => Create(map, model, damageLevel));
+        }
+
         public static Mesh<BitmapTag>[] GetRenderModel(ICollider collider, Vector4 color = default)
         {
             return collider switch
@@ -90,6 +97,11 @@ namespace OpenH2.Engine.Factories
             return CreateBoneMeshes(map, hlmtReference, damageLevel);
         }
 
+        public static Mesh<BitmapTag>[] GetBonesModel(RenderModelTag renderModel, int damageLevel = 0)
+        {
+            return CreateBoneMeshes(renderModel, damageLevel);
+        }
+
         private static Mesh<BitmapTag>[] Create(H2vMap map, TagRef<HaloModelTag> hlmtReference, int damageLevel)
         {
             if (map.TryGetTag(hlmtReference, out var hlmt) == false)
@@ -104,6 +116,11 @@ namespace OpenH2.Engine.Factories
                 return EmptyModel;
             }
 
+            return Create(map, model, damageLevel);
+        }
+
+        private static Mesh<BitmapTag>[] Create(H2vMap map, RenderModelTag model, int damageLevel)
+        {
             var renderModelMeshes = new List<Mesh<BitmapTag>>();
 
             foreach (var lod in model.Components)
@@ -119,7 +136,7 @@ namespace OpenH2.Engine.Factories
                         Compressed = mesh.Compressed,
                         ElementType = mesh.ElementType,
                         Indicies = mesh.Indices,
-                        Note = mesh.Note,
+                        Note = lod.PartName,
                         RawData = mesh.RawData,
                         Verticies = mesh.Verticies,
 
@@ -202,6 +219,11 @@ namespace OpenH2.Engine.Factories
                 return EmptyModel;
             }
 
+            return CreateBoneMeshes(model, damageLevel);
+        }
+
+        private static Mesh<BitmapTag>[] CreateBoneMeshes(RenderModelTag model, int damageLevel)
+        {
             var renderModelMeshes = new List<Mesh<BitmapTag>>();
 
             var transforms = new Matrix4x4[model.Bones.Length];

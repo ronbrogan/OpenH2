@@ -10,6 +10,7 @@ using OpenH2.Foundation;
 using OpenH2.Physics.Colliders;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Numerics;
 
 namespace OpenH2.Engine.EntityFactories
@@ -35,21 +36,24 @@ namespace OpenH2.Engine.EntityFactories
             var orientation = QuaternionExtensions.FromH2vOrientation(instance.Orientation);
             var xform = new TransformComponent(scenery, instance.Position, orientation);
 
-            var components = new List<Component>();
+            
 
-            if (tag.Model != uint.MaxValue)
+            if (map.TryGetTag(tag.Model, out var model) 
+                && map.TryGetTag(model.RenderModel, out var renderModel))
             {
+                var components = new List<Component>();
+
                 components.Add(new RenderModelComponent(scenery, new Model<BitmapTag>
                 {
                     Note = $"[{tag.Id}] {tag.Name}",
-                    Meshes = MeshFactory.GetRenderModel(map, tag.Model),
+                    Meshes = MeshFactory.GetRenderModel(map, model, renderModel),
                     Flags = ModelFlags.Diffuse | ModelFlags.CastsShadows | ModelFlags.ReceivesShadows
                 }));
 
                 components.Add(new RenderModelComponent(scenery, new Model<BitmapTag>
                 {
                     Note = $"[{tag.Id}] {tag.Name} bones",
-                    Meshes = MeshFactory.GetBonesModel(map, tag.Model),
+                    Meshes = MeshFactory.GetBonesModel(renderModel),
                     Flags = ModelFlags.Wireframe,
                     RenderLayer = RenderLayers.Debug
                 }));
@@ -66,11 +70,51 @@ namespace OpenH2.Engine.EntityFactories
                         RenderLayer = RenderLayers.Collision
                     }));
                 }
+
+                scenery.SetComponents(xform, components.ToArray());
+
+                if (TryGetWellKnownIndex(scenario, instance, out var wki))
+                {
+                    foreach (var trig in scenario.TriggerVolumes)
+                    {
+                        if (trig.ParentId == wki)
+                        {
+                            var deltaP = Vector3.Zero;
+                            var deltaQ = Quaternion.Identity;
+
+                            var parentBone = renderModel?.Bones.FirstOrDefault(b => b.Name == trig.ParentDescription);
+
+                            if (parentBone != null)
+                            {
+                                deltaP = parentBone.Translation;
+                                deltaQ = parentBone.Orientation;
+                            }
+
+                            TriggerFactory.WithScenarioTriggerVolume(scenery, scenario, trig, deltaP, deltaQ);
+                        }
+                    }
+                }
             }
 
-            scenery.SetComponents(xform, components.ToArray());
-
             return scenery;
+        }
+
+        private static bool TryGetWellKnownIndex(ScenarioTag scenario, ScenarioTag.MachineryInstance instance, out int result)
+        {
+            var machIndex = Array.IndexOf(scenario.MachineryInstances, instance);
+
+            for (int i = 0; i < scenario.WellKnownItems.Length; i++)
+            {
+                if (scenario.WellKnownItems[i].ItemType == ScenarioTag.WellKnownVarType.Machinery
+                    && scenario.WellKnownItems[i].Index == machIndex)
+                {
+                    result = i;
+                    return true;
+                }
+            }
+
+            result = 0;
+            return false;
         }
     }
 }

@@ -270,7 +270,7 @@ namespace OpenH2.Engine.Systems
                 AddCharacterController(mover);
             }
 
-            if(entity.TryGetChild<TriggerGeometryComponent>(out var trigger))
+            foreach(var trigger in entity.GetChildren<TriggerGeometryComponent>())
             {
                 AddTrigger(trigger);
             }

@@ -25,6 +25,18 @@ namespace OpenH2.Core.Architecture
             this.SetComponents(components.ToArray());
         }
 
+        public void AppendComponents(params Component[] components)
+        {
+            var end = this.Components.Length;
+            Array.Resize(ref this.Components, end + components.Length);
+            Array.Copy(components, 0, this.Components, end, components.Length);
+        }
+
+        public IEnumerable<Component> GetComponents()
+        {
+            return this.Components;
+        }
+
         public bool TryGetChild<T>(out T component) where T : Component
         {
             component = null;

@@ -1,12 +1,40 @@
 ﻿
-using OpenH2.Foundation.Physics;
-using System;
-using System.Collections.Generic;
 using System.Numerics;
-using System.Text;
+using OpenH2.Foundation.Physics;
 
 namespace OpenH2.Foundation
 {
+    public class CompositeTransform : ITransform
+    {
+        private readonly ITransform a;
+        private readonly ITransform b;
+
+        public CompositeTransform(ITransform a, ITransform b)
+        {
+            this.a = a;
+            this.b = b;
+        }
+
+        public Vector3 Scale { get => a.Scale * b.Scale; set { a.Scale = value; b.Scale = Vector3.Zero; } }
+        public Vector3 Position { get => a.Position + b.Position; set { a.Position = value; b.Position = Vector3.Zero; } }
+        public Quaternion Orientation { get => Quaternion.Multiply(a.Orientation, b.Orientation); set { a.Orientation = value; b.Orientation = Quaternion.Identity; } }
+
+        public Matrix4x4 TransformationMatrix => Matrix4x4.Multiply(a.TransformationMatrix, b.TransformationMatrix);
+
+        public void UpdateDerivedData()
+        {
+            a.UpdateDerivedData();
+            b.UpdateDerivedData();
+        }
+
+        public void UseTransformationMatrix(Matrix4x4 mat)
+        {
+            a.UseTransformationMatrix(mat);
+            b.UseTransformationMatrix(Matrix4x4.Identity);
+        }
+    }
+
+
     public class Transform : ITransform
     {
         public Vector3 Scale { get; set; }
