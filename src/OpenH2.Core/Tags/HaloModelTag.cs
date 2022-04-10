@@ -33,10 +33,10 @@ namespace OpenH2.Core.Tags
 
 
         [ReferenceArray(80)]
-        public VariantDescriptor[] Variants { get; set; }
+        public Variant[] Variants { get; set; }
 
         [FixedLength(56)]
-        public class VariantDescriptor
+        public class Variant
         {
             [PrimitiveValue(0)]
             public uint Id { get; set; }

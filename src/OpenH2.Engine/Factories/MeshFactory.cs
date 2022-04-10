@@ -122,11 +122,11 @@ namespace OpenH2.Engine.Factories
         {
             var renderModelMeshes = new List<Mesh<BitmapTag>>();
 
-            foreach (var lod in model.Components)
+            foreach (var lod in model.Regions)
             {
-                var partIndex = lod.DamageLevels[damageLevel].HighestPieceIndex;
+                var partIndex = lod.Permutations[damageLevel].HighestPieceIndex;
 
-                foreach (var mesh in model.Parts[partIndex].Model.Meshes)
+                foreach (var mesh in model.Sections[partIndex].Model.Meshes)
                 {
                     var mat = map.CreateMaterial(mesh);
 
@@ -225,11 +225,11 @@ namespace OpenH2.Engine.Factories
         {
             var renderModelMeshes = new List<Mesh<BitmapTag>>();
 
-            var transforms = new Matrix4x4[model.Bones.Length];
+            var transforms = new Matrix4x4[model.Nodes.Length];
 
-            for (int i = 0; i < model.Bones.Length; i++)
+            for (int i = 0; i < model.Nodes.Length; i++)
             {
-                RenderModelTag.Bone bone = model.Bones[i];
+                RenderModelTag.Node bone = model.Nodes[i];
                 var translate = Matrix4x4.CreateTranslation(bone.Translation);
                 var scale = Matrix4x4.CreateScale(1);
 
@@ -241,9 +241,9 @@ namespace OpenH2.Engine.Factories
                 transforms[i] = result;
             }
 
-            for (int i = 0; i < model.Bones.Length; i++)
+            for (int i = 0; i < model.Nodes.Length; i++)
             {
-                var bone = model.Bones[i];
+                var bone = model.Nodes[i];
                 var hierarchyTransforms = new Stack<Matrix4x4>();
                 hierarchyTransforms.Push(transforms[i]);
 
@@ -251,7 +251,7 @@ namespace OpenH2.Engine.Factories
                 while (parentIndex != -1)
                 {
                     hierarchyTransforms.Push(transforms[parentIndex]);
-                    parentIndex = model.Bones[parentIndex].ParentIndex;
+                    parentIndex = model.Nodes[parentIndex].ParentIndex;
                 }
 
                 var finalTransform = Matrix4x4.Identity;
@@ -263,7 +263,7 @@ namespace OpenH2.Engine.Factories
 
                 if(bone.FirstChildIndex != -1)
                 {
-                    boneLength = model.Bones[bone.FirstChildIndex].Translation.Length();
+                    boneLength = model.Nodes[bone.FirstChildIndex].Translation.Length();
                 }
 
                 var end = Vector3.Transform(new Vector3(boneLength, 0, 0), finalTransform);

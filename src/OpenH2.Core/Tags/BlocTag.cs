@@ -1,6 +1,8 @@
 ﻿using OpenH2.Core.Maps;
 using OpenH2.Core.Tags.Layout;
 using OpenBlam.Serialization.Layout;
+using System.Numerics;
+using OpenH2.Core.Tags.Common;
 
 namespace OpenH2.Core.Tags
 {
@@ -13,13 +15,13 @@ namespace OpenH2.Core.Tags
         }
 
         [PrimitiveValue(0)]
-        public int Type { get; set; }
+        public GameObjectFlags Flags { get; set; }
 
         [PrimitiveValue(4)]
-        public float UniformScale { get; set; }
+        public float BoundingRadius { get; set; }
 
-        [PrimitiveValue(16)]
-        public float Unknown { get; set; }
+        [PrimitiveValue(8)]
+        public Vector3 BoudingOffset { get; set; }
 
         [PrimitiveValue(56)]
         public TagRef<HaloModelTag> PhysicalModel { get; set; }

@@ -85,9 +85,9 @@ namespace OpenH2.Engine.EntityFactories
 
             if (map.TryGetTag(tag.PhysicalModel, out var hlmt) &&
                 map.TryGetTag(hlmt.PhysicsModel, out var phmo) &&
-                phmo.BodyParameters.Length > 0)
+                phmo.RigidBodies.Length > 0)
             {
-                comOffset = phmo.BodyParameters[0].CenterOfMass;
+                comOffset = phmo.RigidBodies[0].CenterOfMass;
             }
 
             components.Add(new BoundsComponent(scenery, comOffset - new Vector3(0.02f), comOffset + new Vector3(0.02f), new Vector4(1f, 1f, 0, 1f)));

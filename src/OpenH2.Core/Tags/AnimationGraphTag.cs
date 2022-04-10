@@ -9,6 +9,58 @@ using OpenBlam.Core.MapLoading;
 
 namespace OpenH2.Core.Tags
 {
+    [Flags]
+    public enum AnimationInheritanceFlags : byte
+    {
+        InheritRootTransScaleOnly = 1,
+        InheritForUseOnPlayer = 2
+    }
+
+    [Flags]
+    public enum AnimationFlags : byte
+    {
+        PreparedForCache = 1,
+        Unused = 2,
+        ImportedWithCodecCompressors = 4,
+        UnusedSmellyFlag = 8,
+        WrittenToCache = 16,
+        AnimationDataRecorded = 32
+    }
+
+    [Flags]
+    public enum AnimationInternalFlags : byte
+    {
+        Unused0 = 1,
+        WorldRelative = 2,
+        Unused1 = 4,
+        Unused2 = 8,
+        Unused3 = 16,
+        CompressionDisabled = 32,
+        OldProductionChecksum = 64,
+        ValidProductionChecksum = 128,
+    }
+
+    [Flags]
+    public enum AnimationProductionFlags : byte
+    {
+        DoNotMonitorChanges = 1,
+        VerifySoundEvents = 2,
+        DoNotInheritForPlayerGraphs = 4,
+    }
+
+    [Flags]
+    public enum AnimationPlaybackFlags : ushort
+    {
+        DisableInterpolationIN = 1,
+        DisableInterpolationOUT = 2,
+        DisableModeIK = 4,
+        DisableWeaponIK = 8,
+        DisableWeaponAim1P = 16,
+        DisableLookScreen = 32,
+        DisableTransitionAdjustment = 64
+    }
+
+
     [TagLabel(TagName.jmad)]
     public class AnimationGraphTag : BaseTag
     {
@@ -17,13 +69,26 @@ namespace OpenH2.Core.Tags
         }
 
         [PrimitiveValue(4)]
-        public TagRef<AnimationGraphTag> Unknown { get; set; }
+        public TagRef<AnimationGraphTag> ParentAnimation { get; set; }
+
+        [PrimitiveValue(8)]
+        public AnimationInheritanceFlags InheritanceFlags { get; set; }
+
+        [PrimitiveValue(9)]
+        public AnimationFlags PrivateFlags { get; set; }
+
+        [PrimitiveValue(10)]
+        public short AnimationCodecPack { get; set; }
 
         [ReferenceArray(12)]
-        public AnimationBone[] Bones { get; set; }
+        public SkeletonNode[] Nodes { get; set; }
 
         [ReferenceArray(20)]
         public AnimationSoundReference[] Sounds { get; set; }
+
+        // 28 is effect refrences
+
+        // 36 is blend screens
 
         [ReferenceArray(44)]
         public Animation[] Animations { get; set; }
@@ -80,7 +145,7 @@ namespace OpenH2.Core.Tags
         }
 
         [FixedLength(32)]
-        public class AnimationBone
+        public class SkeletonNode
         {
             [InternedString(0)]
             public string Description { get; set; }
@@ -114,53 +179,70 @@ namespace OpenH2.Core.Tags
         [FixedLength(96)]
         public class Animation
         {
+            public enum AnimationType : byte
+            {
+                Base = 0,
+                Overlay = 1,
+                Replacement = 2
+            }
+
+            public enum AnimationFrameInfo : byte
+            {
+                None = 0,
+                DxDy = 1,
+                DxDyDyaw = 2,
+                DxDyDzDyaw = 3,
+            }
+
+            
+
             [InternedString(0)]
-            public string Description { get; set; }
+            public string Name { get; set; }
 
             [PrimitiveValue(4)]
-            public int NodeSignature { get; set; }
+            public int NodeListChecksum { get; set; }
 
             [PrimitiveValue(8)]
-            public short ValueC { get; set; }
-
-            [PrimitiveValue(10)]
-            public short ValueD { get; set; }
+            public int ProductionChecksum { get; set; }
 
             [PrimitiveValue(12)]
-            public short ValueE { get; set; }
-
-            [PrimitiveValue(14)]
-            public short ValueF { get; set; }
+            public int ImportChecksum { get; set; }
 
             [PrimitiveValue(16)]
-            public byte AnimationType { get; set; }
+            public AnimationType Type { get; set; }
 
             [PrimitiveValue(17)]
-            public byte ValueG { get; set; }
+            public AnimationFrameInfo FrameInfo { get; set; }
 
             [PrimitiveValue(18)]
-            public byte ValueH { get; set; }
+            public byte BlendScreenIndex { get; set; }
 
             [PrimitiveValue(19)]
-            public byte BoneCount { get; set; }
+            public byte NodeCount { get; set; }
 
             [PrimitiveValue(20)]
             public ushort FrameCount { get; set; }
 
             [PrimitiveValue(22)]
-            public ushort FlagsB { get; set; }
+            public AnimationInternalFlags InternalFlags { get; set; }
+
+            [PrimitiveValue(23)]
+            public AnimationProductionFlags ProductionFlags { get; set; }
 
             [PrimitiveValue(24)]
-            public ushort FlagsC { get; set; }
+            public AnimationPlaybackFlags PlaybackFlags { get; set; }
 
             [PrimitiveValue(26)]
-            public ushort FlagsD { get; set; }
+            public byte DesiredCompression { get; set; }
+
+            [PrimitiveValue(27)]
+            public byte CurrentCompression { get; set; }
 
             [PrimitiveValue(28)]
-            public float ParamA { get; set; }
+            public float Weight { get; set; }
 
             [PrimitiveValue(32)]
-            public ushort ValueO { get; set; }
+            public ushort LoopFrame { get; set; }
 
             [PrimitiveValue(34)]
             public ushort ParentIndex { get; set; }
@@ -193,13 +275,13 @@ namespace OpenH2.Core.Tags
             public ushort FrameDataSize { get; set; }
 
             [ReferenceArray(64)]
-            public Obj64[] Obj64s { get; set; }
+            public FrameEvent[] FrameEvents { get; set; }
 
             [ReferenceArray(72)]
-            public Obj72[] Obj72s { get; set; }
+            public SoundEvent[] SoundEvents { get; set; }
 
             [FixedLength(4)]
-            public class Obj64
+            public class FrameEvent
             {
                 [PrimitiveValue(0)]
                 public short ValueA { get; set; }
@@ -208,20 +290,17 @@ namespace OpenH2.Core.Tags
                 public short ValueB { get; set; }
             }
 
-            [FixedLength(16)]
-            public class Obj72
+            [FixedLength(8)]
+            public class SoundEvent
             {
                 [PrimitiveValue(0)]
-                public short MaybeSoundIndex { get; set; }
+                public short SoundIndex { get; set; }
 
                 [PrimitiveValue(2)]
-                public short ValueB { get; set; }
+                public short Frame { get; set; }
 
-                [PrimitiveValue(8)]
-                public int ValueC { get; set; }
-
-                [PrimitiveValue(12)]
-                public int ValueD { get; set; }
+                [InternedString(4)]
+                public string MarkerName { get; set; }
             }
         }
 

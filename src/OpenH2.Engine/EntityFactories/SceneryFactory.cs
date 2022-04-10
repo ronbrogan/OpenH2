@@ -81,7 +81,7 @@ namespace OpenH2.Engine.EntityFactories
 
             if (def.Vertices.Length > 0)
             {
-                var geom = PhysicsComponentFactory.CreateStaticGeometry(scenery, xform, def, bsp.Shaders);
+                var geom = PhysicsComponentFactory.CreateStaticGeometry(scenery, xform, def, bsp.PhysicsMaterials);
                 comps.Add(geom);
 
                 comps.Add(new RenderModelComponent(scenery, new Model<BitmapTag>

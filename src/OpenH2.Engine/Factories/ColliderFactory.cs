@@ -5,6 +5,7 @@ using OpenH2.Foundation.Physics;
 using OpenH2.Physics.Colliders;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Numerics;
 
@@ -51,71 +52,64 @@ namespace OpenH2.Engine.Factories
         {
             var collider = new AggregateCollider();
 
+            if (phmo.TriangleDefinitions.Length > 0)
+                Debugger.Break();
+
             var colliderMeshes = new List<Vector3[]>();
             var convexModelMaterial = -1;
+
+            var polyhedraAltIndex = 0;
 
             foreach (var mesh in phmo.PolyhedraDefinitions)
             {
                 var meshVerts = new List<Vector3>();
 
-                for(var i = 0; i < mesh.CountA; i++)
+                if(mesh.HullCount <= 3)
                 {
-                    var x1 = mesh.FloatsC[i * 12 + 0];
-                    var x2 = mesh.FloatsC[i * 12 + 1];
-                    var x3 = mesh.FloatsC[i * 12 + 2];
-                    var x4 = mesh.FloatsC[i * 12 + 3];
+                    for (var i = 0; i < mesh.HullCount; i++)
+                    {
+                        var x = mesh.InlineHull_0_X;
+                        var y = mesh.InlineHull_0_Y;
+                        var z = mesh.InlineHull_0_Z;
 
-                    // TODO: figure out inidcator on how many polyhedra to read
-                    if (x1 + x2 + x3 + x4 == 0) break;
+                        if(i == 1)
+                        {
+                            x = mesh.InlineHull_1_X;
+                            y = mesh.InlineHull_1_Y;
+                            z = mesh.InlineHull_1_Z;
+                        }
+                        else if(i == 2)
+                        {
+                            x = mesh.InlineHull_2_X;
+                            y = mesh.InlineHull_2_Y;
+                            z = mesh.InlineHull_2_Z;
+                        }
 
-                    var y1 = mesh.FloatsC[i * 12 + 4];
-                    var y2 = mesh.FloatsC[i * 12 + 5];
-                    var y3 = mesh.FloatsC[i * 12 + 6];
-                    var y4 = mesh.FloatsC[i * 12 + 7];
+                        meshVerts.Add(new Vector3(x[0], y[0], z[0]));
+                        meshVerts.Add(new Vector3(x[1], y[1], z[1]));
+                        meshVerts.Add(new Vector3(x[2], y[2], z[2]));
+                        meshVerts.Add(new Vector3(x[3], y[3], z[3]));
+                    }
+                }
+                else
+                {
+                    for(var i = 0; i < mesh.HullCount; i++)
+                    {
+                        // No indexes seem available for this, accumulating the index over polyhedra instances
+                        var hull = phmo.PolyhedraAlternativeDefinitions[polyhedraAltIndex++];
 
-                    var z1 = mesh.FloatsC[i * 12 + 8];
-                    var z2 = mesh.FloatsC[i * 12 + 9];
-                    var z3 = mesh.FloatsC[i * 12 + 10];
-                    var z4 = mesh.FloatsC[i * 12 + 11];
-
-                    meshVerts.Add(new Vector3(x1, y1, z1));
-                    meshVerts.Add(new Vector3(x2, y2, z2));
-                    meshVerts.Add(new Vector3(x3, y3, z3));
-                    meshVerts.Add(new Vector3(x4, y4, z4));
+                        meshVerts.Add(new Vector3(hull.XValues[0], hull.YValues[0], hull.ZValues[0]));
+                        meshVerts.Add(new Vector3(hull.XValues[1], hull.YValues[1], hull.ZValues[1]));
+                        meshVerts.Add(new Vector3(hull.XValues[2], hull.YValues[2], hull.ZValues[2]));
+                        meshVerts.Add(new Vector3(hull.XValues[3], hull.YValues[3], hull.ZValues[3]));
+                    }
                 }
 
                 if(meshVerts.Count > 0)
                 {
                     colliderMeshes.Add(meshVerts.ToArray());
-                    convexModelMaterial = mesh.MaterialIndexMaybe;
+                    convexModelMaterial = mesh.Material;
                 }
-            }
-
-            foreach(var p in phmo.PolyhedraAlternativeDefinitions)
-            {
-                var meshVerts = new List<Vector3>();
-
-                var x1 = p.Floats[0];
-                var x2 = p.Floats[1];
-                var x3 = p.Floats[2];
-                var x4 = p.Floats[3];
-                         
-                var y1 = p.Floats[4];
-                var y2 = p.Floats[5];
-                var y3 = p.Floats[6];
-                var y4 = p.Floats[7];
-                         
-                var z1 = p.Floats[8];
-                var z2 = p.Floats[9];
-                var z3 = p.Floats[10];
-                var z4 = p.Floats[11];
-
-                meshVerts.Add(new Vector3(x1, y1, z1));
-                meshVerts.Add(new Vector3(x2, y2, z2));
-                meshVerts.Add(new Vector3(x3, y3, z3));
-                meshVerts.Add(new Vector3(x4, y4, z4));
-
-                //colliderMeshes.Add(meshVerts.ToArray());
             }
 
             if(colliderMeshes.Count > 0)
@@ -126,14 +120,12 @@ namespace OpenH2.Engine.Factories
                 collider.AddCollider(convexModel);
             }
 
-            
-
             foreach(var box in phmo.BoxDefinitions)
             {
                 var xform = new Transform();
                 xform.UseTransformationMatrix(box.Transform);
                 var boxCollider = new BoxCollider(xform, box.HalfWidthsMaybe);
-                boxCollider.PhysicsMaterial = box.MaterialIndexMaybe;
+                boxCollider.PhysicsMaterial = box.Material;
                 collider.AddCollider(boxCollider);
             }
 

@@ -10,6 +10,7 @@ using System.Text.Json.Serialization;
 using OpenBlam.Core.Texturing;
 using OpenBlam.Core.MapLoading;
 using OpenH2.Core.Extensions;
+using System.Buffers;
 
 namespace OpenH2.Core.Tags
 {
@@ -138,6 +139,8 @@ namespace OpenH2.Core.Tags
 
         public override void PopulateExternalData(MapStream sceneReader)
         {
+            var buffer = ArrayPool<byte>.Shared.Rent(80000);
+
             foreach(var info in this.TextureInfos)
             {
                 info.LevelsOfDetail = new BitmapLevelOfDetail[6];
@@ -162,7 +165,6 @@ namespace OpenH2.Core.Tags
                             using (var decompress = new DeflateStream(reader, CompressionMode.Decompress, true))
                             using (var outputStream = new MemoryStream())
                             {
-                                var buffer = new byte[80000];
                                 var read = -1;
 
                                 var endOfInput = lod.Offset.Value + lod.Size;
@@ -181,6 +183,8 @@ namespace OpenH2.Core.Tags
                     info.LevelsOfDetail[i] = lod;
                 }
             }
+
+            ArrayPool<byte>.Shared.Return(buffer);
         }
 
         public override bool Equals(object obj)

@@ -20,7 +20,7 @@ namespace OpenH2.Engine.EntityFactories
 
             var meshes = new List<ModelMesh>();
 
-            foreach (var chunk in tag.RenderChunks)
+            foreach (var chunk in tag.Clusters)
             {
                 meshes.AddRange(chunk.Model.Meshes);
             }
@@ -72,7 +72,7 @@ namespace OpenH2.Engine.EntityFactories
                 }));
             }
 
-            var collisionTerrain = PhysicsComponentFactory.CreateTerrain(terrain, tag.CollisionInfos, tag.Shaders);
+            var collisionTerrain = PhysicsComponentFactory.CreateTerrain(terrain, tag.CollisionInfos, tag.PhysicsMaterials);
             components.Add(collisionTerrain);
 
             components.Add(new RenderModelComponent(terrain, new Model<BitmapTag>

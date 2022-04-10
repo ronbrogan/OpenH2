@@ -101,7 +101,7 @@ namespace OpenH2.ScenarioExplorer.ViewModels
         public List<CaoViewModel> Caos { get; set; } = new List<CaoViewModel>();
         public int RawOffset { get; internal set; }
 
-        public void GeneratePointsOfInterest(IH2Map scene)
+        public void GeneratePointsOfInterest(IH2Map scene, Dictionary<int, string> internedStrings)
         {
             // go over all data, create entries for:
             //  - internal offset and count entries
@@ -140,15 +140,14 @@ namespace OpenH2.ScenarioExplorer.ViewModels
                 var internedStringIndex = val & 0xFFFFFF;
                 var internedStringLength = (byte)(val >> 24);
 
-                // TODO: interned strings isn't prebuilt anymore
-                //if(internedStringIndex > 0
-                //    && scene.InternedStrings.TryGetValue((int)internedStringIndex, out var str) 
-                //    && str.Length == internedStringLength)
-                //{
-                //    internedStringRefs.Add(i);
-                //}
+                if (internedStringIndex > 0
+                    && internedStrings.TryGetValue((int)internedStringIndex, out var str)
+                    && str.Length == internedStringLength)
+                {
+                    internedStringRefs.Add(i);
+                }
 
-                if(scene.TagIndex.ContainsKey(val))
+                if (scene.TagIndex.ContainsKey(val))
                 {
                     tagRefs.Add(i);
                 }

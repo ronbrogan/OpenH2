@@ -1,9 +1,64 @@
 ﻿using OpenH2.Core.Tags.Layout;
 using OpenBlam.Serialization.Layout;
 using System.Numerics;
+using OpenBlam.Serialization.Materialization;
+using System.IO;
+using System;
 
 namespace OpenH2.Core.Tags
 {
+    [FixedLength(48)]
+    public unsafe struct TetrahedralHull
+    {
+        private fixed float xValues[4];
+        private fixed float yValues[4];
+        private fixed float zValues[4];
+
+        public Vector3 I => new Vector3(xValues[0], yValues[0], zValues[0]);
+        public Vector3 J => new Vector3(xValues[1], yValues[1], zValues[1]);
+        public Vector3 K => new Vector3(xValues[2], yValues[2], zValues[2]);
+        public Vector3 L => new Vector3(xValues[3], yValues[3], zValues[3]);
+        public Vector3 this[int i] => new Vector3(xValues[i], yValues[i], zValues[i]);
+
+        public TetrahedralHull(Vector3 i, Vector3 j, Vector3 k, Vector3 l)
+        {
+            xValues[0] = i.X;
+            yValues[0] = i.Y;
+            zValues[0] = i.Z;
+
+            xValues[1] = j.X;
+            yValues[1] = j.Y;
+            zValues[1] = j.Z;
+
+            xValues[2] = k.X;
+            yValues[2] = k.Y;
+            zValues[2] = k.Z;
+
+            xValues[3] = l.X;
+            yValues[3] = l.Y;
+            zValues[3] = l.Z;
+        }
+
+        [PrimitiveValueMaterializer]
+        public static TetrahedralHull ReadTetrahedralHull(Stream s, int offset)
+        {
+            var hull = new TetrahedralHull();
+            var hullBytes = new Span<byte>(&hull, sizeof(TetrahedralHull));
+            s.Position = offset;
+            s.Read(hullBytes);
+            return hull;
+        }
+
+        [PrimitiveValueMaterializer]
+        public static TetrahedralHull ReadTetrahedralHull(ReadOnlySpan<byte> s, int offset)
+        {
+            var hull = new TetrahedralHull();
+            var hullBytes = new Span<byte>(&hull, sizeof(TetrahedralHull));
+            s.Slice(offset, sizeof(TetrahedralHull)).CopyTo(hullBytes);
+            return hull;
+        }
+    }
+
     [TagLabel(TagName.phmo)]
     public class PhysicsModelTag : BaseTag
     {
@@ -17,16 +72,23 @@ namespace OpenH2.Core.Tags
         public Vector3 Params { get; set; }
 
         [ReferenceArray(40)]
-        public MoverParameter[] MoverParameters { get; set; }
+        public Phantom[] Phantoms { get; set; }
 
         [ReferenceArray(48)]
-        public Obj48[] Obj48s { get; set; }
+        public NodeEdge[] NodeEdges { get; set; }
 
         [ReferenceArray(56)]
-        public BodyParameterSet[] BodyParameters { get; set; }
+        public RigidBody[] RigidBodies { get; set; }
 
         [ReferenceArray(64)]
         public MaterialReference[] MaterialReferences { get; set; }
+
+        [ReferenceArray(72)]
+        public SphereDefinition[] Spheres { get; set; }
+
+        // unused
+        [ReferenceArray(80)]
+        public MultiSphereDefinition[] MultiSpheres { get; set; }
 
         [ReferenceArray(88)]
         public CapsuleDefinition[] CapsuleDefinitions { get; set; }
@@ -34,43 +96,52 @@ namespace OpenH2.Core.Tags
         [ReferenceArray(96)]
         public BoxDefinition[] BoxDefinitions { get; set; }
 
+        // unused
+        [ReferenceArray(104)]
+        public TriangleDefinition[] TriangleDefinitions { get; set; }
+
         [ReferenceArray(112)]
-        public MeshDefinition[] PolyhedraDefinitions { get; set; }
+        public PolyhedraDefinition[] PolyhedraDefinitions { get; set; }
 
         [ReferenceArray(120)]
-        public Obj120[] PolyhedraAlternativeDefinitions { get; set; }
+        public PolyhedronFourVector[] PolyhedraAlternativeDefinitions { get; set; }
 
         [ReferenceArray(128)]
-        // These seem like planes, first 3 floats appear to be unit vectors
-        public ColliderPlane[] ColliderPlanes { get; set; }
+        public PolyhedronPlane[] PolyhedronPlanes { get; set; }
+
+        [ReferenceArray(136)]
+        public MassDistributionBlock[] MassDistributionBlocks { get; set; }
 
         [ReferenceArray(144)]
-        public Obj144[] Obj144s { get; set; }
+        public List[] Lists { get; set; }
 
         [ReferenceArray(152)]
-        public Obj152[] Obj152s { get; set; }
+        public ListShape[] ListShapes { get; set; }
 
-        [ReferenceArray(160)]
-        public Obj160[] Obj160s { get; set; }
+        // mopps @160
 
         [ReferenceArray(168)]
-        public byte[] RawData1 { get; set; }
+        public byte[] MoppCodes { get; set; }
+
+        [ReferenceArray(176)]
+        public HingeConstraint[] HingeContraints { get; set; }
 
         [ReferenceArray(184)]
-        public RagdollComponent[] RagdollComponents { get; set; }
+        public RagdollConstraint[] RagdollConstraints { get; set; }
 
         [ReferenceArray(192)]
-        public Variant[] Variants { get; set; }
+        public Region[] Regions { get; set; }
 
         [ReferenceArray(200)]
-        public Obj200[] Obj200s { get; set; }
+        public Node[] Nodes { get; set; }
 
         [ReferenceArray(232)]
-        public Obj232[] Obj232s { get; set; }
+        public LimitedHingeConstraint[] LimitedHingeConstraints { get; set; }
 
+        // ball and socket constraints @240
 
         [FixedLength(104)]
-        public class MoverParameter
+        public class Phantom
         {
             [PrimitiveValue(4)]
             public ushort Flags { get; set; }
@@ -99,7 +170,7 @@ namespace OpenH2.Core.Tags
 
 
         [FixedLength(24)]
-        public class Obj48
+        public class NodeEdge
         {
             [PrimitiveValue(0)]
             public ushort ValA { get; set; }
@@ -138,32 +209,65 @@ namespace OpenH2.Core.Tags
             }
         }
 
+        public enum RigidBodyMotion
+        {
+            Sphere = 0,
+            StabilizedSphere = 1,
+            Box = 2,
+            StabilizedBox = 3,
+            Keyframed = 4,
+            Fixed = 5
+        }
+
         [FixedLength(144)]
-        public class BodyParameterSet
+        public class RigidBody
         {
             [PrimitiveValue(0)]
-            public float UnknownShort1 { get; set; }
+            public ushort Node { get; set; }
 
             [PrimitiveValue(2)]
-            public float UnknownShort2 { get; set; }
+            public ushort Region { get; set; }
+
+            [PrimitiveValue(4)]
+            public ushort Permutation { get; set; }
 
             [PrimitiveValue(8)]
-            public float UnknownFloat0 { get; set; }
-
-            [PrimitiveValue(16)]
-            public float UnknownFloat1 { get; set; }
+            public Vector3 BoundingSphereOffset { get; set; }
 
             [PrimitiveValue(20)]
-            public float UnknownFloat2 { get; set; }
+            public float BoundingSphereRadius { get; set; }
+
+            [PrimitiveValue(24)]
+            public ushort Flags { get; set; }
+
+            [PrimitiveValue(26)]
+            public RigidBodyMotion MotionType { get; set; }
+
+            [PrimitiveValue(28)]
+            public ushort NoPhantomPowerAltIndex { get; set; }
+
+            [PrimitiveValue(30)]
+            public ushort Size { get; set; }
 
             [PrimitiveValue(32)]
-            public float UnknownFloat3 { get; set; }
+            public float InertiaTensorScale { get; set; }
+
+            [PrimitiveValue(36)]
+            /// <summary>0 - 10 (10 is really, really high)</summary>
+            public float LinearDamping { get; set; }
 
             [PrimitiveValue(40)]
-            public float UnknownFloat4 { get; set; }
+            /// <summary>0 - 10 (10 is really, really high)</summary>
+            public float AngularDamping { get; set; }
+
+            [PrimitiveValue(44)]
+            public Vector3 CentorOfMassOffset { get; set; }
 
             [PrimitiveValue(56)]
-            public float UnknownInt { get; set; }
+            public ushort UnknownInt { get; set; }
+
+            [PrimitiveValue(58)]
+            public ushort UnknownInt2 { get; set; }
 
             [PrimitiveValue(60)]
             public float Mass { get; set; }
@@ -180,86 +284,196 @@ namespace OpenH2.Core.Tags
         public class MaterialReference
         {
             [InternedString(0)]
-            public string MaterialNameA { get; set; }
+            public string Name { get; set; }
 
             [InternedString(4)]
-            public string MaterialNameB { get; set; }
+            public string GlobalMaterialName { get; set; }
 
-            [PrimitiveValue(12)]
-            public float FloatA { get; set; }
+            [PrimitiveValue(8)]
+            public ushort PhantomIndex { get; set; }
+
+            [PrimitiveValue(10)]
+            public ushort Flags { get; set; }
         }
 
-        
+        [FixedLength(128)]
+        public class SphereDefinition
+        {
+            [InternedString(0)]
+            public string Name { get; set; }
+
+            [PrimitiveValue(4)]
+            public ushort Material { get; set; }
+
+            [PrimitiveValue(6)]
+            public ushort Flags { get; set; }
+
+            [PrimitiveValue(8)]
+            public float RelativeMassScale { get; set; }
+
+            [PrimitiveValue(12)]
+            public float Friction { get; set; }
+
+            [PrimitiveValue(16)]
+            public float Restitution { get; set; }
+
+            [PrimitiveValue(20)]
+            public float Volume { get; set; }
+
+            [PrimitiveValue(24)]
+            public float Mass { get; set; }
+
+            [PrimitiveValue(28)]
+            public ushort PhantomIndex { get; set; }
+
+            [PrimitiveValue(36)]
+            public ushort Size { get; set; }
+
+            [PrimitiveValue(38)]
+            public ushort Count { get; set; }
+
+            [PrimitiveValue(44)]
+            public float Radius { get; set; }
+
+            [PrimitiveValue(52)]
+            public ushort Size2 { get; set; }
+
+            [PrimitiveValue(54)]
+            public ushort Count2 { get; set; }
+
+            [PrimitiveValue(64)]
+            public Matrix4x4 Transform { get; set; }
+        }
+
+        [FixedLength(132)]
+        public class MultiSphereDefinition
+        {
+            [InternedString(0)]
+            public string Name { get; set; }
+
+            [PrimitiveValue(4)]
+            public ushort Material { get; set; }
+
+            [PrimitiveValue(6)]
+            public ushort Flags { get; set; }
+
+            [PrimitiveValue(8)]
+            public float RelativeMassScale { get; set; }
+
+            [PrimitiveValue(12)]
+            public float Friction { get; set; }
+
+            [PrimitiveValue(16)]
+            public float Restitution { get; set; }
+
+            [PrimitiveValue(20)]
+            public float Volume { get; set; }
+
+            [PrimitiveValue(24)]
+            public float Mass { get; set; }
+
+            [PrimitiveValue(28)]
+            public ushort PhantomIndex { get; set; }
+
+            [PrimitiveValue(30)]
+            public ushort Size { get; set; }
+
+            [PrimitiveValue(32)]
+            public ushort Count { get; set; }
+
+            [PrimitiveValue(34)]
+            public ushort NumSpheres { get; set; }
+
+
+            [PrimitiveArray(36, 24)]
+            public float[] Spheres { get; set; }
+        }
+
+
         [FixedLength(80)]
         public class CapsuleDefinition
         {
             [InternedString(0)]
-            // palm trees are named palm_N_pill - capsule defs?
-            public string ObjName { get; set; } 
+            public string Name { get; set; } 
 
             [PrimitiveValue(4)]
-            public ushort ValA { get; set; }
+            public ushort Material { get; set; }
 
             [PrimitiveValue(6)]
-            public ushort MaterialIndexMaybe { get; set; }
+            public ushort Flags { get; set; }
 
             [PrimitiveValue(8)]
-            public Vector3 Params { get; set; }
+            public float RelativeMassScale { get; set; }
 
-            [PrimitiveArray(20, 2)]
-            public float[] FloatsA { get; set; }
+            [PrimitiveValue(12)]
+            public float Friction { get; set; }
+
+            [PrimitiveValue(16)]
+            public float Restitution { get; set; }
+
+            [PrimitiveValue(20)]
+            public float Volume { get; set; }
+
+            [PrimitiveValue(24)]
+            public float Mass { get; set; }
 
             [PrimitiveValue(28)]
-            public ushort ValC { get; set; }
+            public ushort PhantomIndex { get; set; }
 
-            [PrimitiveValue(30)]
-            public ushort ValD { get; set; }
+            [PrimitiveValue(36)]
+            public ushort Size { get; set; }
 
-            // Ends in mat3x3?
+            [PrimitiveValue(38)]
+            public ushort Count { get; set; }
+
+            [PrimitiveValue(44)]
+            public float Radius { get; set; }
+
+            [PrimitiveValue(48)]
+            public Vector3 Bottom { get; set; }
+
+            [PrimitiveValue(64)]
+            public Vector3 Top { get; set; }
         }
 
         [FixedLength(144)]
         public class BoxDefinition
         {
             [InternedString(0)]
-            // flywheel has physics_box here - cuboid collider definition?
-            public string ObjName { get; set; }
+            public string Name { get; set; }
 
             [PrimitiveValue(4)]
-            public ushort ValA { get; set; }
+            public ushort Material { get; set; }
 
             [PrimitiveValue(6)]
-            public ushort MaterialIndexMaybe { get; set; }
+            public ushort Flags { get; set; }
 
             [PrimitiveValue(8)]
-            public Vector3 Params { get; set; }
+            public float RelativeMassScale { get; set; }
+
+            [PrimitiveValue(12)]
+            public float Friction { get; set; }
+
+            [PrimitiveValue(16)]
+            public float Restitution { get; set; }
 
             [PrimitiveValue(20)]
-            public float FloatA { get; set; }
+            public float Volume { get; set; }
 
             [PrimitiveValue(24)]
             public float Mass { get; set; }
 
             [PrimitiveValue(28)]
-            public ushort ValC { get; set; }
+            public ushort PhantomIndex { get; set; }
 
             [PrimitiveValue(30)]
-            public ushort ValD { get; set; }
+            public ushort Size { get; set; }
 
             [PrimitiveValue(32)]
-            public uint ValE { get; set; }
+            public ushort Count { get; set; }
 
-            [PrimitiveValue(36)]
-            public uint ValF { get; set; }
-
-            [PrimitiveValue(40)]
-            public uint ValG { get; set; }
-
-            [PrimitiveValue(44)]
-            public float FloatB { get; set; }
-
-            [PrimitiveValue(48)]
-            public float FloatC { get; set; }
+            [PrimitiveValue(34)]
+            public float Radius { get; set; }
 
             [PrimitiveValue(48)]
             public Vector3 HalfWidthsMaybe { get; set; }
@@ -270,52 +484,146 @@ namespace OpenH2.Core.Tags
             public Matrix4x4 Transform { get; set; }
         }
 
-        [FixedLength(256)]
-        public class MeshDefinition
+        [FixedLength(90)]
+        public class TriangleDefinition
         {
             [InternedString(0)]
-            // flywheel has a physics_mesh name - convex mesh def?
-            public string ObjName { get; set; }
+            public string Name { get; set; }
 
             [PrimitiveValue(4)]
-            public ushort ValA { get; set; }
+            public ushort Material { get; set; }
 
             [PrimitiveValue(6)]
-            public ushort MaterialIndexMaybe { get; set; }
+            public ushort Flags { get; set; }
 
             [PrimitiveValue(8)]
-            public Vector3 Params { get; set; }
+            public float RelativeMassScale { get; set; }
 
-            [PrimitiveArray(20, 2)]
-            public float[] FloatsA { get; set; }
+            [PrimitiveValue(12)]
+            public float Friction { get; set; }
 
-            [PrimitiveArray(28, 6)]
-            public ushort[] ShortsA { get; set; }
+            [PrimitiveValue(16)]
+            public float Restitution { get; set; }
 
-            [PrimitiveArray(44, 7)]
-            public float[] FloatsB { get; set; }
+            [PrimitiveValue(20)]
+            public float Volume { get; set; }
+
+            [PrimitiveValue(24)]
+            public float Mass { get; set; }
+
+            [PrimitiveValue(28)]
+            public ushort PhantomIndex { get; set; }
+
+            [PrimitiveValue(30)]
+            public ushort Size { get; set; }
+
+            [PrimitiveValue(32)]
+            public ushort Count { get; set; }
+
+            [PrimitiveValue(34)]
+            public float Radius { get; set; }
+
+            [PrimitiveArray(42, 3)]
+            public Vector3 Translation { get; set; }
+        }
+
+        [FixedLength(256)]
+        public class PolyhedraDefinition
+        {
+            [InternedString(0)]
+            public string Name { get; set; }
+
+            [PrimitiveValue(4)]
+            public ushort Material { get; set; }
+
+            [PrimitiveValue(6)]
+            public ushort Flags { get; set; }
+
+            [PrimitiveValue(8)]
+            public float RelativeMassScale { get; set; }
+
+            [PrimitiveValue(12)]
+            public float Friction { get; set; }
+
+            [PrimitiveValue(16)]
+            public float Restitution { get; set; }
+
+            [PrimitiveValue(20)]
+            public float Volume { get; set; }
+
+            [PrimitiveValue(24)]
+            public float Mass { get; set; }
+
+            [PrimitiveValue(28)]
+            public ushort PhantomIndex { get; set; }
+
+            [PrimitiveValue(36)]
+            public ushort Size { get; set; }
+
+            [PrimitiveValue(38)]
+            public ushort Count { get; set; }
+
+            [PrimitiveValue(44)]
+            public float Radius { get; set; }
+
+
+            [PrimitiveValue(48)]
+            public Vector3 AabbHalfExtents { get; set; }
+
+            [PrimitiveValue(64)]
+            public Vector3 AabbCenter { get; set; }
 
             [PrimitiveValue(84)]
-            public short CountA { get; set; }
+            public short HullCount { get; set; }
 
             [PrimitiveValue(88)]
-            public short CountB { get; set; }
+            public short HullCapacity { get; set; }
 
-            [PrimitiveArray(96, 36)]
-            public float[] FloatsC { get; set; }
+            [PrimitiveValue(90)]
+            public short HullFlags { get; set; }
+
+            [PrimitiveArray(96, 4)]
+            public float[] InlineHull_0_X { get; set; }
+
+            [PrimitiveArray(112, 4)]
+            public float[] InlineHull_0_Y { get; set; }
+
+            [PrimitiveArray(128, 4)]
+            public float[] InlineHull_0_Z { get; set; }
+
+            [PrimitiveArray(144, 4)]
+            public float[] InlineHull_1_X { get; set; }
+
+            [PrimitiveArray(160, 4)]
+            public float[] InlineHull_1_Y { get; set; }
+
+            [PrimitiveArray(176, 4)]
+            public float[] InlineHull_1_Z { get; set; }
+
+            [PrimitiveArray(192, 4)]
+            public float[] InlineHull_2_X { get; set; }
+
+            [PrimitiveArray(208, 4)]
+            public float[] InlineHull_2_Y { get; set; }
+
+            [PrimitiveArray(224, 4)]
+            public float[] InlineHull_2_Z { get; set; }
 
             [PrimitiveValue(240)]
-            public short CountC { get; set; }
+            public short NumVertices { get; set; }
 
             [PrimitiveValue(244)]
-            public int ValueB{ get; set; }
+            public int ValueB { get; set; }
 
             [PrimitiveValue(248)]
-            public short CountD { get; set; }
+            public short PlaneEquationsCount { get; set; }
+
+            [PrimitiveValue(252)]
+            public short PlaneEquationsCapacity { get; set; }
         }
 
         [FixedLength(48)]
-        public class Obj120
+        public class PolyhedronFourVector
         {
             [PrimitiveArray(0, 4)]
             public float[] XValues { get; set; }
@@ -325,13 +633,10 @@ namespace OpenH2.Core.Tags
 
             [PrimitiveArray(32, 4)]
             public float[] ZValues { get; set; }
-
-            [PrimitiveArray(0, 12)]
-            public float[] Floats { get; set; }
         }
 
         [FixedLength(16)]
-        public class ColliderPlane
+        public class PolyhedronPlane
         {
             [PrimitiveValue(0)]
             public Vector3 Normal { get; set; }
@@ -341,56 +646,62 @@ namespace OpenH2.Core.Tags
         }
 
         [FixedLength(56)]
-        public class Obj144
+        public class MassDistributionBlock
         {
             // Haven't seen anything meaningful yet
         }
 
         [FixedLength(8)]
-        public class Obj152
+        public class List
         {
             // Haven't seen anything meaningful yet
         }
 
         [FixedLength(24)]
-        public class Obj160
+        public class ListShape
         {
             // Haven't seen anything meaningful yet
         }
 
         [FixedLength(148)]
-        public class RagdollComponent
+        public class HingeConstraint
         {
             [InternedString(0)]
-            public string ComponentName { get; set; }
+            public string Name { get; set; }
+        }
+
+        [FixedLength(148)]
+        public class RagdollConstraint
+        {
+            [InternedString(0)]
+            public string Name { get; set; }
         }
 
         [FixedLength(12)]
-        public class Variant
+        public class Region
         {
             [InternedString(0)]
-            public string VariantName { get; set; }
+            public string Name { get; set; }
 
             [ReferenceArray(4)]
-            public DamageLevel[] DamageLevels { get; set; }
+            public Permutation[] Permutations { get; set; }
 
 
             [FixedLength(12)]
-            public class DamageLevel
+            public class Permutation
             {
                 [InternedString(0)]
-                public string DamageLevelName { get; set; }
+                public string Name { get; set; }
 
                 [ReferenceArray(4)]
-                public NestedObj2[] Nested2 { get; set; }
+                public RigidBodyRef[] RigidBodies { get; set; }
 
 
                 [FixedLength(4)]
-                public class NestedObj2
+                public class RigidBodyRef
                 {
                     [PrimitiveValue(0)]
-                    // Body index?
-                    public ushort ValA { get; set; }
+                    public ushort RigidBodyIndex { get; set; }
 
                     [PrimitiveValue(2)]
                     public ushort ValB { get; set; }
@@ -399,38 +710,48 @@ namespace OpenH2.Core.Tags
         }
 
         [FixedLength(12)]
-        public class Obj200
+        public class Node
         {
             [InternedString(0)]
-            public string ObjName { get; set; }
+            public string Name { get; set; }
 
             [PrimitiveValue(4)]
-            public ushort ValA { get; set; }
+            public ushort Flags { get; set; }
 
             [PrimitiveValue(6)]
-            public ushort ValB { get; set; }
+            public ushort Parent { get; set; }
 
             [PrimitiveValue(8)]
-            public ushort ValC { get; set; }
+            public ushort Sibling { get; set; }
 
             [PrimitiveValue(10)]
-            public ushort ValD { get; set; }
+            public ushort Child { get; set; }
         }
 
         [FixedLength(132)]
-        public class Obj232
+        public class LimitedHingeConstraint
         {
             [InternedString(0)]
-            public string ObjName { get; set; }
+            public string Name { get; set; }
 
             [PrimitiveValue(4)]
-            public ushort ValA { get; set; }
+            public ushort NodeA { get; set; }
 
             [PrimitiveValue(6)]
-            public ushort ValB { get; set; }
+            public ushort NodeB { get; set; }
 
-            [PrimitiveArray(8, 31)]
+            [PrimitiveArray(8, 26)]
             public float[] FloatsA { get; set; }
+
+
+            [PrimitiveValue(120)]
+            public float LimitFriction { get; set; }
+
+            [PrimitiveValue(124)]
+            public float LimitMinAngle { get; set; }
+
+            [PrimitiveValue(128)]
+            public float LimitMaxAngle { get; set; }
         }
     }
 }

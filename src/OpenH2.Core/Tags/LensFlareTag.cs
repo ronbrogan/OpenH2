@@ -13,32 +13,47 @@ namespace OpenH2.Core.Tags
         {
         }
 
+        [PrimitiveValue(0)]
+        public float FalloffAngle { get; set; }
+
+        [PrimitiveValue(4)]
+        public float CutoffAngle { get; set; }
+
+        [PrimitiveValue(8)]
+        public float OcclusionRadius { get; set; }
+
         [PrimitiveValue(36)]
         public TagRef<BitmapTag> Bitmap { get; set; }
 
         [ReferenceArray(64)]
-        public Obj64[] obj64s { get; set; }
+        public ReflectionInfo[] Reflections { get; set; }
 
         [FixedLength(48)]
-        public class Obj64
+        public class ReflectionInfo
         {
             [PrimitiveValue(0)]
-            public uint Value1 { get; set; }
+            public uint Flags { get; set; }
 
             [PrimitiveValue(4)]
-            public uint Value2 { get; set; }
+            public uint BitmapIndex { get; set; }
 
             [PrimitiveValue(8)]
-            public Vector3 VecA { get; set; }
+            public float PositionAlongFlareAxis { get; set; }
 
-            [PrimitiveValue(20)]
-            public Vector3 VecB { get; set; }
+            [PrimitiveValue(12)]
+            public float RotationOffset { get; set; }
+
+            [PrimitiveValue(16)]
+            public Vector2 Radius { get; set; }
+
+            [PrimitiveValue(24)]
+            public Vector2 Brightness { get; set; }
+
+            [PrimitiveValue(28)]
+            public float ModulationFactor { get; set; }
 
             [PrimitiveValue(32)]
-            public Vector3 VecC { get; set; }
-
-            [PrimitiveValue(44)]
-            public uint Value3 { get; set; }
+            public Vector3 TintColor { get; set; }
         }
     }
 }

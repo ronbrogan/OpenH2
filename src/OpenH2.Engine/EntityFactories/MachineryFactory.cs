@@ -81,7 +81,7 @@ namespace OpenH2.Engine.EntityFactories
                             var deltaP = Vector3.Zero;
                             var deltaQ = Quaternion.Identity;
 
-                            var parentBone = renderModel?.Bones.FirstOrDefault(b => b.Name == trig.ParentDescription);
+                            var parentBone = renderModel?.Nodes.FirstOrDefault(b => b.Name == trig.ParentDescription);
 
                             if (parentBone != null)
                             {

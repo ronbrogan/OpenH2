@@ -12,7 +12,7 @@ namespace OpenH2.Core.Tags
         }
 
         [ReferenceArray(20)]
-        public Id[] Ids { get; set; }
+        public MaterialReference[] Ids { get; set; }
 
         [ReferenceArray(28)]
         public ColliderDefinition[] ColliderComponents { get; set; }
@@ -24,7 +24,7 @@ namespace OpenH2.Core.Tags
         public Obj44[] Obj44s { get; set; }
 
         [FixedLength(4)]
-        public class Id
+        public class MaterialReference
         {
             [InternedString(0)]
             public string Value { get; set; }

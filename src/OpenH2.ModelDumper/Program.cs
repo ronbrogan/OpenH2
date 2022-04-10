@@ -46,7 +46,7 @@ namespace OpenH2.ModelDumper
 
             var bsps = scene.GetLocalTagsOfType<BspTag>();
             var bspMeshes = bsps
-                .SelectMany(b => b.RenderChunks);
+                .SelectMany(b => b.Clusters);
 
             foreach(var chunk in bspMeshes)
             { 
@@ -224,7 +224,7 @@ namespace OpenH2.ModelDumper
                 if (!scene.TryGetTag(hlmt.RenderModel, out var mode))
                     continue;
 
-                var index = mode.Components[0].DamageLevels[0].HighestPieceIndex;
+                var index = mode.Regions[0].Permutations[0].HighestPieceIndex;
                 
                 //writer.WriteModel(mode.Parts[index].Model, xform, "itmc_" + itemPlacement.ItemCollectionReference);
             }
@@ -266,7 +266,7 @@ namespace OpenH2.ModelDumper
 
                 if (scene.TryGetTag(hlmt.RenderModel, out var mode))
                 {
-                    writer.WriteModel(mode.Parts[0].Model, xform, "char_" + character.CharacterReference.Id);
+                    writer.WriteModel(mode.Sections[0].Model, xform, "char_" + character.CharacterReference.Id);
                 }
 
                 //if (scene.TryGetTag(hlmt.ColliderId, out var coll))

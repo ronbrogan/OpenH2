@@ -1,4 +1,7 @@
-﻿using OpenH2.Core.Maps;
+﻿using OpenH2.Core.Enums;
+using OpenH2.Core.Extensions;
+using OpenH2.Core.Maps;
+using OpenH2.Core.Offsets;
 using OpenH2.Core.Tags;
 using OpenH2.ScenarioExplorer.Processors;
 using PropertyChanged;
@@ -6,6 +9,7 @@ using ReactiveUI;
 using System;
 using System.Collections.Generic;
 using System.Reactive;
+using System.Text;
 
 namespace OpenH2.ScenarioExplorer.ViewModels
 {
@@ -78,6 +82,19 @@ namespace OpenH2.ScenarioExplorer.ViewModels
             treeProcessor.PopulateChildren(scenarioVm, globalsEntry);
 
             this.TreeRoots = roots.ToArray();
+
+            for(var i = 0; i < scene.Header.InternedStringCount; i++)
+            {
+                var stringLoc = scene.ReadData(DataFile.Local, new ByteOffset(scene.Header.InternedStringIndexOffset + i * 4), 4);
+
+                var stringOffset = BitConverter.ToInt32(stringLoc.Span);
+
+                var stringData = scene.ReadData(DataFile.Local, new ByteOffset(scene.Header.InternedStringsOffset + stringOffset), 128);
+
+                var @string = Encoding.UTF8.GetNullTerminatedString(stringData.Span, 128);
+
+                this.InternedStrings[i] = @string;
+            }
         }
 
         internal void PopulateTreeChildren(TagTreeEntryViewModel selectedEntry)
@@ -119,7 +136,7 @@ namespace OpenH2.ScenarioExplorer.ViewModels
             }
 
             vm.OriginalTag = tag;
-            vm.GeneratePointsOfInterest(this.Scene);
+            vm.GeneratePointsOfInterest(this.Scene, this.InternedStrings);
 
             TagLookup.Add(tagId, vm);
 

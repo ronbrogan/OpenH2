@@ -30,8 +30,8 @@ namespace OpenH2.Engine.EntityFactories
 
             var meshes = new List<ModelMesh>();
 
-            var partIndex = model.Components.First().DamageLevels.First().HighestPieceIndex;
-            meshes.AddRange(model.Parts[partIndex].Model.Meshes);
+            var partIndex = model.Regions.First().Permutations.First().HighestPieceIndex;
+            meshes.AddRange(model.Sections[partIndex].Model.Meshes);
 
             var renderModelMeshes = new List<Mesh<BitmapTag>>(meshes.Count);
 

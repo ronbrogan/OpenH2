@@ -22,5 +22,8 @@ namespace OpenH2.Core.Tags
 
         [PrimitiveValue(32)]
         public TagRef Style { get; set; }
+
+        [PrimitiveValue(40)]
+        public TagRef<CharacterTag> Major { get; set; }
     }
 }

@@ -1,4 +1,5 @@
-﻿using OpenH2.Core.Enums;
+﻿using System.Collections.Generic;
+using OpenH2.Core.Enums;
 using OpenH2.Core.Maps;
 using OpenH2.Core.Tags;
 
@@ -6,17 +7,16 @@ namespace OpenH2.ScenarioExplorer.ViewModels
 {
     public static class DataPreviewViewModelFactory
     {
-        public static DataPreviewViewModel Create(int offset, TagViewModel tag, IH2Map map)
+        public static DataPreviewViewModel Create(int offset, TagViewModel tag, IH2Map map, Dictionary<int, string> internedStrings)
         {
             var vm = new DataPreviewViewModel(offset, tag);
 
-            // TODO: interned strings isn't prebuilt anymore
-            //if(map.InternedStrings.TryGetValue(vm.Short, out var str))
-            //{
-            //    vm.InternedString = str;
-            //}
+            if (internedStrings.TryGetValue(vm.Short, out var str))
+            {
+                vm.InternedString = str;
+            }
 
-            if(map.TryGetTag(vm.UInt, out BaseTag t))
+            if (map.TryGetTag(vm.UInt, out BaseTag t))
             {
                 vm.TagName = t.Name;
             }

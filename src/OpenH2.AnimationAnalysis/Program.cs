@@ -41,7 +41,7 @@ namespace OpenH2.AnimationAnalysis
             {
                 foreach(var anim in tag.Animations)
                 {
-                    Write($"{tag.Name} {anim.Description}, T{anim.AnimationType}, F{anim.FrameCount}, B{anim.BoneCount}");
+                    Write($"{tag.Name} {anim.Name}, T{anim.Type}, F{anim.FrameCount}, B{anim.NodeCount}");
 
                     Span<byte> data = anim.Data;
 
@@ -59,7 +59,7 @@ namespace OpenH2.AnimationAnalysis
                         types.Add(innerHeader.Type);
                     }
 
-                    var outFile = Path.Combine(outRoot, tag.Name, anim.Description.Replace(":", "-")) + ".jmad";
+                    var outFile = Path.Combine(outRoot, tag.Name, anim.Name.Replace(":", "-")) + ".jmad";
                     Directory.CreateDirectory(Path.GetDirectoryName(outFile));
                     File.WriteAllBytes(outFile, anim.Data);
                     

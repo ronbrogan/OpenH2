@@ -26,21 +26,21 @@ namespace OpenH2.Core.Tags
         public ushort Flags { get; set; }
 
         [ReferenceArray(20)]
-        public BoundingBox[] BoundingBoxes { get; set; }
+        public CompressionInfo[] CompressionInfos { get; set; }
 
         [ReferenceArray(28)]
-        public Component[] Components { get; set; }
+        public Region[] Regions { get; set; }
 
-        public DamageLevel[] Permutations { get; set; }
+        public Permutation[] Permutations { get; set; }
 
         [ReferenceArray(36)]
-        public Part[] Parts { get; set; }
+        public Section[] Sections { get; set; }
 
         [ReferenceArray(72)]
-        public Bone[] Bones { get; set; }
+        public Node[] Nodes { get; set; }
 
         [ReferenceArray(88)]
-        public NamedSection[] Sections { get; set; }
+        public MarkerGroup[] MarkerGroups { get; set; }
 
         [ReferenceArray(96)]
         public ModelShaderReference[] ModelShaderReferences { get; set; }
@@ -48,7 +48,7 @@ namespace OpenH2.Core.Tags
         public override void PopulateExternalData(MapStream reader)
         {
             
-            foreach (var part in Parts)
+            foreach (var part in Sections)
             {
                 var headerOffset = new NormalOffset((int)part.DataBlockRawOffset);
                 var mapData = reader.GetStream(headerOffset.Location);
@@ -69,28 +69,28 @@ namespace OpenH2.Core.Tags
 
                 var meshes = ModelResourceContainerProcessor.ProcessContainer(part, ModelShaderReferences);
 
-                if(this.BoundingBoxes.Length > 0)
+                if(this.CompressionInfos.Length > 0)
                 {
 
                     var bbIndex = 0;
 
                     var maxBounds = new Vector3(
-                        this.BoundingBoxes[bbIndex].MaxX,
-                        this.BoundingBoxes[bbIndex].MaxY,
-                        this.BoundingBoxes[bbIndex].MaxZ);
+                        this.CompressionInfos[bbIndex].MaxX,
+                        this.CompressionInfos[bbIndex].MaxY,
+                        this.CompressionInfos[bbIndex].MaxZ);
 
                     var minBounds = new Vector3(
-                        this.BoundingBoxes[bbIndex].MinX,
-                        this.BoundingBoxes[bbIndex].MinY,
-                        this.BoundingBoxes[bbIndex].MinZ);
+                        this.CompressionInfos[bbIndex].MinX,
+                        this.CompressionInfos[bbIndex].MinY,
+                        this.CompressionInfos[bbIndex].MinZ);
 
                     var maxUV = new Vector2(
-                        this.BoundingBoxes[bbIndex].MaxU,
-                        this.BoundingBoxes[bbIndex].MaxV);
+                        this.CompressionInfos[bbIndex].MaxU,
+                        this.CompressionInfos[bbIndex].MaxV);
 
                     var minUV = new Vector2(
-                        this.BoundingBoxes[bbIndex].MinU,
-                        this.BoundingBoxes[bbIndex].MinV);
+                        this.CompressionInfos[bbIndex].MinU,
+                        this.CompressionInfos[bbIndex].MinV);
 
                     var mesh = meshes[0];
 
@@ -98,13 +98,13 @@ namespace OpenH2.Core.Tags
                     {
                         var vert = mesh.Verticies[i];
 
-                        var newPos = part.Flags.HasFlag(Properties.CompressedVerts) ? new Vector3(
+                        var newPos = part.CompressionFlags.HasFlag(GeometryCompressionFlags.CompressedVerts) ? new Vector3(
                             Decompress(vert.Position.X, minBounds.X, maxBounds.X),
                             Decompress(vert.Position.Y, minBounds.Y, maxBounds.Y),
                             Decompress(vert.Position.Z, minBounds.Z, maxBounds.Z)
                             ) : vert.Position;
 
-                        var newTex = part.Flags.HasFlag(Properties.CompressedTexCoords) ? new Vector2(
+                        var newTex = part.CompressionFlags.HasFlag(GeometryCompressionFlags.CompressedTexCoords) ? new Vector2(
                             Decompress(vert.TexCoords.X, minUV.X, maxUV.X),
                             Decompress(vert.TexCoords.Y, minUV.Y, maxUV.Y)
                             ) : vert.TexCoords;
@@ -130,16 +130,9 @@ namespace OpenH2.Core.Tags
             return (val + 1f) / 2f * (max - min) + min;
         }
 
-        [Flags]
-        public enum Properties : short
-        {
-            CompressedVerts             = 1 << 0,
-            CompressedTexCoords         = 1 << 1,
-            CompressedSecTexCoords      = 1 << 2,
-        }
 
         [FixedLength(56)]
-        public class BoundingBox
+        public class CompressionInfo
         {
             [PrimitiveValue(0)]
             public float MinX { get; set; }
@@ -170,20 +163,32 @@ namespace OpenH2.Core.Tags
 
             [PrimitiveValue(36)]
             public float MaxV { get; set; }
+
+            [PrimitiveValue(40)]
+            public float MinU2 { get; set; }
+
+            [PrimitiveValue(44)]
+            public float MaxU2 { get; set; }
+
+            [PrimitiveValue(48)]
+            public float MinV2 { get; set; }
+
+            [PrimitiveValue(52)]
+            public float MaxV2 { get; set; }
         }
 
         [FixedLength(16)]
-        public class Component
+        public class Region
         {
             [InternedString(0)]
             public string PartName { get; set; }
 
             [ReferenceArray(8)]
-            public DamageLevel[] DamageLevels { get; set; }
+            public Permutation[] Permutations { get; set; }
         }
 
         [FixedLength(16)]
-        public class DamageLevel
+        public class Permutation
         {
             [PrimitiveValue(0)]
             public int PermutationNameId { get; set; }
@@ -208,11 +213,14 @@ namespace OpenH2.Core.Tags
         }
 
         [FixedLength(92)]
-        public class Part : IModelResourceContainer
+        public class Section : IModelResourceContainer
         {
             #if DEBUG
             public byte[] RawData { get; set; }
             #endif
+
+            [PrimitiveValue(0)]
+            public GeometryClass GlobalGeometryClassification { get; set; }
 
             [PrimitiveValue(4)]
             public ushort VertexCount { get; set; }
@@ -223,11 +231,35 @@ namespace OpenH2.Core.Tags
             [PrimitiveValue(8)]
             public ushort PartCount { get; set; }
 
+            [PrimitiveValue(10)]
+            public ushort ShadowCastingTriangleCount { get; set; }
+
+            [PrimitiveValue(12)]
+            public ushort ShadowCastingPartCount { get; set; }
+
+            [PrimitiveValue(14)]
+            public ushort OpaquePointCount { get; set; }
+
+            [PrimitiveValue(16)]
+            public ushort OpaqueVertexCount { get; set; }
+
+            [PrimitiveValue(18)]
+            public ushort OpaquePartCount { get; set; }
+
             [PrimitiveValue(20)]
-            public ushort BoneCount { get; set; }
+            public byte OpaqueMaxNodesPerVertex { get; set; }
+
+            [PrimitiveValue(21)]
+            public byte TransparentMaxNodesPerVertex { get; set; }
+
+            [PrimitiveValue(22)]
+            public ushort ShadowCasingRigidTriangleCount { get; set; }
+
+            [PrimitiveValue(24)]
+            public GeometryClass GeometryClassification { get; set; }
 
             [PrimitiveValue(26)]
-            public Properties Flags { get; set; }
+            public GeometryCompressionFlags CompressionFlags { get; set; }
 
             [PrimitiveValue(56)]
             public uint DataBlockRawOffset { get; set; }
@@ -256,7 +288,7 @@ namespace OpenH2.Core.Tags
         }
 
         [FixedLength(96)]
-        public class Bone
+        public class Node
         {
             [InternedString(0)]
             public string Name { get; set; }
@@ -293,17 +325,17 @@ namespace OpenH2.Core.Tags
         }
 
         [FixedLength(12)]
-        public class NamedSection
+        public class MarkerGroup
         {
             [InternedString(0)]
             public string Name { get; set; }
 
             [ReferenceArray(4)]
-            public SectionInfo[] SectionInfos { get; set; }
+            public Marker[] Markers { get; set; }
         }
 
         [FixedLength(36)]
-        public class SectionInfo
+        public class Marker
         {
             [PrimitiveValue(4)]
             public Vector3 Bounds { get; set; }

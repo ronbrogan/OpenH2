@@ -101,7 +101,7 @@ namespace OpenH2.Engine.Scripting
         {
             for(var i = 0; i < animation.Animations.Length; i++)
             {
-                if(animation.Animations[i].Description == animationName)
+                if(animation.Animations[i].Name == animationName)
                 {
                     this.animationSystem.StartAnimation(unit, animation.Animations[i], interpolate, loop: false);
                     return;
@@ -114,7 +114,7 @@ namespace OpenH2.Engine.Scripting
         {
             for (var i = 0; i < animation.Animations.Length; i++)
             {
-                if (animation.Animations[i].Description == animationName)
+                if (animation.Animations[i].Name == animationName)
                 {
                     this.animationSystem.StartAnimation(unit, animation.Animations[i], interpolate, loop: true);
                     return;

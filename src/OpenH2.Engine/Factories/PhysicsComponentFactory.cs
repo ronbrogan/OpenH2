@@ -22,9 +22,9 @@ namespace OpenH2.Engine.Factories
             RigidBodyComponent body;
 
 
-            if (map.TryGetTag(hlmt.PhysicsModel, out var phmo) && phmo.BodyParameters.Length > 0)
+            if (map.TryGetTag(hlmt.PhysicsModel, out var phmo) && phmo.RigidBodies.Length > 0)
             {
-                var param = phmo.BodyParameters[0];
+                var param = phmo.RigidBodies[0];
 
                 body = new RigidBodyComponent(parent, transform, param.InertiaTensor, param.Mass, param.CenterOfMass);
                 body.Collider = ColliderFactory.GetAggregateColliderForPhmo(map, phmo, damageLevel);
@@ -46,12 +46,12 @@ namespace OpenH2.Engine.Factories
 
             RigidBodyComponent body;
 
-            if (!map.TryGetTag(hlmt.PhysicsModel, out var phmo) || phmo.BodyParameters.Length == 0)
+            if (!map.TryGetTag(hlmt.PhysicsModel, out var phmo) || phmo.RigidBodies.Length == 0)
             {
                 return null;
             }
 
-            var param = phmo.BodyParameters[0];
+            var param = phmo.RigidBodies[0];
 
             body = new RigidBodyComponent(parent, transform, param.InertiaTensor, param.Mass, param.CenterOfMass)
             {
@@ -75,7 +75,7 @@ namespace OpenH2.Engine.Factories
             };
         }
 
-        public static StaticTerrainComponent CreateTerrain(Entity parent, ICollisionInfo[] collisionInfos, ShaderInfo[] shaders)
+        public static StaticTerrainComponent CreateTerrain(Entity parent, ICollisionInfo[] collisionInfos, CollisionMaterial[] shaders)
         {
             return new StaticTerrainComponent(parent)
             {
@@ -83,12 +83,12 @@ namespace OpenH2.Engine.Factories
             };
         }
 
-        public static StaticGeometryComponent CreateStaticGeometry(Entity parent, TransformComponent xform, ICollisionInfo collisionInfos, ShaderInfo[] shaders)
+        public static StaticGeometryComponent CreateStaticGeometry(Entity parent, TransformComponent xform, ICollisionInfo collisionInfos, CollisionMaterial[] shaders)
         {
             return CreateStaticGeometry(parent, xform, new[] { collisionInfos }, shaders);
         }
 
-        public static StaticGeometryComponent CreateStaticGeometry(Entity parent, TransformComponent xform, ICollisionInfo[] collisionInfos, ShaderInfo[] shaders)
+        public static StaticGeometryComponent CreateStaticGeometry(Entity parent, TransformComponent xform, ICollisionInfo[] collisionInfos, CollisionMaterial[] shaders)
         {
             return new StaticGeometryComponent(parent, xform)
             {
@@ -96,7 +96,7 @@ namespace OpenH2.Engine.Factories
             };
         }
 
-        private static Func<int,int> MatLookup(ShaderInfo[] shaders)
+        private static Func<int,int> MatLookup(CollisionMaterial[] shaders)
         {
             return i =>
             {

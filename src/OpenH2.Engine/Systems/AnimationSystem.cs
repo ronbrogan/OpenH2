@@ -48,7 +48,7 @@ namespace OpenH2.Engine.Systems
 
         internal void StartAnimation(IUnit unit, AnimationGraphTag.Animation animation, bool interpolate, bool loop)
         {
-            var frameData = JmadDataProcessor.GetProcessor().GetAnimation(animation.FrameCount, animation.BoneCount, animation.Data);
+            var frameData = JmadDataProcessor.GetProcessor().GetAnimation(animation.FrameCount, animation.NodeCount, animation.Data);
 
             // Find PostComponent for unit?
 

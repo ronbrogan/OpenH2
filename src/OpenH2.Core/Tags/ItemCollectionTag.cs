@@ -14,15 +14,22 @@ namespace OpenH2.Core.Tags
         [ReferenceArray(0)]
         public Item[] Items { get; set; }
 
-        [FixedLength(12)]
+        [PrimitiveValue(8)]
+        public int SpawnTime { get; set; }
+
+        [FixedLength(16)]
         public class Item
         {
             [PrimitiveValue(0)]
-            public float Param { get; set; }
+            ///<summary>How likely this item is chosen, 100 => 100%</summary>
+            public float Weight { get; set; }
 
             // Equip or Weap
             [PrimitiveValue(8)]
             public TagRef ItemTag { get; set; }
+
+            [InternedString(12)]
+            public string Variant { get; set; }
         }
     }
 }

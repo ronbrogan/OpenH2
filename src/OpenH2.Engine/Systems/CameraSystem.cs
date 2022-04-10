@@ -52,7 +52,7 @@ namespace OpenH2.Engine.Systems
 
         public void PerformCameraMove(AnimationGraphTag animationTag, string trackName, IUnit unit, ILocationFlag locationFlag)
         {
-            var animation = animationTag.Animations.FirstOrDefault(t => t.Description == trackName);
+            var animation = animationTag.Animations.FirstOrDefault(t => t.Name == trackName);
 
             if (animation != null)
             {

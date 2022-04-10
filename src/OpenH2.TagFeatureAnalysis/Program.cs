@@ -84,7 +84,7 @@ namespace OpenH2.TagFeatureAnalysis
             foreach (var model in models)
             {
                 var bytes = new byte[72];
-                var container = model.Parts[0];
+                var container = model.Sections[0];
 
                 var partResource = container.Resources[0];
                 var partData = partResource.Data.Span;
@@ -102,7 +102,7 @@ namespace OpenH2.TagFeatureAnalysis
                     features = bytes.Cast<object>()
                 });
 
-                var bb = model.BoundingBoxes[0];
+                var bb = model.CompressionInfos[0];
                 Console.WriteLine($"{model.Name},{{{model.Id},{model.Flags & 0xFF},{model.Flags >> 8}}}");
             }
 

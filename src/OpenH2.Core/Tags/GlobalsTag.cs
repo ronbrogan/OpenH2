@@ -21,19 +21,22 @@ namespace OpenH2.Core.Tags
         public class MaterialDefinition
         {
             [InternedString(0)]
-            public string MaterialName { get; set; }
+            public string Name { get; set; }
 
             [InternedString(4)]
-            public string BaseMaterialName1 { get; set; }
+            public string ParentName { get; set; }
 
             [PrimitiveValue(8)]
-            public ushort ValA { get; set; }
+            public ushort Flags { get; set; }
 
             [PrimitiveValue(14)]
-            public ushort ValB { get; set; }
+            public ushort OldMaterialType { get; set; }
 
             [InternedString(16)]
-            public string BaseMaterialName2 { get; set; }
+            public string GeneralArmor { get; set; }
+
+            [InternedString(20)]
+            public string SpecificArmor { get; set; }
 
             [PrimitiveValue(28)]
             public float Friction { get; set; }
@@ -42,62 +45,65 @@ namespace OpenH2.Core.Tags
             public float Restitution { get; set; }
 
             [PrimitiveValue(36)]
-            public float FloatC { get; set; }
+            public float Density { get; set; }
 
             [PrimitiveValue(52)]
             public TagRef BsdtTag { get; set; }
 
             [PrimitiveValue(60)]
-            public TagRef<SoundTag> SoundTagA { get; set; }
+            public TagRef<SoundTag> SoundSweetenerSmall { get; set; }
 
             [PrimitiveValue(68)]
-            public TagRef<SoundTag> SoundTagB { get; set; }
+            public TagRef<SoundTag> SoundSweetenerMedium { get; set; }
 
             [PrimitiveValue(76)]
-            public TagRef<SoundTag> SoundTagC { get; set; }
+            public TagRef<SoundTag> SoundSweetenerLarge { get; set; }
 
             [PrimitiveValue(84)]
-            public TagRef<LoopingSoundTag> LoopingSoundTagA { get; set; }
+            public TagRef<LoopingSoundTag> SoundSweetenerRolling { get; set; }
+
+            [PrimitiveValue(92)]
+            public TagRef<LoopingSoundTag> SoundSweetenerGrinding { get; set; }
 
             [PrimitiveValue(100)]
-            public TagRef<SoundTag> SoundTagD { get; set; }
+            public TagRef<SoundTag> SoundSweetenerMelee { get; set; }
 
             [PrimitiveValue(116)]
-            public TagRef EffectTagA { get; set; }
+            public TagRef EffectSweetenerSmall { get; set; }
 
             [PrimitiveValue(124)]
-            public TagRef EffectTagB { get; set; }
+            public TagRef EffectSweetenerMedium { get; set; }
 
             [PrimitiveValue(132)]
-            public TagRef EffectTagC { get; set; }
+            public TagRef EffectSweetenerlarge { get; set; }
 
             [PrimitiveValue(140)]
-            public TagRef EffectTagD { get; set; }
+            public TagRef EffectSweetenerRolling { get; set; }
 
             [PrimitiveValue(148)]
-            public TagRef EffectTagE { get; set; }
+            public TagRef EffectSweetenerGrinding { get; set; }
 
             [PrimitiveValue(156)]
-            public TagRef EffectTagF { get; set; }
+            public TagRef EffectSweetenerMelee { get; set; }
 
             [PrimitiveValue(176)]
-            public TagRef FootTag { get; set; }
+            public TagRef MaterialEffects { get; set; }
         }
 
         [FixedLength(36)]
         public class SoundInfo
         {
             [PrimitiveValue(4)]
-            public TagRef SnclTag { get; set; }
+            public TagRef LegacySoundClasses { get; set; }
 
             [PrimitiveValue(12)]
-            public TagRef SfxTag { get; set; }
+            public TagRef SoundEffects { get; set; }
 
             [PrimitiveValue(20)]
-            public TagRef SnmxTag { get; set; }
+            public TagRef SoundMix { get; set; }
 
             [PrimitiveValue(28)]
-            public TagRef SpkTag { get; set; }
+            public TagRef CombatDialogConstants { get; set; }
 
             [PrimitiveValue(32)]
             public TagRef<SoundMappingTag> SoundMap { get; set; }

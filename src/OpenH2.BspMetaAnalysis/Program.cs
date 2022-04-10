@@ -156,9 +156,9 @@ namespace OpenH2.BspMetaAnalysis
 
             var alreadyGenerated = new HashSet<uint>();
 
-            for (var i = 0; i < tag.RenderChunks.Length; i++)
+            for (var i = 0; i < tag.Clusters.Length; i++)
             {
-                var model = tag.RenderChunks[i].Model;
+                var model = tag.Clusters[i].Model;
 
                 foreach (var mesh in model.Meshes)
                 {
@@ -211,9 +211,9 @@ namespace OpenH2.BspMetaAnalysis
 
             var vertsWritten = 1;
 
-            for(var i = 0; i < tag.RenderChunks.Length; i++)
+            for(var i = 0; i < tag.Clusters.Length; i++)
             {
-                var model = tag.RenderChunks[i].Model;
+                var model = tag.Clusters[i].Model;
                 sb.AppendLine($"o BspChunk.{i}");
 
                 var verts = model.Meshes.First().Verticies;

@@ -117,6 +117,8 @@ namespace OpenH2.Engine.Systems
             {
                 Core.Tags.SampleRate.hz22k05 => SampleRate._22k05,
                 Core.Tags.SampleRate.hz44k1 => SampleRate._44k1,
+                Core.Tags.SampleRate.hz32k => SampleRate._32k,
+                Core.Tags.SampleRate.hz48k => SampleRate._48k,
                 _ => SampleRate._44k1
             };
 

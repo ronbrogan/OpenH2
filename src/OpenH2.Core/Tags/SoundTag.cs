@@ -16,7 +16,9 @@ namespace OpenH2.Core.Tags
     public enum SampleRate : byte
     {
         hz22k05 = 0,
-        hz44k1 = 1
+        hz44k1 = 1,
+        hz32k = 2,
+        hz48k = 3,
     }
 
     [TagLabel(TagName.snd)] // snd!
@@ -28,13 +30,11 @@ namespace OpenH2.Core.Tags
         }
 
         [PrimitiveValue(0)]
-        public byte Option1 { get; set; }
+        public ushort Flags { get; set; }
 
-        [PrimitiveValue(1)]
-        public byte Option2 { get; set; }
 
         [PrimitiveValue(2)]
-        public byte Option3 { get; set; }
+        public byte Class { get; set; }
 
         [PrimitiveValue(3)]
         public SampleRate SampleRate { get; set; }

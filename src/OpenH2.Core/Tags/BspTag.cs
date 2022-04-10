@@ -30,7 +30,7 @@ namespace OpenH2.Core.Tags
         public int Checksum { get; set; }
 
         [ReferenceArray(12)]
-        public ShaderInfo[] Shaders { get; set; }
+        public CollisionMaterial[] PhysicsMaterials { get; set; }
 
         [ReferenceArray(20)]
         public CollisionInfo[] CollisionInfos { get; set; }
@@ -58,11 +58,11 @@ namespace OpenH2.Core.Tags
         //[InternalReferenceValue(76)]
         //public object[] MiscObject1Cao { get; set; }
 
-        //[InternalReferenceValue(84)]
-        //public object[] MiscObject2Cao { get; set; }
+        [ReferenceArray(84)]
+        public ClusterPortal[] ClusterPortals { get; set; }
 
         [ReferenceArray(92)] 
-        public Obj92[] Obj92s { get; set; }
+        public FogPlane[] FogPlanes { get; set; }
 
         //[InternalReferenceValue(100)]
         //public Obj100[] Obj100s { get; set; } 
@@ -71,7 +71,7 @@ namespace OpenH2.Core.Tags
         //public object[] MiscObject5Cao { get; set; } 
 
         [ReferenceArray(156)]
-        public RenderChunk[] RenderChunks { get; set; }
+        public Cluster[] Clusters { get; set; }
 
         [ReferenceArray(164)]
         public ModelShaderReference[] ModelShaderReferences { get; set; }
@@ -137,7 +137,7 @@ namespace OpenH2.Core.Tags
         {
             
 
-            foreach (var part in RenderChunks)
+            foreach (var part in Clusters)
             {
                 if (part.DataBlockRawOffset == uint.MaxValue)
                 {
@@ -199,7 +199,7 @@ namespace OpenH2.Core.Tags
         }
 
         [FixedLength(20)]
-        public class ShaderInfo
+        public class CollisionMaterial
         {
             [PrimitiveValue(4)]
             public int Unknown { get; set; }
@@ -245,20 +245,54 @@ namespace OpenH2.Core.Tags
         }
 
         [FixedLength(36)]
-        public class Obj92
+        public class FogPlane
         {
+            [PrimitiveValue(0)]
+            public ushort PlanarFogIndex { get; set; }
+
             [PrimitiveValue(8)]
-            public Vector3 Position { get; set; }
+            public Vector3 Point { get; set; }
 
             [PrimitiveValue(20)]
-            public float Yaw { get; set; }
+            public float Distance { get; set; }
+
+            [PrimitiveValue(24)]
+            public ushort Flags { get; set; }
+
+            [PrimitiveValue(26)]
+            public ushort Priority { get; set; }
         }
+
+        [FixedLength(32)]
+        public class ClusterPortal
+        {
+            [PrimitiveValue(0)]
+            public ushort BackCluster { get; set; }
+
+            [PrimitiveValue(2)]
+            public ushort FrontCluster { get; set; }
+
+            [PrimitiveValue(4)]
+            public int PlaneIndex { get; set; }
+
+            [PrimitiveValue(8)]
+            public Vector3 Centroid { get; set; }
+
+            [PrimitiveValue(20)]
+            public float BoundingRadius { get; set; }
+
+            [PrimitiveValue(24)]
+            public ushort Flags { get; set; }
+
+            // vertices here
+        }
+
 
         [FixedLength(24)]
         public class Obj100 { }
 
         [FixedLength(176)]
-        public class RenderChunk : IModelResourceContainer
+        public class Cluster : IModelResourceContainer
         {
             [PrimitiveValue(0)]
             public ushort VertexCount { get; set; }
@@ -266,7 +300,38 @@ namespace OpenH2.Core.Tags
             [PrimitiveValue(2)]
             public ushort TriangleCount { get; set; }
 
+            //[PrimitiveValue(4)]
             public ushort PartCount { get; set; } = 2;
+
+            [PrimitiveValue(6)]
+            public ushort ShadowCastingTriangleCount { get; set; }
+
+            [PrimitiveValue(8)]
+            public ushort ShadowCastingPartCount { get; set; }
+
+            [PrimitiveValue(10)]
+            public ushort OpaquePointCount { get; set; }
+
+            [PrimitiveValue(12)]
+            public ushort OpaqueVertexCount { get; set; }
+
+            [PrimitiveValue(14)]
+            public ushort OpaquePartCount { get; set; }
+
+            [PrimitiveValue(16)]
+            public byte OpaqueMaxNodesPerVertex { get; set; }
+
+            [PrimitiveValue(17)]
+            public byte TransparentMaxNodesPerVertex { get; set; }
+
+            [PrimitiveValue(18)]
+            public ushort ShadowCasingRigidTriangleCount { get; set; }
+
+            [PrimitiveValue(20)]
+            public GeometryClass GeometryClassification { get; set; }
+
+            [PrimitiveValue(22)]
+            public GeometryCompressionFlags CompressionFlags { get; set; }
 
             [PrimitiveValue(40)]
             public uint DataBlockRawOffset { get; set; }
@@ -313,8 +378,14 @@ namespace OpenH2.Core.Tags
             [PrimitiveValue(12)]
             public ushort PartCount { get; set; }
 
+            [PrimitiveValue(20)]
+            public GeometryClass GeometryClassification { get; set; }
+
+            [PrimitiveValue(22)]
+            public GeometryCompressionFlags CompressionFlags { get; set; }
+
             [ReferenceArray(24)]
-            public Obj24[] Obj24s { get; set; }
+            public CompressionInfo[] CompressionInfos { get; set; }
 
             [PrimitiveValue(40)]
             public uint DataBlockRawOffset { get; set; }
@@ -359,7 +430,7 @@ namespace OpenH2.Core.Tags
             public Vertex[] Vertices { get; set; }
 
             [FixedLength(56)]
-            public class Obj24
+            public class CompressionInfo
             {
                 [PrimitiveArray(0, 10)]
                 public float[] Floats { get; set; }

@@ -1,9 +1,12 @@
 ﻿using OpenH2.Core.Maps;
 using OpenH2.Core.Tags.Layout;
 using OpenBlam.Serialization.Layout;
+using OpenH2.Core.Tags.Common;
+using System.Numerics;
 
 namespace OpenH2.Core.Tags
 {
+
     [TagLabel(TagName.bipd)]
     public class BipedTag : BaseTag
     {
@@ -12,19 +15,27 @@ namespace OpenH2.Core.Tags
         {
         }
 
+        [PrimitiveValue(2)]
+        public GameObjectFlags Flags { get; set; }
+
         [PrimitiveValue(4)]
-        public float Value1 { get; set; }
+        public float BoundingRadius { get; set; }
 
-        [PrimitiveValue(20)]
-        public float Value2 { get; set; }
+        [PrimitiveValue(8)]
+        public Vector3 BoundingOffset { get; set; }
 
+        [PrimitiveValue(24)]
+        public float AccelerationScale { get; set; }
+
+        //[InternedString(52)]
+        public string DefaultModelVariant { get; set; }
 
         [PrimitiveValue(56)]
         public TagRef<HaloModelTag> Model { get; set; }
 
 
         [ReferenceArray(92)]
-        public Obj92[] obj92s { get; set; }
+        public AiProperty[] AiProperties { get; set; }
 
         [ReferenceArray(148)]
         public Obj148[] obj148s { get; set; }
@@ -37,7 +48,7 @@ namespace OpenH2.Core.Tags
 
 
         [FixedLength(16)]
-        public class Obj92
+        public class AiProperty
         {
             [PrimitiveValue(12)]
             public uint Value1 { get; set; }
