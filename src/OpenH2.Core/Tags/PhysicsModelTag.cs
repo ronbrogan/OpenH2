@@ -4,6 +4,8 @@ using System.Numerics;
 using OpenBlam.Serialization.Materialization;
 using System.IO;
 using System;
+using OpenBlam.Core.MapLoading;
+using System.Diagnostics;
 
 namespace OpenH2.Core.Tags
 {
@@ -104,11 +106,12 @@ namespace OpenH2.Core.Tags
         public PolyhedraDefinition[] PolyhedraDefinitions { get; set; }
 
         [ReferenceArray(120)]
-        public PolyhedronFourVector[] PolyhedraAlternativeDefinitions { get; set; }
+        public TetrahedralHull[] PolyhedraAlternativeDefinitions { get; set; }
 
         [ReferenceArray(128)]
         public PolyhedronPlane[] PolyhedronPlanes { get; set; }
 
+        // unused? baked away?
         [ReferenceArray(136)]
         public MassDistributionBlock[] MassDistributionBlocks { get; set; }
 
@@ -139,6 +142,33 @@ namespace OpenH2.Core.Tags
         public LimitedHingeConstraint[] LimitedHingeConstraints { get; set; }
 
         // ball and socket constraints @240
+
+        public override void PopulateExternalData(MapStream reader)
+        {
+            var polyOffset = 0;
+            foreach(var poly in this.PolyhedraDefinitions)
+            {
+                if(poly.HullCount > 3)
+                {
+                    poly.ExternalHullsOffset = polyOffset;
+                    polyOffset += poly.HullCount;
+                }
+            }
+
+            Debug.Assert(polyOffset == this.PolyhedraAlternativeDefinitions.Length);
+
+            var listOffset = 0;
+            foreach (var list in this.Lists)
+            {
+                if (list.Count > 4)
+                {
+                    list.ExternalShapesOffset = listOffset;
+                    listOffset += list.Count;
+                }
+            }
+
+            Debug.Assert(listOffset == this.ListShapes.Length);
+        }
 
         [FixedLength(104)]
         public class Phantom
@@ -209,7 +239,7 @@ namespace OpenH2.Core.Tags
             }
         }
 
-        public enum RigidBodyMotion
+        public enum RigidBodyMotion : ushort
         {
             Sphere = 0,
             StabilizedSphere = 1,
@@ -217,6 +247,17 @@ namespace OpenH2.Core.Tags
             StabilizedBox = 3,
             Keyframed = 4,
             Fixed = 5
+        }
+
+        public enum RigidBodyComponentType : ushort
+        {
+            Sphere = 0,
+            Capsule = 1,
+            Box = 2,
+            Triangles = 3,
+            Polyhedra = 4,
+            FixedList = 14,
+            ComponentList = 15
         }
 
         [FixedLength(144)]
@@ -264,10 +305,10 @@ namespace OpenH2.Core.Tags
             public Vector3 CentorOfMassOffset { get; set; }
 
             [PrimitiveValue(56)]
-            public ushort UnknownInt { get; set; }
+            public RigidBodyComponentType ComponentType { get; set; }
 
             [PrimitiveValue(58)]
-            public ushort UnknownInt2 { get; set; }
+            public ushort ComponentIndex { get; set; }
 
             [PrimitiveValue(60)]
             public float Mass { get; set; }
@@ -323,8 +364,12 @@ namespace OpenH2.Core.Tags
             [PrimitiveValue(24)]
             public float Mass { get; set; }
 
+
             [PrimitiveValue(28)]
-            public ushort PhantomIndex { get; set; }
+            public ushort ComponentIndex { get; set; }
+
+            [PrimitiveValue(30)]
+            public byte PhantomIndex { get; set; }
 
             [PrimitiveValue(36)]
             public ushort Size { get; set; }
@@ -417,8 +462,12 @@ namespace OpenH2.Core.Tags
             [PrimitiveValue(24)]
             public float Mass { get; set; }
 
+
             [PrimitiveValue(28)]
-            public ushort PhantomIndex { get; set; }
+            public ushort ComponentIndex { get; set; }
+
+            [PrimitiveValue(30)]
+            public byte PhantomIndex { get; set; }
 
             [PrimitiveValue(36)]
             public ushort Size { get; set; }
@@ -555,7 +604,10 @@ namespace OpenH2.Core.Tags
             public float Mass { get; set; }
 
             [PrimitiveValue(28)]
-            public ushort PhantomIndex { get; set; }
+            public ushort ComponentIndex { get; set; }
+
+            [PrimitiveValue(30)]
+            public byte PhantomIndex { get; set; }
 
             [PrimitiveValue(36)]
             public ushort Size { get; set; }
@@ -565,7 +617,6 @@ namespace OpenH2.Core.Tags
 
             [PrimitiveValue(44)]
             public float Radius { get; set; }
-
 
             [PrimitiveValue(48)]
             public Vector3 AabbHalfExtents { get; set; }
@@ -582,32 +633,11 @@ namespace OpenH2.Core.Tags
             [PrimitiveValue(90)]
             public short HullFlags { get; set; }
 
-            [PrimitiveArray(96, 4)]
-            public float[] InlineHull_0_X { get; set; }
+            [PrimitiveArray(96, 3)]
+            public TetrahedralHull[] InlineHulls { get; set; }
 
-            [PrimitiveArray(112, 4)]
-            public float[] InlineHull_0_Y { get; set; }
-
-            [PrimitiveArray(128, 4)]
-            public float[] InlineHull_0_Z { get; set; }
-
-            [PrimitiveArray(144, 4)]
-            public float[] InlineHull_1_X { get; set; }
-
-            [PrimitiveArray(160, 4)]
-            public float[] InlineHull_1_Y { get; set; }
-
-            [PrimitiveArray(176, 4)]
-            public float[] InlineHull_1_Z { get; set; }
-
-            [PrimitiveArray(192, 4)]
-            public float[] InlineHull_2_X { get; set; }
-
-            [PrimitiveArray(208, 4)]
-            public float[] InlineHull_2_Y { get; set; }
-
-            [PrimitiveArray(224, 4)]
-            public float[] InlineHull_2_Z { get; set; }
+            // must be prepopulated by consumer
+            public int ExternalHullsOffset { get; set; }
 
             [PrimitiveValue(240)]
             public short NumVertices { get; set; }
@@ -620,19 +650,6 @@ namespace OpenH2.Core.Tags
 
             [PrimitiveValue(252)]
             public short PlaneEquationsCapacity { get; set; }
-        }
-
-        [FixedLength(48)]
-        public class PolyhedronFourVector
-        {
-            [PrimitiveArray(0, 4)]
-            public float[] XValues { get; set; }
-
-            [PrimitiveArray(16, 4)]
-            public float[] YValues { get; set; }
-
-            [PrimitiveArray(32, 4)]
-            public float[] ZValues { get; set; }
         }
 
         [FixedLength(16)]
@@ -651,16 +668,53 @@ namespace OpenH2.Core.Tags
             // Haven't seen anything meaningful yet
         }
 
-        [FixedLength(8)]
+        [FixedLength(56)]
         public class List
         {
-            // Haven't seen anything meaningful yet
+            [PrimitiveValue(0)]
+            public int Unknown { get; set; }
+
+            [PrimitiveValue(4)]
+            public ushort ValA { get; set; }
+
+            [PrimitiveValue(6)]
+            public ushort ValB { get; set; }
+
+            [PrimitiveValue(8)]
+            public ushort ValC { get; set; }
+
+            [PrimitiveValue(10)]
+            public ushort ValD { get; set; }
+
+            [PrimitiveValue(12)]
+            public int Unknown2 { get; set; }
+
+            [PrimitiveValue(16)]
+            public int Count { get; set; }
+
+            [PrimitiveValue(20)]
+            public int Capacity { get; set; }
+
+            [PrimitiveArray(24, 16)]
+            public ushort[] InlineShapes { get; set; }
+
+            public int ExternalShapesOffset { get; set; }
         }
 
-        [FixedLength(24)]
+        [FixedLength(8)]
         public class ListShape
         {
-            // Haven't seen anything meaningful yet
+            [PrimitiveValue(0)]
+            public RigidBodyComponentType ComponentType { get; set; }
+
+            [PrimitiveValue(2)]
+            public ushort ComponentIndex { get; set; }
+
+            [PrimitiveValue(4)]
+            public ushort ValC { get; set; }
+
+            [PrimitiveValue(6)]
+            public ushort ValD { get; set; }
         }
 
         [FixedLength(148)]

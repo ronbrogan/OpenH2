@@ -56,7 +56,7 @@ namespace OpenH2.Engine.Factories
             body = new RigidBodyComponent(parent, transform, param.InertiaTensor, param.Mass, param.CenterOfMass)
             {
                 IsDynamic = false,
-                Collider = ColliderFactory.GetTriangleColliderForHlmt(map, hlmt, damageLevel)
+                Collider = ColliderFactory.GetAggregateColliderForPhmo(map, phmo, damageLevel)
             };
 
             return body;
