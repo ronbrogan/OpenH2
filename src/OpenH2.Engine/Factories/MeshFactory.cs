@@ -180,7 +180,7 @@ namespace OpenH2.Engine.Factories
             using var qhull = new QuickHull(convexPoints);
             qhull.Triangulate();
 
-            var faces = qhull.GetFaces(QuickHull.CLOCKWISE);
+            var faces = qhull.GetFaces();
 
             var indices = new List<int>();
 

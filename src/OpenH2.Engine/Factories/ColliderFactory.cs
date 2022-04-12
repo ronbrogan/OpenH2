@@ -1,13 +1,11 @@
-﻿using OpenH2.Core.Maps.Vista;
+﻿using System;
+using System.Collections.Generic;
+using System.Numerics;
+using OpenH2.Core.Maps.Vista;
 using OpenH2.Core.Tags;
 using OpenH2.Foundation;
 using OpenH2.Foundation.Physics;
 using OpenH2.Physics.Colliders;
-using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
-using System.Numerics;
 
 namespace OpenH2.Engine.Factories
 {
@@ -15,70 +13,52 @@ namespace OpenH2.Engine.Factories
     {
         private static ICollider DefaultCollider = new BoxCollider(IdentityTransform.Instance, new Vector3(0.1f));
 
-        public static ICollider GetConvexColliderForHlmt(H2vMap map, HaloModelTag hlmt, int damageLevel = 0)
+        public static ICollider GetAggregateColliderForPhmo(PhysicsModelTag phmo)
         {
-            if (map.TryGetTag(hlmt.ColliderId, out var coll) == false)
+            var collider = new AggregateCollider();
+
+            foreach (var body in phmo.RigidBodies)
             {
-                // TODO: determine why collider can be invalid, if it's expected
-                return DefaultCollider;
+                AddColliderForBody(collider, phmo, body);
             }
-
-            if (coll.ColliderComponents.Length == 0
-                || coll.ColliderComponents[0].DamageLevels.Length <= damageLevel
-                || coll.ColliderComponents[0].DamageLevels[damageLevel].Parts.Length == 0)
-            {
-                Console.WriteLine($"No colliders defined in coll[{hlmt.ColliderId}] for damage level {damageLevel}");
-                return DefaultCollider;
-            }
-
-            var colliderMeshes = new List<Vector3[]>();
-
-            foreach (var component in coll.ColliderComponents)
-            {
-                var container = component.DamageLevels[damageLevel];
-
-                foreach(var info in container.Parts)
-                {
-                    colliderMeshes.Add(info.Vertices.Select(v => new Vector3(v.x, v.y, v.z)).ToArray());
-                }
-            }
-
-            var collider = new ConvexModelCollider(colliderMeshes);
 
             return collider;
         }
 
-        public static ICollider GetAggregateColliderForPhmo(H2vMap map, PhysicsModelTag phmo, int damageLevel = 0)
+        public static ICollider GetAggregateColliderForPhmoBody(PhysicsModelTag phmo, PhysicsModelTag.RigidBody body)
         {
             var collider = new AggregateCollider();
-            var listAltIndex = 0;
-
-            foreach (var body in phmo.RigidBodies)
-            {
-                switch (body.ComponentType)
-                {
-                    case PhysicsModelTag.RigidBodyComponentType.Capsule:
-                        break;
-                    case PhysicsModelTag.RigidBodyComponentType.Sphere:
-                        break;
-                    case PhysicsModelTag.RigidBodyComponentType.Box:
-                        AddBoxCollider(collider, phmo.BoxDefinitions[body.ComponentIndex]);
-                        break;
-                    case PhysicsModelTag.RigidBodyComponentType.Triangles:
-                        break;
-                    case PhysicsModelTag.RigidBodyComponentType.Polyhedra:
-                        AddPolyhedronCollider(collider, phmo, phmo.PolyhedraDefinitions[body.ComponentIndex]);
-                        break;
-                    case PhysicsModelTag.RigidBodyComponentType.FixedList:
-                    case PhysicsModelTag.RigidBodyComponentType.ComponentList:
-                        AddCompositeCollider(collider, phmo, body, ref listAltIndex);
-                        break;
-                    default:
-                        break;
-                }
-            }
+            
+            AddColliderForBody(collider, phmo, body);
 
             return collider;
+        }
+
+        private static void AddColliderForBody(AggregateCollider collider, PhysicsModelTag phmo, PhysicsModelTag.RigidBody body)
+        {
+            switch (body.ComponentType)
+            {
+                case PhysicsModelTag.RigidBodyComponentType.Capsule:
+                    break;
+                case PhysicsModelTag.RigidBodyComponentType.Sphere:
+                    break;
+                case PhysicsModelTag.RigidBodyComponentType.Box:
+                    AddBoxCollider(collider, phmo.BoxDefinitions[body.ComponentIndex]);
+                    break;
+                case PhysicsModelTag.RigidBodyComponentType.Triangles:
+                    break;
+                case PhysicsModelTag.RigidBodyComponentType.Polyhedra:
+                    AddPolyhedronCollider(collider, phmo, phmo.PolyhedraDefinitions[body.ComponentIndex]);
+                    break;
+                case PhysicsModelTag.RigidBodyComponentType.FixedList:
+                case PhysicsModelTag.RigidBodyComponentType.ComponentList:
+                    AddCompositeCollider(collider, phmo, body);
+                    break;
+                case PhysicsModelTag.RigidBodyComponentType.Phantom:
+                    break;
+                default:
+                    break;
+            }
         }
 
         private static void AddBoxCollider(AggregateCollider aggregate, PhysicsModelTag.BoxDefinition box)
@@ -116,7 +96,7 @@ namespace OpenH2.Engine.Factories
             aggregate.AddCollider(convexModel);
         }
 
-        private static void AddCompositeCollider(AggregateCollider aggregate, PhysicsModelTag phmo, PhysicsModelTag.RigidBody body, ref int listAltIndex)
+        private static void AddCompositeCollider(AggregateCollider aggregate, PhysicsModelTag phmo, PhysicsModelTag.RigidBody body)
         {
             var list = phmo.Lists[body.ComponentIndex];
             Span<PhysicsModelTag.ListShape> shapes;
@@ -152,7 +132,8 @@ namespace OpenH2.Engine.Factories
                     case PhysicsModelTag.RigidBodyComponentType.Polyhedra:
                         AddPolyhedronCollider(aggregate, phmo, phmo.PolyhedraDefinitions[shape.ComponentIndex]);
                         break;
-
+                    case PhysicsModelTag.RigidBodyComponentType.Phantom:
+                        break;
                     default:
                     case PhysicsModelTag.RigidBodyComponentType.Triangles:
                     case PhysicsModelTag.RigidBodyComponentType.FixedList:

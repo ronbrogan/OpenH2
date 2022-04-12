@@ -4,8 +4,12 @@ using OpenH2.Core.Maps.Vista;
 using OpenH2.Core.Tags;
 using OpenH2.Core.Tags.Common.Collision;
 using OpenH2.Engine.Components;
+using OpenH2.Foundation;
+using OpenH2.Foundation.Physics;
 using OpenH2.Physics.Colliders;
 using System;
+using System.Collections.Generic;
+using System.Numerics;
 using static OpenH2.Core.Tags.BspTag;
 
 namespace OpenH2.Engine.Factories
@@ -27,7 +31,7 @@ namespace OpenH2.Engine.Factories
                 var param = phmo.RigidBodies[0];
 
                 body = new RigidBodyComponent(parent, transform, param.InertiaTensor, param.Mass, param.CenterOfMass);
-                body.Collider = ColliderFactory.GetAggregateColliderForPhmo(map, phmo, damageLevel);
+                body.Collider = ColliderFactory.GetAggregateColliderForPhmo(phmo);
             }
             else
             {
@@ -37,30 +41,35 @@ namespace OpenH2.Engine.Factories
             return body;
         }
 
-        public static RigidBodyComponent CreateKinematicRigidBody(Entity parent, TransformComponent transform, H2vMap map, TagRef<HaloModelTag> hlmtRef, int damageLevel = 0)
+        public static IEnumerable<(RigidBodyComponent, (Vector3, Quaternion))> CreateKinematicRigidBodies(Entity parent, Dictionary<string, (Vector3, Quaternion)> bones, ITransform root, PhysicsModelTag phmo)
         {
-            if (map.TryGetTag(hlmtRef, out var hlmt) == false)
+            foreach(var body in phmo.RigidBodies)
             {
-                throw new Exception($"Couldn't find HLMT[{hlmtRef.Id}]");
+                var transform = new Transform()
+                {
+                    Position = Vector3.Zero,
+                    Orientation = Quaternion.Identity,
+                    Scale = Vector3.One
+                };
+
+                if(bones.TryGetValue(phmo.Nodes[body.Node].Name, out var bone))
+                {
+                    transform.Position = bone.Item1;
+                    transform.Orientation = bone.Item2;
+                }
+
+                transform.UpdateDerivedData();
+
+                var parentedXform = new CompositeTransform(root, transform);
+
+                yield return (new RigidBodyComponent(parent, parentedXform, body.InertiaTensor, body.Mass, body.CenterOfMass)
+                {
+                    IsDynamic = false,
+                    Collider = ColliderFactory.GetAggregateColliderForPhmoBody(phmo, body)
+                }, bone);
             }
-
-            RigidBodyComponent body;
-
-            if (!map.TryGetTag(hlmt.PhysicsModel, out var phmo) || phmo.RigidBodies.Length == 0)
-            {
-                return null;
-            }
-
-            var param = phmo.RigidBodies[0];
-
-            body = new RigidBodyComponent(parent, transform, param.InertiaTensor, param.Mass, param.CenterOfMass)
-            {
-                IsDynamic = false,
-                Collider = ColliderFactory.GetAggregateColliderForPhmo(map, phmo, damageLevel)
-            };
-
-            return body;
         }
+
 
         public static StaticGeometryComponent CreateStaticRigidBody(Entity parent, TransformComponent transform, H2vMap map, TagRef<HaloModelTag> hlmtRef, int damageLevel = 0)
         {

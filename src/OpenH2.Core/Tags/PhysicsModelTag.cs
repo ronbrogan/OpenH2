@@ -256,6 +256,7 @@ namespace OpenH2.Core.Tags
             Box = 2,
             Triangles = 3,
             Polyhedra = 4,
+            Phantom = 6,
             FixedList = 14,
             ComponentList = 15
         }
@@ -702,6 +703,7 @@ namespace OpenH2.Core.Tags
         }
 
         [FixedLength(8)]
+        [DebuggerDisplay("{ComponentType} - {ComponentIndex}")]
         public class ListShape
         {
             [PrimitiveValue(0)]

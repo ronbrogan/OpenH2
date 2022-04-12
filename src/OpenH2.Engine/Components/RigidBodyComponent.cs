@@ -27,7 +27,7 @@ namespace OpenH2.Engine.Components
         /// Creates a dynamic RigidBodyComponent
         /// </summary>
         public RigidBodyComponent(Entity parent, 
-            TransformComponent xform, 
+            ITransform xform, 
             Matrix4x4 inertiaTensor,
             float mass,
             Vector3 centerOfMassOffset = default)

@@ -259,9 +259,10 @@ namespace OpenH2.Engine.Systems.Physics
 
         public void AddEntity(Entity entity)
         {
-            if (entity.TryGetChild<RigidBodyComponent>(out var rigidBody))
+            var rigidBodies = entity.GetChildren<RigidBodyComponent>();
+            foreach (var body in rigidBodies)
             {
-                AddRigidBodyComponent(rigidBody);
+                AddRigidBodyComponent(body);
             }
 
             if (entity.TryGetChild<MoverComponent>(out var mover))
