@@ -246,10 +246,10 @@ namespace OpenH2.Core.Tags.Scenario
             public string ParentDescription { get; set; }
 
             [PrimitiveValue(12)]
-            public Vector3 Orientation { get; set; }
+            public Vector3 ForwardRotation { get; set; }
 
             [PrimitiveValue(24)]
-            public Vector3 OrientationAxis { get; set; }
+            public Vector3 UpRotation { get; set; }
 
             [PrimitiveValue(36)]
             public Vector3 Position { get; set; }

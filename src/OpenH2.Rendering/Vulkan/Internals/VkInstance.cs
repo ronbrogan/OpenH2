@@ -63,13 +63,19 @@ namespace OpenH2.Rendering.Vulkan.Internals
                 ApiVersion = Version
             };
 
+#if DEBUG_VK
+            Console.WriteLine("DEBUG_VK set, enabling validation layers");
+#else
+            Console.WriteLine("DEBUG_VK not set, no validation layers will be present");
+#endif
+
             var instanceInfo = new InstanceCreateInfo
             {
                 SType = StructureType.InstanceCreateInfo,
                 PApplicationInfo = &appInfo,
                 EnabledExtensionCount = reqExtensionCount,
                 PpEnabledExtensionNames = extensionStrings,
-#if DEBUG
+#if DEBUG_VK
                 EnabledLayerCount = (uint)validationLayers.Length,
 #else
                 EnabledLayerCount = 0,

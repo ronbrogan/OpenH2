@@ -71,5 +71,10 @@ namespace OpenH2.Core.Extensions
 
             return Quaternion.Normalize(t2);
         }
+
+        public static Quaternion RotationFromDirection(Vector3 basis, Vector3 direction)
+        {
+            return Quaternion.Normalize(new Quaternion(Vector3.Cross(basis, direction), 1 + Vector3.Dot(basis, direction)));
+        }
     }
 }

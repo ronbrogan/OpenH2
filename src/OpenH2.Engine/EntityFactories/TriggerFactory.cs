@@ -1,10 +1,12 @@
 ﻿using OpenH2.Core.Architecture;
+using OpenH2.Core.Extensions;
 using OpenH2.Core.Factories;
 using OpenH2.Core.Tags.Scenario;
 using OpenH2.Engine.Components;
 using OpenH2.Engine.Entities;
 using OpenH2.Foundation;
 using System;
+using System.Diagnostics;
 using System.Numerics;
 
 namespace OpenH2.Engine.EntityFactories
@@ -17,7 +19,7 @@ namespace OpenH2.Engine.EntityFactories
             if(rotate == default)
                 rotate = Quaternion.Identity;
 
-            var orient = GetOrientation(tvDefinition.Orientation, tvDefinition.OrientationAxis);
+            var orient = GetOrientation(tvDefinition.ForwardRotation, tvDefinition.UpRotation);
 
             var renderModel = ModelFactory.Cuboid(Vector3.Zero, tvDefinition.Size, new Vector4(1f, 1f, 0f, 0.5f));
             renderModel.Flags = ModelFlags.IsTransparent;
@@ -56,16 +58,14 @@ namespace OpenH2.Engine.EntityFactories
                     new RenderModelComponent(parent, wireframeRenderModel));
             }
 
-            Quaternion GetOrientation(Vector3 angle, Vector3 axis)
+            Quaternion GetOrientation(Vector3 forward, Vector3 up)
             {
-                //BUG? The Z value of the angle vector is not used here, and is present in ~5 triggers in the game
-                var a = MathF.Atan2(angle.Y, angle.X);
+                var a = QuaternionExtensions.RotationFromDirection(EngineGlobals.Forward, forward);
+                var b = QuaternionExtensions.RotationFromDirection(EngineGlobals.Up, up);
 
-                return Quaternion.CreateFromAxisAngle(axis, a);
+                return Quaternion.Concatenate(a, b);
             }
         }
-
-
 
         public static TriggerVolume FromScenarioTriggerVolume(ScenarioTag tag, ScenarioTag.TriggerVolume tvDefinition)
         {

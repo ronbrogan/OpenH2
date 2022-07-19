@@ -57,7 +57,8 @@ namespace OpenH2.Rendering.OpenGL
             this.host = host;
             this.bindless = new(() =>
             {
-                Debug.Assert(gl.TryGetExtension<ArbBindlessTexture>(out var bindless));
+                var success = gl.TryGetExtension<ArbBindlessTexture>(out var bindless);
+                Debug.Assert(success);
                 return bindless;
             });
         }
@@ -67,7 +68,8 @@ namespace OpenH2.Rendering.OpenGL
             this.api = api;
             this.bindless = new(() =>
             {
-                Debug.Assert(gl.TryGetExtension<ArbBindlessTexture>(out var bindless));
+                var success = gl.TryGetExtension<ArbBindlessTexture>(out var bindless);
+                Debug.Assert(success);
                 return bindless;
             });
         }

@@ -25,8 +25,8 @@ namespace OpenH2.TriggerAnalysis
 
                 foreach(var v in scene.Scenario.TriggerVolumes)
                 {
-                    var vect = v.Orientation;
-                    var vect2 = v.OrientationAxis;
+                    var vect = v.ForwardRotation;
+                    var vect2 = v.UpRotation;
 
 
                     if (Math.Abs(vect.Length() - 1) > 0.001f)
