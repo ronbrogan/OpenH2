@@ -62,9 +62,7 @@ namespace OpenH2.Core.Scripting.GenerationState
             }
 
             scope.Context.AddExpression(SyntaxFactory.InvocationExpression(
-                SyntaxFactory.MemberAccessExpression(SyntaxKind.SimpleMemberAccessExpression,
-                    SyntaxFactory.IdentifierName("Engine"),
-                    SyntaxFactory.IdentifierName("begin_random")))
+                SyntaxFactory.IdentifierName("begin_random"))
                 .AddArgumentListArguments(lambdas.Select(SyntaxFactory.Argument).ToArray()));
         }
 

@@ -57,9 +57,7 @@ namespace OpenH2.Core.Scripting.GenerationState
             finalArgs[0] = SyntaxFactory.Argument(checkExpression);
 
             scope.Context.AddExpression(SyntaxFactory.AwaitExpression(SyntaxFactory.InvocationExpression(
-                SyntaxFactory.MemberAccessExpression(SyntaxKind.SimpleMemberAccessExpression,
-                    SyntaxFactory.IdentifierName("Engine"),
-                    SyntaxFactory.IdentifierName("sleep_until")))
+                SyntaxFactory.IdentifierName("sleep_until"))
                     .AddArgumentListArguments(finalArgs)
                 ).WithAdditionalAnnotations(ScriptGenAnnotations.TypeAnnotation(this.ReturnType)));
         }

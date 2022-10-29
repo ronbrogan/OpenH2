@@ -117,8 +117,10 @@ namespace OpenH2.Core.Scripting.Generation
             // Generate data properties
 
             var dataGen = new ScriptCSharpGenerator(scnr, repo);
-
             dataGen.AddProperties(scnr);
+
+            var aiGen = new ScriptCSharpGenerator(scnr, repo);
+            aiGen.CreateNestedSquadClasses(scnr);
 
             dataGen.CreateDataInitializer(scnr);
 
@@ -145,6 +147,7 @@ namespace OpenH2.Core.Scripting.Generation
 
             this.AddCode($"{scenarioParts.Last()}.cs", classGen.Generate());
             this.AddCode($"{scenarioParts.Last()}.Data.cs", dataGen.Generate());
+            this.AddCode($"{scenarioParts.Last()}.Squads.cs", aiGen.Generate());
         }
 
         private void AddCode(string desiredPath, MemberDeclarationSyntax member)

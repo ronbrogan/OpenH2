@@ -17,11 +17,9 @@ namespace OpenH2.Core.Scripting.GenerationState
         {
             this.OwnDataType = node.DataType;
 
-            invocation = InvocationExpression(MemberAccessExpression(SyntaxKind.SimpleMemberAccessExpression,
-                    IdentifierName("Engine"),
-                    GenericName(Identifier(nameof(IScriptEngine.GetReference)))
+            invocation = InvocationExpression(GenericName(Identifier(nameof(IScriptEngine.GetReference)))
                 .WithTypeArgumentList(TypeArgumentList(SingletonSeparatedList(
-                    SyntaxUtil.ScriptTypeSyntax(this.OwnDataType.Value))))),
+                    SyntaxUtil.ScriptTypeSyntax(this.OwnDataType.Value)))),
                 ArgumentList(
                     SingletonSeparatedList(
                         Argument(

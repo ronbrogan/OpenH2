@@ -37,10 +37,10 @@ namespace OpenH2.Rendering.Vulkan.Internals
             this.textureSet = textureSet;
             this.shadowPass = shadowPass;
 
-            shaderConfigs[(int)Shader.Skybox] = new(Shader.Skybox, defaultBindings, 16, depthTest: false);
-            shaderConfigs[(int)Shader.Generic] = new(Shader.Generic, defaultBindings, 4096);
-            shaderConfigs[(int)Shader.Wireframe] = new(Shader.Wireframe, defaultBindings, 1024, polyMode: PolygonMode.Line);
-            shaderConfigs[(int)Shader.ShadowMapping] = new(Shader.ShadowMapping, shadowMapBindings, 4096, SampleCountFlags.SampleCount1Bit, invertY: false);
+            shaderConfigs[(int)Shader.Skybox] = new(Shader.Skybox, defaultBindings, 64, depthTest: false);
+            shaderConfigs[(int)Shader.Generic] = new(Shader.Generic, defaultBindings, 4096 * 4);
+            shaderConfigs[(int)Shader.Wireframe] = new(Shader.Wireframe, defaultBindings, 1024 * 4, polyMode: PolygonMode.Line);
+            shaderConfigs[(int)Shader.ShadowMapping] = new(Shader.ShadowMapping, shadowMapBindings, 4096 * 4, SampleCountFlags.SampleCount1Bit, invertY: false);
         }
 
         public GeneralGraphicsPipeline GetOrCreate(Shader shader, MeshElementType primitiveType)

@@ -81,8 +81,6 @@ namespace OpenH2.Core.Scripting.Generation
                 AddPublicProperty(ScriptDataType.CameraPathTarget, cam.Description, i);
             }
 
-            CreateNestedSquadClasses(scnr);
-
             for (int i = 0; i < scnr.AiSquadGroupDefinitions.Length; i++)
             {
                 var ai = scnr.AiSquadGroupDefinitions[i];
@@ -136,7 +134,6 @@ namespace OpenH2.Core.Scripting.Generation
                 var squadPropName = nameRepo.RegisterName(squad.Description, ScriptDataType.AI.ToString(), i);
 
                 var dataClassProps = new List<PropertyDeclarationSyntax>();
-                dataClassProps.Add(SyntaxUtil.CreateProperty(ParseTypeName(nameof(ScenarioTag)), nameof(ScenarioTag)));
 
                 var nestedRepo = new MemberNameRepository();
 
@@ -147,11 +144,7 @@ namespace OpenH2.Core.Scripting.Generation
 
                     ExpressionSyntax startingLocationAccess = ElementAccessExpression(
                         MemberAccessExpression(SyntaxKind.SimpleMemberAccessExpression,
-                            ElementAccessExpression(
-                                MemberAccessExpression(SyntaxKind.SimpleMemberAccessExpression,
-                                    IdentifierName(nameof(ScenarioTag)),
-                                    IdentifierName(nameof(tag.AiSquadDefinitions))))
-                            .AddArgumentListArguments(Argument(SyntaxUtil.LiteralExpression(i))),
+                            IdentifierName(nameof(SquadBase.Squad)),
                             IdentifierName(nameof(squad.StartingLocations))))
                         .AddArgumentListArguments(Argument(SyntaxUtil.LiteralExpression(m)));
 
@@ -169,30 +162,55 @@ namespace OpenH2.Core.Scripting.Generation
                         IdentifierName(nameof(tag.AiSquadDefinitions))))
                     .AddArgumentListArguments(Argument(SyntaxUtil.LiteralExpression(i)));
 
-                // This is so the script can reference the squad itself, need special init handling
-                dataClassProps.Add(PropertyDeclaration(SyntaxUtil.ScriptTypeSyntax(ScriptDataType.AI), "Squad")
-                    .WithModifiers(TokenList(Token(SyntaxKind.PublicKeyword)))
-                    .WithExpressionBody(ArrowExpressionClause(squadAccess))
-                    .WithSemicolonToken(Token(SyntaxKind.SemicolonToken)));
-
                 var squadTypeName = "Squad_" + squadPropName;
 
+                var attributes = new List<AttributeSyntax>();
+                attributes.Add(Attribute(IdentifierName("SpawnCounts"), AttributeArgumentList(SeparatedList<AttributeArgumentSyntax>(new[] {
+                    AttributeArgument(LiteralExpression(SyntaxKind.NumericLiteralExpression, Literal(squad.SpawnMin))),
+                    AttributeArgument(LiteralExpression(SyntaxKind.NumericLiteralExpression, Literal(squad.SpawnMax))) }))));
+
+                string? groupName = null;
+
+                if(squad.SquadGroupIndex != ushort.MaxValue)
+                {
+                    groupName = scenario.AiSquadGroupDefinitions[squad.SquadGroupIndex].Description;
+
+                    if (this.nameRepo.TryGetName(groupName, ScriptDataType.AI.ToString(), squad.SquadGroupIndex, out var stored))
+                    {
+                        groupName = stored;
+                    }
+                }
+
+                var initializerArgs = new List<ArgumentSyntax>()
+                {
+                    Argument(IdentifierName(nameof(ScenarioTag))),
+                    Argument(SyntaxUtil.LiteralExpression(i))
+                };
+
+                if(groupName != null)
+                {
+                    initializerArgs.Add(Argument(SyntaxUtil.LiteralExpression(groupName)));
+                }
+
                 var cls = ClassDeclaration(squadTypeName)
+                    .WithBaseList(BaseList(SeparatedList<BaseTypeSyntax>(new[] { SimpleBaseType(IdentifierName("SquadBase")) })))
                     .AddModifiers(Token(SyntaxKind.PublicKeyword))
+                    .AddAttributeLists(AttributeList(SeparatedList(attributes)))
                     .WithMembers(new SyntaxList<MemberDeclarationSyntax>(dataClassProps))
                     .AddMembers(ConstructorDeclaration(squadTypeName)
                         .AddModifiers(Token(SyntaxKind.PublicKeyword))
                         .AddParameterListParameters(
                             Parameter(Identifier(nameof(ScenarioTag)))
                                 .WithType(ParseTypeName(nameof(ScenarioTag))))
+                        .WithInitializer(
+                            ConstructorInitializer(
+                                SyntaxKind.BaseConstructorInitializer,
+                                ArgumentList(SeparatedList(initializerArgs))))
                         .WithBody(Block(new List<StatementSyntax>()
                         {
-                            ExpressionStatement(AssignmentExpression(SyntaxKind.SimpleAssignmentExpression,
-                                MemberAccessExpression(SyntaxKind.SimpleMemberAccessExpression,
-                                    ThisExpression(),
-                                    IdentifierName(nameof(ScenarioTag))),
-                                IdentifierName(nameof(ScenarioTag))))
                         })));
+
+                
 
                 nestedDataClasses.Add(cls);
                 nameRepo.NestedRepos.Add(squadPropName, nestedRepo);

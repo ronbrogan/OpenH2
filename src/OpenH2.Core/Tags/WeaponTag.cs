@@ -31,6 +31,12 @@ namespace OpenH2.Core.Tags
         [PrimitiveValue(528)]
         public float AutoAimAmount { get; set; }
 
+        [InternedString(648)]
+        public string WeaponClass { get; set; }
+
+        [InternedString(652)]
+        public string WeaponName { get; set; }
+
         [ReferenceArray(680)]
         public FirstPersonAnimation[] FirstPersonAnimations { get; set; }
 
