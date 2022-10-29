@@ -1,4 +1,4 @@
-namespace OpenH2.Engine.Scripting
+﻿namespace OpenH2.Engine.Scripting
 {
     using OpenH2.Core.Architecture;
     using OpenH2.Core.GameObjects;
@@ -694,6 +694,16 @@ namespace OpenH2.Engine.Scripting
         /// <summary><time></summary>
         public void weather_stop()
         {
+        }
+
+        public int game_tick_rate()
+        {
+            return this.TicksPerSecond;
+        }
+
+        public float game_tick_rate_scalar()
+        {
+            return this.TicksPerSecond;
         }
     }
 }

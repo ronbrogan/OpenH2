@@ -1,4 +1,4 @@
-using OpenH2.Core.GameObjects;
+﻿using OpenH2.Core.GameObjects;
 using OpenH2.Core.Scripting.Execution;
 using OpenH2.Core.Tags;
 using System;
@@ -1604,6 +1604,12 @@ namespace OpenH2.Core.Scripting
         /// <summary><time></summary>
         [ScriptImplementation(866)]
         void weather_stop(float time);
+
+        [ScriptImplementation(905)]
+        int game_tick_rate();
+
+        [ScriptImplementation(906)]
+        float game_tick_rate_scalar();
     }
 }
 

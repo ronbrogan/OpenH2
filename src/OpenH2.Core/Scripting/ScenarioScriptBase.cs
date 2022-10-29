@@ -846,5 +846,9 @@ namespace OpenH2.Core.Scripting
         public void weather_start(float time) => Engine.weather_start(time);
 
         public void weather_stop(float time) => Engine.weather_stop(time);
+
+        public int game_tick_rate() => Engine.game_tick_rate();
+
+        public float game_tick_rate_scalar() => Engine.game_tick_rate_scalar();
     }
 }
